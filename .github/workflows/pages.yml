@@ -35,6 +35,7 @@ jobs:
           mkdir -p _site/tide2
           cp index.html _site/index.html
           cp tide2/index.html _site/tide2/index.html
+          cp tide2/mechanics-reference.html _site/tide2/mechanics-reference.html
           cp tide2/guide.css _site/tide2/guide.css
           cp tide2/guide.js _site/tide2/guide.js
           cp tide2/minigame.js _site/tide2/minigame.js
@@ -49,6 +50,14 @@ jobs:
           html = page.read_text()
           sha = os.environ['DEPLOY_SHA']
 
+          html = html.replace(
+              'https://github.com/RedsLovesGames/TIDEBORNE/blob/dev/docs/FISHING_SYSTEM_2_SPEC.md',
+              './mechanics-reference.html'
+          )
+          html = html.replace(
+              'TIDEBORNE Fishing System 2.0 specification',
+              'Fishing 2.0 mechanics reference'
+          )
           html = re.sub(r'\s*<script src="\./minigame(?:-fix|-clean|-render)?\.js(?:\?v=[^"]*)?"></script>', '', html)
           tags = (
               f'<script src="./minigame.js?v={sha}"></script>\n'
