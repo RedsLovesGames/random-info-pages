@@ -33,6 +33,16 @@ jobs:
           mkdir -p _site/tide2
           cp index.html _site/index.html
           cp tide2/index.html _site/tide2/index.html
+          cp tide2/minigame.js _site/tide2/minigame.js
+          python3 - <<'PY'
+          from pathlib import Path
+          page = Path('_site/tide2/index.html')
+          html = page.read_text()
+          tag = '<script src="./minigame.js"></script>'
+          if tag not in html:
+              html = html.replace('</body>', tag + '\n</body>')
+          page.write_text(html)
+          PY
           touch _site/.nojekyll
 
       - name: Upload static site
