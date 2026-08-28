@@ -4,11 +4,12 @@
     const stage = root?.querySelector('.tr-stage');
     const wrap = document.querySelector('#tr-wrap');
     const bar = root?.querySelector('.tr-bar');
+    const fill = document.querySelector('#tr-fill');
     const perfect = root?.querySelector('.tr-perfect');
     const medium = document.querySelector('#tr-medium');
-    if (!root || !stage || !wrap || !bar || !perfect || !medium) return false;
-    if (root.dataset.polished === '1') return true;
-    root.dataset.polished = '1';
+    if (!root || !stage || !wrap || !bar || !fill || !perfect || !medium) return false;
+    if (root.dataset.polished === '2') return true;
+    root.dataset.polished = '2';
 
     if (perfect.parentElement !== bar) bar.prepend(perfect);
 
@@ -22,36 +23,17 @@
         background:#091b22;
         box-shadow:0 24px 70px rgba(0,0,0,.22);
       }
-      #tide-real-game .tr-head{
-        padding:22px 24px 20px;
-        align-items:center;
-      }
-      #tide-real-game .tr-head h3{
-        font-size:1.55rem;
-        margin-bottom:7px;
-      }
-      #tide-real-game .tr-head p{
-        max-width:800px;
-        font-size:.94rem;
-      }
+      #tide-real-game .tr-head{padding:22px 24px 20px;align-items:center}
+      #tide-real-game .tr-head h3{font-size:1.55rem;margin-bottom:7px}
+      #tide-real-game .tr-head p{max-width:800px;font-size:.94rem}
       #tide-real-game .tr-facts{margin-top:11px}
-      #tide-real-game .tr-fact{
-        border-color:rgba(148,211,221,.11);
-        background:rgba(255,255,255,.018);
-        padding:5px 8px;
-      }
+      #tide-real-game .tr-fact{border-color:rgba(148,211,221,.11);background:rgba(255,255,255,.018);padding:5px 8px}
       #tide-real-game .tr-fact:nth-child(n+4){display:none}
 
-      #tide-real-game .tr-shell{
-        margin-top:0;
-        display:grid;
-        grid-template-columns:1fr;
-        border-top:1px solid var(--line);
-        background:#07151b;
-      }
+      #tide-real-game .tr-shell{margin-top:0;display:grid;grid-template-columns:1fr;border-top:1px solid var(--line);background:#07151b}
       #tide-real-game .tr-stage{
         min-height:0;
-        padding:28px 24px 22px;
+        padding:26px 24px 20px;
         display:flex;
         flex-direction:column;
         justify-content:flex-start;
@@ -59,23 +41,18 @@
         position:relative;
         cursor:pointer;
         border-bottom:1px solid var(--line);
-        background:
-          radial-gradient(42rem 18rem at 50% 40%,rgba(75,187,202,.10),transparent 62%),
-          linear-gradient(180deg,#061318,#07181e);
+        background:linear-gradient(180deg,#061318,#07181e);
       }
-      #tide-real-game .tr-stage:before{
-        opacity:.55;
-        background-size:24px 24px;
-      }
+      #tide-real-game .tr-stage:before{display:none!important}
       #tide-real-game .tr-stage:after{
         content:"CLICK TO START  •  CLICK AGAIN TO REEL";
         position:absolute;
-        top:16px;
+        top:15px;
         right:18px;
         z-index:2;
-        font:750 .62rem ui-monospace,SFMono-Regular,Menlo,monospace;
+        font:750 .6rem ui-monospace,SFMono-Regular,Menlo,monospace;
         letter-spacing:.07em;
-        color:rgba(168,206,216,.55);
+        color:rgba(168,206,216,.46);
       }
       #tide-real-game .tr-label{
         align-self:flex-start;
@@ -91,33 +68,26 @@
       #tide-real-game .tr-label b{color:#dffff7}
 
       #tide-real-game .tr-wrap{
-        width:min(100%,760px);
-        padding:34px 12px 24px;
+        padding:32px 0 21px;
         position:relative;
         z-index:2;
-        border-radius:18px;
+        border-radius:14px;
         cursor:pointer;
         touch-action:manipulation;
+        display:flex;
+        justify-content:center;
+        align-items:center;
       }
-      #tide-real-game .tr-wrap:before{
-        content:"";
-        position:absolute;
-        left:5%;right:5%;top:27px;bottom:17px;
-        border-radius:20px;
-        background:radial-gradient(50% 80% at 50% 50%,rgba(86,205,213,.06),transparent 80%);
-        pointer-events:none;
-      }
-      #tide-real-game .tr-wrap:focus-visible{
-        outline:none;
-        box-shadow:0 0 0 2px rgba(99,243,209,.7);
-      }
+      #tide-real-game .tr-wrap:before{display:none!important}
+      #tide-real-game .tr-wrap:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(99,243,209,.7)}
+
       #tide-real-game .tr-bar{
-        width:100%;
-        aspect-ratio:60/7;
         position:relative;
-        border-radius:2px;
-        filter:drop-shadow(0 12px 20px rgba(0,0,0,.45));
+        flex:0 0 auto;
+        border-radius:0;
+        filter:none;
         image-rendering:pixelated;
+        image-rendering:crisp-edges;
         cursor:pointer;
         user-select:none;
       }
@@ -125,16 +95,15 @@
       #tide-real-game .tr-overlay,
       #tide-real-game .tr-marker{
         image-rendering:pixelated!important;
+        image-rendering:crisp-edges!important;
+        filter:none!important;
       }
       #tide-real-game .tr-fill{
-        background-image:var(--tr-fill-bg)!important;
-        background-repeat:no-repeat!important;
-        background-size:100% 100%!important;
-        image-rendering:auto!important;
-        box-shadow:
-          inset 0 1px rgba(255,255,255,.16),
-          inset 0 -1px rgba(0,0,0,.24),
-          0 0 22px rgba(72,177,213,.09);
+        background-repeat:repeat-x!important;
+        background-position:left top!important;
+        image-rendering:pixelated!important;
+        image-rendering:crisp-edges!important;
+        box-shadow:none!important;
       }
       #tide-real-game .tr-perfect{
         position:absolute;
@@ -144,101 +113,56 @@
         height:100%;
         transform:none;
         z-index:4;
-        border-left:1px solid rgba(255,215,111,.6);
-        border-right:1px solid rgba(255,215,111,.6);
-        background:linear-gradient(180deg,rgba(255,215,111,.08),rgba(255,215,111,.16),rgba(255,215,111,.08));
+        border-left:1px solid rgba(255,215,111,.72);
+        border-right:1px solid rgba(255,215,111,.72);
+        background:rgba(255,215,111,.035);
         pointer-events:none;
       }
       #tide-real-game .tr-perfect:after{
         content:"PERFECT";
         position:absolute;
         left:50%;
-        top:-24px;
+        top:-20px;
         transform:translateX(-50%);
-        font:800 .58rem ui-monospace,SFMono-Regular,Menlo,monospace;
+        font:800 .55rem ui-monospace,SFMono-Regular,Menlo,monospace;
         letter-spacing:.09em;
         color:rgba(255,215,111,.78);
-      }
-      #tide-real-game .tr-marker{
-        filter:drop-shadow(0 4px 5px rgba(0,0,0,.42));
       }
 
       #tide-real-game .tr-status{
         margin:5px 0 0;
         min-height:0;
-        padding:8px 12px;
+        padding:7px 11px;
         border:1px solid rgba(155,205,215,.12);
         border-radius:999px;
         background:rgba(255,255,255,.025);
-        font-size:.9rem;
+        font-size:.88rem;
       }
-      #tide-real-game .tr-sub{
-        margin-top:7px;
-        max-width:560px;
-        min-height:0;
-        font-size:.78rem;
-      }
-      #tide-real-game .tr-actions{margin-top:11px}
+      #tide-real-game .tr-sub{margin-top:6px;max-width:560px;min-height:0;font-size:.77rem}
+      #tide-real-game .tr-actions{margin-top:10px}
       #tide-real-game #tr-start{display:none!important}
-      #tide-real-game .tr-btn.alt{
-        padding:8px 12px;
-        border-radius:10px;
-        font-size:.8rem;
-      }
+      #tide-real-game .tr-btn.alt{padding:8px 12px;border-radius:10px;font-size:.8rem}
 
       #tide-real-game .tr-panel{
         border-left:0;
         border-top:0;
-        padding:17px 20px 18px;
+        padding:16px 20px 18px;
         display:grid;
         grid-template-columns:220px minmax(0,1fr);
         gap:12px 16px;
         background:linear-gradient(180deg,rgba(255,255,255,.016),rgba(255,255,255,.008));
       }
-      #tide-real-game .tr-modes{
-        margin:0;
-        align-self:start;
-      }
-      #tide-real-game .tr-controls{
-        display:grid;
-        grid-template-columns:repeat(3,minmax(0,1fr));
-        gap:8px;
-      }
-      #tide-real-game .tr-control{
-        padding:9px 10px;
-        border-radius:12px;
-        min-width:0;
-      }
-      #tide-real-game .tr-control label{
-        margin-bottom:5px;
-        font-size:.71rem;
-      }
-      #tide-real-game .tr-control select{
-        padding:7px 8px;
-        font-size:.8rem;
-      }
-      #tide-real-game .tr-read{
-        grid-column:1/-1;
-        grid-template-columns:repeat(4,1fr);
-        gap:8px;
-        margin-top:0;
-      }
-      #tide-real-game .tr-read>div{
-        padding:9px 10px;
-        border-radius:11px;
-      }
+      #tide-real-game .tr-modes{margin:0;align-self:start}
+      #tide-real-game .tr-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+      #tide-real-game .tr-control{padding:9px 10px;border-radius:12px;min-width:0}
+      #tide-real-game .tr-control label{margin-bottom:5px;font-size:.71rem}
+      #tide-real-game .tr-control select{padding:7px 8px;font-size:.8rem}
+      #tide-real-game .tr-read{grid-column:1/-1;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:0}
+      #tide-real-game .tr-read>div{padding:9px 10px;border-radius:11px}
       #tide-real-game .tr-read small{font-size:.67rem}
       #tide-real-game .tr-read strong{font-size:.93rem}
-      #tide-real-game .tr-note{
-        grid-column:1/-1;
-        margin-top:0;
-        padding:9px 11px;
-        font-size:.71rem;
-      }
-      #tide-real-game .tr-compare{
-        padding:0 20px 20px;
-        gap:8px;
-      }
+      #tide-real-game .tr-note{grid-column:1/-1;margin-top:0;padding:9px 11px;font-size:.71rem}
+      #tide-real-game .tr-compare{padding:0 20px 20px;gap:8px}
       #tide-real-game .tr-compare>div{padding:12px}
 
       @media(max-width:900px){
@@ -252,7 +176,7 @@
         #tide-real-game .tr-head h3{font-size:1.3rem}
         #tide-real-game .tr-stage{padding:20px 10px 18px}
         #tide-real-game .tr-label{margin-left:4px}
-        #tide-real-game .tr-wrap{padding:32px 2px 21px}
+        #tide-real-game .tr-wrap{padding:28px 0 18px}
         #tide-real-game .tr-panel{padding:14px}
         #tide-real-game .tr-controls{grid-template-columns:1fr 1fr}
         #tide-real-game .tr-control:has(#tr-behavior),
@@ -266,13 +190,13 @@
     const headCopy = root.querySelector('.tr-head p');
     if (title) title.textContent = 'Play the catch itself';
     if (headCopy) {
-      headCopy.textContent = 'Click anywhere in the game field to start. Click again when the moving marker is inside the catch zone. Switch between Fishing 2.0 and Original Tide to feel the difference with the same fish settings.';
+      headCopy.textContent = 'This uses Tide’s actual bar, overlay, marker, and fill textures. They are only scaled up in whole-pixel steps so the browser version stays faithful to the Minecraft UI.';
     }
 
     const facts = root.querySelectorAll('.tr-fact');
-    if (facts[0]) facts[0].textContent = 'Tide 60×7 bar';
-    if (facts[1]) facts[1].textContent = '80 ticks / 4 sec';
-    if (facts[2]) facts[2].textContent = 'perfect ±0.1';
+    if (facts[0]) facts[0].textContent = 'original Tide textures';
+    if (facts[1]) facts[1].textContent = 'integer pixel upscale';
+    if (facts[2]) facts[2].textContent = '80 ticks / 4 sec';
 
     const status = document.querySelector('#tr-status');
     const sub = document.querySelector('#tr-sub');
@@ -282,14 +206,20 @@
     const random = document.querySelector('#tr-random');
     if (random) random.textContent = 'Random fish';
 
-    const fills = {
-      WATER:'linear-gradient(180deg,#8dd8ed 0%,#5dc0df 18%,#3f93c7 43%,#2b6da4 68%,#1c4e82 100%)',
-      LAVA:'linear-gradient(180deg,#ffd15a 0%,#ff9b32 20%,#ef5a26 50%,#b92f28 76%,#6d1d28 100%)',
-      VOID:'linear-gradient(180deg,#8f79c7 0%,#6454a5 22%,#423d82 50%,#29285e 76%,#18183d 100%)'
+    const sizeGame = () => {
+      const available = Math.max(240, stage.clientWidth - 64);
+      const scale = Math.max(4, Math.min(8, Math.floor(available / 60)));
+      const w = 60 * scale;
+      const h = 7 * scale;
+      bar.style.width = `${w}px`;
+      bar.style.height = `${h}px`;
+      bar.style.aspectRatio = 'auto';
+      wrap.style.width = `${Math.min(w + 24, stage.clientWidth - 20)}px`;
+      fill.style.backgroundSize = `${6 * scale}px ${7 * scale}px`;
+      root.style.setProperty('--tide-ui-scale', String(scale));
     };
-    const setFill = () => root.style.setProperty('--tr-fill-bg', fills[medium.value] || fills.WATER);
-    setFill();
-    medium.addEventListener('change', () => requestAnimationFrame(setFill));
+    sizeGame();
+    new ResizeObserver(sizeGame).observe(stage);
 
     stage.addEventListener('pointerdown', event => {
       if (wrap.contains(event.target)) return;
