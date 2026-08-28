@@ -28,6 +28,8 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Stage static site
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
         run: |
           rm -rf _site
           mkdir -p _site/tide2
@@ -37,11 +39,18 @@ jobs:
           cp tide2/minigame-fix.js _site/tide2/minigame-fix.js
           python3 - <<'PY'
           from pathlib import Path
+          import os, re
+
           page = Path('_site/tide2/index.html')
           html = page.read_text()
-          tags = '<script src="./minigame.js"></script>\n<script src="./minigame-fix.js"></script>'
-          if '<script src="./minigame-fix.js"></script>' not in html:
-              html = html.replace('</body>', tags + '\n</body>')
+          sha = os.environ['DEPLOY_SHA']
+
+          html = re.sub(r'\s*<script src="\./minigame(?:-fix)?\.js(?:\?v=[^"]*)?"></script>', '', html)
+          tags = (
+              f'<script src="./minigame.js?v={sha}"></script>\n'
+              f'<script src="./minigame-fix.js?v={sha}"></script>'
+          )
+          html = html.replace('</body>', tags + '\n</body>')
           page.write_text(html)
           PY
           touch _site/.nojekyll
