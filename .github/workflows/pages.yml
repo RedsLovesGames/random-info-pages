@@ -34,13 +34,14 @@ jobs:
           cp index.html _site/index.html
           cp tide2/index.html _site/tide2/index.html
           cp tide2/minigame.js _site/tide2/minigame.js
+          cp tide2/minigame-fix.js _site/tide2/minigame-fix.js
           python3 - <<'PY'
           from pathlib import Path
           page = Path('_site/tide2/index.html')
           html = page.read_text()
-          tag = '<script src="./minigame.js"></script>'
-          if tag not in html:
-              html = html.replace('</body>', tag + '\n</body>')
+          tags = '<script src="./minigame.js"></script>\n<script src="./minigame-fix.js"></script>'
+          if '<script src="./minigame-fix.js"></script>' not in html:
+              html = html.replace('</body>', tags + '\n</body>')
           page.write_text(html)
           PY
           touch _site/.nojekyll
