@@ -37,6 +37,7 @@ jobs:
           cp tide2/index.html _site/tide2/index.html
           cp tide2/minigame.js _site/tide2/minigame.js
           cp tide2/minigame-fix.js _site/tide2/minigame-fix.js
+          cp tide2/minigame-clean.js _site/tide2/minigame-clean.js
           python3 - <<'PY'
           from pathlib import Path
           import os, re
@@ -45,10 +46,11 @@ jobs:
           html = page.read_text()
           sha = os.environ['DEPLOY_SHA']
 
-          html = re.sub(r'\s*<script src="\./minigame(?:-fix)?\.js(?:\?v=[^"]*)?"></script>', '', html)
+          html = re.sub(r'\s*<script src="\./minigame(?:-fix|-clean)?\.js(?:\?v=[^"]*)?"></script>', '', html)
           tags = (
               f'<script src="./minigame.js?v={sha}"></script>\n'
-              f'<script src="./minigame-fix.js?v={sha}"></script>'
+              f'<script src="./minigame-fix.js?v={sha}"></script>\n'
+              f'<script src="./minigame-clean.js?v={sha}"></script>'
           )
           html = html.replace('</body>', tags + '\n</body>')
           page.write_text(html)
