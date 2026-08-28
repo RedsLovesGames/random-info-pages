@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#061014">
+<title>Fishing 2.0 Mechanics Reference</title>
+<link rel="stylesheet" href="./guide.css">
+</head>
+<body>
+<main class="wrap" style="padding:56px 0 80px;max-width:960px">
+<a class="tag" href="./" style="text-decoration:none">← Back to Fishing 2.0 guide</a>
+<div class="eyebrow" style="margin-top:32px">Maintained mechanics reference</div>
+<h1 style="font-size:clamp(3rem,8vw,5.4rem)">Fishing 2.0<br>exact numbers</h1>
+<p class="hero-copy">A compact readable reference for the constants used by the player guide. This page mirrors the authoritative Tideborne Fishing System 2.0 mechanics currently used by the guide without linking players to an unavailable project document.</p>
+<section class="section"><div class="section-head"><div class="num">01</div><div><h2>Species selection</h2></div></div><article class="card"><p>Fishing Luck changes eligible fish selection weight only.</p><code class="formula">W' = W × (1 + C × √max(L, 0))
+
+Rarity coefficients
+1★ 0.00
+2★ 0.08
+3★ 0.16
+4★ 0.24
+5★ 0.32</code><p style="margin-top:12px">The resulting weights are normalized against every other eligible fish, so weight multiplier is not the same thing as final catch probability.</p></article></section>
+<section class="section"><div class="section-head"><div class="num">02</div><div><h2>Standard specimen traits</h2></div></div><article class="card"><p>Body Type and Condition start at 5%. Pigmentation starts at 1.5%. Body Type, Condition and Pigmentation use rarity compensation, then Trait Luck.</p><code class="formula">Trait Luck
+P' = 1 - (1 - P)^(1 + T / 10)
+
+Rarity compensation
+1★ ×1.00
+2★ ×1.15
+3★ ×1.40
+4★ ×1.80
+5★ ×2.40</code><p style="margin-top:12px">On a Perfect Catch, Body Type gets an additional ×1.25 event multiplier before rarity compensation and Trait Luck. Perfect Catch also contributes +10 temporary Trait Luck.</p><div class="stat-grid" style="margin-top:14px"><div class="stat"><small>Condition split</small><strong>65% Scarred / 35% Parasite-Ridden</strong></div><div class="stat"><small>Pigmentation split</small><strong>70% Albino / 30% Iridescent</strong></div></div></article></section>
+<section class="section"><div class="section-head"><div class="num">03</div><div><h2>Body Type subtype</h2></div></div><article class="card"><code class="formula">giantProbability = 0.25 + 0.50 × (percentile / 100)
+dwarfProbability = 1 - giantProbability</code><p style="margin-top:12px">This subtype calculation happens only if the Body Type event triggers. Giant remains possible at the low end and Dwarf remains possible at the high end.</p></article></section>
+<section class="section"><div class="section-head"><div class="num">04</div><div><h2>Perfect Specimen</h2></div></div><article class="card"><div class="stat-grid"><div class="stat"><small>Below P95</small><strong>0%</strong></div><div class="stat"><small>P95</small><strong>2%</strong></div><div class="stat"><small>P97.5</small><strong>8%</strong></div><div class="stat"><small>P99</small><strong>25%</strong></div><div class="stat"><small>P99.9+</small><strong>60%</strong></div></div><p style="margin-top:14px">Interpolate linearly between anchors. Apply total Trait Luck next. Quality intentionally does not use rarity compensation. On a Perfect Catch, apply the direct quality second opportunity after Trait Luck:</p><code class="formula">Pperfect = 1 - (1 - Pluck)²</code></article></section>
+<section class="section"><div class="section-head"><div class="num">05</div><div><h2>Trait Momentum</h2></div></div><article class="card"><p>Momentum is persistent per player and per species, with a cap of 15. A fully normal catch adds +1 for that species. A notable Body Type, Condition, Pigmentation or Quality result resets that species' Momentum to 0. Momentum contributes temporary Trait Luck to future catches of that species.</p></article></section>
+<section class="section"><div class="section-head"><div class="num">06</div><div><h2>FishScore V2</h2></div></div><article class="card"><code class="formula">Raw = Species Points + 3 × Specimen Percentile + Trait Points
+
+Species Points
+1★ 50
+2★ 100
+3★ 175
+4★ 250
+5★ 350
+
+Trait Points
+Scarred +20
+Parasite-Ridden +35
+Giant +40
+Dwarf +40
+Albino +70
+Iridescent +100
+Perfect Specimen +100
+
+Raw minimum = 50
+Raw maximum = 925
+
+FishScore = round(1 + 2999 × ((Raw - 50) / 875))
+Clamp to 1 through 3000</code></article></section>
+<section class="section"><div class="section-head"><div class="num">07</div><div><h2>Perfect Catch</h2></div></div><article class="card"><p>Perfect Catch uses Tide's center-zone skill check. It does not reroll species or natural percentile. It contributes +10 temporary Trait Luck, multiplies the Body Type event chance by ×1.25, and gives Perfect Specimen its dedicated second-opportunity quality reward.</p></article></section>
+<p class="source">This reference is maintained alongside the player guide from the Tideborne Fishing System 2.0 project specification and frozen mechanic updates.</p>
+</main>
+</body>
+</html>
