@@ -28,5 +28,27 @@ function button(root,label,sub,fn){const b=document.createElement('button');b.cl
 const sroot=document.getElementById('selectionPresets'),oroot=document.getElementById('overlapPresets');select.forEach(([l,a])=>button(sroot,l,`${a.length} person${a.length===1?'':'s'}`,()=>{K.forEach(k=>els[k].checked=a.includes(k));mode={type:'base'};render()}));overlap.forEach(([l,m])=>button(oroot,l,m.kind==='exact'?'Exact combo only':'Category filter',()=>{K.forEach(k=>els[k].checked=true);mode={type:'filter',...m};render()}));
 K.concat('overlaps').forEach(k=>els[k].addEventListener('change',()=>{mode={type:'base'};render()}));
 const legend=document.getElementById('legend');[...K.map(k=>[PEOPLE[k].display,PEOPLE[k].color,'Person']),...Object.entries(PAIRS).map(([k,c])=>[comboNames(k.split('_')),c,'2-person']),...Object.entries(TRIPLES).map(([k,c])=>[comboNames(k.split('_')),c,'3-person']),['All 4',QUAD,'4-person']].forEach(([l,c,t])=>{const d=document.createElement('div');d.className='legend-item';d.innerHTML=`<i class="swatch" style="background:rgb(${c})"></i><b>${l}</b><span>${t}</span>`;legend.appendChild(d)});
-const tables=document.getElementById('tables');K.forEach(k=>{const d=document.createElement('div');d.className='table-card';d.innerHTML=`<h3>${PEOPLE[k].display}</h3><table><thead><tr><th>Circle</th><th>X</th><th>Y</th><th>R</th><th>A</th></tr></thead><tbody>${PEOPLE[k].circles.map(q=>`<tr><td>${q[0]}</td><td>${q[1].toFixed(2)}</td><td>${q[2].toFixed(2)}</td><td>${q[3]}</td><td>${q[4].toFixed(2)}</td></tr>`).join('')}</tbody></table>`;tables.appendChild(d)});
+
+const tables=document.getElementById('tables');
+const coordinateView=document.getElementById('coordinateView');
+const circleFilter=document.getElementById('circleFilter');
+const coordinateSort=document.getElementById('coordinateSort');
+const coordinateHint=document.getElementById('coordinateHint');
+const CIRCLE_NAMES=PEOPLE[K[0]].circles.map(q=>q[0]);
+CIRCLE_NAMES.forEach((name,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=name;circleFilter.appendChild(o)});
+const ALL_COMBOS=[...K.map(k=>[k]),...combos(2),...combos(3),K];
+function coordinateRowsSort(rows){const s=coordinateSort.value;if(s==='default')return rows;const copy=[...rows];if(s==='xAsc')copy.sort((a,b)=>a.x-b.x);if(s==='xDesc')copy.sort((a,b)=>b.x-a.x);if(s==='yAsc')copy.sort((a,b)=>a.y-b.y);if(s==='yDesc')copy.sort((a,b)=>b.y-a.y);return copy}
+function circleAverage(members,index){const qs=members.map(k=>PEOPLE[k].circles[index]);return{x:qs.reduce((s,q)=>s+q[1],0)/qs.length,y:qs.reduce((s,q)=>s+q[2],0)/qs.length,r:qs.reduce((s,q)=>s+q[3],0)/qs.length,a:qs.reduce((s,q)=>s+q[4],0)/qs.length}}
+function comboLabel(members){const c=exactColor(members);return `<span class="combo-label"><i class="combo-swatch" style="background:rgb(${c.join(',')})"></i>${comboNames(members)}</span>`}
+function card(title,sub,head,body){const d=document.createElement('div');d.className='table-card';d.innerHTML=`<h3>${title}</h3>${sub?`<span class="card-sub">${sub}</span>`:''}<table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`;tables.appendChild(d)}
+function selectedCircleIndexes(){return circleFilter.value==='all'?CIRCLE_NAMES.map((_,i)=>i):[Number(circleFilter.value)]}
+function renderCoordinateTables(){tables.innerHTML='';tables.classList.toggle('circle-view',coordinateView.value!=='person');const indexes=selectedCircleIndexes();if(coordinateView.value==='person'){
+ coordinateHint.textContent='By person shows each result’s original circles. Choose one circle or sort the visible circle rows by X or Y.';
+ K.forEach(k=>{let rows=indexes.map(i=>{const q=PEOPLE[k].circles[i];return{name:q[0],x:q[1],y:q[2],r:q[3],a:q[4],i}});rows=coordinateRowsSort(rows);card(PEOPLE[k].display,'Original formula-derived circle coordinates',['Circle','X','Y','R','A'],rows.map(r=>`<tr><td>${r.name}</td><td>${r.x.toFixed(2)}</td><td>${r.y.toFixed(2)}</td><td>${r.r.toFixed(0)}</td><td>${r.a.toFixed(2)}</td></tr>`).join(''))});
+ return}
+ const allCombos=coordinateView.value==='circleCombos';coordinateHint.textContent=allCombos?'Every circle is grouped across all 15 non-empty person combinations. Pair, triple, and all-four coordinates are arithmetic means of the member circles.':'Each circle is grouped across Aiden, Tommy, Justin, and Taylor so the same circle can be compared directly.';
+ indexes.forEach(i=>{let rows=(allCombos?ALL_COMBOS:K.map(k=>[k])).map((members,order)=>{const q=circleAverage(members,i);return{members,order,...q}});rows=coordinateRowsSort(rows);card(CIRCLE_NAMES[i],allCombos?'15 combinations: 4 singles, 6 pairs, 4 triples, and all 4':'Direct comparison of the same circle across everyone',['Result / combo','X','Y','R','A'],rows.map(r=>`<tr><td>${comboLabel(r.members)}</td><td>${r.x.toFixed(2)}</td><td>${r.y.toFixed(2)}</td><td>${r.r.toFixed(0)}</td><td>${r.a.toFixed(2)}</td></tr>`).join(''))})}
+[coordinateView,circleFilter,coordinateSort].forEach(el=>el.addEventListener('change',renderCoordinateTables));
+renderCoordinateTables();
+
 const bg=new Image();bg.crossOrigin='anonymous';bg.onload=()=>{ctx.drawImage(bg,0,0,W,H);bgData=ctx.getImageData(0,0,W,H);render()};bg.onerror=()=>{ctx.fillStyle='white';ctx.fillRect(0,0,W,H);ctx.fillStyle='black';ctx.font='34px Arial';ctx.fillText('Could not load 10Groups heatmap background.',70,100)};bg.src='https://10groups.github.io/heatmap_img.png';
