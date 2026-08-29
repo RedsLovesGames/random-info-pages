@@ -7,6 +7,7 @@ const singleSizeFilters=document.getElementById('singleSizeFilters');
 const singleComboWrap=document.getElementById('singleComboWrap');
 const singleComboSelect=document.getElementById('singleComboSelect');
 const singleShowCenters=document.getElementById('singleShowCenters');
+const singleShowAverage=document.getElementById('singleShowAverage');
 const singleCircleTitle=document.getElementById('singleCircleTitle');
 const singleCircleHint=document.getElementById('singleCircleHint');
 const singleCircleLegend=document.getElementById('singleCircleLegend');
@@ -45,11 +46,22 @@ function singleItems(){
  if(m==='people')return singleSelectedPeople().map(person=>itemForMembers([person],i));
  if(m==='exact')return[itemForMembers(comboMembersFromKey(singleComboSelect.value||key(K)),i)];
  const sizes=new Set(selectedComboSizes());
- return ALL_COMBOS.filter(members=>sizes.has(members.length)).map(members=>itemForMembers(members,i));
+ const allowed=new Set(singleSelectedPeople());
+ return ALL_COMBOS.filter(members=>sizes.has(members.length)&&members.every(person=>allowed.has(person))).map(members=>itemForMembers(members,i));
+}
+function singleAverageMembers(mode){
+ if(mode==='exact')return comboMembersFromKey(singleComboSelect.value||key(K));
+ return singleSelectedPeople();
+}
+function singleAverageItem(mode,i){
+ if(!singleShowAverage.checked)return null;
+ const members=singleAverageMembers(mode);
+ if(!members.length)return null;
+ return{members,...circleAverage(members,i),average:true};
 }
 function updateSingleFilterVisibility(){
  const m=singleCircleMode.value;
- singlePeopleFilters.hidden=m!=='people';
+ singlePeopleFilters.hidden=m==='exact';
  singleSizeFilters.hidden=m!=='all';
  singleComboWrap.hidden=m!=='exact';
 }
@@ -86,36 +98,80 @@ function drawSingleItem(item,mode,itemCount){
  }
  singleCtx.restore();
 }
+function drawSingleAverage(item){
+ singleCtx.save();
+ singleCtx.beginPath();
+ singleCtx.arc(item.x,item.y,item.r,0,Math.PI*2);
+ singleCtx.setLineDash([20,13]);
+ singleCtx.lineWidth=10;
+ singleCtx.strokeStyle='rgba(15,23,42,.90)';
+ singleCtx.stroke();
+ singleCtx.beginPath();
+ singleCtx.arc(item.x,item.y,item.r,0,Math.PI*2);
+ singleCtx.lineWidth=5;
+ singleCtx.strokeStyle='rgba(255,255,255,.98)';
+ singleCtx.stroke();
+ singleCtx.setLineDash([]);
+ singleCtx.translate(item.x,item.y);
+ singleCtx.shadowColor='rgba(0,0,0,.55)';
+ singleCtx.shadowBlur=8;
+ singleCtx.beginPath();
+ singleCtx.moveTo(0,-18);
+ singleCtx.lineTo(18,0);
+ singleCtx.lineTo(0,18);
+ singleCtx.lineTo(-18,0);
+ singleCtx.closePath();
+ singleCtx.fillStyle='#fff';
+ singleCtx.fill();
+ singleCtx.lineWidth=6;
+ singleCtx.strokeStyle='#111827';
+ singleCtx.stroke();
+ singleCtx.shadowBlur=0;
+ singleCtx.beginPath();
+ singleCtx.arc(0,0,4,0,Math.PI*2);
+ singleCtx.fillStyle='#111827';
+ singleCtx.fill();
+ singleCtx.restore();
+}
 function legendItem(item){
  const c=exactColor(item.members),n=item.members.length;
  const d=document.createElement('div');d.className='single-legend-item';
  d.innerHTML=`<i class="swatch" style="background:rgb(${c.join(',')})"></i><b>${comboNames(item.members)}</b><span>${n===1?'person':`${n}-person combo`}</span>`;
  return d;
 }
-function currentHint(mode,items){
+function averageLegendItem(members){
+ const d=document.createElement('div');d.className='single-legend-item single-average-legend';
+ d.innerHTML=`<i class="avg-symbol single-avg-symbol"></i><b>Average</b><span>${comboNames(members)}</span>`;
+ return d;
+}
+function currentHint(mode,items,averageItem){
+ const avgText=averageItem?` The white dashed circle and diamond are the average of ${comboNames(averageItem.members)}.`:'';
  if(mode==='people'){
   const selected=singleSelectedPeople();
-  return selected.length?`Showing this circle for ${selected.map(k=>PEOPLE[k].display).join(', ')}. These filters are independent from the main heatmap above.`:'No people are selected. Turn on at least one person below Display.';
+  return selected.length?`Showing this circle for ${selected.map(k=>PEOPLE[k].display).join(', ')}. These filters are independent from the main heatmap above.${avgText}`:'No people are selected. Turn on at least one person below Display.';
  }
  if(mode==='all'){
-  const sizes=selectedComboSizes();
-  return sizes.length?`Showing ${items.length} combination${items.length===1?'':'s'} for this circle. Included sizes: ${sizes.map(n=>n===1?'singles':n===2?'pairs':n===3?'triples':'all 4').join(', ')}.`:'No combo sizes are selected. Enable Singles, Pairs, Triples, or All 4.';
+  const sizes=selectedComboSizes(),selected=singleSelectedPeople();
+  if(!selected.length)return'No people are selected. Enable at least one person to build combinations.';
+  return sizes.length?`Showing ${items.length} combination${items.length===1?'':'s'} made only from ${selected.map(k=>PEOPLE[k].display).join(', ')}. Included sizes: ${sizes.map(n=>n===1?'singles':n===2?'pairs':n===3?'triples':'all 4').join(', ')}.${avgText}`:'No combo sizes are selected. Enable Singles, Pairs, Triples, or All 4.';
  }
- return`Showing only ${comboNames(comboMembersFromKey(singleComboSelect.value||key(K)))} for this circle. Combo centers are arithmetic means of the member circle centers.`;
+ return`Showing only ${comboNames(comboMembersFromKey(singleComboSelect.value||key(K)))} for this circle. Combo coordinates are arithmetic means of the member circle centers.${avgText}`;
 }
 function renderSingleCircle(){
  updateSingleFilterVisibility();
- const i=currentSingleCircleIndex(),mode=singleCircleMode.value,items=singleItems();
+ const i=currentSingleCircleIndex(),mode=singleCircleMode.value,items=singleItems(),averageItem=singleAverageItem(mode,i);
  singleCircleTitle.textContent=CIRCLE_NAMES[i];
- singleCircleHint.textContent=currentHint(mode,items);
+ singleCircleHint.textContent=currentHint(mode,items,averageItem);
  singleCircleLegend.innerHTML='';
  items.forEach(item=>singleCircleLegend.appendChild(legendItem(item)));
+ if(averageItem)singleCircleLegend.appendChild(averageLegendItem(averageItem.members));
  if(!singleBgReady)return;
  singleCtx.clearRect(0,0,W,H);
  singleCtx.drawImage(singleBg,0,0,W,H);
  const drawItems=[...items];
  if(mode==='all')drawItems.sort((a,b)=>b.members.length-a.members.length);
  drawItems.forEach(item=>drawSingleItem(item,mode,drawItems.length));
+ if(averageItem)drawSingleAverage(averageItem);
 }
 
 singleCircleSelect.addEventListener('change',()=>{
@@ -125,6 +181,7 @@ singleCircleSelect.addEventListener('change',()=>{
 singleCircleMode.addEventListener('change',renderSingleCircle);
 singleComboSelect.addEventListener('change',renderSingleCircle);
 singleShowCenters.addEventListener('change',renderSingleCircle);
+singleShowAverage.addEventListener('change',renderSingleCircle);
 Object.values(singlePersonChecks).forEach(el=>el.addEventListener('change',renderSingleCircle));
 Object.values(singleSizeChecks).forEach(el=>el.addEventListener('change',renderSingleCircle));
 
