@@ -33,9 +33,8 @@ jobs:
         run: |
           rm -rf _site
           mkdir -p _site/tide2
-          mkdir -p _site/heatmap
           cp index.html _site/index.html
-          cp heatmap/index.html _site/heatmap/index.html
+          cp -r heatmap _site/heatmap
           cp tide2/index.html _site/tide2/index.html
           cp tide2/mechanics-reference.html _site/tide2/mechanics-reference.html
           cp tide2/guide.css _site/tide2/guide.css
