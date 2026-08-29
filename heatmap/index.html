@@ -208,14 +208,14 @@ function mixColor(keys) {
   return sums.map(v => Math.round(v / keys.length));
 }
 
-const PAIR_COLORS = {
-  "aiden_tommy": mixColor(["aiden","tommy"]),
-  "aiden_justin": mixColor(["aiden","justin"]),
-  "aiden_taylor": mixColor(["aiden","taylor"]),
-  "justin_taylor": mixColor(["justin","taylor"]),
-  "tommy_justin": mixColor(["tommy","justin"]),
-  "tommy_taylor": mixColor(["tommy","taylor"])
-};
+const PAIR_COLORS = {};
+for (let i = 0; i < PERSON_KEYS.length; i++) {
+  for (let j = i + 1; j < PERSON_KEYS.length; j++) {
+    const a = PERSON_KEYS[i];
+    const b = PERSON_KEYS[j];
+    PAIR_COLORS[pairKey(a, b)] = mixColor([a, b]);
+  }
+}
 
 function buildTables() {
   const root = document.getElementById("tables");
@@ -303,7 +303,7 @@ function renderBaseView() {
       color = [sr / sw, sg / sw, sb / sw];
       alpha = a;
     } else if (present.length === 2) {
-      color = PAIR_COLORS[pairKey(present[0], present[1])];
+      color = PAIR_COLORS[pairKey(present[0], present[1])] || mixColor([present[0], present[1]]);
       alpha = Math.min(0.94, Math.max(vals[present[0]], vals[present[1]]) * 1.9);
     } else {
       color = [255, 255, 255];
@@ -344,7 +344,7 @@ function renderSpecialMode(mode) {
     if (mode === "anyoverlap" && present.length >= 2) {
       show = true;
       if (present.length === 2) {
-        color = PAIR_COLORS[pairKey(present[0], present[1])];
+        color = PAIR_COLORS[pairKey(present[0], present[1])] || mixColor([present[0], present[1]]);
         alpha = Math.min(0.94, Math.max(vals[present[0]], vals[present[1]]) * 1.9);
       } else {
         color = [255, 255, 255];
@@ -354,7 +354,7 @@ function renderSpecialMode(mode) {
 
     if (mode === "paironly" && present.length === 2) {
       show = true;
-      color = PAIR_COLORS[pairKey(present[0], present[1])];
+      color = PAIR_COLORS[pairKey(present[0], present[1])] || mixColor([present[0], present[1]]);
       alpha = Math.min(0.95, Math.max(vals[present[0]], vals[present[1]]) * 1.95);
     }
 
