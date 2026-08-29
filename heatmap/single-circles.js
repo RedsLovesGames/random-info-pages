@@ -21,7 +21,7 @@ function currentSingleCircleIndex(){return Number(singleCircleSelect.value||0)}
 function comboMembersFromKey(k){return k.split('_').filter(Boolean)}
 function singleItems(){
  const i=currentSingleCircleIndex(),m=singleCircleMode.value;
- if(m==='people')return active().map(members=>{const q=PEOPLE[members].circles[i];return{members:[members],x:q[1],y:q[2],r:q[3],a:q[4]}});
+ if(m==='people')return active().map(person=>{const q=PEOPLE[person].circles[i];return{members:[person],x:q[1],y:q[2],r:q[3],a:q[4]}});
  if(m==='exact'){
   const members=comboMembersFromKey(singleComboSelect.value||key(K));
   return [{members,...circleAverage(members,i)}];
@@ -29,10 +29,10 @@ function singleItems(){
  return ALL_COMBOS.map(members=>({members,...circleAverage(members,i)}));
 }
 function fillAlpha(item,mode){
- if(mode==='people')return Math.min(.82,.24+item.a*1.12);
+ if(mode==='people')return Math.min(0.82,0.24+item.a*1.12);
  const n=item.members.length;
- if(mode==='exact')return n===1?.72:n===2?.76:n===3?.80:.84;
- return n===1?.24:n===2?.28:n===3?.32:.38;
+ if(mode==='exact')return n===1 ? 0.72 : n===2 ? 0.76 : n===3 ? 0.80 : 0.84;
+ return n===1 ? 0.24 : n===2 ? 0.28 : n===3 ? 0.32 : 0.38;
 }
 function drawSingleItem(item,mode){
  const color=exactColor(item.members),a=fillAlpha(item,mode);
@@ -41,12 +41,12 @@ function drawSingleItem(item,mode){
  singleCtx.arc(item.x,item.y,item.r,0,Math.PI*2);
  singleCtx.fillStyle=rgba(color,a);
  singleCtx.fill();
- singleCtx.lineWidth=mode==='all'?3:6;
- singleCtx.strokeStyle=rgba(color,mode==='all'?.78:.96);
+ singleCtx.lineWidth=mode==='all' ? 3 : 6;
+ singleCtx.strokeStyle=rgba(color,mode==='all' ? 0.78 : 0.96);
  singleCtx.stroke();
  if(singleShowCenters.checked){
   singleCtx.beginPath();
-  singleCtx.arc(item.x,item.y,mode==='all'?6:9,0,Math.PI*2);
+  singleCtx.arc(item.x,item.y,mode==='all' ? 6 : 9,0,Math.PI*2);
   singleCtx.fillStyle=rgba(color,1);
   singleCtx.fill();
   singleCtx.lineWidth=2;
@@ -58,7 +58,7 @@ function drawSingleItem(item,mode){
 function legendItem(item){
  const c=exactColor(item.members),n=item.members.length;
  const d=document.createElement('div');d.className='single-legend-item';
- d.innerHTML=`<i class="swatch" style="background:rgb(${c.join(',')})"></i><b>${comboNames(item.members)}</b><span>${n===1?'person':`${n}-person combo`}</span>`;
+ d.innerHTML=`<i class="swatch" style="background:rgb(${c.join(',')})"></i><b>${comboNames(item.members)}</b><span>${n===1 ? 'person' : `${n}-person combo`}</span>`;
  return d;
 }
 function renderSingleCircle(){
