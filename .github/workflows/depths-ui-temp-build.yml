@@ -1,0 +1,40 @@
+name: Depths UI Temp Build
+
+on:
+  push:
+    branches: [ temp-depths-ui-build ]
+    paths:
+      - 'depths-ui-build/**'
+      - '.github/workflows/depths-ui-temp-build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.5.1'
+      - name: Extract source
+        shell: bash
+        run: |
+          cd depths-ui-build
+          base64 -d source.tgz.b64 > source.tgz
+          tar -xzf source.tgz
+          rm -f source.tgz
+      - name: Build
+        working-directory: depths-ui-build
+        run: gradle build --stacktrace --no-daemon
+      - name: Upload built jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: the-depths-ui-0.2.0-built
+          path: |
+            depths-ui-build/build/libs/*.jar
+          if-no-files-found: error
