@@ -35,7 +35,6 @@ jobs:
           import json
           root = Path('depths-ui-build')
 
-          # 1) Java 1.21.1 AbstractButton narration requirement.
           p = root/'src/client/java/com/redgames/depthsui/widget/DepthsButton.java'
           s = p.read_text()
           if 'NarrationElementOutput' not in s:
@@ -45,13 +44,9 @@ jobs:
               s = s.replace(needle, '    @Override\n    protected void updateWidgetNarration(NarrationElementOutput output) {\n        this.defaultButtonNarrationText(output);\n    }\n\n' + needle)
           p.write_text(s)
 
-          # 2) Version.
           p = root/'gradle.properties'
-          s = p.read_text().replace('mod_version=0.2.0', 'mod_version=0.3.0')
-          p.write_text(s)
+          p.write_text(p.read_text().replace('mod_version=0.2.0', 'mod_version=0.3.0'))
 
-          # 3) Fix the actual title/menu blur: Depths screens paint their own scene,
-          # so prevent Screen.render() from applying the vanilla blur afterwards.
           p = root/'src/client/java/com/redgames/depthsui/screen/DepthsScreen.java'
           s = p.read_text()
           marker = '    protected void drawScene(GuiGraphics g) {'
@@ -60,12 +55,9 @@ jobs:
               s = s.replace(marker, override + marker)
           p.write_text(s)
 
-          # 4) Correct footer version.
           p = root/'src/client/java/com/redgames/depthsui/screen/DepthsTitleScreen.java'
-          s = p.read_text().replace('FABRIC 1.21.1  •  UI 0.2', 'FABRIC 1.21.1  •  UI 0.3')
-          p.write_text(s)
+          p.write_text(p.read_text().replace('FABRIC 1.21.1  •  UI 0.2', 'FABRIC 1.21.1  •  UI 0.3'))
 
-          # 5) Physics-safe cleanup: no startup/world-loading or settings hooks.
           for rel in [
               'src/client/java/com/redgames/depthsui/util/LoadingOverlayRenderer.java',
               'src/client/java/com/redgames/depthsui/mixin/LoadingOverlayMixin.java',
@@ -76,6 +68,13 @@ jobs:
               q = root/rel
               if q.exists(): q.unlink()
 
+          # Remove the unused legacy mc() helper from the final runtime too.
+          p = root/'src/client/java/com/redgames/depthsui/util/DepthsTheme.java'
+          s = p.read_text()
+          s = s.replace('import net.minecraft.client.Minecraft;\n', '')
+          s = s.replace('\n    public static Minecraft mc() {\n        return Minecraft.getInstance();\n    }\n', '\n')
+          p.write_text(s)
+
           mix = root/'src/client/resources/the_depths_ui.client.mixins.json'
           mix.write_text(json.dumps({
               'required': True,
@@ -85,9 +84,9 @@ jobs:
               'injectors': {'defaultRequire': 1}
           }, indent=2) + '\n')
 
-          # Assert the build source matches the cleaned runtime contract.
           assert 'void renderBackground(' in (root/'src/client/java/com/redgames/depthsui/screen/DepthsScreen.java').read_text()
           assert 'mod_version=0.3.0' in (root/'gradle.properties').read_text()
+          assert 'public static Minecraft mc()' not in (root/'src/client/java/com/redgames/depthsui/util/DepthsTheme.java').read_text()
           assert json.loads(mix.read_text())['client'] == ['MinecraftScreenRedirectMixin', 'CreateWorldScreenInvoker']
       - name: Build
         working-directory: depths-ui-build
@@ -105,6 +104,6 @@ jobs:
       - name: Upload built jar
         uses: actions/upload-artifact@v4
         with:
-          name: the-depths-ui-0.3.0-built-clean
+          name: the-depths-ui-0.3.0-built-clean-final
           path: depths-ui-build/build/libs/*.jar
           if-no-files-found: error
