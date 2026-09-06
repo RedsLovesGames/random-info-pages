@@ -28,24 +28,83 @@ jobs:
           base64 -d source.b64 > source.tgz
           echo '1e6563d36c13ffe4d50d1de4140631654a1b36efa009b944705802cf6de08673  source.tgz' | sha256sum -c -
           tar -xzf source.tgz
-      - name: Apply compile fixes
+      - name: Apply 0.3.0 cleanup and compile fixes
         shell: python
         run: |
           from pathlib import Path
-          p = Path('depths-ui-build/src/client/java/com/redgames/depthsui/widget/DepthsButton.java')
+          import json
+          root = Path('depths-ui-build')
+
+          # 1) Java 1.21.1 AbstractButton narration requirement.
+          p = root/'src/client/java/com/redgames/depthsui/widget/DepthsButton.java'
           s = p.read_text()
-          s = s.replace('import net.minecraft.client.gui.components.AbstractButton;\n', 'import net.minecraft.client.gui.components.AbstractButton;\nimport net.minecraft.client.gui.narration.NarrationElementOutput;\n')
+          if 'NarrationElementOutput' not in s:
+              s = s.replace('import net.minecraft.client.gui.components.AbstractButton;\n', 'import net.minecraft.client.gui.components.AbstractButton;\nimport net.minecraft.client.gui.narration.NarrationElementOutput;\n')
           needle = '    @Override\n    public void onPress() {'
-          replacement = '    @Override\n    protected void updateWidgetNarration(NarrationElementOutput output) {\n        this.defaultButtonNarrationText(output);\n    }\n\n' + needle
           if 'updateWidgetNarration' not in s:
-              s = s.replace(needle, replacement)
+              s = s.replace(needle, '    @Override\n    protected void updateWidgetNarration(NarrationElementOutput output) {\n        this.defaultButtonNarrationText(output);\n    }\n\n' + needle)
           p.write_text(s)
+
+          # 2) Version.
+          p = root/'gradle.properties'
+          s = p.read_text().replace('mod_version=0.2.0', 'mod_version=0.3.0')
+          p.write_text(s)
+
+          # 3) Fix the actual title/menu blur: Depths screens paint their own scene,
+          # so prevent Screen.render() from applying the vanilla blur afterwards.
+          p = root/'src/client/java/com/redgames/depthsui/screen/DepthsScreen.java'
+          s = p.read_text()
+          marker = '    protected void drawScene(GuiGraphics g) {'
+          override = '''    @Override\n    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {\n        // Depths screens render their own crisp background.\n    }\n\n'''
+          if 'void renderBackground(' not in s:
+              s = s.replace(marker, override + marker)
+          p.write_text(s)
+
+          # 4) Correct footer version.
+          p = root/'src/client/java/com/redgames/depthsui/screen/DepthsTitleScreen.java'
+          s = p.read_text().replace('FABRIC 1.21.1  •  UI 0.2', 'FABRIC 1.21.1  •  UI 0.3')
+          p.write_text(s)
+
+          # 5) Physics-safe cleanup: no startup/world-loading or settings hooks.
+          for rel in [
+              'src/client/java/com/redgames/depthsui/util/LoadingOverlayRenderer.java',
+              'src/client/java/com/redgames/depthsui/mixin/LoadingOverlayMixin.java',
+              'src/client/java/com/redgames/depthsui/mixin/LevelLoadingScreenMixin.java',
+              'src/client/java/com/redgames/depthsui/mixin/ReceivingLevelScreenMixin.java',
+              'src/client/java/com/redgames/depthsui/mixin/SettingsBackgroundMixin.java',
+          ]:
+              q = root/rel
+              if q.exists(): q.unlink()
+
+          mix = root/'src/client/resources/the_depths_ui.client.mixins.json'
+          mix.write_text(json.dumps({
+              'required': True,
+              'package': 'com.redgames.depthsui.mixin',
+              'compatibilityLevel': 'JAVA_21',
+              'client': ['MinecraftScreenRedirectMixin', 'CreateWorldScreenInvoker'],
+              'injectors': {'defaultRequire': 1}
+          }, indent=2) + '\n')
+
+          # Assert the build source matches the cleaned runtime contract.
+          assert 'void renderBackground(' in (root/'src/client/java/com/redgames/depthsui/screen/DepthsScreen.java').read_text()
+          assert 'mod_version=0.3.0' in (root/'gradle.properties').read_text()
+          assert json.loads(mix.read_text())['client'] == ['MinecraftScreenRedirectMixin', 'CreateWorldScreenInvoker']
       - name: Build
         working-directory: depths-ui-build
-        run: gradle build --stacktrace --no-daemon
+        run: gradle clean build --stacktrace --no-daemon
+      - name: Inspect runtime jar
+        shell: bash
+        run: |
+          JAR="depths-ui-build/build/libs/the-depths-ui-0.3.0.jar"
+          test -f "$JAR"
+          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsTitleScreen.class'
+          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsScreen.class'
+          unzip -l "$JAR" | grep -q 'the_depths_ui.client.mixins.json'
+          if unzip -l "$JAR" | grep -q 'LoadingOverlayMixin.class'; then exit 1; fi
+          if unzip -l "$JAR" | grep -q 'SettingsBackgroundMixin.class'; then exit 1; fi
       - name: Upload built jar
         uses: actions/upload-artifact@v4
         with:
-          name: the-depths-ui-0.2.0-built
+          name: the-depths-ui-0.3.0-built-clean
           path: depths-ui-build/build/libs/*.jar
           if-no-files-found: error
