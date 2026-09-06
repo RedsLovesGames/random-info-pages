@@ -1,4 +1,4 @@
-name: Depths UI 0.4 Build
+name: Depths UI 0.5 Build
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.5.1'
-      - name: Extract 0.4 source
+      - name: Extract 0.4 source and apply 0.5 patch
         shell: bash
         run: |
           cd depths-ui-build
@@ -28,25 +28,29 @@ jobs:
           base64 -d v04source.b64 > v04source.tgz
           echo '75ac4f65d7c126f7d4bcf1843c3f6789427990f463e90e9d184e7e687837f4a1  v04source.tgz' | sha256sum -c -
           tar -xzf v04source.tgz
+          echo '69360de22c1f9a4e4ba73d621aa15c292077835b43fa65e6a50aaf09db8d65a9  v05patch.b64' | sha256sum -c -
+          base64 -d v05patch.b64 > v05patch.tgz
+          echo '7924904ae9f7214680f740aee8b04897467be5e65596d8e6c5b0a70af22abc57  v05patch.tgz' | sha256sum -c -
+          tar -xzf v05patch.tgz
       - name: Build
         working-directory: depths-ui-build
         run: gradle clean build --stacktrace --no-daemon
       - name: Inspect runtime jar
         shell: bash
         run: |
-          JAR="depths-ui-build/build/libs/the-depths-ui-0.4.0.jar"
+          JAR="depths-ui-build/build/libs/the-depths-ui-0.5.0.jar"
           test -f "$JAR"
           unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsTitleScreen.class'
           unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsWorldSelectScreen.class'
+          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsMultiplayerScreen.class'
           unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsModsScreen.class'
           unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsPauseScreen.class'
-          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/util/DepthsModIconCache.class'
-          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/util/DepthsTypography.class'
-          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/mixin/HudSuppressMixin.class'
-          unzip -p "$JAR" the_depths_ui.client.mixins.json | grep -q 'HudSuppressMixin'
+          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/util/EssentialBridge.class'
+          if unzip -l "$JAR" | grep -q 'HudSuppressMixin.class'; then exit 1; fi
+          if unzip -p "$JAR" the_depths_ui.client.mixins.json | grep -q 'HudSuppressMixin'; then exit 1; fi
       - name: Upload built jar
         uses: actions/upload-artifact@v4
         with:
-          name: the-depths-ui-0.4.0-built
+          name: the-depths-ui-0.5.0-built
           path: depths-ui-build/build/libs/*.jar
           if-no-files-found: error
