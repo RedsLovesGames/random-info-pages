@@ -24,26 +24,21 @@ jobs:
         run: |
           set -euxo pipefail
           cd depths-ui-build
-
           cat v04chunk00 v04chunk01 v04chunk02 > v04source.b64
           test "$(wc -c < v04source.b64)" -eq 33036
           echo '8692c7e97c235c592a0fb2141a7afc1f8fa271a8c46bd9da3837c421d8045e7e  v04source.b64' | sha256sum -c -
           base64 -d v04source.b64 > v04source.tgz
           echo '75ac4f65d7c126f7d4bcf1843c3f6789427990f463e90e9d184e7e687837f4a1  v04source.tgz' | sha256sum -c -
           tar -xzf v04source.tgz
-
           echo '69360de22c1f9a4e4ba73d621aa15c292077835b43fa65e6a50aaf09db8d65a9  v05patch.b64' | sha256sum -c -
           base64 -d v05patch.b64 > v05patch.tgz
           echo '7924904ae9f7214680f740aee8b04897467be5e65596d8e6c5b0a70af22abc57  v05patch.tgz' | sha256sum -c -
           tar -xzf v05patch.tgz
           rm -f src/client/java/com/redgames/depthsui/mixin/HudSuppressMixin.java
-
           echo 'c4460aa82fabadb687dc0c66e68759d1af8951bcd5823afa40285c35ba3f3c20  v08patch.b64' | sha256sum -c -
           base64 -d v08patch.b64 > v08patch.tgz
           echo '379c1c75d4886f819e17dbcc127672045ed0685db9fa25894002aa182b4a049c  v08patch.tgz' | sha256sum -c -
           tar -xzf v08patch.tgz
-
-          # Merge all existing UI assets into Loom's client resource set.
           mkdir -p src/client/resources/assets
           if [ -d src/main/resources/assets ]; then
             cp -a src/main/resources/assets/. src/client/resources/assets/
@@ -52,7 +47,6 @@ jobs:
           rm -f src/client/resources/assets/the_depths_ui/textures/font/inter_*.png
           rm -f src/client/resources/assets/the_depths_ui/textures/font/gillius_*.png
           mkdir -p src/client/resources/assets/the_depths_ui/textures/font
-
           grep -q 'mod_version=0.8.0' gradle.properties
           grep -q 'ACCENT_FONT' src/client/java/com/redgames/depthsui/util/DepthsTypography.java
 
@@ -65,12 +59,9 @@ jobs:
           curl -L --fail --retry 3 --retry-delay 2 -A 'Mozilla/5.0' 'https://dl.dafont.com/dl/?f=ocean_2' -o /tmp/depths-fonts/ocean2.zip
           unzip -oq /tmp/depths-fonts/ocean.zip -d /tmp/depths-fonts/ocean
           unzip -oq /tmp/depths-fonts/ocean2.zip -d /tmp/depths-fonts/ocean2
-          find /tmp/depths-fonts/ocean -maxdepth 2 -type f -print
-          find /tmp/depths-fonts/ocean2 -maxdepth 2 -type f -print
           OCEAN=$(find /tmp/depths-fonts/ocean -type f \( -iname '*.ttf' -o -iname '*.otf' \) | head -1)
           OCEAN2=$(find /tmp/depths-fonts/ocean2 -type f \( -iname '*.ttf' -o -iname '*.otf' \) | head -1)
-          test -n "$OCEAN"
-          test -n "$OCEAN2"
+          test -n "$OCEAN"; test -n "$OCEAN2"
           echo "OCEAN_FILE=$OCEAN" >> "$GITHUB_ENV"
           echo "OCEAN2_FILE=$OCEAN2" >> "$GITHUB_ENV"
 
@@ -84,107 +75,53 @@ jobs:
           from pathlib import Path
           from PIL import Image, ImageDraw, ImageFont
           from fontTools.ttLib import TTFont
-
-          ocean = Path(os.environ['OCEAN_FILE'])
-          ocean2 = Path(os.environ['OCEAN2_FILE'])
-          out = Path('depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font')
-          out.mkdir(parents=True, exist_ok=True)
-
-          def font_names(path):
-              tt = TTFont(str(path), lazy=True)
-              vals = []
+          ocean=Path(os.environ['OCEAN_FILE']); ocean2=Path(os.environ['OCEAN2_FILE'])
+          out=Path('depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font'); out.mkdir(parents=True,exist_ok=True)
+          def cmap(path):
+              tt=TTFont(str(path),lazy=True); m=set((tt.getBestCmap() or {}).keys());
+              names=[]
               for rec in tt['name'].names:
-                  if rec.nameID in (1, 2, 4, 6):
+                  if rec.nameID in (1,2,4,6):
+                      try:s=rec.toUnicode().strip()
+                      except Exception:continue
+                      if s and s not in names:names.append(s)
+              tt.close(); print(path.name, names); return m
+          cmap1=cmap(ocean); cmap2=cmap(ocean2)
+          rows=[" !\"#$%&'()*+,-./","0123456789:;<=>?","@ABCDEFGHIJKLMNO","PQRSTUVWXYZ[\\]^_","`abcdefghijklmno","pqrstuvwxyz{|}~•"]
+          assert all(len(r)==16 for r in rows)
+          def atlas(primary,fallback,primary_map,fallback_map,dest,size,cw,ch,baseline_ratio):
+              img=Image.new('RGBA',(cw*16,ch*6),(0,0,0,0)); d=ImageDraw.Draw(img); cache={}
+              def getfont(path,n):
+                  key=(str(path),n); cache.setdefault(key,ImageFont.truetype(str(path),n)); return cache[key]
+              for ri,row in enumerate(rows):
+                  for ci,c in enumerate(row):
+                      if c==' ':continue
+                      src=primary if ord(c) in primary_map else fallback
+                      if src is None:continue
+                      n=size
+                      while True:
+                          f=getfont(src,n)
+                          try:box=d.textbbox((0,0),c,font=f,anchor='ls')
+                          except Exception:box=d.textbbox((0,0),c,font=f)
+                          l,t,r,b=box
+                          if ((r-l)<=cw-8 and (b-t)<=ch-8) or n<=12:break
+                          n-=1
+                      x0=ci*cw; y0=ri*ch; baseline=int(ch*baseline_ratio)
                       try:
-                          s = rec.toUnicode().strip()
+                          l,t,r,b=d.textbbox((0,0),c,font=f,anchor='ls'); x=x0+(cw-(r-l))//2-l; y=y0+baseline
+                          d.text((x,y),c,font=f,fill=(255,255,255,255),anchor='ls')
                       except Exception:
-                          continue
-                      if s and s not in vals:
-                          vals.append(s)
-              cmap = set((tt.getBestCmap() or {}).keys())
-              tt.close()
-              return vals, cmap
-
-          n1, cmap1 = font_names(ocean)
-          n2, cmap2 = font_names(ocean2)
-          print('Ocean metadata:', n1)
-          print('Ocean 2 metadata:', n2)
-
-          rows = [
-              " !\"#$%&'()*+,-./",
-              "0123456789:;<=>?",
-              "@ABCDEFGHIJKLMNO",
-              "PQRSTUVWXYZ[\\]^_",
-              "`abcdefghijklmno",
-              "pqrstuvwxyz{|}~•",
-          ]
-          assert all(len(r) == 16 for r in rows), [len(r) for r in rows]
-
-          def make_atlas(primary_path, fallback_path, dest, base_size, cell_w=48, cell_h=60, baseline_ratio=.76):
-              primary_map = font_names(primary_path)[1]
-              fallback_map = font_names(fallback_path)[1] if fallback_path else set()
-              canvas = Image.new('RGBA', (cell_w * 16, cell_h * len(rows)), (0,0,0,0))
-              draw = ImageDraw.Draw(canvas)
-              font_cache = {}
-
-              def load(path, size):
-                  key=(str(path), size)
-                  if key not in font_cache:
-                      font_cache[key]=ImageFont.truetype(str(path), size=size)
-                  return font_cache[key]
-
-              for row_i, row in enumerate(rows):
-                  for col_i, ch in enumerate(row):
-                      if ch == ' ':
-                          continue
-                      source = primary_path if ord(ch) in primary_map else fallback_path
-                      if source is None:
-                          continue
-                      size = base_size
-                      while size >= 12:
-                          f = load(source, size)
-                          try:
-                              box = draw.textbbox((0,0), ch, font=f, anchor='ls', stroke_width=0)
-                          except Exception:
-                              box = draw.textbbox((0,0), ch, font=f, stroke_width=0)
-                          l,t,r,b = box
-                          w,h = r-l,b-t
-                          if w <= cell_w-8 and h <= cell_h-8:
-                              break
-                          size -= 1
-                      baseline = int(cell_h * baseline_ratio)
-                      x0 = col_i * cell_w
-                      y0 = row_i * cell_h
-                      try:
-                          box = draw.textbbox((0,0), ch, font=f, anchor='ls')
-                          l,t,r,b = box
-                          visible_w = r-l
-                          x = x0 + (cell_w-visible_w)//2 - l
-                          y = y0 + baseline
-                          draw.text((x,y), ch, font=f, fill=(255,255,255,255), anchor='ls')
-                      except Exception:
-                          box = draw.textbbox((0,0), ch, font=f)
-                          l,t,r,b = box
-                          x = x0 + (cell_w-(r-l))//2 - l
-                          y = y0 + (cell_h-(b-t))//2 - t
-                          draw.text((x,y), ch, font=f, fill=(255,255,255,255))
-              canvas.save(dest, optimize=True)
-              print(dest, canvas.size, dest.stat().st_size)
-
-          # Ocean is the readable functional face. Ocean 2 is reserved for large/accent roles.
-          make_atlas(ocean, None, out/'ocean_ui.png', 34, cell_w=48, cell_h=60, baseline_ratio=.76)
-          make_atlas(ocean, None, out/'ocean_display.png', 38, cell_w=52, cell_h=64, baseline_ratio=.76)
-          make_atlas(ocean2, ocean, out/'ocean2_accent.png', 38, cell_w=60, cell_h=72, baseline_ratio=.72)
+                          l,t,r,b=d.textbbox((0,0),c,font=f); x=x0+(cw-(r-l))//2-l; y=y0+(ch-(b-t))//2-t
+                          d.text((x,y),c,font=f,fill=(255,255,255,255))
+              img.save(dest,optimize=True); print(dest,img.size,dest.stat().st_size)
+          atlas(ocean,None,cmap1,set(),out/'ocean_ui.png',34,48,60,.76)
+          atlas(ocean,None,cmap1,set(),out/'ocean_display.png',38,52,64,.76)
+          atlas(ocean2,ocean,cmap2,cmap1,out/'ocean2_accent.png',38,60,72,.72)
           PY
-
           test -s depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font/ocean_ui.png
           test -s depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font/ocean_display.png
           test -s depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font/ocean2_accent.png
-
-          # Never let source font binaries enter the project tree or release JAR.
-          if find depths-ui-build -type f \( -iname '*.ttf' -o -iname '*.otf' -o -iname '*.woff' -o -iname '*.woff2' \) | grep -q .; then
-            echo 'Raw font binary leaked into project tree'; exit 1
-          fi
+          if find depths-ui-build -type f \( -iname '*.ttf' -o -iname '*.otf' -o -iname '*.woff' -o -iname '*.woff2' \) | grep -q .; then echo 'Raw font binary leaked into project tree'; exit 1; fi
 
       - name: Build
         working-directory: depths-ui-build
@@ -196,41 +133,33 @@ jobs:
           set -euxo pipefail
           JAR='depths-ui-build/build/libs/the-depths-ui-0.8.0.jar'
           test -f "$JAR"
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/textures/gui/harbor.png'
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/textures/gui/logo.png'
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/textures/font/ocean_ui.png'
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/textures/font/ocean_display.png'
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/textures/font/ocean2_accent.png'
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/font/ui.json'
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/font/display.json'
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/font/accent.json'
-          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/util/DepthsTypography.class'
-          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/util/DepthsResponsive.class'
-          if unzip -l "$JAR" | grep -Ei '\.(ttf|otf|woff2?)$'; then
-            echo 'Raw font file found in release JAR'; exit 1
-          fi
-          if unzip -l "$JAR" | grep -q 'textures/font/inter_'; then
-            echo 'Stale Inter atlas found'; exit 1
-          fi
-          if unzip -l "$JAR" | grep -q 'HudSuppressMixin.class'; then
-            echo 'Stale HUD suppression found'; exit 1
-          fi
-          echo 'Runtime JAR bytes:' $(stat -c%s "$JAR")
-          sha256sum "$JAR"
+          for P in \
+            assets/the_depths_ui/textures/gui/harbor.png \
+            assets/the_depths_ui/textures/gui/logo.png \
+            assets/the_depths_ui/textures/font/ocean_ui.png \
+            assets/the_depths_ui/textures/font/ocean_display.png \
+            assets/the_depths_ui/textures/font/ocean2_accent.png \
+            assets/the_depths_ui/font/ui.json \
+            assets/the_depths_ui/font/display.json \
+            assets/the_depths_ui/font/accent.json \
+            com/redgames/depthsui/util/DepthsTypography.class \
+            com/redgames/depthsui/util/DepthsResponsive.class; do unzip -l "$JAR" | grep -q "$P"; done
+          if unzip -l "$JAR" | grep -Ei '\.(ttf|otf|woff2?)$'; then echo 'Raw font file found in release JAR'; exit 1; fi
+          if unzip -l "$JAR" | grep -q 'textures/font/inter_'; then echo 'Stale Inter atlas found'; exit 1; fi
+          if unzip -l "$JAR" | grep -q 'HudSuppressMixin.class'; then echo 'Stale HUD suppression found'; exit 1; fi
+          stat -c%s "$JAR"; sha256sum "$JAR"
 
       - name: Package sanitized source snapshot
         shell: bash
         run: |
           set -euxo pipefail
           cd depths-ui-build
-          rm -rf .gradle build
-          rm -f v04source.b64 v04source.tgz v05patch.tgz v08patch.tgz
-          if find . -type f \( -iname '*.ttf' -o -iname '*.otf' -o -iname '*.woff' -o -iname '*.woff2' \) | grep -q .; then
-            echo 'Raw font file found in sanitized source'; exit 1
-          fi
+          if find . -type f \( -iname '*.ttf' -o -iname '*.otf' -o -iname '*.woff' -o -iname '*.woff2' \) | grep -q .; then echo 'Raw font file found in sanitized source'; exit 1; fi
           tar -czf ../the-depths-ui-0.8.0-source-sanitized.tgz \
+            --exclude='./.gradle' --exclude='./build' \
             --exclude='./v04chunk00' --exclude='./v04chunk01' --exclude='./v04chunk02' \
-            --exclude='./v05patch.b64' --exclude='./v08patch.b64' .
+            --exclude='./v05patch.b64' --exclude='./v08patch.b64' \
+            --exclude='./v04source.b64' --exclude='./v04source.tgz' --exclude='./v05patch.tgz' --exclude='./v08patch.tgz' .
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
