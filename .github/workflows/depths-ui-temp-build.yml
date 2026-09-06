@@ -35,7 +35,6 @@ jobs:
           echo '7924904ae9f7214680f740aee8b04897467be5e65596d8e6c5b0a70af22abc57  v05patch.tgz' | sha256sum -c -
           tar -xzf v05patch.tgz
           rm -f src/client/java/com/redgames/depthsui/mixin/HudSuppressMixin.java
-          echo 'c4460aa82fabadb687dc0c66e68759d1af8951bcd5823afa40285c35ba3f3c20  v08patch.b64' | sha256sum -c -
           base64 -d v08patch.b64 > v08patch.tgz
           echo '379c1c75d4886f819e17dbcc127672045ed0685db9fa25894002aa182b4a049c  v08patch.tgz' | sha256sum -c -
           tar -xzf v08patch.tgz
@@ -78,8 +77,7 @@ jobs:
           ocean=Path(os.environ['OCEAN_FILE']); ocean2=Path(os.environ['OCEAN2_FILE'])
           out=Path('depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font'); out.mkdir(parents=True,exist_ok=True)
           def cmap(path):
-              tt=TTFont(str(path),lazy=True); m=set((tt.getBestCmap() or {}).keys());
-              names=[]
+              tt=TTFont(str(path),lazy=True); m=set((tt.getBestCmap() or {}).keys()); names=[]
               for rec in tt['name'].names:
                   if rec.nameID in (1,2,4,6):
                       try:s=rec.toUnicode().strip()
@@ -89,7 +87,7 @@ jobs:
           cmap1=cmap(ocean); cmap2=cmap(ocean2)
           rows=[" !\"#$%&'()*+,-./","0123456789:;<=>?","@ABCDEFGHIJKLMNO","PQRSTUVWXYZ[\\]^_","`abcdefghijklmno","pqrstuvwxyz{|}~•"]
           assert all(len(r)==16 for r in rows)
-          def atlas(primary,fallback,primary_map,fallback_map,dest,size,cw,ch,baseline_ratio):
+          def atlas(primary,fallback,primary_map,dest,size,cw,ch,baseline_ratio):
               img=Image.new('RGBA',(cw*16,ch*6),(0,0,0,0)); d=ImageDraw.Draw(img); cache={}
               def getfont(path,n):
                   key=(str(path),n); cache.setdefault(key,ImageFont.truetype(str(path),n)); return cache[key]
@@ -114,9 +112,9 @@ jobs:
                           l,t,r,b=d.textbbox((0,0),c,font=f); x=x0+(cw-(r-l))//2-l; y=y0+(ch-(b-t))//2-t
                           d.text((x,y),c,font=f,fill=(255,255,255,255))
               img.save(dest,optimize=True); print(dest,img.size,dest.stat().st_size)
-          atlas(ocean,None,cmap1,set(),out/'ocean_ui.png',34,48,60,.76)
-          atlas(ocean,None,cmap1,set(),out/'ocean_display.png',38,52,64,.76)
-          atlas(ocean2,ocean,cmap2,cmap1,out/'ocean2_accent.png',38,60,72,.72)
+          atlas(ocean,None,cmap1,out/'ocean_ui.png',34,48,60,.76)
+          atlas(ocean,None,cmap1,out/'ocean_display.png',38,52,64,.76)
+          atlas(ocean2,ocean,cmap2,out/'ocean2_accent.png',38,60,72,.72)
           PY
           test -s depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font/ocean_ui.png
           test -s depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font/ocean_display.png
@@ -133,17 +131,7 @@ jobs:
           set -euxo pipefail
           JAR='depths-ui-build/build/libs/the-depths-ui-0.8.0.jar'
           test -f "$JAR"
-          for P in \
-            assets/the_depths_ui/textures/gui/harbor.png \
-            assets/the_depths_ui/textures/gui/logo.png \
-            assets/the_depths_ui/textures/font/ocean_ui.png \
-            assets/the_depths_ui/textures/font/ocean_display.png \
-            assets/the_depths_ui/textures/font/ocean2_accent.png \
-            assets/the_depths_ui/font/ui.json \
-            assets/the_depths_ui/font/display.json \
-            assets/the_depths_ui/font/accent.json \
-            com/redgames/depthsui/util/DepthsTypography.class \
-            com/redgames/depthsui/util/DepthsResponsive.class; do unzip -l "$JAR" | grep -q "$P"; done
+          for P in assets/the_depths_ui/textures/gui/harbor.png assets/the_depths_ui/textures/gui/logo.png assets/the_depths_ui/textures/font/ocean_ui.png assets/the_depths_ui/textures/font/ocean_display.png assets/the_depths_ui/textures/font/ocean2_accent.png assets/the_depths_ui/font/ui.json assets/the_depths_ui/font/display.json assets/the_depths_ui/font/accent.json com/redgames/depthsui/util/DepthsTypography.class com/redgames/depthsui/util/DepthsResponsive.class; do unzip -l "$JAR" | grep -q "$P"; done
           if unzip -l "$JAR" | grep -Ei '\.(ttf|otf|woff2?)$'; then echo 'Raw font file found in release JAR'; exit 1; fi
           if unzip -l "$JAR" | grep -q 'textures/font/inter_'; then echo 'Stale Inter atlas found'; exit 1; fi
           if unzip -l "$JAR" | grep -q 'HudSuppressMixin.class'; then echo 'Stale HUD suppression found'; exit 1; fi
@@ -155,11 +143,7 @@ jobs:
           set -euxo pipefail
           cd depths-ui-build
           if find . -type f \( -iname '*.ttf' -o -iname '*.otf' -o -iname '*.woff' -o -iname '*.woff2' \) | grep -q .; then echo 'Raw font file found in sanitized source'; exit 1; fi
-          tar -czf ../the-depths-ui-0.8.0-source-sanitized.tgz \
-            --exclude='./.gradle' --exclude='./build' \
-            --exclude='./v04chunk00' --exclude='./v04chunk01' --exclude='./v04chunk02' \
-            --exclude='./v05patch.b64' --exclude='./v08patch.b64' \
-            --exclude='./v04source.b64' --exclude='./v04source.tgz' --exclude='./v05patch.tgz' --exclude='./v08patch.tgz' .
+          tar -czf ../the-depths-ui-0.8.0-source-sanitized.tgz --exclude='./.gradle' --exclude='./build' --exclude='./v04chunk00' --exclude='./v04chunk01' --exclude='./v04chunk02' --exclude='./v05patch.b64' --exclude='./v08patch.b64' --exclude='./v04source.b64' --exclude='./v04source.tgz' --exclude='./v05patch.tgz' --exclude='./v08patch.tgz' .
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
