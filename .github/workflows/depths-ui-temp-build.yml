@@ -22,20 +22,10 @@ jobs:
         shell: bash
         run: |
           cd depths-ui-build
-          cat > expected.sha256 <<'EOF'
-          27059196215503d9df79ecfd8b4e981008ca8c84469493777d4023730feed143  chunk00
-          331dc48b7141446252cd6af75d7db832435a7ce20f0f137286814852b5b140b5  chunk01
-          3521c4d16ecf1c88363f53815031502c097a9664d969263aef90b186aae45a84  chunk02
-          6f56f2e667a39c446627bdcee72b3775bdd09601ea13019272f5bfc15ec50b15  chunk03
-          6c75833413fcfd90d680cee315bc50b62cf8e3744338e589a0dfb75729f1a406  chunk04
-          dfb419f1ff2ebc0b21d7a7d4f55fe4ad661f3419398b9065562aa282eced1532  chunk05
-          72434fec41295017a67ea4b4c450cbaf3bcae436cacc40e4230c1e22a01c3b07  chunk06
-          ddbffc0a9f3f956c085a9ab5f74016d179950ad4a848b103be2953aa2514f802  chunk07
-          6d78f5efc7a0f2d66cf0bb6d0efa4f57eb7272ed514fc36f6aa320951964a5f1  chunk08
-          0fb6231a69e19427c4b16ee98c2160888ed32a08ce2fe857ddc219f387300ef6  chunk09
-          EOF
-          sha256sum -c expected.sha256
-          cat chunk00 chunk01 chunk02 chunk03 chunk04 chunk05 chunk06 chunk07 chunk08 chunk09 > source.b64
+          echo '9e1fa65a02b22c5292740581775a44dcca167100c568a73884f02efdbdb68b0d  chunk05a' | sha256sum -c -
+          echo 'baa5bcf34788503f0016a2bdbb1d8f27707010da360eb44ed1b34bdd5236b75e  chunk05b' | sha256sum -c -
+          echo 'a45a21a1ba1ac0db5bef34159805e8739eff7aa5737449fa7f62dbeafe12d5d9  chunk05c' | sha256sum -c -
+          cat chunk00 chunk01 chunk02 chunk03 chunk04 chunk05a chunk05b chunk05c chunk06 chunk07 chunk08 chunk09 > source.b64
           test "$(wc -c < source.b64)" -eq 29428
           echo 'b6f3a5aada6a1da8c58aa8bd4eb8d94c663a0a819507ad97a70ec4159420a9b8  source.b64' | sha256sum -c -
           base64 -d source.b64 > source.tgz
