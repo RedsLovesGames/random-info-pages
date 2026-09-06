@@ -1,4 +1,4 @@
-name: Depths UI 0.5.1 Texture Hotfix Build
+name: Depths UI Cache Export
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.5.1'
-      - name: Extract source, apply 0.5 patch, and fix client resources
+      - name: Extract 0.5 source
         shell: bash
         run: |
           cd depths-ui-build
@@ -33,46 +33,19 @@ jobs:
           echo '7924904ae9f7214680f740aee8b04897467be5e65596d8e6c5b0a70af22abc57  v05patch.tgz' | sha256sum -c -
           tar -xzf v05patch.tgz
           rm -f src/client/java/com/redgames/depthsui/mixin/HudSuppressMixin.java
-
-          # Fabric split client source sets only packaged client resources in this project.
-          # Move all UI runtime textures into the client resource set so the remapped JAR
-          # cannot ship without the harbor, logo, and icon textures again.
-          mkdir -p src/client/resources
-          rm -rf src/client/resources/assets
-          mv src/main/resources/assets src/client/resources/assets
-          sed -i 's/mod_version=0.5.0/mod_version=0.5.1/' gradle.properties
-
-          test -f src/client/resources/assets/the_depths_ui/textures/gui/harbor.png
-          test -f src/client/resources/assets/the_depths_ui/textures/gui/logo.png
-          test -f src/client/resources/assets/the_depths_ui/textures/icons/player-play.png
-          test -f src/client/resources/assets/the_depths_ui/textures/icons/search.png
-      - name: Build
+      - name: Warm complete Gradle and Loom cache
         working-directory: depths-ui-build
         run: gradle clean build --stacktrace --no-daemon
-      - name: Inspect runtime jar and texture payload
+      - name: Pack Gradle caches
         shell: bash
         run: |
-          JAR="depths-ui-build/build/libs/the-depths-ui-0.5.1.jar"
-          test -f "$JAR"
-          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsWorldSelectScreen.class'
-          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsMultiplayerScreen.class'
-          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsModsScreen.class'
-          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsPauseScreen.class'
-          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/util/EssentialBridge.class'
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/textures/gui/harbor.png'
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/textures/gui/logo.png'
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/textures/icons/player-play.png'
-          unzip -l "$JAR" | grep -q 'assets/the_depths_ui/textures/icons/search.png'
-          COUNT=$(unzip -l "$JAR" | grep -c 'assets/the_depths_ui/textures/icons/.*\.png')
-          test "$COUNT" -ge 20
-          SIZE=$(stat -c%s "$JAR")
-          test "$SIZE" -gt 2500000
-          if unzip -l "$JAR" | grep -q 'HudSuppressMixin.class'; then echo 'stale HudSuppressMixin class found'; exit 1; fi
-          if unzip -p "$JAR" the_depths_ui.client.mixins.json | grep -q 'HudSuppressMixin'; then echo 'stale HudSuppressMixin registration found'; exit 1; fi
-          echo "Verified runtime JAR size: $SIZE bytes; icon textures: $COUNT"
-      - name: Upload built jar
+          du -sh "$HOME/.gradle/caches" || true
+          tar -C "$HOME/.gradle" -czf gradle-caches.tgz caches
+          ls -lh gradle-caches.tgz
+      - name: Upload Gradle caches
         uses: actions/upload-artifact@v4
         with:
-          name: the-depths-ui-0.5.1-texture-hotfix-built
-          path: depths-ui-build/build/libs/*.jar
+          name: depths-ui-gradle-caches
+          path: gradle-caches.tgz
+          compression-level: 0
           if-no-files-found: error
