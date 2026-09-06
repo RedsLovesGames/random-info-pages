@@ -1,11 +1,11 @@
-name: Depths UI Cache Export
+name: Depths UI Gradle Runtime Export
 
 on:
   push:
     branches: [ temp-depths-ui-build ]
 
 jobs:
-  build:
+  export:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,34 +18,19 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.5.1'
-      - name: Extract 0.5 source
+      - name: Pack Gradle runtime
         shell: bash
         run: |
-          cd depths-ui-build
-          cat v04chunk00 v04chunk01 v04chunk02 > v04source.b64
-          test "$(wc -c < v04source.b64)" -eq 33036
-          echo '8692c7e97c235c592a0fb2141a7afc1f8fa271a8c46bd9da3837c421d8045e7e  v04source.b64' | sha256sum -c -
-          base64 -d v04source.b64 > v04source.tgz
-          echo '75ac4f65d7c126f7d4bcf1843c3f6789427990f463e90e9d184e7e687837f4a1  v04source.tgz' | sha256sum -c -
-          tar -xzf v04source.tgz
-          echo '69360de22c1f9a4e4ba73d621aa15c292077835b43fa65e6a50aaf09db8d65a9  v05patch.b64' | sha256sum -c -
-          base64 -d v05patch.b64 > v05patch.tgz
-          echo '7924904ae9f7214680f740aee8b04897467be5e65596d8e6c5b0a70af22abc57  v05patch.tgz' | sha256sum -c -
-          tar -xzf v05patch.tgz
-          rm -f src/client/java/com/redgames/depthsui/mixin/HudSuppressMixin.java
-      - name: Warm complete Gradle and Loom cache
-        working-directory: depths-ui-build
-        run: gradle clean build --stacktrace --no-daemon
-      - name: Pack Gradle caches
-        shell: bash
-        run: |
-          du -sh "$HOME/.gradle/caches" || true
-          tar -C "$HOME/.gradle" -czf gradle-caches.tgz caches
-          ls -lh gradle-caches.tgz
-      - name: Upload Gradle caches
+          GRADLE_BIN="$(command -v gradle)"
+          GRADLE_HOME="$(cd "$(dirname "$GRADLE_BIN")/.." && pwd)"
+          echo "Gradle home: $GRADLE_HOME"
+          gradle --version
+          tar -C "$(dirname "$GRADLE_HOME")" -czf gradle-9.5.1-runtime.tgz "$(basename "$GRADLE_HOME")"
+          ls -lh gradle-9.5.1-runtime.tgz
+      - name: Upload Gradle runtime
         uses: actions/upload-artifact@v4
         with:
-          name: depths-ui-gradle-caches
-          path: gradle-caches.tgz
+          name: gradle-9.5.1-runtime
+          path: gradle-9.5.1-runtime.tgz
           compression-level: 0
           if-no-files-found: error
