@@ -1,55 +1,17 @@
-name: Depths UI 0.8 Ocean Build
+name: Depths UI Ocean Font Rasterizer
 
 on:
   push:
     branches: [ temp-depths-ui-build ]
 
 jobs:
-  build:
+  fonts:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.5.1'
-
-      - name: Reconstruct 0.8 source
-        shell: bash
-        run: |
-          set -euxo pipefail
-          cd depths-ui-build
-          cat v04chunk00 v04chunk01 v04chunk02 > v04source.b64
-          test "$(wc -c < v04source.b64)" -eq 33036
-          echo '8692c7e97c235c592a0fb2141a7afc1f8fa271a8c46bd9da3837c421d8045e7e  v04source.b64' | sha256sum -c -
-          base64 -d v04source.b64 > v04source.tgz
-          echo '75ac4f65d7c126f7d4bcf1843c3f6789427990f463e90e9d184e7e687837f4a1  v04source.tgz' | sha256sum -c -
-          tar -xzf v04source.tgz
-          echo '69360de22c1f9a4e4ba73d621aa15c292077835b43fa65e6a50aaf09db8d65a9  v05patch.b64' | sha256sum -c -
-          base64 -d v05patch.b64 > v05patch.tgz
-          echo '7924904ae9f7214680f740aee8b04897467be5e65596d8e6c5b0a70af22abc57  v05patch.tgz' | sha256sum -c -
-          tar -xzf v05patch.tgz
-          rm -f src/client/java/com/redgames/depthsui/mixin/HudSuppressMixin.java
-          base64 -d v08patch.b64 > v08patch.tgz
-          echo '379c1c75d4886f819e17dbcc127672045ed0685db9fa25894002aa182b4a049c  v08patch.tgz' | sha256sum -c -
-          tar -xzf v08patch.tgz
-          mkdir -p src/client/resources/assets
-          if [ -d src/main/resources/assets ]; then
-            cp -a src/main/resources/assets/. src/client/resources/assets/
-            rm -rf src/main/resources/assets
-          fi
-          rm -f src/client/resources/assets/the_depths_ui/textures/font/inter_*.png
-          rm -f src/client/resources/assets/the_depths_ui/textures/font/gillius_*.png
-          mkdir -p src/client/resources/assets/the_depths_ui/textures/font
-          grep -q 'mod_version=0.8.0' gradle.properties
-          grep -q 'ACCENT_FONT' src/client/java/com/redgames/depthsui/util/DepthsTypography.java
-
-      - name: Download licensed Ocean sources for rasterization
+      - name: Download licensed Ocean font sources
         shell: bash
         run: |
           set -euxo pipefail
@@ -64,92 +26,83 @@ jobs:
           echo "OCEAN_FILE=$OCEAN" >> "$GITHUB_ENV"
           echo "OCEAN2_FILE=$OCEAN2" >> "$GITHUB_ENV"
 
-      - name: Rasterize Ocean and Ocean 2 Minecraft font atlases
+      - name: Rasterize Minecraft bitmap atlases
         shell: bash
         run: |
           set -euxo pipefail
           python -m pip install --disable-pip-version-check --quiet pillow fonttools
+          mkdir -p output
           python - <<'PY'
           import os
           from pathlib import Path
           from PIL import Image, ImageDraw, ImageFont
           from fontTools.ttLib import TTFont
-          ocean=Path(os.environ['OCEAN_FILE']); ocean2=Path(os.environ['OCEAN2_FILE'])
-          out=Path('depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font'); out.mkdir(parents=True,exist_ok=True)
-          def cmap(path):
-              tt=TTFont(str(path),lazy=True); m=set((tt.getBestCmap() or {}).keys()); names=[]
+
+          ocean=Path(os.environ['OCEAN_FILE'])
+          ocean2=Path(os.environ['OCEAN2_FILE'])
+          out=Path('output')
+
+          def info(path):
+              tt=TTFont(str(path),lazy=True)
+              cmap=set((tt.getBestCmap() or {}).keys())
+              names=[]
               for rec in tt['name'].names:
                   if rec.nameID in (1,2,4,6):
                       try:s=rec.toUnicode().strip()
                       except Exception:continue
                       if s and s not in names:names.append(s)
-              tt.close(); print(path.name, names); return m
-          cmap1=cmap(ocean); cmap2=cmap(ocean2)
+              tt.close()
+              return names,cmap
+
+          n1,c1=info(ocean); n2,c2=info(ocean2)
+          print('Ocean:',n1)
+          print('Ocean 2:',n2)
+          (out/'FONT_METADATA.txt').write_text('Ocean: '+repr(n1)+'\nOcean 2: '+repr(n2)+'\n',encoding='utf-8')
+
           rows=[" !\"#$%&'()*+,-./","0123456789:;<=>?","@ABCDEFGHIJKLMNO","PQRSTUVWXYZ[\\]^_","`abcdefghijklmno","pqrstuvwxyz{|}~•"]
           assert all(len(r)==16 for r in rows)
+
           def atlas(primary,fallback,primary_map,dest,size,cw,ch,baseline_ratio):
               img=Image.new('RGBA',(cw*16,ch*6),(0,0,0,0)); d=ImageDraw.Draw(img); cache={}
               def getfont(path,n):
-                  key=(str(path),n); cache.setdefault(key,ImageFont.truetype(str(path),n)); return cache[key]
+                  key=(str(path),n)
+                  if key not in cache: cache[key]=ImageFont.truetype(str(path),n)
+                  return cache[key]
               for ri,row in enumerate(rows):
                   for ci,c in enumerate(row):
-                      if c==' ':continue
+                      if c==' ': continue
                       src=primary if ord(c) in primary_map else fallback
-                      if src is None:continue
+                      if src is None: continue
                       n=size
                       while True:
                           f=getfont(src,n)
-                          try:box=d.textbbox((0,0),c,font=f,anchor='ls')
-                          except Exception:box=d.textbbox((0,0),c,font=f)
+                          try: box=d.textbbox((0,0),c,font=f,anchor='ls')
+                          except Exception: box=d.textbbox((0,0),c,font=f)
                           l,t,r,b=box
-                          if ((r-l)<=cw-8 and (b-t)<=ch-8) or n<=12:break
+                          if ((r-l)<=cw-8 and (b-t)<=ch-8) or n<=12: break
                           n-=1
                       x0=ci*cw; y0=ri*ch; baseline=int(ch*baseline_ratio)
                       try:
-                          l,t,r,b=d.textbbox((0,0),c,font=f,anchor='ls'); x=x0+(cw-(r-l))//2-l; y=y0+baseline
+                          l,t,r,b=d.textbbox((0,0),c,font=f,anchor='ls')
+                          x=x0+(cw-(r-l))//2-l; y=y0+baseline
                           d.text((x,y),c,font=f,fill=(255,255,255,255),anchor='ls')
                       except Exception:
-                          l,t,r,b=d.textbbox((0,0),c,font=f); x=x0+(cw-(r-l))//2-l; y=y0+(ch-(b-t))//2-t
+                          l,t,r,b=d.textbbox((0,0),c,font=f)
+                          x=x0+(cw-(r-l))//2-l; y=y0+(ch-(b-t))//2-t
                           d.text((x,y),c,font=f,fill=(255,255,255,255))
-              img.save(dest,optimize=True); print(dest,img.size,dest.stat().st_size)
-          atlas(ocean,None,cmap1,out/'ocean_ui.png',34,48,60,.76)
-          atlas(ocean,None,cmap1,out/'ocean_display.png',38,52,64,.76)
-          atlas(ocean2,ocean,cmap2,out/'ocean2_accent.png',38,60,72,.72)
+              img.save(dest,optimize=True)
+
+          atlas(ocean,None,c1,out/'ocean_ui.png',34,48,60,.76)
+          atlas(ocean,None,c1,out/'ocean_display.png',38,52,64,.76)
+          atlas(ocean2,ocean,c2,out/'ocean2_accent.png',38,60,72,.72)
           PY
-          test -s depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font/ocean_ui.png
-          test -s depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font/ocean_display.png
-          test -s depths-ui-build/src/client/resources/assets/the_depths_ui/textures/font/ocean2_accent.png
-          if find depths-ui-build -type f \( -iname '*.ttf' -o -iname '*.otf' -o -iname '*.woff' -o -iname '*.woff2' \) | grep -q .; then echo 'Raw font binary leaked into project tree'; exit 1; fi
+          test -s output/ocean_ui.png
+          test -s output/ocean_display.png
+          test -s output/ocean2_accent.png
+          if find output -type f \( -iname '*.ttf' -o -iname '*.otf' -o -iname '*.woff' -o -iname '*.woff2' \) | grep -q .; then exit 1; fi
 
-      - name: Build
-        working-directory: depths-ui-build
-        run: gradle clean build --stacktrace --no-daemon
-
-      - name: Inspect runtime JAR
-        shell: bash
-        run: |
-          set -euxo pipefail
-          JAR='depths-ui-build/build/libs/the-depths-ui-0.8.0.jar'
-          test -f "$JAR"
-          for P in assets/the_depths_ui/textures/gui/harbor.png assets/the_depths_ui/textures/gui/logo.png assets/the_depths_ui/textures/font/ocean_ui.png assets/the_depths_ui/textures/font/ocean_display.png assets/the_depths_ui/textures/font/ocean2_accent.png assets/the_depths_ui/font/ui.json assets/the_depths_ui/font/display.json assets/the_depths_ui/font/accent.json com/redgames/depthsui/util/DepthsTypography.class com/redgames/depthsui/util/DepthsResponsive.class; do unzip -l "$JAR" | grep -q "$P"; done
-          if unzip -l "$JAR" | grep -Ei '\.(ttf|otf|woff2?)$'; then echo 'Raw font file found in release JAR'; exit 1; fi
-          if unzip -l "$JAR" | grep -q 'textures/font/inter_'; then echo 'Stale Inter atlas found'; exit 1; fi
-          if unzip -l "$JAR" | grep -q 'HudSuppressMixin.class'; then echo 'Stale HUD suppression found'; exit 1; fi
-          stat -c%s "$JAR"; sha256sum "$JAR"
-
-      - name: Package sanitized source snapshot
-        shell: bash
-        run: |
-          set -euxo pipefail
-          cd depths-ui-build
-          if find . -type f \( -iname '*.ttf' -o -iname '*.otf' -o -iname '*.woff' -o -iname '*.woff2' \) | grep -q .; then echo 'Raw font file found in sanitized source'; exit 1; fi
-          tar -czf ../the-depths-ui-0.8.0-source-sanitized.tgz --exclude='./.gradle' --exclude='./build' --exclude='./v04chunk00' --exclude='./v04chunk01' --exclude='./v04chunk02' --exclude='./v05patch.b64' --exclude='./v08patch.b64' --exclude='./v04source.b64' --exclude='./v04source.tgz' --exclude='./v05patch.tgz' --exclude='./v08patch.tgz' .
-
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: the-depths-ui-0.8.0-ocean-built
-          path: |
-            depths-ui-build/build/libs/*.jar
-            the-depths-ui-0.8.0-source-sanitized.tgz
+          name: depths-ui-ocean-font-atlases
+          path: output/
           if-no-files-found: error
