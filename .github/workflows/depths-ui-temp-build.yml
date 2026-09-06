@@ -4,7 +4,7 @@ on:
   push:
     branches: [ temp-depths-ui-build ]
     paths:
-      - 'depths-ui-build/source.part*'
+      - 'depths-ui-build/chunk*'
       - '.github/workflows/depths-ui-temp-build.yml'
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -25,9 +25,12 @@ jobs:
         shell: bash
         run: |
           cd depths-ui-build
-          cat source.part0 source.part1 source.part2 source.part3 source.part4 | base64 -d > source.tgz
+          cat chunk00 chunk01 chunk02 chunk03 chunk04 chunk05 chunk06 chunk07 chunk08 chunk09 > source.b64
+          test "$(wc -c < source.b64)" -eq 29428
+          echo 'b6f3a5aada6a1da8c58aa8bd4eb8d94c663a0a819507ad97a70ec4159420a9b8  source.b64' | sha256sum -c -
+          base64 -d source.b64 > source.tgz
+          echo '1e6563d36c13ffe4d50d1de4140631654a1b36efa009b944705802cf6de08673  source.tgz' | sha256sum -c -
           tar -xzf source.tgz
-          rm -f source.tgz
       - name: Build
         working-directory: depths-ui-build
         run: gradle build --stacktrace --no-daemon
