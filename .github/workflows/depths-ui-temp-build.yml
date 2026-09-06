@@ -32,6 +32,7 @@ jobs:
           base64 -d v05patch.b64 > v05patch.tgz
           echo '7924904ae9f7214680f740aee8b04897467be5e65596d8e6c5b0a70af22abc57  v05patch.tgz' | sha256sum -c -
           tar -xzf v05patch.tgz
+          rm -f src/client/java/com/redgames/depthsui/mixin/HudSuppressMixin.java
       - name: Build
         working-directory: depths-ui-build
         run: gradle clean build --stacktrace --no-daemon
@@ -40,13 +41,16 @@ jobs:
         run: |
           JAR="depths-ui-build/build/libs/the-depths-ui-0.5.0.jar"
           test -f "$JAR"
-          echo "Built: $JAR"
-          unzip -l "$JAR" | grep 'DepthsWorldSelectScreen.class\|DepthsMultiplayerScreen.class\|DepthsModsScreen.class\|DepthsPauseScreen.class\|EssentialBridge.class' || true
-          echo '--- mixins ---'
-          unzip -p "$JAR" the_depths_ui.client.mixins.json || true
+          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsWorldSelectScreen.class'
+          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsMultiplayerScreen.class'
+          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsModsScreen.class'
+          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/screen/DepthsPauseScreen.class'
+          unzip -l "$JAR" | grep -q 'com/redgames/depthsui/util/EssentialBridge.class'
+          if unzip -l "$JAR" | grep -q 'HudSuppressMixin.class'; then echo 'stale HudSuppressMixin class found'; exit 1; fi
+          if unzip -p "$JAR" the_depths_ui.client.mixins.json | grep -q 'HudSuppressMixin'; then echo 'stale HudSuppressMixin registration found'; exit 1; fi
       - name: Upload built jar
         uses: actions/upload-artifact@v4
         with:
-          name: the-depths-ui-0.5.0-built
+          name: the-depths-ui-0.5.0-built-clean
           path: depths-ui-build/build/libs/*.jar
           if-no-files-found: error
