@@ -4,6 +4,7 @@
   const pages = [
     ['Home', `${BASE}/`, 'Overview', 'Tideborne home, features and specimen progression'],
     ['Getting Started', `${BASE}/getting-started/`, 'Start Here', 'Install, catch your first fish and understand Tideborne'],
+    ['Tide Foundations', `${BASE}/tide/`, 'Start Here', 'Tide fishing loop, Angling Table, rods, accessories, bait, Journal and rewards'],
     ['Fishing', `${BASE}/fishing/`, 'Fishing', 'Fishing System 2.0 overview'],
     ['Specimens', `${BASE}/fishing/specimens/`, 'Fishing', 'What makes each caught fish a persistent specimen'],
     ['Body Types', `${BASE}/fishing/body-types/`, 'Fishing', 'Normal, Giant and Dwarf specimens'],
@@ -15,10 +16,11 @@
     ['Perfect Catch', `${BASE}/fishing/perfect-catch/`, 'Fishing', 'Skill reward in the catch minigame'],
     ['FishScore', `${BASE}/fishing/fishscore/`, 'Fishing', 'Canonical 1–3000 specimen score'],
     ['Fish Database', `${BASE}/fish/`, 'Reference', 'Searchable fish encyclopedia'],
-    ['Gear', `${BASE}/gear/`, 'Equipment', 'Rods, lines, leaders, bobbers, hooks and bait'],
+    ['Gear', `${BASE}/gear/`, 'Equipment', 'Rods, Angling Table, lines, leaders, bobbers, hooks and bait'],
     ["Angler's Satchel", `${BASE}/satchel/`, 'Systems', 'Storage, sorting, upgrades and records'],
     ['Journal & Teams', `${BASE}/journal/`, 'Systems', 'Discovery, history, Top Fish and team records'],
     ['Sharks & Ecosystem', `${BASE}/ecosystem/`, 'Systems', 'Sharks, chum, scent and catch loss'],
+    ['Render Gallery', `${BASE}/gallery/`, 'Explore', 'Official Tide wiki renders and screenshots'],
     ['Progression', `${BASE}/progression/`, 'Guides', 'Early, mid and late-game progression'],
     ['Guides', `${BASE}/guides/`, 'Guides', 'Trophy hunting and system guides'],
     ['Configuration', `${BASE}/config/`, 'Reference', 'Fishing, Satchel, Journal, ecosystem, client and advanced settings'],
@@ -34,9 +36,9 @@
   const iconMenu = `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
 
   const groups = [
-    ['Start Here', ['Home','Getting Started']],
+    ['Start Here', ['Home','Getting Started','Tide Foundations']],
     ['Fishing', ['Fishing','Specimens','Body Types','Condition','Pigmentation','Quality','Trait Luck','Trait Momentum','Perfect Catch','FishScore']],
-    ['Explore', ['Fish Database','Gear',"Angler's Satchel",'Journal & Teams','Sharks & Ecosystem']],
+    ['Explore', ['Fish Database','Gear',"Angler's Satchel",'Journal & Teams','Sharks & Ecosystem','Render Gallery']],
     ['Learn', ['Progression','Guides','Configuration','Exact Mechanics','Tools']],
     ['Support', ['Compatibility','Troubleshooting','Developer']]
   ];
@@ -47,7 +49,7 @@
 
   function header() {
     const el = document.querySelector('[data-site-header]'); if (!el) return;
-    el.innerHTML = `<a class="skip" href="#main">Skip to content</a><div class="progress" aria-hidden="true"></div><header class="site-header"><div class="wrap header-inner"><a class="brand" href="${BASE}/"><span class="brand-mark">${fishLogo}</span><span>Tideborne</span></a><nav class="top-nav" aria-label="Primary"><a href="${BASE}/fishing/">Fishing</a><a href="${BASE}/fish/">Fish</a><a href="${BASE}/gear/">Gear</a><a href="${BASE}/satchel/" class="optional">Satchel</a><a href="${BASE}/guides/" class="optional">Guides</a></nav><button class="search-trigger" type="button" data-open-search aria-label="Search Tideborne">${iconSearch}<span>Search wiki</span><kbd>Ctrl K</kbd></button><button class="header-action menu-trigger" data-open-menu type="button" aria-label="Open navigation">${iconMenu}</button></div></header>`;
+    el.innerHTML = `<a class="skip" href="#main">Skip to content</a><div class="progress" aria-hidden="true"></div><header class="site-header"><div class="wrap header-inner"><a class="brand" href="${BASE}/"><span class="brand-mark">${fishLogo}</span><span>Tideborne</span></a><nav class="top-nav" aria-label="Primary"><a href="${BASE}/tide/">Tide</a><a href="${BASE}/fishing/">Fishing</a><a href="${BASE}/fish/">Fish</a><a href="${BASE}/gear/">Gear</a><a href="${BASE}/satchel/" class="optional">Satchel</a></nav><button class="search-trigger" type="button" data-open-search aria-label="Search Tideborne">${iconSearch}<span>Search wiki</span><kbd>Ctrl K</kbd></button><button class="header-action menu-trigger" data-open-menu type="button" aria-label="Open navigation">${iconMenu}</button></div></header>`;
   }
 
   function sideLinks() {
@@ -55,10 +57,10 @@
   }
   function sidebar(){const el=document.querySelector('[data-sidebar]');if(el)el.innerHTML=sideLinks()}
 
-  function footer(){const el=document.querySelector('[data-site-footer]');if(!el)return; el.innerHTML=`<footer class="footer"><div class="wrap footer-grid"><div><strong>Tideborne</strong><div>A specimen-focused expansion for Tide.</div></div><div><a href="${BASE}/reference/mechanics/">Exact mechanics</a> · <a href="${BASE}/compatibility/">Compatibility</a> · <a href="/random-info-pages/tide2/">Legacy Fishing 2.0 guide</a></div></div></footer>`}
+  function footer(){const el=document.querySelector('[data-site-footer]');if(!el)return; el.innerHTML=`<footer class="footer"><div class="wrap footer-grid"><div><strong>Tideborne</strong><div>A specimen-focused expansion for Tide.</div></div><div><a href="${BASE}/tide/">Tide foundations</a> · <a href="${BASE}/gallery/">Render gallery</a> · <a href="${BASE}/reference/mechanics/">Exact mechanics</a> · <a href="${BASE}/compatibility/">Compatibility</a> · <a href="/random-info-pages/tide2/">Legacy Fishing 2.0 guide</a></div></div></footer>`}
 
   function commandPalette(){
-    const host=document.createElement('div'); host.className='command-backdrop'; host.setAttribute('aria-hidden','true'); host.innerHTML=`<div class="command" role="dialog" aria-modal="true" aria-label="Search Tideborne"><div class="command-search">${iconSearch}<input aria-label="Search" autocomplete="off" placeholder="Search fishing, FishScore, gear, Satchel…"></div><div class="command-results"></div></div>`; document.body.append(host);
+    const host=document.createElement('div'); host.className='command-backdrop'; host.setAttribute('aria-hidden','true'); host.innerHTML=`<div class="command" role="dialog" aria-modal="true" aria-label="Search Tideborne"><div class="command-search">${iconSearch}<input aria-label="Search" autocomplete="off" placeholder="Search Tide, fishing, FishScore, gear, Satchel…"></div><div class="command-results"></div></div>`; document.body.append(host);
     const input=host.querySelector('input'), results=host.querySelector('.command-results'); let focus=0, filtered=[];
     const render=()=>{const q=input.value.trim().toLowerCase(); filtered=pages.filter(p=>!q||(`${p[0]} ${p[2]} ${p[3]}`).toLowerCase().includes(q)).slice(0,10);focus=Math.min(focus,Math.max(filtered.length-1,0));results.innerHTML=filtered.length?filtered.map((p,i)=>`<a class="command-item${i===focus?' focused':''}" href="${p[1]}"><span>${esc(p[0])}<small style="display:block">${esc(p[3])}</small></span><small>${esc(p[2])}</small></a>`).join(''):`<div class="command-empty">No matching Tideborne pages.</div>`};
     const open=()=>{host.classList.add('open');host.setAttribute('aria-hidden','false');input.value='';focus=0;render();requestAnimationFrame(()=>input.focus())}; const close=()=>{host.classList.remove('open');host.setAttribute('aria-hidden','true')};

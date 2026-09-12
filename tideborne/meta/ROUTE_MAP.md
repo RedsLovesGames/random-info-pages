@@ -2,6 +2,8 @@
 
 - `/tideborne/` — Home
 - `/tideborne/getting-started/`
+- `/tideborne/tide/` — Tide foundations: catch loop, Angling Table, accessories, bait, Journal and broader Tide context
+- `/tideborne/gallery/` — official Tide wiki renders/screenshots curated into Tideborne
 - `/tideborne/fishing/`
 - `/tideborne/fishing/specimens/`
 - `/tideborne/fishing/body-types/`
