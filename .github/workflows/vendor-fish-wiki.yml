@@ -32,8 +32,8 @@ jobs:
           rm -rf "$target/renders"
           mkdir -p "$target/renders"
 
-          cp /tmp/tide-2-addons/assets/fish-runtime-data-0.json.gz "$target/"
-          cp /tmp/tide-2-addons/assets/fish-runtime-data-1.json.gz "$target/"
+          cp /tmp/tide-2-addons/assets/fish-wiki-data-0.json.gz "$target/"
+          cp /tmp/tide-2-addons/assets/fish-wiki-data-1.json.gz "$target/"
           cp /tmp/tide-2-addons/assets/fish-render-manifest.json "$target/"
           cp /tmp/tide-2-addons/fish/render-data/modpack-scope.json "$target/modpack-scope.json"
           cp -a /tmp/tide-2-addons/fish/assets/renders/. "$target/renders/"
