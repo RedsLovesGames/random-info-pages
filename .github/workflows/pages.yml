@@ -27,6 +27,9 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Validate Tideborne Fish Wiki integration
+        run: python3 scripts/validate_tideborne_fish_wiki.py
+
       - name: Stage static site
         env:
           DEPLOY_SHA: ${{ github.sha }}
@@ -82,3 +85,37 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Smoke test deployed Tideborne routes
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          base="${SITE_URL%/}"
+          routes=(
+            "tideborne/"
+            "tideborne/fish/"
+            "tideborne/fishing/"
+            "tideborne/gear/"
+            "tideborne/journal/"
+            "tideborne/reference/mechanics/"
+            "tide2/"
+            "tideborne/assets/fish/fish-scope.js"
+            "tideborne/assets/fish/renders/crittersandcompanions__koi_fish.png"
+          )
+          for route in "${routes[@]}"; do
+            curl --fail --silent --show-error --location --retry 8 --retry-all-errors --retry-delay 3 --output /dev/null "$base/$route"
+          done
+          curl --fail --silent --show-error --location --retry 8 --retry-all-errors --retry-delay 3 "$base/tideborne/assets/fish/fish-wiki-data-0.json.gz" | gzip -t
+          curl --fail --silent --show-error --location --retry 8 --retry-all-errors --retry-delay 3 "$base/tideborne/assets/fish/fish-wiki-data-1.json.gz" | gzip -t
+
+          passed=0
+          for attempt in 1 2 3 4 5 6 7 8; do
+            if curl --fail --silent --show-error --location "$base/tideborne/fish/" | grep -Fq 'id="fish-results"' \
+              && curl --fail --silent --show-error --location "$base/tideborne/reference/mechanics/" | grep -Fq 'FishScore = round(1 + 2999'; then
+              passed=1
+              break
+            fi
+            sleep 3
+          done
+          test "$passed" -eq 1
