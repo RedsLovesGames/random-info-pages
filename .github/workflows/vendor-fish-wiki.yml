@@ -1,0 +1,54 @@
+name: Vendor Tideborne Fish Wiki assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/vendor-fish-wiki.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Random Info Pages
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Fetch pinned Fish Wiki source assets
+        env:
+          SOURCE_REVISION: 512c97a1c76c4ce2f8787b525d891585d5adf896
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/RedsLovesGames/Tide-2-Addons.git /tmp/tide-2-addons
+          git -C /tmp/tide-2-addons sparse-checkout init --cone
+          git -C /tmp/tide-2-addons sparse-checkout set assets fish/assets/renders fish/render-data
+          git -C /tmp/tide-2-addons checkout "$SOURCE_REVISION"
+
+          target=tideborne/assets/fish
+          rm -rf "$target/renders"
+          mkdir -p "$target/renders"
+
+          cp /tmp/tide-2-addons/assets/fish-runtime-data-0.json.gz "$target/"
+          cp /tmp/tide-2-addons/assets/fish-runtime-data-1.json.gz "$target/"
+          cp /tmp/tide-2-addons/assets/fish-render-manifest.json "$target/"
+          cp /tmp/tide-2-addons/fish/render-data/modpack-scope.json "$target/modpack-scope.json"
+          cp -a /tmp/tide-2-addons/fish/assets/renders/. "$target/renders/"
+
+          printf '%s\n' "$SOURCE_REVISION" > "$target/SOURCE_REVISION"
+
+      - name: Commit vendored assets
+        run: |
+          git add tideborne/assets/fish
+          if git diff --cached --quiet; then
+            echo "Vendored Fish Wiki assets are already current."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat(tideborne): vendor Fish Wiki source assets"
+          git push origin HEAD:main
