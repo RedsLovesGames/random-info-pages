@@ -27,6 +27,9 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Build compact Tideborne Fish render index
+        run: python3 scripts/build_tideborne_fish_index.py
+
       - name: Validate Tideborne Fish Wiki integration
         run: python3 scripts/validate_tideborne_fish_wiki.py
 
@@ -101,6 +104,8 @@ jobs:
             "tideborne/reference/mechanics/"
             "tide2/"
             "tideborne/assets/fish/fish-scope.js"
+            "tideborne/assets/fish/fish-performance.css"
+            "tideborne/assets/fish/fish-render-index.json"
             "tideborne/assets/fish/renders/crittersandcompanions__koi_fish.png"
           )
           for route in "${routes[@]}"; do
@@ -108,6 +113,9 @@ jobs:
           done
           curl --fail --silent --show-error --location --retry 8 --retry-all-errors --retry-delay 3 "$base/tideborne/assets/fish/fish-wiki-data-0.json.gz" | gzip -t
           curl --fail --silent --show-error --location --retry 8 --retry-all-errors --retry-delay 3 "$base/tideborne/assets/fish/fish-wiki-data-1.json.gz" | gzip -t
+
+          index_bytes="$(curl --fail --silent --show-error --location "$base/tideborne/assets/fish/fish-render-index.json" | wc -c)"
+          test "$index_bytes" -lt 150000
 
           passed=0
           for attempt in 1 2 3 4 5 6 7 8; do

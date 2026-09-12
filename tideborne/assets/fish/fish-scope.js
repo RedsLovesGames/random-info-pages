@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 if(!window.TideFishRuntime?.ready)return;
-window.TideFishRuntime.ready.then(api=>{
+Promise.all([window.TideFishRuntime.ready,window.TideFishRuntime.manifestReady]).then(([api])=>{
   if(api.scope?.visual_variants_enabled===true)return;
   for(const entry of Object.values(api.renderManifest?.fish||{})){
     if(!entry||!entry.variants)continue;

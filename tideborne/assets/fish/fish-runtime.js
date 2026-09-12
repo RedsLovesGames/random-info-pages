@@ -4,7 +4,7 @@
 const sourceScript=document.currentScript;
 const assetBase=new URL('./',sourceScript?.src||location.href);
 const dataUrls=['fish-wiki-data-0.json.gz','fish-wiki-data-1.json.gz'].map(name=>new URL(name,assetBase).href);
-const manifestUrl=new URL('fish-render-manifest.json',assetBase).href;
+const renderIndexUrl=new URL('fish-render-index.json',assetBase).href;
 const scopeUrl=new URL('modpack-scope.json',assetBase).href;
 
 const namespace=id=>{const value=String(id||'');const split=value.indexOf(':');return split<0?'minecraft':value.slice(0,split)};
@@ -13,7 +13,7 @@ const unslug=value=>String(value||'').replace('__',':');
 const number=value=>{const parsed=Number(value);return Number.isFinite(parsed)?parsed:null};
 
 async function loadGzipJson(url){
-  const response=await fetch(url);
+  const response=await fetch(url,{cache:'force-cache'});
   if(!response.ok)throw new Error(`${url}: HTTP ${response.status}`);
   if(!('DecompressionStream' in window))throw new Error('This browser cannot read the Fish Wiki data bundle.');
   const stream=response.body.pipeThrough(new DecompressionStream('gzip'));
@@ -22,7 +22,7 @@ async function loadGzipJson(url){
 
 async function loadJson(url,fallback){
   try{
-    const response=await fetch(url);
+    const response=await fetch(url,{cache:'force-cache'});
     if(!response.ok)throw new Error(`${url}: HTTP ${response.status}`);
     return await response.json();
   }catch(error){
@@ -65,19 +65,27 @@ function normalSize(record){
   const low=number(record?.typicalLow);
   const typicalHigh=number(record?.typicalHigh);
   const recordHigh=number(record?.recordHigh);
-  return {
-    min:low,
-    max:recordHigh??typicalHigh,
-    typicalMax:typicalHigh,
-    recordHigh
-  };
+  return {min:low,max:recordHigh??typicalHigh,typicalMax:typicalHigh,recordHigh};
 }
 
+let api=null;
+let renderIndex={fish:{},counts:{}};
+let manifestLoaded=false;
+
+const rawManifestReady=loadJson(renderIndexUrl,{fish:{},counts:{}}).then(index=>{
+  renderIndex=index&&typeof index==='object'?index:{fish:{},counts:{}};
+  manifestLoaded=true;
+  if(api){
+    api.renderManifest=renderIndex;
+    api.manifestLoaded=true;
+  }
+  return renderIndex;
+});
+
 const ready=(async()=>{
-  const [first,second,renderManifest,scope]=await Promise.all([
+  const [first,second,scope]=await Promise.all([
     loadGzipJson(dataUrls[0]),
     loadGzipJson(dataUrls[1]),
-    loadJson(manifestUrl,{fish:{},counts:{}}),
     loadJson(scopeUrl,{mod_ids:[],include_minecraft:true})
   ]);
 
@@ -88,10 +96,11 @@ const ready=(async()=>{
   const recordMap=new Map(records.map(record=>[record.id,record]));
   const allowedIds=new Set(recordMap.keys());
 
-  const api={
+  api={
     meta:first.meta||{},
     scope,
-    renderManifest,
+    renderManifest:renderIndex,
+    manifestLoaded,
     allRecords,
     records,
     recordMap,
@@ -102,15 +111,20 @@ const ready=(async()=>{
     unslug,
     normalSize,
     localRenderUrl,
-    variantFor:(id,condition='normal',body='normal')=>variantForManifest(renderManifest,id,condition,body),
-    runtimeFile:id=>variantForManifest(renderManifest,id,'normal','normal')?.file||null,
+    variantFor:(id,condition='normal',body='normal')=>variantForManifest(api.renderManifest,id,condition,body),
+    runtimeFile:id=>variantForManifest(api.renderManifest,id,'normal','normal')?.file||null,
     mechanics:{fishScore:'validation-pending',traitSize:'validation-pending'}
   };
+  api.manifestReady=rawManifestReady.then(index=>{
+    api.renderManifest=index;
+    api.manifestLoaded=true;
+    return index;
+  });
 
   window.TideFishModpackScope={scope,allowedIds,allowedMods,records};
   document.body.dataset.fishScope='modpack';
   return api;
 })();
 
-window.TideFishRuntime={ready,namespace,slug,unslug,normalSize};
+window.TideFishRuntime={ready,manifestReady:rawManifestReady,namespace,slug,unslug,normalSize};
 })();
