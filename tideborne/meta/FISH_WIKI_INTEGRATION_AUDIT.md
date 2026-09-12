@@ -11,7 +11,8 @@ This audit defines the source, dependencies, path rules, and migration boundarie
 - Target baseline before integration: `ff0eca51789ab02e3e9e2fc00f7d0e0d4ef686d1`
 - Source repository: `RedsLovesGames/Tide-2-Addons`
 - Source branch inspected: `main`
-- Source revision inspected: `512c97a1c76c4ce2f8787b525d891585d5adf896`
+- Source commit inspected: `518150bd302ba47d9de0ea039e2ba6a63be167b5`
+- Source tree for that commit: `512c97a1c76c4ce2f8787b525d891585d5adf896`
 - Render manifest records its own source-generation revision: `562044f09719cf024c4a5c2b398c9baf7456a576`
 
 The target baseline matched the expected integration specification exactly before edits began.
@@ -53,10 +54,10 @@ The native port will not copy these layers wholesale. Their behavior and visual 
 
 ## Runtime data dependencies
 
-The inspected Fish Wiki runtime loads exactly:
+The verified `fish-runtime.js` loads exactly:
 
-- `assets/fish-runtime-data-0.json.gz`
-- `assets/fish-runtime-data-1.json.gz`
+- `assets/fish-wiki-data-0.json.gz`
+- `assets/fish-wiki-data-1.json.gz`
 - `assets/fish-render-manifest.json`
 - `fish/render-data/modpack-scope.json`
 
@@ -143,7 +144,7 @@ The implementation must support:
 
 ## FishScore and current-mechanics risk
 
-The inspected Tide-2-Addons runtime includes an embedded FishScore range calculation. It is historical source behavior, not automatically current Tideborne authority.
+The inspected Tide-2-Addons runtime includes an embedded FishScore calculation. It is historical source behavior, not automatically current Tideborne authority.
 
 The integration will not treat that formula as current until it is checked against the current Tideborne canonical implementation/tests. FishScore, specimen size envelopes, Body Type, Condition, Pigmentation, Quality, and Perfect Specimen wording must come from current Tideborne behavior before final acceptance.
 
@@ -156,16 +157,16 @@ Current specimen terminology to preserve:
 
 ## Asset migration strategy
 
-The render library is too large to maintain safely as hundreds of hand-written API changes. The integration will use a reproducible, manually dispatched vendoring workflow pinned to the inspected source revision.
+The render library is too large to maintain safely as hundreds of hand-written API changes. The integration uses a reproducible vendoring workflow pinned to the verified source commit.
 
-The workflow will copy only required data and source-backed render assets into the target repository. Core Fish Wiki browsing will not make runtime requests to Tide-2-Addons or its GitHub Pages site.
+The workflow copies only required data and source-backed render assets into the target repository. Core Fish Wiki browsing does not make runtime requests to Tide-2-Addons or its GitHub Pages site.
 
 Expected vendored target data:
 
 ```text
 tideborne/assets/fish/
-  fish-runtime-data-0.json.gz
-  fish-runtime-data-1.json.gz
+  fish-wiki-data-0.json.gz
+  fish-wiki-data-1.json.gz
   fish-render-manifest.json
   modpack-scope.json
   renders/
