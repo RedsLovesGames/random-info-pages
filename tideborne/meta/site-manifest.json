@@ -1,0 +1,10 @@
+{
+  "site": "Tideborne",
+  "basePath": "/random-info-pages/tideborne/",
+  "legacyPath": "/random-info-pages/tide2/",
+  "phase": 0,
+  "status": "audit-complete",
+  "sources": ["TIDEBORNE", "Lightning-64/Tide-2", "random-info-pages/tide2"],
+  "designPatterns": ["shadcn-ui", "cult-ui", "aceternity", "radix-base-ui"],
+  "legacyPreserved": true
+}

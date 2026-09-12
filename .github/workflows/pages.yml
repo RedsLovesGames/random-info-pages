@@ -43,6 +43,9 @@ jobs:
           cp tide2/minigame-fix.js _site/tide2/minigame-fix.js
           cp tide2/minigame-clean.js _site/tide2/minigame-clean.js
           cp tide2/minigame-render.js _site/tide2/minigame-render.js
+          if [ -d tideborne ]; then
+            cp -r tideborne _site/tideborne
+          fi
           python3 - <<'PY'
           from pathlib import Path
           import os, re
