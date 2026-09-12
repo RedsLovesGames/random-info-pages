@@ -21,7 +21,7 @@ jobs:
 
       - name: Fetch pinned Fish Wiki source assets
         env:
-          SOURCE_REVISION: 512c97a1c76c4ce2f8787b525d891585d5adf896
+          SOURCE_REVISION: 518150bd302ba47d9de0ea039e2ba6a63be167b5
         run: |
           git clone --filter=blob:none --no-checkout https://github.com/RedsLovesGames/Tide-2-Addons.git /tmp/tide-2-addons
           git -C /tmp/tide-2-addons sparse-checkout init --cone
