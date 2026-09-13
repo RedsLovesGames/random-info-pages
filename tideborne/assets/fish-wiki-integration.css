@@ -1,0 +1,415 @@
+/* Fish Wiki integration theme.
+   This makes the whole Tideborne site use the compact field-guide language from
+   RedsLovesGames/Tide-2-Addons/fish while keeping the Random Info Pages shell. */
+
+:root{
+  --bg:#08111d;
+  --bg-2:#0b1423;
+  --surface:#0e1b2d;
+  --surface-2:#13243a;
+  --surface-3:#18304b;
+  --text:#edf4ef;
+  --muted:#9fb1bb;
+  --line:#29445c;
+  --line-strong:#3a607c;
+  --ocean:#49a69a;
+  --ocean-2:#2f7f86;
+  --accent:#76b9a8;
+  --gold:#d8b46d;
+  --warn:#e2a85f;
+  --rare:#c55366;
+  --mono:"Cascadia Code","SFMono-Regular",Consolas,monospace;
+  --header:64px;
+  --radius:10px;
+
+  /* aliases used by the native Fish Wiki */
+  --abyss:var(--bg);
+  --deep:var(--bg-2);
+  --panel:var(--surface);
+  --panel-deep:var(--bg-2);
+  --ink:var(--text);
+  --mint:var(--ocean);
+  --aqua:var(--ocean);
+  --teal:var(--ocean-2);
+  --cyan:#74aeca;
+  --faint:#6d8490;
+  --line-soft:var(--line);
+  --focus:#8ad3c6;
+  --parchment:#e9dfc8;
+  --shadow:0 12px 30px rgba(0,0,0,.22);
+}
+
+html[data-theme="light"]{
+  --bg:#e9efe9;
+  --bg-2:#f5f7f2;
+  --surface:#ffffff;
+  --surface-2:#edf2ec;
+  --surface-3:#dfe8e1;
+  --text:#15222a;
+  --muted:#5d6c73;
+  --line:#bccbc6;
+  --line-strong:#8ea7a0;
+  --shadow:0 10px 24px rgba(16,42,48,.12);
+  color-scheme:light;
+}
+
+body{
+  background:var(--bg)!important;
+  color:var(--text)!important;
+  font:15px/1.62 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+}
+body:before,body:after{display:none!important}
+a{color:var(--accent)}
+a:hover{color:var(--text)}
+::selection{background:color-mix(in srgb,var(--ocean) 35%,transparent)}
+
+/* Header: deliberately close to the Fish Wiki top bar. */
+.site-header{
+  height:64px!important;
+  background:var(--bg-2)!important;
+  border-bottom:1px solid var(--line)!important;
+  backdrop-filter:none!important;
+}
+.header-inner{gap:14px!important}
+.brand{min-width:218px;gap:9px!important;color:var(--text)!important}
+.brand-logo{width:38px;height:38px;display:block;flex:0 0 auto}
+.brand-copy{display:flex;flex-direction:column;line-height:1.08}
+.brand-copy strong{font-size:.96rem;letter-spacing:.01em}
+.brand-copy small{margin-top:3px;color:var(--muted);font-size:.68rem;font-weight:600}
+.brand-mark{display:none!important}
+.top-nav{gap:14px!important}
+.top-nav a,.header-action{
+  padding:7px 0!important;
+  border-radius:0!important;
+  color:var(--muted)!important;
+  font-size:.86rem!important;
+  font-weight:600!important;
+  background:transparent!important;
+}
+.top-nav a:hover,.top-nav a[aria-current="page"],.header-action:hover{color:var(--text)!important}
+.top-nav a[aria-current="page"]{box-shadow:inset 0 -2px var(--ocean)}
+.search-trigger{
+  min-width:165px!important;
+  height:38px;
+  border:1px solid var(--line)!important;
+  border-radius:4px!important;
+  background:var(--surface)!important;
+  color:var(--text)!important;
+  padding:0 9px!important;
+}
+.search-trigger kbd{border:0!important;background:transparent!important;color:var(--muted)!important}
+.theme-trigger{width:40px;height:38px;border:1px solid var(--line)!important;border-radius:4px!important;background:var(--surface)!important;color:var(--text)!important;cursor:pointer}
+.progress{top:63px!important;height:2px!important;background:var(--ocean)!important}
+
+/* Documentation shell. */
+.page-shell{
+  width:min(1600px,100%)!important;
+  grid-template-columns:270px minmax(0,1fr) 220px!important;
+  gap:0!important;
+  padding:0!important;
+}
+.sidebar{
+  top:64px!important;
+  height:calc(100vh - 64px)!important;
+  max-height:none!important;
+  padding:20px 16px!important;
+  border-right:1px solid var(--line)!important;
+  background:var(--bg-2)!important;
+}
+.nav-group{margin:0 0 20px!important}
+.nav-label{padding:0 7px 6px!important;color:var(--muted)!important;font:800 .66rem/1.2 var(--mono)!important;letter-spacing:.11em!important}
+.side-link{
+  margin:0!important;
+  padding:7px 8px!important;
+  border-left:2px solid transparent!important;
+  border-radius:0!important;
+  color:var(--muted)!important;
+  font-size:.88rem!important;
+}
+.side-link:hover{background:var(--surface)!important;color:var(--text)!important}
+.side-link.active{background:var(--surface-2)!important;color:var(--text)!important;box-shadow:none!important;border-left-color:var(--ocean)!important}
+.toc{
+  top:64px!important;
+  height:calc(100vh - 64px)!important;
+  max-height:none!important;
+  padding:32px 16px!important;
+}
+.toc-title{color:var(--muted)!important;font:800 .7rem/1.2 var(--mono)!important}
+.toc a{padding:4px 0 4px 12px!important;border-left:1px solid var(--line)!important;color:var(--muted)!important;font-size:.8rem!important}
+.toc a:hover,.toc a.active{color:var(--accent)!important;border-color:var(--accent)!important}
+.article{max-width:900px!important;padding:48px 40px 72px!important;margin:0 auto!important}
+.breadcrumbs{color:var(--muted)!important;margin-bottom:18px!important}
+.breadcrumbs span{color:var(--line-strong)!important}
+.eyebrow{color:var(--ocean)!important;font:800 .72rem/1.2 var(--mono)!important;letter-spacing:.13em!important}
+h1,h2,h3,h4{font-family:inherit!important;letter-spacing:-.025em!important}
+h1{font-size:clamp(2.55rem,5vw,4.5rem)!important;line-height:1!important;margin:.15rem 0 .8rem!important}
+h2{font-size:1.8rem!important;line-height:1.15!important;margin:3rem 0 .9rem!important}
+h3{font-size:1.18rem!important;line-height:1.25!important}
+.lede{font-size:1.1rem!important;line-height:1.65!important;color:color-mix(in srgb,var(--text) 78%,var(--muted))!important}
+.article p,.article li{color:var(--muted)!important}
+.article strong{color:var(--text)!important}
+.article code{color:var(--text)!important;background:var(--surface-2)!important;border:1px solid var(--line);border-radius:3px;padding:.08em .3em}
+.article hr{border-color:var(--line)!important}
+
+/* Common components now use the field-guide visual grammar. */
+.button{
+  border:1px solid var(--line-strong)!important;
+  border-radius:4px!important;
+  background:var(--surface)!important;
+  color:var(--text)!important;
+  box-shadow:none!important;
+  padding:9px 12px!important;
+  transform:none!important;
+}
+.button:hover{background:var(--surface-3)!important;color:var(--text)!important}
+.button.primary{background:var(--ocean)!important;border-color:var(--ocean)!important;color:#07151a!important}
+.button.ghost{background:transparent!important}
+.callout{
+  border:1px solid var(--line)!important;
+  border-left:5px solid var(--ocean)!important;
+  border-radius:0!important;
+  background:var(--surface)!important;
+  color:var(--muted)!important;
+  padding:14px 16px!important;
+}
+.callout.warn{border-left-color:var(--warn)!important;background:var(--surface)!important}
+.callout.gold{border-left-color:var(--gold)!important;background:var(--surface)!important}
+.callout-label{color:var(--ocean)!important;font-family:var(--mono)!important}
+.feature-grid{gap:0!important;border-top:1px solid var(--line)!important;margin:24px 0!important}
+.feature{
+  border:0!important;
+  border-bottom:1px solid var(--line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  padding:16px 6px!important;
+}
+.table-wrap{border-color:var(--line)!important;border-radius:4px!important}
+table{background:var(--surface)!important}
+th{background:var(--surface-2)!important;color:var(--muted)!important}
+th,td{border-color:var(--line)!important}
+td{color:var(--muted)!important}
+tbody tr:hover{background:var(--surface-2)!important}
+.formula{border-color:var(--line)!important;border-radius:4px!important;background:var(--surface-2)!important;color:var(--text)!important;font-family:var(--mono)!important}
+.tag,.rarity,.record-badge{border-radius:999px!important}
+.tag{border-color:var(--line-strong)!important;background:var(--surface)!important;color:var(--muted)!important}
+.tag.gold{color:var(--gold)!important}
+
+/* Home page: same information hierarchy as the Fish Wiki, not a separate marketing design. */
+.hero{
+  padding:44px 0!important;
+  border-bottom:1px solid var(--line)!important;
+  background:var(--bg)!important;
+}
+.hero:before,.hero:after{display:none!important}
+.hero-grid{grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr)!important;gap:28px!important}
+.hero h1{font-size:clamp(3.3rem,7vw,6.4rem)!important;line-height:.94!important}
+.hero-copy{color:var(--muted)!important;font-size:1.08rem!important}
+.hero-card{
+  border:1px solid var(--line)!important;
+  border-radius:8px!important;
+  background:var(--surface)!important;
+  box-shadow:var(--shadow)!important;
+  padding:18px!important;
+}
+.hero-card:before{display:none!important}
+.hero-card img{background:var(--bg-2);border:1px solid var(--line);border-radius:6px;padding:8px}
+.specimen-name{font-family:inherit!important;font-size:1.2rem!important}
+.specimen-sub{color:var(--muted)!important}
+.scoreline{border-color:var(--line)!important}
+.score{font-family:var(--mono)!important;color:var(--gold)!important;font-size:1.8rem!important}
+.home-section{padding:54px 0!important}
+.section-head{align-items:start!important}
+.section-head p{color:var(--muted)!important}
+.bento{gap:12px!important}
+.card{
+  min-height:185px!important;
+  border:1px solid var(--line)!important;
+  border-radius:8px!important;
+  background:var(--surface)!important;
+  box-shadow:none!important;
+  padding:18px!important;
+  transform:none!important;
+}
+.card:hover{border-color:var(--line-strong)!important;background:var(--surface-2)!important;transform:none!important}
+.card .kicker{color:var(--ocean)!important;font-family:var(--mono)!important}
+.card h3{font-family:inherit!important;font-size:1.3rem!important}
+.card p{color:var(--muted)!important}
+.card .arrow{color:var(--accent)!important}
+.quickstats{gap:0!important;border:1px solid var(--line)!important}
+.stat{border:0!important;border-right:1px solid var(--line)!important;border-radius:0!important;background:var(--surface)!important}
+.stat:last-child{border-right:0!important}
+.stat small{color:var(--muted)!important;font-family:var(--mono)!important}
+.stat strong{color:var(--text)!important}
+.pipeline{gap:0!important;border:1px solid var(--line)!important}
+.pipe{border:0!important;border-right:1px solid var(--line)!important;border-radius:0!important;background:var(--surface)!important}
+.pipe:last-child{border-right:0!important}
+.pipe:not(:last-child):after{display:none!important}
+.pipe.featured{background:var(--surface-2)!important;box-shadow:inset 0 3px var(--ocean)!important}
+.pipe b{color:var(--text)!important}.pipe span{color:var(--muted)!important}
+
+.footer{border-color:var(--line)!important;background:var(--bg-2)!important;color:var(--muted)!important;padding:28px 0!important}
+.footer a{color:var(--accent)!important}
+
+/* Global search and mobile drawer follow the same rectangular UI. */
+.command{border-color:var(--line)!important;border-radius:8px!important;background:var(--surface)!important}
+.command-search{background:var(--bg-2)!important;border-color:var(--line)!important}
+.command-item{border-color:var(--line)!important}.command-item:hover,.command-item.focused{background:var(--surface-2)!important}
+.mobile-panel{background:var(--bg-2)!important;border-color:var(--line)!important}
+.mobile-close{border-color:var(--line)!important;background:var(--surface)!important;color:var(--text)!important;border-radius:4px!important}
+
+/* Native Fish Wiki — preserve the project-specific layout from Tide-2-Addons. */
+body[data-page="fish"] .page-shell{grid-template-columns:230px minmax(0,1fr)!important}
+body[data-page="fish"] .toc{display:none!important}
+body[data-page="fish"] .article.fish-page{max-width:none!important;padding:20px 24px 64px!important}
+.fish-hero{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:10px 24px!important;
+  align-items:center!important;
+  margin:0 0 10px!important;
+  padding:20px 22px!important;
+  border:1px solid var(--line)!important;
+  border-radius:10px!important;
+  background:var(--surface)!important;
+}
+.fish-hero h1{font-size:clamp(2.6rem,5vw,4rem)!important;margin:.12rem 0 .35rem!important}
+.fish-hero .lede{font-size:.92rem!important;max-width:760px!important;margin:0!important}
+.fish-hero-stats{display:flex!important;gap:6px!important}
+.fish-hero-stat{min-width:94px!important;padding:9px 10px!important;border:1px solid var(--line)!important;border-radius:6px!important;background:var(--bg-2)!important}
+.fish-hero-stat strong{font:800 1.15rem/1.1 var(--mono)!important;color:var(--text)!important}
+.fish-hero-stat span{color:var(--muted)!important;font-size:.68rem!important;text-transform:uppercase;letter-spacing:.06em}
+.fish-provenance{
+  margin:0 0 14px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:var(--bg-2);
+  color:var(--muted);
+}
+.fish-provenance summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;padding:10px 12px;color:var(--text);font-size:.8rem}
+.fish-provenance summary span{color:var(--muted);font-size:.7rem;font-weight:500}
+.fish-provenance p{margin:0;padding:0 12px 10px;color:var(--muted)!important;font-size:.78rem;line-height:1.5}
+.fish-category-nav{margin:0 0 8px!important;padding:2px 0 7px!important;gap:6px!important}
+.fish-category{border-radius:6px!important;background:var(--surface)!important;border-color:var(--line)!important;padding:7px 10px!important;font-size:.78rem!important}
+.fish-category:hover,.fish-category.active{background:var(--surface-2)!important;border-color:var(--ocean)!important;color:var(--text)!important}
+.fish-toolbar{
+  position:sticky;
+  top:64px;
+  z-index:18;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:8px!important;
+  margin:0 0 12px!important;
+  padding:7px!important;
+  border:1px solid var(--line)!important;
+  border-radius:8px!important;
+  background:color-mix(in srgb,var(--bg-2) 95%,transparent)!important;
+  backdrop-filter:blur(10px);
+}
+.fish-search-wrap input{height:42px!important;border:1px solid var(--line)!important;border-radius:6px!important;background:var(--bg)!important;color:var(--text)!important;padding:0 13px!important;font-size:.88rem!important}
+.fish-compare-open-button,.fish-filter-toggle{border-radius:6px!important;background:var(--surface)!important;border-color:var(--line)!important;color:var(--text)!important;padding:0 12px!important;min-height:42px}
+.fish-catalog-layout{grid-template-columns:220px minmax(0,1fr)!important;gap:18px!important}
+.fish-filters{
+  top:82px!important;
+  gap:10px!important;
+  padding:14px!important;
+  border:1px solid var(--line)!important;
+  border-radius:10px!important;
+  background:var(--surface)!important;
+  box-shadow:0 12px 36px rgba(0,0,0,.10)!important;
+}
+.fish-filter-heading h2{font-size:.95rem!important;margin:0!important}
+.fish-filters label{gap:4px!important;color:var(--muted)!important;font:700 .68rem/1.2 var(--mono)!important;text-transform:uppercase;letter-spacing:.055em}
+.fish-filters select{min-height:38px!important;border-radius:6px!important;background:var(--bg)!important;border-color:var(--line)!important;color:var(--text)!important;text-transform:none;letter-spacing:0;font-family:inherit;font-weight:500}
+.fish-reset{border-radius:6px!important;background:transparent!important;color:var(--text)!important}
+@media(min-width:901px){.fish-filters label:has(#fish-group){display:none!important}}
+.fish-results-head{min-height:36px!important;margin-bottom:4px!important;color:var(--muted)!important}
+.fish-active-filters button{border-radius:999px!important;background:var(--surface)!important;border-color:var(--line)!important;color:var(--muted)!important}
+.fish-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.fish-card{
+  display:block!important;
+  min-width:0!important;
+  padding:10px!important;
+  border:1px solid var(--line)!important;
+  border-radius:12px!important;
+  background:var(--surface)!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.09)!important;
+  overflow:hidden!important;
+  text-align:left!important;
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease!important;
+}
+.fish-card:hover{transform:translateY(-2px)!important;border-color:color-mix(in srgb,var(--ocean) 65%,var(--line))!important;box-shadow:0 16px 38px rgba(0,0,0,.16)!important;background:var(--surface)!important}
+.fish-card-render{display:grid!important;place-items:center!important;width:100%!important;height:190px!important;min-height:190px!important;border-radius:8px!important;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-3) 60%,transparent),var(--bg-2))!important;overflow:hidden!important}
+.fish-render{box-sizing:border-box!important;width:100%!important;height:100%!important;object-fit:contain!important;padding:16px 20px!important;filter:drop-shadow(0 14px 10px rgba(0,0,0,.28))!important}
+.fish-card-body{display:grid!important;gap:8px!important;padding:12px 4px 3px!important}
+.fish-card-heading{display:grid!important;gap:3px!important;margin-bottom:2px!important}
+.fish-source{font:700 9px/1.2 var(--mono)!important;letter-spacing:.09em!important;color:var(--ocean)!important}
+.fish-card-heading strong{font-size:1.12rem!important;line-height:1.2!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fish-rarity{font:700 .7rem/1 var(--mono)!important;color:var(--gold)!important}
+.fish-stat-row{display:grid!important;grid-template-columns:minmax(76px,.8fr) minmax(0,1.3fr)!important;align-items:center!important;gap:8px!important;padding:8px 9px!important;border:1px solid var(--line)!important;border-bottom:0!important;background:color-mix(in srgb,var(--bg) 55%,transparent)!important;color:var(--muted)!important;font:700 9px/1.15 var(--mono)!important;text-transform:uppercase;letter-spacing:.05em}
+.fish-stat-row:nth-last-of-type(1){border-bottom:1px solid var(--line)!important;border-radius:0 0 7px 7px!important}
+.fish-stat-row b{color:var(--text)!important;font:700 11px/1.2 var(--mono)!important;text-transform:none;letter-spacing:0;text-align:right!important}
+.fish-card-cue{margin-top:2px;color:var(--muted)!important;font-size:.68rem!important;line-height:1.35!important}
+.fish-state{border-radius:8px!important;border-color:var(--line)!important}
+.fish-load-more{display:block;margin:16px auto 0;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);padding:9px 14px;cursor:pointer}
+.fish-load-more:hover{background:var(--surface-2);border-color:var(--line-strong)}
+
+/* Modal/details share the same field-guide surfaces. */
+.fish-detail,.fish-compare-dialog{border-radius:12px!important;background:var(--bg)!important;border-color:var(--line-strong)!important;color:var(--text)!important}
+.fish-detail-shell,.fish-detail-body,.fish-compare-shell{background:var(--bg)!important}
+.fish-detail-bar,.fish-compare-bar{background:var(--bg-2)!important;border-color:var(--line)!important}
+.fish-detail-render,.fish-detail-section,.fish-detail-quick>div,.fish-trait-grid>div,.fish-advanced,.fish-compare-card{background:var(--surface)!important;border-color:var(--line)!important;border-radius:8px!important}
+.fish-detail-heading h2,.fish-compare-card h2{font-family:inherit!important}
+.fish-condition-list>div,.fish-percentile-card,.fish-compare-stats>div{background:var(--bg-2)!important;border-color:var(--line)!important;border-radius:6px!important}
+.fish-detail-close,.fish-detail-nav button,.fish-detail-actions button,.fish-compare-bar button,.fish-compare-swap{border-radius:4px!important;background:var(--surface)!important;border-color:var(--line)!important;color:var(--text)!important}
+
+/* Light mode keeps the Fish Wiki usable without changing layout. */
+html[data-theme="light"] .site-header,html[data-theme="light"] .sidebar,html[data-theme="light"] .footer{background:var(--bg-2)!important}
+html[data-theme="light"] .fish-toolbar{background:rgba(245,247,242,.96)!important}
+html[data-theme="light"] .fish-render{filter:drop-shadow(0 10px 10px rgba(20,40,45,.18))!important}
+
+@media(max-width:1180px){
+  .page-shell{grid-template-columns:250px minmax(0,1fr)!important}
+  .toc{display:none!important}
+  .fish-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:980px){
+  .top-nav a:nth-last-child(-n+2){display:none}
+  .search-trigger{min-width:44px!important;width:44px!important}
+  .search-trigger span,.search-trigger kbd{display:none!important}
+}
+@media(max-width:900px){
+  .page-shell,body[data-page="fish"] .page-shell{display:block!important;width:100%!important}
+  .sidebar{display:none!important}
+  .article,body[data-page="fish"] .article.fish-page{padding:30px 18px 56px!important}
+  .fish-hero{grid-template-columns:1fr!important}
+  .fish-hero-stats{justify-content:flex-start!important;overflow:auto}
+  .fish-catalog-layout{grid-template-columns:1fr!important}
+  .fish-toolbar{top:64px!important}
+  .fish-filters{position:fixed!important;top:auto!important;left:12px!important;right:12px!important;bottom:12px!important;max-height:78vh!important;border-radius:10px!important}
+  .fish-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .menu-trigger{display:inline-flex!important}
+  .top-nav{display:none!important}
+  .brand{min-width:0}
+}
+@media(max-width:620px){
+  .wrap{width:min(100% - 24px,var(--max))!important}
+  .brand-copy small{display:none}
+  .theme-trigger{display:none}
+  .hero{padding:30px 0!important}
+  .hero-grid{grid-template-columns:1fr!important}
+  .hero h1{font-size:clamp(2.9rem,16vw,4.8rem)!important}
+  .section-head{display:block!important}
+  .bento{display:block!important}.card,.card.wide{display:block!important;margin-bottom:10px!important;min-height:0!important}
+  .feature-grid{grid-template-columns:1fr!important}
+  .quickstats{grid-template-columns:1fr 1fr!important}.stat:nth-child(2){border-right:0!important}.stat{border-bottom:1px solid var(--line)!important}
+  .pipeline{display:block!important}.pipe{border-right:0!important;border-bottom:1px solid var(--line)!important}.pipe:last-child{border-bottom:0!important}
+  .fish-toolbar{grid-template-columns:1fr!important}
+  .fish-toolbar-actions{display:grid!important;grid-template-columns:1fr 1fr!important}
+  .fish-grid{grid-template-columns:1fr!important}
+  .fish-card-render{height:175px!important;min-height:175px!important}
+  .fish-provenance summary{align-items:flex-start;flex-direction:column;gap:2px}
+}
+@media(prefers-reduced-motion:reduce){
+  .fish-card,.card,.button{transition:none!important}
+  .fish-card:hover{transform:none!important}
+}

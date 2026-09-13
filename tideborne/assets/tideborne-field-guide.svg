@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Tideborne field guide mark">
+  <defs>
+    <linearGradient id="sea" x1="8" y1="5" x2="55" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#35b9aa"/><stop offset="1" stop-color="#11645f"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#sea)" d="M32 3C16.5 3 4 15.5 4 31s12.5 28 28 28 28-12.5 28-28S47.5 3 32 3Z"/>
+  <path fill="#e9dfc8" d="M15 19.5c6-2.7 11.5-2.1 17 1.2 5.5-3.3 11-3.9 17-1.2v25.7c-6-2.7-11.5-2.1-17 1.2-5.5-3.3-11-3.9-17-1.2V19.5Z"/>
+  <path fill="none" stroke="#b9aa85" stroke-width="2" d="M32 21v25M18.5 25c3.6-1 7-1 10.3.4M18.5 30c3.6-1 7-1 10.3.4M35.2 25.4c3.3-1.4 6.7-1.5 10.3-.4"/>
+  <path fill="#17736e" d="M45.8 35.4c-2.9-4.3-8.3-4.6-12.4-1.4l-3.8-2.6.7 4.2-.7 4.2 3.8-2.6c4.2 3.2 9.5 2.9 12.4-1.4l.2-.2-.2-.2Zm-5.1-.9a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2Z"/>
+</svg>
