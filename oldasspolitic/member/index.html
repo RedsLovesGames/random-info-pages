@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b12">
+<meta name="description" content="Detailed U.S. House and Senate member profile with campaign finance charts, donor statistics, service history, and source links.">
+<title>Member profile | Old Ass Politic</title>
+<link rel="stylesheet" href="./member.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+<script src="./member.js" defer></script>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="Back to Old Ass Politic">
+      <span class="brand-mark" aria-hidden="true">◒</span>
+      <span>Old Ass Politic</span>
+    </a>
+    <div class="top-actions">
+      <a class="btn ghost" href="../">← Chamber map</a>
+      <button class="btn ghost" id="copyLink" type="button">Copy profile link</button>
+    </div>
+  </header>
+
+  <main id="app">
+    <section class="hero panel" id="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Member finance profile</div>
+        <h1 id="memberName">Loading member...</h1>
+        <p id="memberSub" class="hero-sub">Loading congressional roster and campaign finance data.</p>
+        <div id="memberPills" class="pills"></div>
+      </div>
+      <div class="hero-side">
+        <div class="status-card">
+          <span class="status-dot"></span>
+          <div><strong id="dataStatus">Loading</strong><span id="dataStatusSub">Public data sources</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-grid" id="headlineStats" aria-label="Headline statistics">
+      <div class="stat panel"><span>Latest cycle raised</span><strong id="statRaised">-</strong><small id="statRaisedCycle">FEC</small></div>
+      <div class="stat panel"><span>Latest cycle spent</span><strong id="statSpent">-</strong><small>FEC disbursements</small></div>
+      <div class="stat panel"><span>Cash on hand</span><strong id="statCash">-</strong><small>Latest filing</small></div>
+      <div class="stat panel"><span>Service-era receipts</span><strong id="statCareer">-</strong><small id="statCareerCycles">Election cycles covered</small></div>
+      <div class="stat panel"><span>Age rank</span><strong id="statAgeRank">-</strong><small id="statAgeRankSub">Within chamber</small></div>
+      <div class="stat panel"><span>Years in Congress</span><strong id="statYears">-</strong><small id="statSince">Roster service history</small></div>
+    </section>
+
+    <section class="grid two">
+      <article class="panel chart-card">
+        <div class="section-head"><div><div class="kicker">Campaign history</div><h2>Receipts vs. spending by cycle</h2></div><span class="source-chip">FEC</span></div>
+        <div class="chart-wrap"><canvas id="cycleChart" aria-label="Campaign receipts and spending by election cycle"></canvas></div>
+        <p class="caption">Two-year election cycles tied to the member's FEC candidate IDs. Service-era coverage starts with the election cycle that led into their first listed term.</p>
+      </article>
+      <article class="panel chart-card">
+        <div class="section-head"><div><div class="kicker">Latest cycle</div><h2>Contribution mix</h2></div><span class="source-chip">FEC</span></div>
+        <div class="chart-wrap doughnut"><canvas id="mixChart" aria-label="Latest cycle contribution mix"></canvas></div>
+        <div id="mixLegend" class="mini-legend"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel chart-card">
+        <div class="section-head"><div><div class="kicker">Itemized individuals</div><h2>Top reported donor employers</h2></div><span class="source-chip">FEC Schedule A</span></div>
+        <div class="chart-wrap"><canvas id="employerChart" aria-label="Top donor employers"></canvas></div>
+        <p class="caption"><strong>Employer is not the donor.</strong> This groups itemized individual contributions by the employer each contributor reported.</p>
+      </article>
+      <article class="panel chart-card">
+        <div class="section-head"><div><div class="kicker">Context</div><h2>Age and service comparison</h2></div><span class="source-chip">Congress roster</span></div>
+        <div class="comparison" id="comparison"></div>
+      </article>
+    </section>
+
+    <section class="panel detail-panel">
+      <div class="section-head"><div><div class="kicker">Detailed statistics</div><h2>Campaign finance ratios and totals</h2></div></div>
+      <div class="detail-stats" id="detailStats"></div>
+    </section>
+
+    <section class="grid two">
+      <article class="panel list-card">
+        <div class="section-head"><div><div class="kicker">Current cycle</div><h2>Major donor employers</h2></div></div>
+        <div id="employerList" class="rank-list"></div>
+      </article>
+      <article class="panel list-card">
+        <div class="section-head"><div><div class="kicker">Current cycle</div><h2>PAC and committee contributions</h2></div></div>
+        <div id="pacList" class="rank-list"></div>
+      </article>
+    </section>
+
+    <section class="panel table-panel">
+      <div class="section-head"><div><div class="kicker">Election-cycle ledger</div><h2>Cycle-by-cycle finance history</h2></div><span class="source-chip">FEC totals</span></div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Cycle</th><th>Receipts</th><th>Spent</th><th>Individuals</th><th>PAC / committees</th><th>Cash on hand</th><th>Debt</th><th>Spend / receipts</th></tr></thead>
+          <tbody id="cycleRows"><tr><td colspan="8">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <article class="panel info-card">
+        <div class="section-head"><div><div class="kicker">Member details</div><h2>Office and service</h2></div></div>
+        <div id="memberDetails" class="info-grid"></div>
+      </article>
+      <article class="panel info-card">
+        <div class="section-head"><div><div class="kicker">Lobbying context</div><h2>Federal LDA lookup links</h2></div></div>
+        <div class="notice">Lobbying expenditures are organization-wide spending to influence the federal government. They are not campaign contributions to this member and are not treated as money the member received.</div>
+        <div id="lobbyingLinks" class="lobby-list"></div>
+      </article>
+    </section>
+
+    <section class="panel source-panel">
+      <div class="section-head"><div><div class="kicker">Sources and methodology</div><h2>Open the underlying records</h2></div></div>
+      <div id="sourceLinks" class="source-links"></div>
+      <div class="method-grid">
+        <p><strong>Campaign finance:</strong> FEC candidate totals, Schedule A employer groupings, and disclosed PAC / political committee contribution transactions.</p>
+        <p><strong>Service-era totals:</strong> summed two-year FEC cycles beginning with the election cycle leading into the member's first term in the congressional roster.</p>
+        <p><strong>Donor employers:</strong> employers reported by itemized individual contributors. This does not mean the employer itself contributed the displayed amount.</p>
+        <p><strong>Coverage:</strong> smaller unitemized contributions cannot be assigned to named donors or employers. FEC totals can change when committees file amendments.</p>
+      </div>
+    </section>
+
+    <section class="panel error-panel" id="errorPanel" hidden>
+      <h2>Profile could not be loaded</h2>
+      <p id="errorText"></p>
+      <a class="btn primary" href="../">Return to chamber map</a>
+    </section>
+  </main>
+
+  <footer>Old Ass Politic · Public congressional and FEC data · <a href="../">Back to chamber map</a></footer>
+</div>
+</body>
+</html>
