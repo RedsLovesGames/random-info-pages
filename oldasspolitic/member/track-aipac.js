@@ -17,7 +17,7 @@
   async function loadIdentity(){const id=queryId();if(!id)throw new Error("No member id in profile URL");const r=await fetch(SNAPSHOT_URL,{cache:"force-cache"});if(!r.ok)throw new Error("Congress roster unavailable");const rows=await r.json();const x=rows.find(v=>v.id?.bioguide===id);if(!x)throw new Error("Member not found in congressional roster");const terms=Array.isArray(x.terms)?x.terms:[],t=terms.at(-1)||{},name=x.name?.official_full||[x.name?.first,x.name?.middle,x.name?.last,x.name?.suffix].filter(Boolean).join(" ");return{id,name,state:t.state||"",chamber:t.type==="sen"?"Senate":"House",district:t.type==="sen"?null:(t.district??null)};}
 
   function matchEntry(entries,m){const nameKey=norm(m.name);if(m.chamber==="House"){
-    const seat=`${m.state}-${String(m.district??0).padStart(2,"0")}`;
+    const seat=`${m.state}-${Number(m.district)===0?"AL":String(m.district??0).padStart(2,"0")}`;
     const exact=entries.find(e=>e.seat===seat);
     if(exact)return exact;
   }
