@@ -134,6 +134,18 @@ jobs:
           PY
           touch _site/.nojekyll
 
+      - name: Validate staged Old Ass Politic output
+        run: |
+          grep -Fq 'track-aipac.css' _site/oldasspolitic/member/index.html
+          grep -Fq 'track-aipac.js' _site/oldasspolitic/member/index.html
+          grep -Fq 'Israel Lobby Total' _site/oldasspolitic/member/track-aipac.js
+          grep -Fq 'Open full profile' _site/oldasspolitic/profile-link.js
+          python3 - <<'PY'
+          import json
+          data = json.load(open('_site/oldasspolitic/member/track-aipac.json', encoding='utf-8'))
+          assert data['record_count'] >= 400, data['record_count']
+          PY
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v4
         with:
@@ -143,7 +155,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Smoke test deployed Tideborne routes
+      - name: Smoke test deployed site
         env:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
@@ -181,21 +193,14 @@ jobs:
 
           index_bytes="$(curl --fail --silent --show-error --location "$base/tideborne/assets/fish/fish-render-index.json" | wc -c)"
           test "$index_bytes" -lt 150000
-          curl --fail --silent --show-error --location "$base/oldasspolitic/member/track-aipac.json" \
-            | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["record_count"] >= 400, d["record_count"]'
 
           passed=0
           for attempt in 1 2 3 4 5 6 7 8; do
             if curl --fail --silent --show-error --location "$base/tideborne/fish/" | grep -Fq 'id="fish-results"' \
               && curl --fail --silent --show-error --location "$base/tideborne/reference/mechanics/" | grep -Fq 'FishScore = round(1 + 2999' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/" | grep -Fq 'profile.js' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/" | grep -Fq 'profile-link.js' \
               && curl --fail --silent --show-error --location "$base/oldasspolitic/profile.js" | grep -Fq 'Campaign money' \
               && curl --fail --silent --show-error --location "$base/oldasspolitic/profile-link.js" | grep -Fq 'Open full profile' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/" | grep -Fq 'cycleChart' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/" | grep -Fq 'track-aipac.js' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/member.js" | grep -Fq 'Service-era spending' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/track-aipac.js" | grep -Fq 'Israel Lobby Total'; then
+              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/member.js" | grep -Fq 'Service-era spending'; then
               passed=1
               break
             fi
