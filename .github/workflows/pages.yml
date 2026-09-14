@@ -36,17 +36,27 @@ jobs:
       - name: Build Track AIPAC congressional snapshot
         run: python3 scripts/build_track_aipac_snapshot.py oldasspolitic/member/track-aipac.json
 
+      - name: Build FEC sponsor intelligence snapshot
+        run: python3 scripts/build_fec_sponsor_snapshot.py oldasspolitic/member/fec-sponsors.json
+
       - name: Validate Old Ass Politic scripts
         run: |
-          python3 -m py_compile scripts/build_track_aipac_snapshot.py
+          python3 -m py_compile scripts/build_track_aipac_snapshot.py scripts/build_fec_sponsor_snapshot.py
           node --check oldasspolitic/profile.js
           node --check oldasspolitic/profile-link.js
           node --check oldasspolitic/member/member.js
           node --check oldasspolitic/member/track-aipac.js
+          node --check oldasspolitic/member/sponsor-insights.js
           python3 - <<'PY'
           import json
-          data = json.load(open('oldasspolitic/member/track-aipac.json', encoding='utf-8'))
-          assert data['record_count'] >= 400, data['record_count']
+          track = json.load(open('oldasspolitic/member/track-aipac.json', encoding='utf-8'))
+          assert track['record_count'] >= 400, track['record_count']
+          fec = json.load(open('oldasspolitic/member/fec-sponsors.json', encoding='utf-8'))
+          assert fec['member_count'] >= 400, fec['member_count']
+          assert fec['employer_group_count'] > 1000, fec['employer_group_count']
+          assert fec['occupation_group_count'] > 1000, fec['occupation_group_count']
+          assert len(fec['committee_profiles']) > 50, len(fec['committee_profiles'])
+          assert len(fec['employer_profiles']) > 100, len(fec['employer_profiles'])
           PY
 
       - name: Stage static site
@@ -69,6 +79,9 @@ jobs:
           cp oldasspolitic/member/track-aipac.css _site/oldasspolitic/member/track-aipac.css
           cp oldasspolitic/member/track-aipac.js _site/oldasspolitic/member/track-aipac.js
           cp oldasspolitic/member/track-aipac.json _site/oldasspolitic/member/track-aipac.json
+          cp oldasspolitic/member/sponsor-insights.css _site/oldasspolitic/member/sponsor-insights.css
+          cp oldasspolitic/member/sponsor-insights.js _site/oldasspolitic/member/sponsor-insights.js
+          cp oldasspolitic/member/fec-sponsors.json _site/oldasspolitic/member/fec-sponsors.json
           cp tide2/index.html _site/tide2/index.html
           cp tide2/mechanics-reference.html _site/tide2/mechanics-reference.html
           cp tide2/guide.css _site/tide2/guide.css
@@ -126,10 +139,16 @@ jobs:
           member_html = member.read_text()
           track_css = f'<link rel="stylesheet" href="./track-aipac.css?v={sha}">'
           track_js = f'<script src="./track-aipac.js?v={sha}" defer></script>'
+          sponsor_css = f'<link rel="stylesheet" href="./sponsor-insights.css?v={sha}">'
+          sponsor_js = f'<script src="./sponsor-insights.js?v={sha}" defer></script>'
           if 'track-aipac.css' not in member_html:
               member_html = member_html.replace('</head>', track_css + '\n</head>')
+          if 'sponsor-insights.css' not in member_html:
+              member_html = member_html.replace('</head>', sponsor_css + '\n</head>')
           if 'track-aipac.js' not in member_html:
               member_html = member_html.replace('</body>', track_js + '\n</body>')
+          if 'sponsor-insights.js' not in member_html:
+              member_html = member_html.replace('</body>', sponsor_js + '\n</body>')
           member.write_text(member_html)
           PY
           touch _site/.nojekyll
@@ -138,12 +157,20 @@ jobs:
         run: |
           grep -Fq 'track-aipac.css' _site/oldasspolitic/member/index.html
           grep -Fq 'track-aipac.js' _site/oldasspolitic/member/index.html
+          grep -Fq 'sponsor-insights.css' _site/oldasspolitic/member/index.html
+          grep -Fq 'sponsor-insights.js' _site/oldasspolitic/member/index.html
           grep -Fq 'Israel Lobby Total' _site/oldasspolitic/member/track-aipac.js
+          grep -Fq 'Companies, industries, professions & party splits' _site/oldasspolitic/member/sponsor-insights.js
           grep -Fq 'Open full profile' _site/oldasspolitic/profile-link.js
           python3 - <<'PY'
           import json
-          data = json.load(open('_site/oldasspolitic/member/track-aipac.json', encoding='utf-8'))
-          assert data['record_count'] >= 400, data['record_count']
+          track = json.load(open('_site/oldasspolitic/member/track-aipac.json', encoding='utf-8'))
+          assert track['record_count'] >= 400, track['record_count']
+          fec = json.load(open('_site/oldasspolitic/member/fec-sponsors.json', encoding='utf-8'))
+          assert fec['member_count'] >= 400, fec['member_count']
+          assert fec['occupation_group_count'] > 1000
+          assert fec['committee_profiles']
+          assert fec['employer_profiles']
           PY
 
       - name: Upload static site
@@ -173,6 +200,9 @@ jobs:
             "oldasspolitic/member/track-aipac.css"
             "oldasspolitic/member/track-aipac.js"
             "oldasspolitic/member/track-aipac.json"
+            "oldasspolitic/member/sponsor-insights.css"
+            "oldasspolitic/member/sponsor-insights.js"
+            "oldasspolitic/member/fec-sponsors.json"
             "tideborne/"
             "tideborne/fish/"
             "tideborne/fishing/"
@@ -200,7 +230,8 @@ jobs:
               && curl --fail --silent --show-error --location "$base/tideborne/reference/mechanics/" | grep -Fq 'FishScore = round(1 + 2999' \
               && curl --fail --silent --show-error --location "$base/oldasspolitic/profile.js" | grep -Fq 'Campaign money' \
               && curl --fail --silent --show-error --location "$base/oldasspolitic/profile-link.js" | grep -Fq 'Open full profile' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/member.js" | grep -Fq 'Service-era spending'; then
+              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/member.js" | grep -Fq 'Service-era spending' \
+              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/sponsor-insights.js" | grep -Fq 'Party split'; then
               passed=1
               break
             fi
