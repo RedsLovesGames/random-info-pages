@@ -43,6 +43,8 @@ jobs:
           cp index.html _site/index.html
           cp -r heatmap _site/heatmap
           cp oldasspolitic/index.html _site/oldasspolitic/index.html
+          cp oldasspolitic/profile.css _site/oldasspolitic/profile.css
+          cp oldasspolitic/profile.js _site/oldasspolitic/profile.js
           cp tide2/index.html _site/tide2/index.html
           cp tide2/mechanics-reference.html _site/tide2/mechanics-reference.html
           cp tide2/guide.css _site/tide2/guide.css
@@ -79,6 +81,16 @@ jobs:
           )
           html = html.replace('</body>', tags + '\n</body>')
           page.write_text(html)
+
+          politics = Path('_site/oldasspolitic/index.html')
+          politics_html = politics.read_text()
+          profile_css = f'<link rel="stylesheet" href="./profile.css?v={sha}">'
+          profile_js = f'<script src="./profile.js?v={sha}"></script>'
+          if 'profile.css' not in politics_html:
+              politics_html = politics_html.replace('</head>', profile_css + '\n</head>')
+          if 'profile.js' not in politics_html:
+              politics_html = politics_html.replace('</body>', profile_js + '\n</body>')
+          politics.write_text(politics_html)
           PY
           touch _site/.nojekyll
 
@@ -99,6 +111,8 @@ jobs:
           base="${SITE_URL%/}"
           routes=(
             "oldasspolitic/"
+            "oldasspolitic/profile.css"
+            "oldasspolitic/profile.js"
             "tideborne/"
             "tideborne/fish/"
             "tideborne/fishing/"
@@ -123,7 +137,9 @@ jobs:
           passed=0
           for attempt in 1 2 3 4 5 6 7 8; do
             if curl --fail --silent --show-error --location "$base/tideborne/fish/" | grep -Fq 'id="fish-results"' \
-              && curl --fail --silent --show-error --location "$base/tideborne/reference/mechanics/" | grep -Fq 'FishScore = round(1 + 2999'; then
+              && curl --fail --silent --show-error --location "$base/tideborne/reference/mechanics/" | grep -Fq 'FishScore = round(1 + 2999' \
+              && curl --fail --silent --show-error --location "$base/oldasspolitic/" | grep -Fq 'profile.js' \
+              && curl --fail --silent --show-error --location "$base/oldasspolitic/profile.js" | grep -Fq 'Campaign money'; then
               passed=1
               break
             fi
