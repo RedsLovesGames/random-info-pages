@@ -56,12 +56,16 @@ jobs:
           )
           PY
 
+      - name: Enrich FEC member finance history
+        run: python3 scripts/enrich_fec_member_finance.py oldasspolitic/member/fec-sponsors.json
+
       - name: Validate Old Ass Politic scripts
         run: |
-          python3 -m py_compile scripts/build_track_aipac_snapshot.py scripts/build_fec_sponsor_snapshot.py
+          python3 -m py_compile scripts/build_track_aipac_snapshot.py scripts/build_fec_sponsor_snapshot.py scripts/enrich_fec_member_finance.py
           node --check oldasspolitic/profile.js
           node --check oldasspolitic/profile-link.js
           node --check oldasspolitic/member/member.js
+          node --check oldasspolitic/member/member-bulk-dashboard.js
           node --check oldasspolitic/member/track-aipac.js
           node --check oldasspolitic/member/sponsor-insights.js
           python3 - <<'PY'
@@ -74,6 +78,9 @@ jobs:
           assert fec['occupation_group_count'] > 1000, fec['occupation_group_count']
           assert len(fec['committee_profiles']) > 50, len(fec['committee_profiles'])
           assert len(fec['employer_profiles']) > 100, len(fec['employer_profiles'])
+          assert fec['finance_member_count'] >= 400, fec['finance_member_count']
+          assert fec['finance_cycle_row_count'] > 1000, fec['finance_cycle_row_count']
+          assert any(v.get('finance_cycles') for v in fec['members'].values())
           PY
 
       - name: Stage static site
@@ -93,6 +100,8 @@ jobs:
           cp oldasspolitic/member/index.html _site/oldasspolitic/member/index.html
           cp oldasspolitic/member/member.css _site/oldasspolitic/member/member.css
           cp oldasspolitic/member/member.js _site/oldasspolitic/member/member.js
+          cp oldasspolitic/member/member-bulk-dashboard.css _site/oldasspolitic/member/member-bulk-dashboard.css
+          cp oldasspolitic/member/member-bulk-dashboard.js _site/oldasspolitic/member/member-bulk-dashboard.js
           cp oldasspolitic/member/track-aipac.css _site/oldasspolitic/member/track-aipac.css
           cp oldasspolitic/member/track-aipac.js _site/oldasspolitic/member/track-aipac.js
           cp oldasspolitic/member/track-aipac.json _site/oldasspolitic/member/track-aipac.json
@@ -154,18 +163,27 @@ jobs:
 
           member = Path('_site/oldasspolitic/member/index.html')
           member_html = member.read_text()
+          member_html = member_html.replace('<script src="./member.js" defer></script>', '')
           track_css = f'<link rel="stylesheet" href="./track-aipac.css?v={sha}">'
-          track_js = f'<script src="./track-aipac.js?v={sha}" defer></script>'
           sponsor_css = f'<link rel="stylesheet" href="./sponsor-insights.css?v={sha}">'
+          bulk_css = f'<link rel="stylesheet" href="./member-bulk-dashboard.css?v={sha}">'
+          bulk_js = f'<script src="./member-bulk-dashboard.js?v={sha}" defer></script>'
+          track_js = f'<script src="./track-aipac.js?v={sha}" defer></script>'
           sponsor_js = f'<script src="./sponsor-insights.js?v={sha}" defer></script>'
-          if 'track-aipac.css' not in member_html:
-              member_html = member_html.replace('</head>', track_css + '\n</head>')
-          if 'sponsor-insights.css' not in member_html:
-              member_html = member_html.replace('</head>', sponsor_css + '\n</head>')
-          if 'track-aipac.js' not in member_html:
-              member_html = member_html.replace('</body>', track_js + '\n</body>')
-          if 'sponsor-insights.js' not in member_html:
-              member_html = member_html.replace('</body>', sponsor_js + '\n</body>')
+          for marker, tag in (
+              ('track-aipac.css', track_css),
+              ('sponsor-insights.css', sponsor_css),
+              ('member-bulk-dashboard.css', bulk_css),
+          ):
+              if marker not in member_html:
+                  member_html = member_html.replace('</head>', tag + '\n</head>')
+          for marker, tag in (
+              ('member-bulk-dashboard.js', bulk_js),
+              ('track-aipac.js', track_js),
+              ('sponsor-insights.js', sponsor_js),
+          ):
+              if marker not in member_html:
+                  member_html = member_html.replace('</body>', tag + '\n</body>')
           member.write_text(member_html)
           PY
           touch _site/.nojekyll
@@ -176,8 +194,15 @@ jobs:
           grep -Fq 'track-aipac.js' _site/oldasspolitic/member/index.html
           grep -Fq 'sponsor-insights.css' _site/oldasspolitic/member/index.html
           grep -Fq 'sponsor-insights.js' _site/oldasspolitic/member/index.html
+          grep -Fq 'member-bulk-dashboard.css' _site/oldasspolitic/member/index.html
+          grep -Fq 'member-bulk-dashboard.js' _site/oldasspolitic/member/index.html
+          if grep -Fq '<script src="./member.js" defer></script>' _site/oldasspolitic/member/index.html; then
+            echo 'Legacy browser OpenFEC renderer is still enabled' >&2
+            exit 1
+          fi
           grep -Fq 'Israel Lobby Total' _site/oldasspolitic/member/track-aipac.js
           grep -Fq 'Companies, industries, professions & party splits' _site/oldasspolitic/member/sponsor-insights.js
+          grep -Fq 'Donation intelligence' _site/oldasspolitic/member/member-bulk-dashboard.js
           grep -Fq 'Open full profile' _site/oldasspolitic/profile-link.js
           python3 - <<'PY'
           import json
@@ -188,6 +213,8 @@ jobs:
           assert fec['occupation_group_count'] > 1000
           assert fec['committee_profiles']
           assert fec['employer_profiles']
+          assert fec['finance_member_count'] >= 400
+          assert fec['finance_cycle_row_count'] > 1000
           PY
 
       - name: Upload static site
@@ -214,6 +241,8 @@ jobs:
             "oldasspolitic/member/"
             "oldasspolitic/member/member.css"
             "oldasspolitic/member/member.js"
+            "oldasspolitic/member/member-bulk-dashboard.css"
+            "oldasspolitic/member/member-bulk-dashboard.js"
             "oldasspolitic/member/track-aipac.css"
             "oldasspolitic/member/track-aipac.js"
             "oldasspolitic/member/track-aipac.json"
@@ -261,7 +290,8 @@ jobs:
               && check_contains "tideborne/reference/mechanics/" 'FishScore = round(1 + 2999' \
               && check_contains "oldasspolitic/profile.js" 'Campaign money' \
               && check_contains "oldasspolitic/profile-link.js" 'Open full profile' \
-              && check_contains "oldasspolitic/member/member.js" 'Service-era spending' \
+              && check_contains "oldasspolitic/member/" 'member-bulk-dashboard.js' \
+              && check_contains "oldasspolitic/member/member-bulk-dashboard.js" 'Bulk data loaded' \
               && check_contains "oldasspolitic/member/sponsor-insights.js" 'Party split'; then
               passed=1
               break
