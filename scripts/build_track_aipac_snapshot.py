@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import sys
 import unicodedata
 from datetime import datetime, timezone
@@ -181,8 +182,53 @@ def parse(html: str) -> list[dict]:
     return deduped
 
 
+def bundle_profile_assets(repo_root: Path) -> None:
+    pairs = [
+        (
+            repo_root / "oldasspolitic/member/track-aipac.js",
+            repo_root / "oldasspolitic/member/fec-bulk.js",
+            "OAP_FEC_BULK_JS_BUNDLE",
+            "/* {} */\n",
+        ),
+        (
+            repo_root / "oldasspolitic/member/track-aipac.css",
+            repo_root / "oldasspolitic/member/fec-bulk.css",
+            "OAP_FEC_BULK_CSS_BUNDLE",
+            "/* {} */\n",
+        ),
+    ]
+    for target, addon, marker, marker_fmt in pairs:
+        target_text = target.read_text(encoding="utf-8")
+        if marker in target_text:
+            continue
+        addon_text = addon.read_text(encoding="utf-8")
+        target.write_text(target_text.rstrip() + "\n\n" + marker_fmt.format(marker) + addon_text.rstrip() + "\n", encoding="utf-8")
+        print(f"Bundled {addon.name} into {target.name}")
+
+
+def build_fec_sponsors(repo_root: Path, out_dir: Path) -> dict:
+    builder = repo_root / "scripts/build_fec_sponsor_snapshot.py"
+    tmp = out_dir / ".fec-sponsors.tmp.json"
+    result = subprocess.run([sys.executable, str(builder), str(tmp)], cwd=repo_root)
+    if result.returncode != 0:
+        raise RuntimeError(f"FEC sponsor snapshot builder failed with exit code {result.returncode}")
+    data = json.loads(tmp.read_text(encoding="utf-8"))
+    tmp.unlink(missing_ok=True)
+
+    members = int(data.get("member_count") or 0)
+    employers = int(data.get("employer_group_count") or 0)
+    pacs = int(data.get("pac_group_count") or 0)
+    if members < 300 or employers < 1000 or pacs < 100:
+        raise RuntimeError(
+            f"FEC sponsor snapshot unexpectedly sparse: {members} members, {employers} employer groups, {pacs} PAC groups"
+        )
+    return data
+
+
 def main() -> int:
     out = Path(sys.argv[1] if len(sys.argv) > 1 else "oldasspolitic/member/track-aipac.json")
+    repo_root = Path(__file__).resolve().parents[1]
+
     req = Request(
         SOURCE_URL,
         headers={
@@ -194,19 +240,31 @@ def main() -> int:
         html = response.read().decode("utf-8", "replace")
 
     entries = parse(html)
+    if len(entries) < 400:
+        print("ERROR: parsed fewer than 400 Track AIPAC congressional cards", file=sys.stderr)
+        return 2
+
+    try:
+        fec_sponsors = build_fec_sponsors(repo_root, out.parent)
+        bundle_profile_assets(repo_root)
+    except Exception as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 3
+
     payload = {
         "source": SOURCE_URL,
         "methodology": METHODOLOGY_URL,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "record_count": len(entries),
         "entries": entries,
+        "fec_sponsors": fec_sponsors,
     }
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    print(f"Track AIPAC snapshot: {len(entries)} entries -> {out}")
-    if len(entries) < 400:
-        print("ERROR: parsed fewer than 400 Track AIPAC congressional cards", file=sys.stderr)
-        return 2
+    print(
+        f"Combined profile snapshot: {len(entries)} Track AIPAC entries, "
+        f"{fec_sponsors['member_count']} FEC sponsor members -> {out}"
+    )
     return 0
 
 
