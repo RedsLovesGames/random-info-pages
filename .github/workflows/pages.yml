@@ -36,8 +36,25 @@ jobs:
       - name: Build Track AIPAC congressional snapshot
         run: python3 scripts/build_track_aipac_snapshot.py oldasspolitic/member/track-aipac.json
 
-      - name: Build FEC sponsor intelligence snapshot
-        run: python3 scripts/build_fec_sponsor_snapshot.py oldasspolitic/member/fec-sponsors.json
+      - name: Extract FEC sponsor intelligence snapshot
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          track_path = Path('oldasspolitic/member/track-aipac.json')
+          out_path = Path('oldasspolitic/member/fec-sponsors.json')
+          track = json.loads(track_path.read_text(encoding='utf-8'))
+          fec = track.get('fec_sponsors')
+          if not isinstance(fec, dict):
+              raise RuntimeError('Track AIPAC snapshot did not contain fec_sponsors')
+          out_path.write_text(json.dumps(fec, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+          print(
+              f"Extracted {fec.get('member_count', 0)} members, "
+              f"{fec.get('employer_group_count', 0)} employer groups, "
+              f"{fec.get('pac_group_count', 0)} PAC groups -> {out_path}"
+          )
+          PY
 
       - name: Validate Old Ass Politic scripts
         run: |
@@ -224,14 +241,28 @@ jobs:
           index_bytes="$(curl --fail --silent --show-error --location "$base/tideborne/assets/fish/fish-render-index.json" | wc -c)"
           test "$index_bytes" -lt 150000
 
+          check_contains() {
+            local route="$1"
+            local needle="$2"
+            local tmp
+            tmp="$(mktemp)"
+            if curl --fail --silent --show-error --location --retry 3 --retry-all-errors --retry-delay 2 --output "$tmp" "$base/$route" \
+              && grep -Fq "$needle" "$tmp"; then
+              rm -f "$tmp"
+              return 0
+            fi
+            rm -f "$tmp"
+            return 1
+          }
+
           passed=0
           for attempt in 1 2 3 4 5 6 7 8; do
-            if curl --fail --silent --show-error --location "$base/tideborne/fish/" | grep -Fq 'id="fish-results"' \
-              && curl --fail --silent --show-error --location "$base/tideborne/reference/mechanics/" | grep -Fq 'FishScore = round(1 + 2999' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/profile.js" | grep -Fq 'Campaign money' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/profile-link.js" | grep -Fq 'Open full profile' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/member.js" | grep -Fq 'Service-era spending' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/sponsor-insights.js" | grep -Fq 'Party split'; then
+            if check_contains "tideborne/fish/" 'id="fish-results"' \
+              && check_contains "tideborne/reference/mechanics/" 'FishScore = round(1 + 2999' \
+              && check_contains "oldasspolitic/profile.js" 'Campaign money' \
+              && check_contains "oldasspolitic/profile-link.js" 'Open full profile' \
+              && check_contains "oldasspolitic/member/member.js" 'Service-era spending' \
+              && check_contains "oldasspolitic/member/sponsor-insights.js" 'Party split'; then
               passed=1
               break
             fi
