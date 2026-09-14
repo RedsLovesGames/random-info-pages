@@ -33,6 +33,12 @@ jobs:
       - name: Validate Tideborne Fish Wiki integration
         run: python3 scripts/validate_tideborne_fish_wiki.py
 
+      - name: Validate Old Ass Politic scripts
+        run: |
+          node --check oldasspolitic/profile.js
+          node --check oldasspolitic/profile-link.js
+          node --check oldasspolitic/member/member.js
+
       - name: Stage static site
         env:
           DEPLOY_SHA: ${{ github.sha }}
