@@ -9,6 +9,9 @@
 <link rel="stylesheet" href="./member.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
 <script src="./member.js" defer></script>
+<style>
+.default-company-block{margin:14px 0 16px}.default-company-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}.default-company-head h3{margin:0;font-size:15px;letter-spacing:-.025em}.default-company-head p{margin:4px 0 0;color:#8f9aaa;font-size:10px;line-height:1.55}.default-company-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.default-company-card{border:1px solid rgba(255,255,255,.075);border-radius:14px;background:rgba(255,255,255,.018);padding:12px;min-width:0}.default-company-card h4{margin:0 0 4px;font-size:12px}.default-company-card>p{margin:0 0 10px;color:#7f8a9b;font-size:9px;line-height:1.5}.default-company-list{display:grid;gap:7px}.default-company-list .ta-sponsor-row{margin:0}.default-company-search-label{margin:14px 0 7px;color:#aeb7c5;font:600 10px DM Mono,monospace;text-transform:uppercase;letter-spacing:.06em}.default-company-empty{padding:14px;border:1px dashed rgba(255,255,255,.12);border-radius:11px;color:#7f8a9b;font-size:10px}.default-company-count{color:#697586;font:500 9px DM Mono,monospace}.default-company-card .ta-sponsor-row:nth-child(n+13){display:none}@media(max-width:850px){.default-company-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <div class="shell">
@@ -131,5 +134,95 @@
 
   <footer>Old Ass Politic · Public congressional and FEC data · <a href="../">Back to chamber map</a></footer>
 </div>
+<script>
+(() => {
+  "use strict";
+  let building=false;
+  const MAX_DEFAULT=12;
+
+  function cloneRows(list,typeSelect,value){
+    typeSelect.value=value;
+    typeSelect.dispatchEvent(new Event("change"));
+    return [...list.querySelectorAll(".ta-sponsor-row")]
+      .slice(0,MAX_DEFAULT)
+      .map(row=>row.cloneNode(true));
+  }
+
+  function makeCard(title,description,rows){
+    const card=document.createElement("div");
+    card.className="default-company-card";
+    const heading=document.createElement("h4");
+    heading.textContent=title;
+    const text=document.createElement("p");
+    text.textContent=description;
+    const list=document.createElement("div");
+    list.className="default-company-list";
+    if(rows.length){
+      rows.forEach(row=>list.append(row));
+    }else{
+      const empty=document.createElement("div");
+      empty.className="default-company-empty";
+      empty.textContent="No qualifying records were returned for this member in the current cycle.";
+      list.append(empty);
+    }
+    card.append(heading,text,list);
+    return card;
+  }
+
+  function enhanceSponsorPanel(){
+    if(building) return;
+    const panel=document.getElementById("taSponsorPanel");
+    if(!panel || panel.dataset.defaultCompanies==="1") return;
+    const list=panel.querySelector("#taSponsorList");
+    const search=panel.querySelector("#taSponsorSearch");
+    const typeSelect=panel.querySelector("#taSponsorType");
+    const controls=panel.querySelector(".ta-sponsor-controls");
+    const summary=panel.querySelector(".ta-sponsor-summary");
+    if(!list || !search || !typeSelect || !controls || !list.querySelector(".ta-sponsor-row")) return;
+
+    building=true;
+    const oldSearch=search.value;
+    const oldType=typeSelect.value;
+    search.value="";
+    search.dispatchEvent(new Event("input"));
+
+    const pacRows=cloneRows(list,typeSelect,"pac");
+    const employerRows=cloneRows(list,typeSelect,"employer");
+
+    typeSelect.value=oldType;
+    search.value=oldSearch;
+    typeSelect.dispatchEvent(new Event("change"));
+    search.dispatchEvent(new Event("input"));
+
+    const block=document.createElement("div");
+    block.className="default-company-block";
+    const head=document.createElement("div");
+    head.className="default-company-head";
+    head.innerHTML=`<div><h3>Top companies and organizations</h3><p>These lists are shown automatically. Use the search below to filter the full sponsor dataset.</p></div><span class="default-company-count">Top ${MAX_DEFAULT} per category</span>`;
+    const grid=document.createElement("div");
+    grid.className="default-company-grid";
+    grid.append(
+      makeCard("PAC / organizational support","PAC or committee contributions, showing connected or affiliated organizations when FEC metadata provides them.",pacRows),
+      makeCard("Donor employers","Itemized individual donors grouped by the employer they reported. Employer name does not mean the company itself donated.",employerRows)
+    );
+    block.append(head,grid);
+
+    const searchLabel=document.createElement("div");
+    searchLabel.className="default-company-search-label";
+    searchLabel.textContent="Search and filter all sponsor records";
+
+    if(summary) summary.after(block);
+    else controls.before(block);
+    controls.before(searchLabel);
+    panel.dataset.defaultCompanies="1";
+    building=false;
+  }
+
+  const observer=new MutationObserver(()=>requestAnimationFrame(enhanceSponsorPanel));
+  observer.observe(document.body,{childList:true,subtree:true});
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",enhanceSponsorPanel,{once:true});
+  else enhanceSponsorPanel();
+})();
+</script>
 </body>
 </html>
