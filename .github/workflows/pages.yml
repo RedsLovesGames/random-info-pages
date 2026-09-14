@@ -39,12 +39,17 @@ jobs:
         run: |
           rm -rf _site
           mkdir -p _site/tide2
-          mkdir -p _site/oldasspolitic
+          mkdir -p _site/oldasspolitic/member
           cp index.html _site/index.html
           cp -r heatmap _site/heatmap
           cp oldasspolitic/index.html _site/oldasspolitic/index.html
           cp oldasspolitic/profile.css _site/oldasspolitic/profile.css
           cp oldasspolitic/profile.js _site/oldasspolitic/profile.js
+          cp oldasspolitic/profile-link.css _site/oldasspolitic/profile-link.css
+          cp oldasspolitic/profile-link.js _site/oldasspolitic/profile-link.js
+          cp oldasspolitic/member/index.html _site/oldasspolitic/member/index.html
+          cp oldasspolitic/member/member.css _site/oldasspolitic/member/member.css
+          cp oldasspolitic/member/member.js _site/oldasspolitic/member/member.js
           cp tide2/index.html _site/tide2/index.html
           cp tide2/mechanics-reference.html _site/tide2/mechanics-reference.html
           cp tide2/guide.css _site/tide2/guide.css
@@ -85,11 +90,17 @@ jobs:
           politics = Path('_site/oldasspolitic/index.html')
           politics_html = politics.read_text()
           profile_css = f'<link rel="stylesheet" href="./profile.css?v={sha}">'
+          profile_link_css = f'<link rel="stylesheet" href="./profile-link.css?v={sha}">'
           profile_js = f'<script src="./profile.js?v={sha}"></script>'
+          profile_link_js = f'<script src="./profile-link.js?v={sha}"></script>'
           if 'profile.css' not in politics_html:
               politics_html = politics_html.replace('</head>', profile_css + '\n</head>')
+          if 'profile-link.css' not in politics_html:
+              politics_html = politics_html.replace('</head>', profile_link_css + '\n</head>')
           if 'profile.js' not in politics_html:
               politics_html = politics_html.replace('</body>', profile_js + '\n</body>')
+          if 'profile-link.js' not in politics_html:
+              politics_html = politics_html.replace('</body>', profile_link_js + '\n</body>')
           politics.write_text(politics_html)
           PY
           touch _site/.nojekyll
@@ -113,6 +124,11 @@ jobs:
             "oldasspolitic/"
             "oldasspolitic/profile.css"
             "oldasspolitic/profile.js"
+            "oldasspolitic/profile-link.css"
+            "oldasspolitic/profile-link.js"
+            "oldasspolitic/member/"
+            "oldasspolitic/member/member.css"
+            "oldasspolitic/member/member.js"
             "tideborne/"
             "tideborne/fish/"
             "tideborne/fishing/"
@@ -139,7 +155,11 @@ jobs:
             if curl --fail --silent --show-error --location "$base/tideborne/fish/" | grep -Fq 'id="fish-results"' \
               && curl --fail --silent --show-error --location "$base/tideborne/reference/mechanics/" | grep -Fq 'FishScore = round(1 + 2999' \
               && curl --fail --silent --show-error --location "$base/oldasspolitic/" | grep -Fq 'profile.js' \
-              && curl --fail --silent --show-error --location "$base/oldasspolitic/profile.js" | grep -Fq 'Campaign money'; then
+              && curl --fail --silent --show-error --location "$base/oldasspolitic/" | grep -Fq 'profile-link.js' \
+              && curl --fail --silent --show-error --location "$base/oldasspolitic/profile.js" | grep -Fq 'Campaign money' \
+              && curl --fail --silent --show-error --location "$base/oldasspolitic/profile-link.js" | grep -Fq 'Open full profile' \
+              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/" | grep -Fq 'cycleChart' \
+              && curl --fail --silent --show-error --location "$base/oldasspolitic/member/member.js" | grep -Fq 'Service-era spending'; then
               passed=1
               break
             fi
