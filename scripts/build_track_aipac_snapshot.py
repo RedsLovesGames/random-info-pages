@@ -1,0 +1,212 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import json
+import re
+import sys
+import unicodedata
+from datetime import datetime, timezone
+from html.parser import HTMLParser
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+SOURCE_URL = "https://www.trackaipac.com/congress"
+METHODOLOGY_URL = "https://www.trackaipac.com/blog/updated-methodology"
+SEAT_RE = re.compile(r"^(?P<state>[A-Z]{2})-(?P<seat>SEN|\d{1,2})(?:\s*\[(?P<party>[DIR])\])?$")
+MONEY_RE = re.compile(r"\$([0-9][0-9,]*(?:\.\d{1,2})?)")
+NOISE = {
+    "Download Graphics",
+    "Members of Congress",
+    "Candidates for Congress",
+    "Our Endorsed Candidates",
+    "Donate Now",
+    "Store",
+}
+
+
+class TextCollector(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.lines: list[str] = []
+        self._skip_depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in {"script", "style", "noscript"}:
+            self._skip_depth += 1
+
+    def handle_endtag(self, tag):
+        if tag in {"script", "style", "noscript"} and self._skip_depth:
+            self._skip_depth -= 1
+
+    def handle_data(self, data):
+        if self._skip_depth:
+            return
+        text = re.sub(r"\s+", " ", data).strip()
+        if text:
+            self.lines.append(text)
+
+
+def clean_name(value: str) -> str:
+    value = value.strip()
+    value = re.sub(r"^(?:Rep\.|Sen\.|Representative|Senator)\s+", "", value, flags=re.I)
+    return value
+
+
+def norm_name(value: str) -> str:
+    value = unicodedata.normalize("NFKD", clean_name(value)).encode("ascii", "ignore").decode("ascii")
+    value = re.sub(r"\b(?:jr|sr|ii|iii|iv)\.?\b", "", value, flags=re.I)
+    value = re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
+    return re.sub(r"\s+", " ", value)
+
+
+def money(line: str) -> float | None:
+    match = MONEY_RE.search(line)
+    if not match:
+        return None
+    return float(match.group(1).replace(",", ""))
+
+
+def is_group_line(line: str) -> bool:
+    if not line or ":" in line:
+        return False
+    if line.startswith(("Track AIPAC", "This ", "We encourage", "Next Election", "Up for", "Running for", "Retiring", "Signed", "✔", "WARNING")):
+        return False
+    # Track AIPAC group lists are mostly uppercase abbreviations with optional years.
+    tokens = re.findall(r"\b[A-Z][A-Z0-9]{1,11}\b", line)
+    return len(tokens) >= 1 and ("," in line or line.strip() in tokens or "AIPAC" in line or "JSTREET" in line)
+
+
+def rating_from(block: list[str]) -> tuple[str, str]:
+    joined = " ".join(block)
+    if "Track AIPAC Approved!" in joined:
+        return "approved", "Track AIPAC Approved"
+    for line in block:
+        lower = line.lower()
+        if "poor legislative record" in lower:
+            return "poor", line
+        if "continue improving" in lower and "legislative record" in lower:
+            return "improving", line
+        if "newly elected" in lower and "evaluat" in lower:
+            return "evaluating", line
+        if "warning" in lower:
+            return "warning", line
+    return "not_explicit", "No explicit qualitative legislative-record note shown on this Track AIPAC card."
+
+
+def previous_name(lines: list[str], idx: int) -> str:
+    for j in range(idx - 1, max(-1, idx - 8), -1):
+        candidate = lines[j].strip()
+        if not candidate or candidate in NOISE or SEAT_RE.match(candidate):
+            continue
+        if candidate.lower().startswith(("image:", "download graphics", "israel lobby total", "pacs:", "donations:", "ie:")):
+            continue
+        if len(candidate) > 80:
+            continue
+        return clean_name(candidate)
+    return "Unknown"
+
+
+def parse(html: str) -> list[dict]:
+    parser = TextCollector()
+    parser.feed(html)
+    lines = [x for x in parser.lines if x]
+    entries: list[dict] = []
+
+    seat_positions = [i for i, line in enumerate(lines) if SEAT_RE.match(line)]
+    for n, idx in enumerate(seat_positions):
+        seat_match = SEAT_RE.match(lines[idx])
+        if not seat_match:
+            continue
+        end = seat_positions[n + 1] if n + 1 < len(seat_positions) else min(len(lines), idx + 40)
+        block = lines[idx + 1 : min(end, idx + 40)]
+        name = previous_name(lines, idx)
+        state = seat_match.group("state")
+        seat_token = seat_match.group("seat")
+        seat_key = f"{state}-{'SEN' if seat_token == 'SEN' else int(seat_token):02d}" if seat_token != "SEN" else f"{state}-SEN"
+
+        total = pacs = ie = None
+        support_label = None
+        groups = ""
+        for line in block:
+            if line.startswith("Israel Lobby Total:"):
+                total = money(line)
+            elif line.startswith("PACs:"):
+                pacs = money(line)
+                support_label = "PACs"
+            elif line.startswith("Donations:"):
+                pacs = money(line)
+                support_label = "Donations"
+            elif line.startswith("IE:"):
+                ie = money(line)
+            elif not groups and is_group_line(line):
+                groups = line
+
+        rating_code, rating_text = rating_from(block)
+        groups_list = [g.strip() for g in groups.split(",") if g.strip()] if groups else []
+        aipac_named = any(re.search(r"\bAIPAC\b", g, re.I) for g in groups_list)
+
+        # Keep entries even when no dollar figure exists because Track AIPAC can mark members Approved.
+        if name == "Unknown" and total is None and rating_code == "not_explicit":
+            continue
+
+        entries.append(
+            {
+                "name": name,
+                "name_key": norm_name(name),
+                "seat": seat_key,
+                "party": seat_match.group("party") or "",
+                "israel_lobby_total": total,
+                "pac_or_donation_total": pacs,
+                "support_label": support_label or "PACs / donations",
+                "independent_expenditures": ie,
+                "groups_text": groups,
+                "groups": groups_list,
+                "aipac_named": aipac_named,
+                "rating_code": rating_code,
+                "rating_text": rating_text,
+            }
+        )
+
+    # De-duplicate exact name+seat entries while keeping the first card in page order.
+    deduped: list[dict] = []
+    seen: set[tuple[str, str]] = set()
+    for entry in entries:
+        key = (entry["name_key"], entry["seat"])
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(entry)
+    return deduped
+
+
+def main() -> int:
+    out = Path(sys.argv[1] if len(sys.argv) > 1 else "oldasspolitic/member/track-aipac.json")
+    req = Request(
+        SOURCE_URL,
+        headers={
+            "User-Agent": "Mozilla/5.0 (compatible; RandomInfoPages/1.0; +https://redslovesgames.github.io/random-info-pages/)",
+            "Accept": "text/html,application/xhtml+xml",
+        },
+    )
+    with urlopen(req, timeout=30) as response:
+        html = response.read().decode("utf-8", "replace")
+
+    entries = parse(html)
+    payload = {
+        "source": SOURCE_URL,
+        "methodology": METHODOLOGY_URL,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "record_count": len(entries),
+        "entries": entries,
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"Track AIPAC snapshot: {len(entries)} entries -> {out}")
+    if len(entries) < 400:
+        print("ERROR: parsed fewer than 400 Track AIPAC congressional cards", file=sys.stderr)
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
