@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""Build a current-cycle sponsor snapshot for Old Ass Politic from FEC bulk files.
+"""Build a current-cycle FEC sponsor/occupation snapshot for Old Ass Politic.
 
-This intentionally avoids the browser-facing OpenFEC DEMO_KEY. It joins current
-members to their authorized committees, groups itemized individual contributions
-by reported employer, and groups direct committee/PAC contributions by the
-source FEC committee. The output is a compact JSON file consumed by the member
-profile page.
+Sources:
+- current Congress roster
+- FEC candidate/committee linkage bulk data
+- FEC committee master bulk data
+- FEC individual contributions bulk data
+- FEC committee-to-candidate transactions (PAS2)
+
+The output powers member-level sponsor lists, profession/sector charts, and
+expandable sponsor profiles with party splits and top recipients.
 """
 
 from __future__ import annotations
@@ -13,7 +17,6 @@ from __future__ import annotations
 import datetime as dt
 import io
 import json
-import os
 import re
 import sqlite3
 import sys
@@ -26,7 +29,10 @@ from pathlib import Path
 YEAR = dt.datetime.now(dt.timezone.utc).year
 CYCLE = YEAR if YEAR % 2 == 0 else YEAR + 1
 BASE = f"https://www.fec.gov/files/bulk-downloads/{CYCLE}"
-ROSTER_URL = "https://cdn.jsdelivr.net/gh/unitedstates/congress-legislators@73e2fcd181e1c48d1b0580d417e8d0314b22f7c9/legislators-current.json"
+ROSTER_URL = (
+    "https://cdn.jsdelivr.net/gh/unitedstates/congress-legislators@"
+    "73e2fcd181e1c48d1b0580d417e8d0314b22f7c9/legislators-current.json"
+)
 URLS = {
     "ccl": f"{BASE}/ccl{str(CYCLE)[-2:]}.zip",
     "cm": f"{BASE}/cm{str(CYCLE)[-2:]}.zip",
@@ -38,6 +44,10 @@ GENERIC_EMPLOYERS = {
     "", "NONE", "N/A", "NA", "UNKNOWN", "NOT APPLICABLE", "NOT EMPLOYED",
     "UNEMPLOYED", "RETIRED", "HOMEMAKER", "INFORMATION REQUESTED",
     "REQUESTED", "SELF", "SELF EMPLOYED", "SELF-EMPLOYED",
+}
+GENERIC_OCCUPATIONS = {
+    "", "NONE", "N/A", "NA", "UNKNOWN", "NOT APPLICABLE", "INFORMATION REQUESTED",
+    "REQUESTED", "RETIRED", "HOMEMAKER", "UNEMPLOYED",
 }
 DIRECT_PAC_TYPES = {"24K", "24P", "24Z"}
 ORG_TYPES = {
@@ -52,17 +62,75 @@ CMTE_TYPES = {
     "V": "Hybrid PAC - nonqualified", "W": "Hybrid PAC - qualified", "X": "Party - nonqualified",
     "Y": "Party - qualified", "Z": "National party nonfederal account",
 }
+SECTOR_RULES = [
+    ("Healthcare", (
+        "PHYSICIAN", "DOCTOR", "SURGEON", "NURSE", "DENTIST", "MEDICAL", "MEDICINE",
+        "HEALTH", "HOSPITAL", "PHARM", "THERAP", "PSYCH", "CLINIC", "VETERIN",
+    )),
+    ("Legal", ("ATTORNEY", "LAWYER", "COUNSEL", "LAW FIRM", "LEGAL", "JUDGE")),
+    ("Finance & insurance", (
+        "FINANCE", "FINANCIAL", "BANK", "INVEST", "HEDGE", "PRIVATE EQUITY", "VENTURE",
+        "BROKER", "WEALTH", "INSUR", "ACCOUNTANT", "CPA", "ASSET MANAGEMENT",
+    )),
+    ("Technology & engineering", (
+        "SOFTWARE", "TECHNOLOGY", "TECH ", "ENGINEER", "COMPUTER", "DATA ", "DATA SCI",
+        "CYBER", "SEMICONDUCTOR", "INFORMATION TECHNOLOGY", "PROGRAMMER", "DEVELOPER",
+    )),
+    ("Education & research", (
+        "PROFESSOR", "TEACHER", "EDUCATION", "UNIVERSITY", "COLLEGE", "SCHOOL",
+        "RESEARCH", "SCIENTIST", "ACADEMIC", "FACULTY",
+    )),
+    ("Real estate & construction", (
+        "REAL ESTATE", "REALTOR", "PROPERTY", "CONSTRUCTION", "ARCHITECT",
+        "HOME BUILDER", "CONTRACTOR",
+    )),
+    ("Government & public service", (
+        "GOVERNMENT", "FEDERAL", "STATE OF ", "CITY OF ", "COUNTY", "PUBLIC SERVICE",
+        "CIVIL SERVANT", "MILITARY", "ARMY", "NAVY", "AIR FORCE", "POLICE", "FIREFIGHT",
+    )),
+    ("Media, arts & entertainment", (
+        "MEDIA", "JOURNALIST", "WRITER", "ARTIST", "ENTERTAINMENT", "FILM", "MUSIC",
+        "ACTOR", "PUBLISH", "PRODUCER", "DIRECTOR",
+    )),
+    ("Energy & utilities", (
+        "ENERGY", "OIL", "GAS", "PETROLEUM", "UTILITY", "UTILITIES", "ELECTRIC",
+        "SOLAR", "WIND", "MINING", "POWER",
+    )),
+    ("Manufacturing & industrial", (
+        "MANUFACTUR", "INDUSTRIAL", "FACTORY", "AUTOMOTIVE", "AEROSPACE", "CHEMICAL",
+        "MACHIN", "STEEL",
+    )),
+    ("Retail, food & hospitality", (
+        "RETAIL", "RESTAURANT", "HOSPITALITY", "HOTEL", "FOOD", "BEVERAGE", "GROCERY",
+    )),
+    ("Agriculture", ("FARM", "AGRICULT", "RANCH", "CROP", "LIVESTOCK")),
+    ("Nonprofit & advocacy", (
+        "NONPROFIT", "NON-PROFIT", "FOUNDATION", "CHARITY", "ADVOCACY", "NGO",
+        "ASSOCIATION", "PUBLIC INTEREST",
+    )),
+    ("Transportation & logistics", (
+        "TRANSPORT", "LOGISTICS", "AIRLINE", "PILOT", "TRUCK", "SHIPPING", "RAIL",
+        "FREIGHT", "DELIVERY",
+    )),
+    ("Consulting & professional services", (
+        "CONSULTANT", "CONSULTING", "ADVISOR", "ADVISORY", "MANAGEMENT CONSULT",
+    )),
+    ("Business & executives", (
+        "CEO", "CHIEF EXECUTIVE", "PRESIDENT", "EXECUTIVE", "OWNER", "ENTREPRENEUR",
+        "BUSINESS OWNER", "FOUNDER",
+    )),
+]
 
 
 def fetch_bytes(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": "OldAssPolitic-FEC-Snapshot/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "OldAssPolitic-FEC-Snapshot/2.0"})
     with urllib.request.urlopen(req, timeout=180) as r:
         return r.read()
 
 
 def download(url: str, dest: Path) -> None:
     print(f"Downloading {url}", flush=True)
-    req = urllib.request.Request(url, headers={"User-Agent": "OldAssPolitic-FEC-Snapshot/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "OldAssPolitic-FEC-Snapshot/2.0"})
     with urllib.request.urlopen(req, timeout=180) as r, dest.open("wb") as f:
         while True:
             chunk = r.read(1024 * 1024)
@@ -77,11 +145,19 @@ def zip_text_lines(path: Path):
         names = [n for n in zf.namelist() if not n.endswith("/")]
         if not names:
             raise RuntimeError(f"No files inside {path}")
-        # FEC bulk ZIPs normally contain one pipe-delimited text file.
         name = max(names, key=lambda n: zf.getinfo(n).file_size)
         with zf.open(name) as raw, io.TextIOWrapper(raw, encoding="latin-1", errors="replace", newline="") as text:
             for line in text:
                 yield line.rstrip("\r\n").split("|")
+
+
+def clean_party(value: str) -> str:
+    value = (value or "").strip()
+    if value.startswith("Democrat"):
+        return "Democrat"
+    if value.startswith("Republican"):
+        return "Republican"
+    return "Independent / other"
 
 
 def current_member_maps(roster):
@@ -104,8 +180,10 @@ def current_member_maps(roster):
         name = x.get("name", {}).get("official_full") or " ".join(
             str(x.get("name", {}).get(k) or "") for k in ("first", "middle", "last", "suffix")
         ).strip()
+        party = clean_party(term.get("party") or "")
         bio_meta[bio] = {
             "name": name,
+            "party": party,
             "state": term.get("state") or "",
             "chamber": chamber,
             "district": None if chamber == "Senate" else term.get("district"),
@@ -116,15 +194,21 @@ def current_member_maps(roster):
     return cand_to_bio, bio_meta
 
 
-def normalize_employer(value: str):
+def normalize_label(value: str, generic: set[str]):
     raw = re.sub(r"\s+", " ", (value or "").strip())
     key = raw.upper().replace("&AMP;", "&")
     key = re.sub(r"\s+", " ", key)
-    if key in GENERIC_EMPLOYERS:
-        return None
-    if len(key) < 2:
+    if not key or key in generic or len(key) < 2:
         return None
     return key, raw
+
+
+def sector_for(occupation: str, employer: str) -> str:
+    text = f"{occupation or ''} {employer or ''}".upper()
+    for sector, needles in SECTOR_RULES:
+        if any(n in text for n in needles):
+            return sector
+    return "Other / unclassified"
 
 
 def to_float(value: str) -> float:
@@ -141,6 +225,35 @@ def to_int(value: str) -> int:
         return 0
 
 
+def recipient_row(bio: str, amount: float, count: int, bio_meta: dict):
+    meta = bio_meta.get(bio, {})
+    return {
+        "bioguide": bio,
+        "name": meta.get("name") or bio,
+        "party": meta.get("party") or "Independent / other",
+        "chamber": meta.get("chamber") or "",
+        "state": meta.get("state") or "",
+        "district": meta.get("district"),
+        "amount": round(amount, 2),
+        "count": count,
+    }
+
+
+def finalize_profile(profile: dict) -> dict:
+    total = profile.get("total", 0.0)
+    parties = profile.get("party_totals", {})
+    top = profile.get("top_recipients", [])
+    return {
+        **profile,
+        "total": round(total, 2),
+        "party_totals": {k: round(v, 2) for k, v in parties.items()},
+        "recipient_count": profile.get("recipient_count", len(top)),
+        "top5_share": round(
+            100 * sum(r["amount"] for r in top[:5]) / total, 2
+        ) if total > 0 else 0,
+    }
+
+
 def main() -> int:
     out = Path(sys.argv[1] if len(sys.argv) > 1 else "oldasspolitic/member/fec-sponsors.json")
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -150,15 +263,14 @@ def main() -> int:
     if len(bio_meta) < 500:
         raise RuntimeError(f"Current congressional roster unexpectedly small: {len(bio_meta)}")
 
-    with tempfile.TemporaryDirectory(prefix="oap-fec-") as td:
-        td = Path(td)
+    with tempfile.TemporaryDirectory(prefix="oap-fec-") as td_raw:
+        td = Path(td_raw)
         files = {}
         for key, url in URLS.items():
             p = td / f"{key}.zip"
             download(url, p)
             files[key] = p
 
-        # Candidate -> authorized/principal current-cycle committees.
         committee_to_bio = {}
         committees_by_bio = defaultdict(set)
         for row in zip_text_lines(files["ccl"]):
@@ -173,7 +285,6 @@ def main() -> int:
             committee_to_bio[cmte_id] = bio
             committees_by_bio[bio].add(cmte_id)
 
-        # Committee metadata also gives a useful candidate linkage fallback.
         committee_meta = {}
         for row in zip_text_lines(files["cm"]):
             if len(row) < 15:
@@ -195,7 +306,11 @@ def main() -> int:
                 committee_to_bio.setdefault(cmte_id, bio)
                 committees_by_bio[bio].add(cmte_id)
 
-        print(f"Mapped {len(committee_to_bio)} authorized committees to {len(committees_by_bio)} current members", flush=True)
+        print(
+            f"Mapped {len(committee_to_bio)} authorized committees to "
+            f"{len(committees_by_bio)} current members",
+            flush=True,
+        )
 
         db = sqlite3.connect(td / "fec.sqlite")
         db.executescript("""
@@ -207,6 +322,9 @@ def main() -> int:
               bio TEXT NOT NULL,
               employer_key TEXT NOT NULL,
               employer_display TEXT NOT NULL,
+              occupation_key TEXT NOT NULL,
+              occupation_display TEXT NOT NULL,
+              sector TEXT NOT NULL,
               amount REAL NOT NULL,
               file_num INTEGER NOT NULL
             );
@@ -217,15 +335,26 @@ def main() -> int:
               amount REAL NOT NULL,
               file_num INTEGER NOT NULL
             );
+            CREATE INDEX indiv_bio_idx ON indiv(bio);
+            CREATE INDEX indiv_employer_idx ON indiv(employer_key);
+            CREATE INDEX indiv_occupation_idx ON indiv(occupation_key);
+            CREATE INDEX pac_bio_idx ON pac(bio);
+            CREATE INDEX pac_committee_idx ON pac(committee_id);
         """)
 
         indiv_sql = """
-            INSERT INTO indiv(txkey,bio,employer_key,employer_display,amount,file_num)
-            VALUES(?,?,?,?,?,?)
+            INSERT INTO indiv(
+              txkey,bio,employer_key,employer_display,occupation_key,
+              occupation_display,sector,amount,file_num
+            )
+            VALUES(?,?,?,?,?,?,?,?,?)
             ON CONFLICT(txkey) DO UPDATE SET
               bio=excluded.bio,
               employer_key=excluded.employer_key,
               employer_display=excluded.employer_display,
+              occupation_key=excluded.occupation_key,
+              occupation_display=excluded.occupation_display,
+              sector=excluded.sector,
               amount=excluded.amount,
               file_num=excluded.file_num
             WHERE excluded.file_num >= indiv.file_num
@@ -240,13 +369,24 @@ def main() -> int:
             bio = committee_to_bio.get(cmte_id)
             if not bio:
                 continue
-            employer = normalize_employer(row[11])
             amount = to_float(row[14])
-            if not employer or amount <= 0:
+            if amount <= 0:
                 continue
-            rpt_tp, pgi, tran_id, file_num, sub_id = row[2], row[3], row[16], to_int(row[17]), row[20]
+            employer = normalize_label(row[11], GENERIC_EMPLOYERS)
+            occupation = normalize_label(row[12], GENERIC_OCCUPATIONS)
+            if not employer and not occupation:
+                continue
+            employer_key, employer_display = employer or ("", "")
+            occupation_key, occupation_display = occupation or ("", "")
+            sector = sector_for(occupation_display, employer_display)
+            rpt_tp, pgi, tran_id, file_num, sub_id = (
+                row[2], row[3], row[16], to_int(row[17]), row[20]
+            )
             txkey = f"{cmte_id}|{rpt_tp}|{pgi}|{tran_id or sub_id}"
-            batch.append((txkey, bio, employer[0], employer[1], amount, file_num))
+            batch.append((
+                txkey, bio, employer_key, employer_display, occupation_key,
+                occupation_display, sector, amount, file_num,
+            ))
             kept += 1
             if len(batch) >= 10000:
                 db.executemany(indiv_sql, batch)
@@ -270,10 +410,7 @@ def main() -> int:
         scanned = kept = 0
         for row in zip_text_lines(files["pas2"]):
             scanned += 1
-            if len(row) < 22:
-                continue
-            tran_type = row[5]
-            if tran_type not in DIRECT_PAC_TYPES:
+            if len(row) < 22 or row[5] not in DIRECT_PAC_TYPES:
                 continue
             cand_id = row[16]
             bio = cand_to_bio.get(cand_id)
@@ -283,7 +420,9 @@ def main() -> int:
             amount = to_float(row[14])
             if not source_cmte or amount <= 0:
                 continue
-            rpt_tp, pgi, tran_id, file_num, sub_id = row[2], row[3], row[17], to_int(row[18]), row[21]
+            rpt_tp, pgi, tran_id, file_num, sub_id = (
+                row[2], row[3], row[17], to_int(row[18]), row[21]
+            )
             txkey = f"{source_cmte}|{cand_id}|{rpt_tp}|{pgi}|{tran_id or sub_id}"
             batch.append((txkey, bio, source_cmte, amount, file_num))
             kept += 1
@@ -293,18 +432,60 @@ def main() -> int:
         if batch:
             db.executemany(pac_sql, batch)
         db.commit()
-        print(f"Committee-to-candidate records scanned {scanned:,}, direct-support rows {kept:,}", flush=True)
+        print(
+            f"Committee-to-candidate records scanned {scanned:,}, "
+            f"direct-support rows {kept:,}",
+            flush=True,
+        )
 
         employers = defaultdict(list)
         for bio, key, display, amount, count in db.execute("""
             SELECT bio, employer_key, MAX(employer_display), SUM(amount), COUNT(*)
             FROM indiv
+            WHERE employer_key <> ''
             GROUP BY bio, employer_key
             HAVING SUM(amount) > 0
             ORDER BY bio, SUM(amount) DESC
         """):
             if len(employers[bio]) < 100:
-                employers[bio].append({"name": display or key, "amount": round(amount, 2), "count": count})
+                employers[bio].append({
+                    "key": key,
+                    "name": display or key,
+                    "amount": round(amount, 2),
+                    "count": count,
+                })
+
+        occupations = defaultdict(list)
+        for bio, key, display, amount, count in db.execute("""
+            SELECT bio, occupation_key, MAX(occupation_display), SUM(amount), COUNT(*)
+            FROM indiv
+            WHERE occupation_key <> ''
+            GROUP BY bio, occupation_key
+            HAVING SUM(amount) > 0
+            ORDER BY bio, SUM(amount) DESC
+        """):
+            if len(occupations[bio]) < 40:
+                occupations[bio].append({
+                    "key": key,
+                    "name": display or key,
+                    "amount": round(amount, 2),
+                    "count": count,
+                })
+
+        sectors = defaultdict(list)
+        for bio, sector, amount, count in db.execute("""
+            SELECT bio, sector, SUM(amount), COUNT(*)
+            FROM indiv
+            GROUP BY bio, sector
+            HAVING SUM(amount) > 0
+            ORDER BY bio, SUM(amount) DESC
+        """):
+            if len(sectors[bio]) < 20:
+                sectors[bio].append({
+                    "name": sector,
+                    "amount": round(amount, 2),
+                    "count": count,
+                })
 
         pacs = defaultdict(list)
         for bio, cmte_id, amount, count in db.execute("""
@@ -327,17 +508,97 @@ def main() -> int:
                 "committee_type": meta.get("committee_type") or "Committee",
             })
 
+        selected_employers = sorted({
+            e["key"] for rows in employers.values() for e in rows if e.get("key")
+        })
+        db.execute("CREATE TEMP TABLE selected_employer(key TEXT PRIMARY KEY)")
+        db.executemany(
+            "INSERT OR IGNORE INTO selected_employer(key) VALUES(?)",
+            [(k,) for k in selected_employers],
+        )
+
+        employer_profiles = {}
+        for key, bio, display, amount, count in db.execute("""
+            SELECT i.employer_key, i.bio, MAX(i.employer_display), SUM(i.amount), COUNT(*)
+            FROM indiv i
+            JOIN selected_employer s ON s.key = i.employer_key
+            GROUP BY i.employer_key, i.bio
+            HAVING SUM(i.amount) > 0
+            ORDER BY i.employer_key, SUM(i.amount) DESC
+        """):
+            p = employer_profiles.setdefault(key, {
+                "key": key,
+                "name": display or key,
+                "type": "Employer-grouped individual donors",
+                "total": 0.0,
+                "transaction_count": 0,
+                "recipient_count": 0,
+                "party_totals": defaultdict(float),
+                "top_recipients": [],
+            })
+            p["total"] += amount
+            p["transaction_count"] += count
+            p["recipient_count"] += 1
+            party = bio_meta.get(bio, {}).get("party") or "Independent / other"
+            p["party_totals"][party] += amount
+            if len(p["top_recipients"]) < 15:
+                p["top_recipients"].append(recipient_row(bio, amount, count, bio_meta))
+
+        employer_profiles = {
+            k: finalize_profile({**v, "party_totals": dict(v["party_totals"])})
+            for k, v in employer_profiles.items()
+        }
+
+        committee_profiles = {}
+        for cmte_id, bio, amount, count in db.execute("""
+            SELECT committee_id, bio, SUM(amount), COUNT(*)
+            FROM pac
+            GROUP BY committee_id, bio
+            HAVING SUM(amount) > 0
+            ORDER BY committee_id, SUM(amount) DESC
+        """):
+            meta = committee_meta.get(cmte_id, {})
+            p = committee_profiles.setdefault(cmte_id, {
+                "committee_id": cmte_id,
+                "name": meta.get("name") or cmte_id,
+                "connected_org": meta.get("connected_org") or "",
+                "organization_type": meta.get("organization_type") or "",
+                "committee_type": meta.get("committee_type") or "Committee",
+                "type": "Direct PAC / committee contributions",
+                "total": 0.0,
+                "transaction_count": 0,
+                "recipient_count": 0,
+                "party_totals": defaultdict(float),
+                "top_recipients": [],
+            })
+            p["total"] += amount
+            p["transaction_count"] += count
+            p["recipient_count"] += 1
+            party = bio_meta.get(bio, {}).get("party") or "Independent / other"
+            p["party_totals"][party] += amount
+            if len(p["top_recipients"]) < 15:
+                p["top_recipients"].append(recipient_row(bio, amount, count, bio_meta))
+
+        committee_profiles = {
+            k: finalize_profile({**v, "party_totals": dict(v["party_totals"])})
+            for k, v in committee_profiles.items()
+        }
+
         members = {}
         for bio, meta in bio_meta.items():
             emps = employers.get(bio, [])
             pcs = pacs.get(bio, [])
-            if not emps and not pcs:
+            occs = occupations.get(bio, [])
+            sect = sectors.get(bio, [])
+            if not emps and not pcs and not occs:
                 continue
             members[bio] = {
                 **meta,
                 "committee_ids": sorted(committees_by_bio.get(bio, set())),
                 "employers": emps,
                 "pacs": pcs,
+                "occupations": occs,
+                "sectors": sect,
             }
 
         payload = {
@@ -346,7 +607,10 @@ def main() -> int:
             "member_count": len(members),
             "employer_group_count": sum(len(v["employers"]) for v in members.values()),
             "pac_group_count": sum(len(v["pacs"]) for v in members.values()),
+            "occupation_group_count": sum(len(v["occupations"]) for v in members.values()),
             "members": members,
+            "employer_profiles": employer_profiles,
+            "committee_profiles": committee_profiles,
             "sources": {
                 "roster": ROSTER_URL,
                 "candidate_committee_linkages": URLS["ccl"],
@@ -355,18 +619,46 @@ def main() -> int:
                 "committee_candidate_activity": URLS["pas2"],
             },
             "methodology": {
-                "employers": "Itemized individual contributions to current members' authorized committees, grouped by the employer reported by each donor.",
-                "pacs": "Direct committee-to-candidate contribution transaction types 24K, 24P and 24Z from the FEC PAS2 bulk file, grouped by source committee.",
-                "amendments": "For repeated electronic transaction IDs, the row from the highest FEC file number is retained before aggregation.",
+                "employers": (
+                    "Itemized individual contributions to current members' authorized "
+                    "committees, grouped by the employer reported by each donor."
+                ),
+                "occupations": (
+                    "Itemized individual contributions grouped by the occupation text "
+                    "reported by each donor."
+                ),
+                "sectors": (
+                    "Broad industry/profession sectors are heuristic keyword classifications "
+                    "derived from reported occupation and employer text; they are not FEC "
+                    "industry codes."
+                ),
+                "pacs": (
+                    "Direct committee-to-candidate contribution transaction types 24K, 24P "
+                    "and 24Z from the FEC PAS2 bulk file, grouped by source committee."
+                ),
+                "party_splits": (
+                    "Party splits aggregate the same current-cycle records across current "
+                    "members of Congress in the roster."
+                ),
+                "amendments": (
+                    "For repeated electronic transaction IDs, the row from the highest FEC "
+                    "file number is retained before aggregation."
+                ),
             },
         }
-        out.write_text(json.dumps(payload, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
+        out.write_text(
+            json.dumps(payload, separators=(",", ":"), ensure_ascii=False),
+            encoding="utf-8",
+        )
         print(
             f"Wrote {out}: {len(members)} members, "
-            f"{payload['employer_group_count']} employer groups, {payload['pac_group_count']} PAC groups",
+            f"{payload['employer_group_count']} employer groups, "
+            f"{payload['pac_group_count']} PAC groups, "
+            f"{payload['occupation_group_count']} occupation groups, "
+            f"{len(employer_profiles)} employer profiles, "
+            f"{len(committee_profiles)} committee profiles",
             flush=True,
         )
-
     return 0
 
 
