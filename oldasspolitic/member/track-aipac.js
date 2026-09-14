@@ -7,7 +7,11 @@
   const FEC_FOREIGN="https://www.fec.gov/help-candidates-and-committees/foreign-nationals/";
 
   const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  const money=v=>Number.isFinite(Number(v))?new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(Number(v)):"Not shown";
+  const money=v=>{
+    if(v===null||v===undefined||v==="")return"Not shown";
+    const n=Number(v);
+    return Number.isFinite(n)?new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(n):"Not shown";
+  };
   const norm=s=>String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\b(jr|sr|ii|iii|iv)\.?\b/g,"").replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
   const queryId=()=>new URLSearchParams(location.search).get("id")||location.hash.replace(/^#member=/,"");
   const ratingLabel=code=>({approved:"Track AIPAC Approved",poor:"Poor legislative record",improving:"Improving legislative record",evaluating:"Under evaluation",warning:"Track AIPAC warning",not_explicit:"No explicit record note"}[code]||"No explicit record note");
@@ -30,20 +34,20 @@
 
   function insertShell(){let section=document.getElementById("trackAipacPanel");if(section)return section;section=document.createElement("section");section.className="panel ta-section";section.id="trackAipacPanel";section.innerHTML=`<div class="ta-loading">Loading Track AIPAC data...</div>`;const source=document.querySelector(".source-panel");if(source)source.before(section);else document.querySelector("main")?.append(section);return section;}
 
-  function render(section,entry,snapshot){const total=Number(entry.israel_lobby_total),pac=Number(entry.pac_or_donation_total),ie=Number(entry.independent_expenditures);const safeTotal=Number.isFinite(total)?total:0,safePac=Number.isFinite(pac)?pac:0,safeIe=Number.isFinite(ie)?ie:0,pacPct=safeTotal>0?Math.max(0,Math.min(100,safePac/safeTotal*100)):0,iePct=safeTotal>0?Math.max(0,Math.min(100,safeIe/safeTotal*100)):0;const groups=(entry.groups||[]).map(g=>`<span class="ta-group${/\bAIPAC\b/i.test(g)?" aipac":""}">${esc(g)}</span>`).join("");const generated=snapshot.generated_at?new Date(snapshot.generated_at).toLocaleString():"Unknown";section.innerHTML=`
-    <div class="section-head ta-head"><div><div class="ta-kicker">Track AIPAC</div><h2>AIPAC / pro-Israel campaign influence</h2><p class="ta-sub">Track AIPAC's own U.S. campaign-finance totals and qualitative policy-record label for this member.</p></div><a class="ta-source" href="${TRACK_URL}" target="_blank" rel="noreferrer">Open Track AIPAC ↗</a></div>
+  function render(section,entry,snapshot){const total=entry.israel_lobby_total===null?0:Number(entry.israel_lobby_total),pac=entry.pac_or_donation_total===null?0:Number(entry.pac_or_donation_total),ie=entry.independent_expenditures===null?0:Number(entry.independent_expenditures);const safeTotal=Number.isFinite(total)?total:0,safePac=Number.isFinite(pac)?pac:0,safeIe=Number.isFinite(ie)?ie:0,pacPct=safeTotal>0?Math.max(0,Math.min(100,safePac/safeTotal*100)):0,iePct=safeTotal>0?Math.max(0,Math.min(100,safeIe/safeTotal*100)):0;const groups=(entry.groups||[]).map(g=>`<span class="ta-group${/\bAIPAC\b/i.test(g)?" aipac":""}">${esc(g)}</span>`).join("");const generated=snapshot.generated_at?new Date(snapshot.generated_at).toLocaleString():"Unknown";section.innerHTML=`
+    <div class="section-head ta-head"><div><div class="ta-kicker">Track AIPAC</div><h2>AIPAC / pro-Israel campaign influence</h2><p class="ta-sub">Track AIPAC's U.S. campaign-finance categories and qualitative policy-record label for this member.</p></div><a class="ta-source" href="${TRACK_URL}" target="_blank" rel="noreferrer">Open Track AIPAC ↗</a></div>
     <div class="ta-body">
       <div class="ta-stats">
         <div class="ta-stat"><span>Israel Lobby Total</span><strong>${money(entry.israel_lobby_total)}</strong><small>Track AIPAC category</small></div>
-        <div class="ta-stat"><span>${esc(entry.support_label||"PACs / donations")}</span><strong>${money(entry.pac_or_donation_total)}</strong><small>Track AIPAC</small></div>
-        <div class="ta-stat"><span>Independent expenditures</span><strong>${money(entry.independent_expenditures)}</strong><small>Not money given to candidate</small></div>
+        <div class="ta-stat"><span>${esc(entry.support_label||"PACs / donations")}</span><strong>${money(entry.pac_or_donation_total)}</strong><small>Track AIPAC category, not necessarily AIPAC alone</small></div>
+        <div class="ta-stat"><span>Independent expenditures</span><strong>${money(entry.independent_expenditures)}</strong><small>Outside spending, not money given to candidate</small></div>
         <div class="ta-stat"><span>Track AIPAC record status</span><strong class="ta-rating ${esc(entry.rating_code)}">${esc(ratingLabel(entry.rating_code))}</strong><small>Qualitative, not a numeric vote score</small></div>
         <div class="ta-stat"><span>AIPAC named among groups</span><strong>${entry.aipac_named?"Yes":"No"}</strong><small>Based on Track AIPAC card</small></div>
       </div>
       <div class="ta-grid">
         <div class="ta-card">
           <h3>Tracked money breakdown</h3>
-          <div class="ta-copy">Track AIPAC separates direct PAC/donation support from independent expenditures. Independent expenditures are outside spending supporting or opposing a candidate and are not funds received by the campaign.</div>
+          <div class="ta-copy">Track AIPAC separates its PAC/donation category from independent expenditures. The tracker does not assign a separate dollar amount to every listed organization, so this page does not treat the whole total as direct AIPAC PAC money.</div>
           <div class="ta-bar" aria-label="Track AIPAC money breakdown"><div class="ta-bar-pac" style="width:${pacPct}%"></div><div class="ta-bar-ie" style="width:${iePct}%"></div></div>
           <div class="ta-legend"><span><i class="ta-dot pac"></i>${esc(entry.support_label||"PACs / donations")}: ${money(entry.pac_or_donation_total)}</span><span><i class="ta-dot ie"></i>Independent expenditures: ${money(entry.independent_expenditures)}</span></div>
           ${groups?`<div class="ta-groups">${groups}</div>`:`<div class="ta-note">Track AIPAC does not list lobbying/PAC group abbreviations on this member card.</div>`}
