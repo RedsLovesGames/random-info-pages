@@ -1,8 +1,7 @@
 (() => {
   "use strict";
 
-  const SNAPSHOT_URL = "./fec-sponsors.json";
-  const GENERIC_EMPTY = /no (?:qualifying|employer|sponsor)|rate limited|no records/i;
+  const SNAPSHOT_URL = "./track-aipac.json";
 
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -21,12 +20,12 @@
     if(!items?.length) return '<div class="empty">No FEC bulk records were found for this category in the current cycle.</div>';
     const max = Math.max(...items.map(x=>Number(x.amount)||0), 1);
     return items.map((x,i)=>{
-      const pct = Math.max(3, Math.min(100, (Number(x.amount)||0) / max * 100));
+      const bar = Math.max(3, Math.min(100, (Number(x.amount)||0) / max * 100));
       const detail = kind === "pac"
         ? [x.connected_org, x.committee_type, x.count ? `${Number(x.count).toLocaleString()} contribution${Number(x.count)===1?"":"s"}` : ""].filter(Boolean).join(" · ")
         : `${Number(x.count||0).toLocaleString()} itemized contribution${Number(x.count)===1?"":"s"}`;
       return `<div class="rank-row fec-bulk-row" data-search="${esc(norm(`${x.name} ${x.connected_org||""} ${x.committee_type||""}`))}">
-        <div class="rank-fill" style="width:${pct}%"></div>
+        <div class="rank-fill" style="width:${bar}%"></div>
         <div class="rank-content">
           <div><strong>${i+1}. ${esc(x.name)}</strong><span>${esc(detail)}</span></div>
           <strong>${money(x.amount)}</strong>
@@ -124,7 +123,6 @@
     const search = panel.querySelector("#fecBulkSponsorSearch");
     const type = panel.querySelector("#fecBulkSponsorType");
     const target = panel.querySelector("#fecBulkSponsorRows");
-
     const draw = () => {
       const q = norm(search.value);
       const mode = type.value;
@@ -179,8 +177,10 @@
     if(!memberId) return;
     try{
       const r = await fetch(SNAPSHOT_URL, {cache:"no-store"});
-      if(!r.ok) throw new Error(`FEC snapshot request failed (${r.status})`);
-      const snapshot = await r.json();
+      if(!r.ok) throw new Error(`Combined snapshot request failed (${r.status})`);
+      const combined = await r.json();
+      const snapshot = combined.fec_sponsors;
+      if(!snapshot) throw new Error("FEC sponsor snapshot missing from combined data");
       const member = snapshot.members?.[memberId];
       if(!member) return;
 
@@ -188,7 +188,6 @@
       run();
       const observer = new MutationObserver(()=>run());
       observer.observe(document.body, {childList:true, subtree:true});
-      // Async member.js / Track AIPAC renders can land after DOMContentLoaded.
       let attempts = 0;
       const timer = setInterval(()=>{
         run();
