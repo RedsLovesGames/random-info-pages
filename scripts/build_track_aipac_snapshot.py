@@ -12,7 +12,7 @@ from urllib.request import Request, urlopen
 
 SOURCE_URL = "https://www.trackaipac.com/congress"
 METHODOLOGY_URL = "https://www.trackaipac.com/blog/updated-methodology"
-SEAT_RE = re.compile(r"^(?P<state>[A-Z]{2})-(?P<seat>SEN|\d{1,2})(?:\s*\[(?P<party>[DIR])\])?$")
+SEAT_RE = re.compile(r"^(?P<state>[A-Z]{2})-(?P<seat>SEN|AL|\d{1,2})(?:\s*\[(?P<party>[DIR])\])?$")
 MONEY_RE = re.compile(r"\$([0-9][0-9,]*(?:\.\d{1,2})?)")
 NOISE = {
     "Download Graphics",
@@ -71,7 +71,6 @@ def is_group_line(line: str) -> bool:
         return False
     if line.startswith(("Track AIPAC", "This ", "We encourage", "Next Election", "Up for", "Running for", "Retiring", "Signed", "✔", "WARNING")):
         return False
-    # Track AIPAC group lists are mostly uppercase abbreviations with optional years.
     tokens = re.findall(r"\b[A-Z][A-Z0-9]{1,11}\b", line)
     return len(tokens) >= 1 and ("," in line or line.strip() in tokens or "AIPAC" in line or "JSTREET" in line)
 
@@ -122,7 +121,12 @@ def parse(html: str) -> list[dict]:
         name = previous_name(lines, idx)
         state = seat_match.group("state")
         seat_token = seat_match.group("seat")
-        seat_key = f"{state}-{'SEN' if seat_token == 'SEN' else int(seat_token):02d}" if seat_token != "SEN" else f"{state}-SEN"
+        if seat_token == "SEN":
+            seat_key = f"{state}-SEN"
+        elif seat_token == "AL":
+            seat_key = f"{state}-AL"
+        else:
+            seat_key = f"{state}-{int(seat_token):02d}"
 
         total = pacs = ie = None
         support_label = None
@@ -145,7 +149,6 @@ def parse(html: str) -> list[dict]:
         groups_list = [g.strip() for g in groups.split(",") if g.strip()] if groups else []
         aipac_named = any(re.search(r"\bAIPAC\b", g, re.I) for g in groups_list)
 
-        # Keep entries even when no dollar figure exists because Track AIPAC can mark members Approved.
         if name == "Unknown" and total is None and rating_code == "not_explicit":
             continue
 
@@ -167,7 +170,6 @@ def parse(html: str) -> list[dict]:
             }
         )
 
-    # De-duplicate exact name+seat entries while keeping the first card in page order.
     deduped: list[dict] = []
     seen: set[tuple[str, str]] = set()
     for entry in entries:
