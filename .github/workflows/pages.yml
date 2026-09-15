@@ -92,6 +92,7 @@ jobs:
           mkdir -p _site/oldasspolitic/member
           cp index.html _site/index.html
           cp -r heatmap _site/heatmap
+          cp -r wanuiv2 _site/wanuiv2
           cp oldasspolitic/index.html _site/oldasspolitic/index.html
           cp oldasspolitic/profile.css _site/oldasspolitic/profile.css
           cp oldasspolitic/profile.js _site/oldasspolitic/profile.js
@@ -204,6 +205,7 @@ jobs:
           grep -Fq 'Companies, industries, professions & party splits' _site/oldasspolitic/member/sponsor-insights.js
           grep -Fq 'Donation intelligence' _site/oldasspolitic/member/member-bulk-dashboard.js
           grep -Fq 'Open full profile' _site/oldasspolitic/profile-link.js
+          grep -Fq '<title>Emperor Director v2</title>' _site/wanuiv2/index.html
           python3 - <<'PY'
           import json
           track = json.load(open('_site/oldasspolitic/member/track-aipac.json', encoding='utf-8'))
@@ -233,6 +235,7 @@ jobs:
           set -euo pipefail
           base="${SITE_URL%/}"
           routes=(
+            "wanuiv2/"
             "oldasspolitic/"
             "oldasspolitic/profile.css"
             "oldasspolitic/profile.js"
@@ -286,7 +289,8 @@ jobs:
 
           passed=0
           for attempt in 1 2 3 4 5 6 7 8; do
-            if check_contains "tideborne/fish/" 'id="fish-results"' \
+            if check_contains "wanuiv2/" '<title>Emperor Director v2</title>' \
+              && check_contains "tideborne/fish/" 'id="fish-results"' \
               && check_contains "tideborne/reference/mechanics/" 'FishScore = round(1 + 2999' \
               && check_contains "oldasspolitic/profile.js" 'Campaign money' \
               && check_contains "oldasspolitic/profile-link.js" 'Open full profile' \
