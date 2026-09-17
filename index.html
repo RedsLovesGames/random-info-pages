@@ -1,30 +1,51 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <meta name="description" content="A simple index of standalone reference pages.">
-  <title>Random Info Pages</title>
-  <style>
-    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#1f2328;background:#fff}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#fff;color:#1f2328}main{width:min(880px,calc(100% - 40px));margin:0 auto;padding:72px 0}h1{margin:0 0 8px;font-size:clamp(2rem,6vw,3rem);line-height:1.1;letter-spacing:-.03em}.lead{margin:0 0 36px;color:#656d76;font-size:1.05rem}.list{border:1px solid #d0d7de;border-radius:6px;overflow:hidden}.item{display:block;padding:20px;color:inherit;text-decoration:none;border-bottom:1px solid #d8dee4;background:#fff}.item:last-child{border-bottom:0}.item:hover{background:#f6f8fa}.item strong{display:block;margin-bottom:4px;font-size:1rem;color:#0969da}.item span{color:#656d76;font-size:.92rem;line-height:1.5}footer{margin-top:36px;color:#8c959f;font-size:.82rem}@media(prefers-color-scheme:dark){:root,body{color:#f0f6fc;background:#0d1117}.lead,.item span{color:#8b949e}.list{border-color:#30363d}.item{background:#0d1117;border-bottom-color:#21262d}.item:hover{background:#161b22}.item strong{color:#58a6ff}footer{color:#6e7681}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090d16">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="RedsLovesGames project hub for school tools, Tideborne references, visualizations, dashboards, and experiments.">
+<title>Random Info Pages</title>
+<style>
+:root{--bg:#080b12;--bg2:#0d1320;--panel:#101725;--panel2:#151e30;--line:#25324a;--text:#f5f7fb;--muted:#9ba7bb;--blue:#6ea8fe;--cyan:#5ee7ff;--violet:#b493ff;--green:#69dda5;--amber:#ffc966;--red:#ff7381;--shadow:0 22px 70px rgba(0,0,0,.3);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(1000px 500px at 50% -10%,rgba(82,124,255,.16),transparent 68%),linear-gradient(180deg,#0b101b 0,var(--bg) 55%);color:var(--text)}a{color:inherit}.wrap{width:min(1180px,calc(100% - 28px));margin:auto}.top{position:sticky;top:0;z-index:20;backdrop-filter:blur(18px);background:rgba(8,11,18,.76);border-bottom:1px solid rgba(255,255,255,.07)}.topin{height:58px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{display:flex;align-items:center;gap:10px;font-weight:850;letter-spacing:-.03em}.brandmark{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--cyan),var(--violet));color:#071015;font-weight:1000}.repo{font-size:.82rem;color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.025)}.repo:hover{color:var(--text);border-color:#40506d}header{padding:58px 0 34px}.eyebrow{font-size:.76rem;text-transform:uppercase;letter-spacing:.14em;font-weight:850;color:var(--blue)}h1{margin:9px 0 16px;font-size:clamp(3rem,9vw,6.7rem);line-height:.88;letter-spacing:-.075em;max-width:950px}.lead{max-width:760px;margin:0;color:var(--muted);font-size:clamp(1rem,2vw,1.15rem);line-height:1.65}.quick{display:flex;gap:9px;flex-wrap:wrap;margin-top:24px}.quick a{text-decoration:none;border:1px solid var(--line);background:rgba(255,255,255,.035);padding:10px 13px;border-radius:12px;font-size:.86rem;color:#dbe5f6}.quick a:hover{border-color:#445878;background:rgba(255,255,255,.06)}.section{padding:20px 0 42px}.sectionhead{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:16px}.sectionhead h2{margin:0;font-size:1.45rem;letter-spacing:-.03em}.sectionhead p{margin:0;color:var(--muted);font-size:.9rem}.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}.card{position:relative;display:flex;flex-direction:column;min-height:220px;padding:22px;border:1px solid var(--line);border-radius:22px;text-decoration:none;background:linear-gradient(160deg,rgba(21,30,48,.98),rgba(13,19,32,.96));box-shadow:var(--shadow);overflow:hidden;transition:.18s ease}.card:before{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-70px;top:-85px;background:var(--glow,rgba(110,168,254,.16));filter:blur(2px)}.card:hover{transform:translateY(-3px);border-color:#435471}.card.big{grid-column:span 6;min-height:280px}.card.med{grid-column:span 4}.card.small{grid-column:span 3;min-height:190px}.icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);font-size:1.35rem;margin-bottom:22px}.kicker{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent,var(--blue));font-weight:850}.card h3{font-size:clamp(1.25rem,2vw,1.65rem);letter-spacing:-.035em;margin:7px 0 8px}.card p{margin:0;color:var(--muted);line-height:1.55;font-size:.92rem;max-width:570px}.arrow{margin-top:auto;padding-top:22px;font-size:.86rem;font-weight:800;color:#dce7fa}.primary{--accent:var(--green);--glow:rgba(105,221,165,.16)}.purple{--accent:var(--violet);--glow:rgba(180,147,255,.17)}.cyan{--accent:var(--cyan);--glow:rgba(94,231,255,.14)}.amber{--accent:var(--amber);--glow:rgba(255,201,102,.14)}.red{--accent:var(--red);--glow:rgba(255,115,129,.13)}.subgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.subcard{display:block;text-decoration:none;border:1px solid var(--line);border-radius:14px;padding:14px;background:#0e1523}.subcard:hover{border-color:#40506b;background:#121b2b}.subcard b{display:block;font-size:.9rem}.subcard span{display:block;color:var(--muted);font-size:.77rem;margin-top:3px;line-height:1.35}.footer{padding:12px 0 48px;color:var(--muted);font-size:.82rem}.footer a{color:#cbd7eb;text-decoration:none}@media(max-width:900px){.card.big{grid-column:span 12}.card.med{grid-column:span 6}.card.small{grid-column:span 6}.subgrid{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){header{padding-top:38px}.card.med,.card.small{grid-column:span 12}.subgrid{grid-template-columns:1fr}.sectionhead{align-items:start;flex-direction:column;gap:4px}.repo{display:none}.card{min-height:190px}.card.big{min-height:230px}}
+</style>
 </head>
 <body>
-  <main>
-    <h1>Random Info Pages</h1>
-    <p class="lead">A simple index of standalone reference pages.</p>
-    <div class="list" aria-label="Available pages">
-      <a class="item" href="./oldasspolitic/">
-        <strong>Old Ass Politic</strong>
-        <span>Interactive semicircle maps of the current U.S. House and Senate by party, age, generation, region, and voting status.</span>
-      </a>
-      <a class="item" href="./tide2/">
-        <strong>Tideborne Fishing System 2.0</strong>
-        <span>Interactive legacy-versus-new comparison, mechanics visualizations, and live calculators.</span>
-      </a>
-    </div>
-    <footer>RedsLovesGames · GitHub Pages</footer>
-  </main>
+<div class="top"><div class="wrap topin"><div class="brand"><div class="brandmark">R</div><span>Random Info Pages</span></div><a class="repo" href="https://github.com/RedsLovesGames/random-info-pages">GitHub repository ↗</a></div></div>
+<header class="wrap"><div class="eyebrow">RedsLovesGames project hub</div><h1>Everything, in one place.</h1><p class="lead">School planning, Tideborne tools and documentation, political data views, visual experiments, and local AI interface prototypes. This page is the front door to every public project in this site.</p><div class="quick"><a href="#daily">Daily tools</a><a href="#tideborne">Tideborne</a><a href="#visuals">Visualizations</a><a href="#experiments">Experiments</a></div></header>
+<main class="wrap">
+<section class="section" id="daily"><div class="sectionhead"><h2>Daily tools</h2><p>Things meant to be opened often.</p></div><div class="grid">
+<a class="card big primary" href="./school-schedule/"><div class="icon">📚</div><div class="kicker">Fall 2026</div><h3>School Schedule</h3><p>Interactive weekly planner with real checkboxes, daily deadlines, classes, lab cutoffs, major upcoming work, and persistent completion state.</p><div class="arrow">Open school dashboard →</div></a>
+<a class="card big cyan" href="./wanuiv2/"><div class="icon">🎬</div><div class="kicker">AI workspace prototype</div><h3>Emperor Director</h3><p>Dense production UI concept for WAN model workflows, scene direction, references, generation controls, queues, and quality-assurance tooling.</p><div class="arrow">Open Emperor Director →</div></a>
+</div></section>
+<section class="section" id="tideborne"><div class="sectionhead"><h2>Tideborne</h2><p>Player guides, mechanics, fish data, and reference tools.</p></div><div class="grid">
+<a class="card big purple" href="./tideborne/"><div class="icon">🐟</div><div class="kicker">Main documentation site</div><h3>Tideborne</h3><p>The full player-facing hub for specimens, FishScore, gear, fishing, storage, records, and the Fish Wiki.</p><div class="arrow">Enter Tideborne →</div></a>
+<a class="card big amber" href="./tide2/"><div class="icon">🎣</div><div class="kicker">Interactive mechanics</div><h3>Fishing System 2.0</h3><p>Interactive Fishing Luck, Trait Luck, specimen traits, Perfect Catch, Momentum, FishScore, persistence, and live calculators.</p><div class="arrow">Open Fishing System 2.0 →</div></a>
+</div><div class="subgrid" aria-label="Tideborne direct links">
+<a class="subcard" href="./tideborne/getting-started/"><b>Getting Started</b><span>Fast introduction to the mod.</span></a>
+<a class="subcard" href="./tideborne/fish/"><b>Fish Wiki</b><span>Search fish by name, mod, rarity, and habitat.</span></a>
+<a class="subcard" href="./tideborne/fishing/"><b>Fishing</b><span>Size, traits, Perfect Catch, Momentum, and scoring.</span></a>
+<a class="subcard" href="./tideborne/gear/"><b>Gear</b><span>Lines, leaders, bobbers, hooks, and bait.</span></a>
+<a class="subcard" href="./tideborne/satchel/"><b>Satchel</b><span>Storage, sorting, upgrades, and protected catches.</span></a>
+<a class="subcard" href="./tideborne/journal/"><b>Journal</b><span>Discoveries, records, Top Fish, and teams.</span></a>
+<a class="subcard" href="./tideborne/reference/mechanics/"><b>Mechanics Reference</b><span>Exact formulas, tables, and system numbers.</span></a>
+</div></section>
+<section class="section" id="visuals"><div class="sectionhead"><h2>Visualizations</h2><p>Interactive comparisons and data exploration.</p></div><div class="grid">
+<a class="card med red" href="./oldasspolitic/"><div class="icon">🏛️</div><div class="kicker">U.S. Congress</div><h3>Old Ass Politic</h3><p>Interactive House and Senate views by party, age, generation, region, voting status, and member details.</p><div class="arrow">Open congressional dashboard →</div></a>
+<a class="card med cyan" href="./heatmap/"><div class="icon">🧭</div><div class="kicker">10Groups</div><h3>Multi-Person Heatmap</h3><p>Combined and single-circle 10Groups heatmaps, overlap combinations, coordinate exploration, and comparison views.</p><div class="arrow">Open heatmap →</div></a>
+<a class="card med purple" href="./heatmap/compare/"><div class="icon">📐</div><div class="kicker">10Groups comparison</div><h3>Compass + Axes</h3><p>Alternate comparison view for the same 10Groups result set.</p><div class="arrow">Open comparison →</div></a>
+</div></section>
+<section class="section" id="experiments"><div class="sectionhead"><h2>Project index</h2><p>Direct routes to every top-level public area currently in the repository.</p></div><div class="grid">
+<a class="card small primary" href="./school-schedule/"><div class="kicker">/school-schedule</div><h3>School Schedule</h3><div class="arrow">Open →</div></a>
+<a class="card small red" href="./oldasspolitic/"><div class="kicker">/oldasspolitic</div><h3>Old Ass Politic</h3><div class="arrow">Open →</div></a>
+<a class="card small amber" href="./tide2/"><div class="kicker">/tide2</div><h3>Fishing 2.0</h3><div class="arrow">Open →</div></a>
+<a class="card small purple" href="./tideborne/"><div class="kicker">/tideborne</div><h3>Tideborne Site</h3><div class="arrow">Open →</div></a>
+<a class="card small cyan" href="./heatmap/"><div class="kicker">/heatmap</div><h3>10Groups Heatmap</h3><div class="arrow">Open →</div></a>
+<a class="card small cyan" href="./wanuiv2/"><div class="kicker">/wanuiv2</div><h3>Emperor Director</h3><div class="arrow">Open →</div></a>
+</div></section>
+</main>
+<footer class="wrap footer">RedsLovesGames · <a href="https://github.com/RedsLovesGames/random-info-pages">random-info-pages</a> · GitHub Pages</footer>
 </body>
 </html>
