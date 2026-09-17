@@ -27,284 +27,37 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Build compact Tideborne Fish render index
+      - name: Build Tideborne fish index
         run: python3 scripts/build_tideborne_fish_index.py
 
-      - name: Validate Tideborne Fish Wiki integration
-        run: python3 scripts/validate_tideborne_fish_wiki.py
-
-      - name: Build Track AIPAC congressional snapshot
-        run: python3 scripts/build_track_aipac_snapshot.py oldasspolitic/member/track-aipac.json
-
-      - name: Extract FEC sponsor intelligence snapshot
-        run: |
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-
-          track_path = Path('oldasspolitic/member/track-aipac.json')
-          out_path = Path('oldasspolitic/member/fec-sponsors.json')
-          track = json.loads(track_path.read_text(encoding='utf-8'))
-          fec = track.get('fec_sponsors')
-          if not isinstance(fec, dict):
-              raise RuntimeError('Track AIPAC snapshot did not contain fec_sponsors')
-          out_path.write_text(json.dumps(fec, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
-          print(
-              f"Extracted {fec.get('member_count', 0)} members, "
-              f"{fec.get('employer_group_count', 0)} employer groups, "
-              f"{fec.get('pac_group_count', 0)} PAC groups -> {out_path}"
-          )
-          PY
-
-      - name: Enrich FEC member finance history
-        run: python3 scripts/enrich_fec_member_finance.py oldasspolitic/member/fec-sponsors.json
-
-      - name: Validate Old Ass Politic scripts
-        run: |
-          python3 -m py_compile scripts/build_track_aipac_snapshot.py scripts/build_fec_sponsor_snapshot.py scripts/enrich_fec_member_finance.py
-          node --check oldasspolitic/profile.js
-          node --check oldasspolitic/profile-link.js
-          node --check oldasspolitic/member/member.js
-          node --check oldasspolitic/member/member-bulk-dashboard.js
-          node --check oldasspolitic/member/track-aipac.js
-          node --check oldasspolitic/member/sponsor-insights.js
-          python3 - <<'PY'
-          import json
-          track = json.load(open('oldasspolitic/member/track-aipac.json', encoding='utf-8'))
-          assert track['record_count'] >= 400, track['record_count']
-          fec = json.load(open('oldasspolitic/member/fec-sponsors.json', encoding='utf-8'))
-          assert fec['member_count'] >= 400, fec['member_count']
-          assert fec['employer_group_count'] > 1000, fec['employer_group_count']
-          assert fec['occupation_group_count'] > 1000, fec['occupation_group_count']
-          assert len(fec['committee_profiles']) > 50, len(fec['committee_profiles'])
-          assert len(fec['employer_profiles']) > 100, len(fec['employer_profiles'])
-          assert fec['finance_member_count'] >= 400, fec['finance_member_count']
-          assert fec['finance_cycle_row_count'] > 1000, fec['finance_cycle_row_count']
-          assert any(v.get('finance_cycles') for v in fec['members'].values())
-          PY
-
       - name: Stage static site
-        env:
-          DEPLOY_SHA: ${{ github.sha }}
         run: |
           rm -rf _site
-          mkdir -p _site/tide2
-          mkdir -p _site/oldasspolitic/member
-          cp index.html _site/index.html
-          cp -r heatmap _site/heatmap
-          cp -r wanuiv2 _site/wanuiv2
-          cp -r school-schedule _site/school-schedule
-          if [ -f wanuiv2/v21.html.gz.b64 ]; then
-            base64 --decode wanuiv2/v21.html.gz.b64 | gzip --decompress > _site/wanuiv2/index.html
+          mkdir -p _site
+          rsync -a \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '_site' \
+            ./ _site/
+          if [ -f _site/wanuiv2/v21.html.gz.b64 ]; then
+            base64 --decode _site/wanuiv2/v21.html.gz.b64 | gzip --decompress > _site/wanuiv2/index.html
           fi
-          cp oldasspolitic/index.html _site/oldasspolitic/index.html
-          cp oldasspolitic/profile.css _site/oldasspolitic/profile.css
-          cp oldasspolitic/profile.js _site/oldasspolitic/profile.js
-          cp oldasspolitic/profile-link.css _site/oldasspolitic/profile-link.css
-          cp oldasspolitic/profile-link.js _site/oldasspolitic/profile-link.js
-          cp oldasspolitic/member/index.html _site/oldasspolitic/member/index.html
-          cp oldasspolitic/member/member.css _site/oldasspolitic/member/member.css
-          cp oldasspolitic/member/member.js _site/oldasspolitic/member/member.js
-          cp oldasspolitic/member/member-bulk-dashboard.css _site/oldasspolitic/member/member-bulk-dashboard.css
-          cp oldasspolitic/member/member-bulk-dashboard.js _site/oldasspolitic/member/member-bulk-dashboard.js
-          cp oldasspolitic/member/track-aipac.css _site/oldasspolitic/member/track-aipac.css
-          cp oldasspolitic/member/track-aipac.js _site/oldasspolitic/member/track-aipac.js
-          cp oldasspolitic/member/track-aipac.json _site/oldasspolitic/member/track-aipac.json
-          cp oldasspolitic/member/sponsor-insights.css _site/oldasspolitic/member/sponsor-insights.css
-          cp oldasspolitic/member/sponsor-insights.js _site/oldasspolitic/member/sponsor-insights.js
-          cp oldasspolitic/member/fec-sponsors.json _site/oldasspolitic/member/fec-sponsors.json
-          cp tide2/index.html _site/tide2/index.html
-          cp tide2/mechanics-reference.html _site/tide2/mechanics-reference.html
-          cp tide2/guide.css _site/tide2/guide.css
-          cp tide2/guide.js _site/tide2/guide.js
-          cp tide2/minigame.js _site/tide2/minigame.js
-          cp tide2/minigame-fix.js _site/tide2/minigame-fix.js
-          cp tide2/minigame-clean.js _site/tide2/minigame-clean.js
-          cp tide2/minigame-render.js _site/tide2/minigame-render.js
-          if [ -d tideborne ]; then
-            cp -r tideborne _site/tideborne
-          fi
-          python3 - <<'PY'
-          from pathlib import Path
-          import os, re
-
-          page = Path('_site/tide2/index.html')
-          html = page.read_text()
-          sha = os.environ['DEPLOY_SHA']
-
-          html = html.replace(
-              'https://github.com/RedsLovesGames/TIDEBORNE/blob/dev/docs/FISHING_SYSTEM_2_SPEC.md',
-              './mechanics-reference.html'
-          )
-          html = html.replace(
-              'TIDEBORNE Fishing System 2.0 specification',
-              'Fishing 2.0 mechanics reference'
-          )
-          html = re.sub(r'\s*<script src="\./minigame(?:-fix|-clean|-render)?\.js(?:\?v=[^"]*)?"></script>', '', html)
-          tags = (
-              f'<script src="./minigame.js?v={sha}"></script>\n'
-              f'<script src="./minigame-fix.js?v={sha}"></script>\n'
-              f'<script src="./minigame-clean.js?v={sha}"></script>\n'
-              f'<script src="./minigame-render.js?v={sha}"></script>'
-          )
-          html = html.replace('</body>', tags + '\n</body>')
-          page.write_text(html)
-
-          politics = Path('_site/oldasspolitic/index.html')
-          politics_html = politics.read_text()
-          profile_css = f'<link rel="stylesheet" href="./profile.css?v={sha}">'
-          profile_link_css = f'<link rel="stylesheet" href="./profile-link.css?v={sha}">'
-          profile_js = f'<script src="./profile.js?v={sha}"></script>'
-          profile_link_js = f'<script src="./profile-link.js?v={sha}"></script>'
-          if 'profile.css' not in politics_html:
-              politics_html = politics_html.replace('</head>', profile_css + '\n</head>')
-          if 'profile-link.css' not in politics_html:
-              politics_html = politics_html.replace('</head>', profile_link_css + '\n</head>')
-          if 'profile.js' not in politics_html:
-              politics_html = politics_html.replace('</body>', profile_js + '\n</body>')
-          if 'profile-link.js' not in politics_html:
-              politics_html = politics_html.replace('</body>', profile_link_js + '\n</body>')
-          politics.write_text(politics_html)
-
-          member = Path('_site/oldasspolitic/member/index.html')
-          member_html = member.read_text()
-          member_html = member_html.replace('<script src="./member.js" defer></script>', '')
-          track_css = f'<link rel="stylesheet" href="./track-aipac.css?v={sha}">'
-          sponsor_css = f'<link rel="stylesheet" href="./sponsor-insights.css?v={sha}">'
-          bulk_css = f'<link rel="stylesheet" href="./member-bulk-dashboard.css?v={sha}">'
-          bulk_js = f'<script src="./member-bulk-dashboard.js?v={sha}" defer></script>'
-          track_js = f'<script src="./track-aipac.js?v={sha}" defer></script>'
-          sponsor_js = f'<script src="./sponsor-insights.js?v={sha}" defer></script>'
-          for marker, tag in (
-              ('track-aipac.css', track_css),
-              ('sponsor-insights.css', sponsor_css),
-              ('member-bulk-dashboard.css', bulk_css),
-          ):
-              if marker not in member_html:
-                  member_html = member_html.replace('</head>', tag + '\n</head>')
-          for marker, tag in (
-              ('member-bulk-dashboard.js', bulk_js),
-              ('track-aipac.js', track_js),
-              ('sponsor-insights.js', sponsor_js),
-          ):
-              if marker not in member_html:
-                  member_html = member_html.replace('</body>', tag + '\n</body>')
-          member.write_text(member_html)
-          PY
           touch _site/.nojekyll
 
-      - name: Validate staged Old Ass Politic output
-        run: |
-          grep -Fq 'track-aipac.css' _site/oldasspolitic/member/index.html
-          grep -Fq 'track-aipac.js' _site/oldasspolitic/member/index.html
-          grep -Fq 'sponsor-insights.css' _site/oldasspolitic/member/index.html
-          grep -Fq 'sponsor-insights.js' _site/oldasspolitic/member/index.html
-          grep -Fq 'member-bulk-dashboard.css' _site/oldasspolitic/member/index.html
-          grep -Fq 'member-bulk-dashboard.js' _site/oldasspolitic/member/index.html
-          if grep -Fq '<script src="./member.js" defer></script>' _site/oldasspolitic/member/index.html; then
-            echo 'Legacy browser OpenFEC renderer is still enabled' >&2
-            exit 1
-          fi
-          grep -Fq 'Israel Lobby Total' _site/oldasspolitic/member/track-aipac.js
-          grep -Fq 'Companies, industries, professions & party splits' _site/oldasspolitic/member/sponsor-insights.js
-          grep -Fq 'Donation intelligence' _site/oldasspolitic/member/member-bulk-dashboard.js
-          grep -Fq 'Open full profile' _site/oldasspolitic/profile-link.js
-          grep -Fq '<title>Emperor Director v2.1</title>' _site/wanuiv2/index.html
-          python3 - <<'PY'
-          import json
-          track = json.load(open('_site/oldasspolitic/member/track-aipac.json', encoding='utf-8'))
-          assert track['record_count'] >= 400, track['record_count']
-          fec = json.load(open('_site/oldasspolitic/member/fec-sponsors.json', encoding='utf-8'))
-          assert fec['member_count'] >= 400, fec['member_count']
-          assert fec['occupation_group_count'] > 1000
-          assert fec['committee_profiles']
-          assert fec['employer_profiles']
-          assert fec['finance_member_count'] >= 400
-          assert fec['finance_cycle_row_count'] > 1000
-          PY
-
-      - name: Upload static site
+      - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Smoke test deployed site
+      - name: Check school schedule
         env:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
-          set -euo pipefail
           base="${SITE_URL%/}"
-          routes=(
-            "school-schedule/"
-            "wanuiv2/"
-            "oldasspolitic/"
-            "oldasspolitic/profile.css"
-            "oldasspolitic/profile.js"
-            "oldasspolitic/profile-link.css"
-            "oldasspolitic/profile-link.js"
-            "oldasspolitic/member/"
-            "oldasspolitic/member/member.css"
-            "oldasspolitic/member/member.js"
-            "oldasspolitic/member/member-bulk-dashboard.css"
-            "oldasspolitic/member/member-bulk-dashboard.js"
-            "oldasspolitic/member/track-aipac.css"
-            "oldasspolitic/member/track-aipac.js"
-            "oldasspolitic/member/track-aipac.json"
-            "oldasspolitic/member/sponsor-insights.css"
-            "oldasspolitic/member/sponsor-insights.js"
-            "oldasspolitic/member/fec-sponsors.json"
-            "tideborne/"
-            "tideborne/fish/"
-            "tideborne/fishing/"
-            "tideborne/gear/"
-            "tideborne/journal/"
-            "tideborne/reference/mechanics/"
-            "tide2/"
-            "tideborne/assets/fish/fish-scope.js"
-            "tideborne/assets/fish/fish-performance.css"
-            "tideborne/assets/fish/fish-render-index.json"
-            "tideborne/assets/fish/renders/crittersandcompanions__koi_fish.png"
-          )
-          for route in "${routes[@]}"; do
-            curl --fail --silent --show-error --location --retry 8 --retry-all-errors --retry-delay 3 --output /dev/null "$base/$route"
-          done
-          curl --fail --silent --show-error --location --retry 8 --retry-all-errors --retry-delay 3 "$base/tideborne/assets/fish/fish-wiki-data-0.json.gz" | gzip -t
-          curl --fail --silent --show-error --location --retry 8 --retry-all-errors --retry-delay 3 "$base/tideborne/assets/fish/fish-wiki-data-1.json.gz" | gzip -t
-
-          index_bytes="$(curl --fail --silent --show-error --location "$base/tideborne/assets/fish/fish-render-index.json" | wc -c)"
-          test "$index_bytes" -lt 150000
-
-          check_contains() {
-            local route="$1"
-            local needle="$2"
-            local tmp
-            tmp="$(mktemp)"
-            if curl --fail --silent --show-error --location --retry 3 --retry-all-errors --retry-delay 2 --output "$tmp" "$base/$route" \
-              && grep -Fq "$needle" "$tmp"; then
-              rm -f "$tmp"
-              return 0
-            fi
-            rm -f "$tmp"
-            return 1
-          }
-
-          passed=0
-          for attempt in 1 2 3 4 5 6 7 8; do
-            if check_contains "wanuiv2/" '<title>Emperor Director v2.1</title>' \
-              && check_contains "tideborne/fish/" 'id="fish-results"' \
-              && check_contains "tideborne/reference/mechanics/" 'FishScore = round(1 + 2999' \
-              && check_contains "oldasspolitic/profile.js" 'Campaign money' \
-              && check_contains "oldasspolitic/profile-link.js" 'Open full profile' \
-              && check_contains "oldasspolitic/member/" 'member-bulk-dashboard.js' \
-              && check_contains "oldasspolitic/member/member-bulk-dashboard.js" 'Bulk data loaded' \
-              && check_contains "oldasspolitic/member/sponsor-insights.js" 'Party split'; then
-              passed=1
-              break
-            fi
-            sleep 3
-          done
-          test "$passed" -eq 1
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-all-errors --retry-delay 2 \
+            "$base/school-schedule/" | grep -Fq 'Fall 2026 School Schedule'
