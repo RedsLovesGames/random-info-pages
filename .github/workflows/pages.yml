@@ -93,6 +93,7 @@ jobs:
           cp index.html _site/index.html
           cp -r heatmap _site/heatmap
           cp -r wanuiv2 _site/wanuiv2
+          cp -r school-schedule _site/school-schedule
           if [ -f wanuiv2/v21.html.gz.b64 ]; then
             base64 --decode wanuiv2/v21.html.gz.b64 | gzip --decompress > _site/wanuiv2/index.html
           fi
@@ -238,6 +239,7 @@ jobs:
           set -euo pipefail
           base="${SITE_URL%/}"
           routes=(
+            "school-schedule/"
             "wanuiv2/"
             "oldasspolitic/"
             "oldasspolitic/profile.css"
