@@ -39,9 +39,6 @@ jobs:
             --exclude '.github' \
             --exclude '_site' \
             ./ _site/
-          if [ -f _site/wanuiv2/v21.html.gz.b64 ]; then
-            base64 --decode _site/wanuiv2/v21.html.gz.b64 | gzip --decompress > _site/wanuiv2/index.html
-          fi
           touch _site/.nojekyll
 
       - name: Upload site
