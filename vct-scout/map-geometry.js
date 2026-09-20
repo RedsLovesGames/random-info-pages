@@ -3,38 +3,15 @@
   const C='template';
   const A=(id,x,y,label,confidence=C)=>({id,x,y,label:label||id,confidence});
   const maps={};
-  function add(name,anchors,edges,meta={}){
-    maps[name]=validateMap({name,anchors,edges,sites:meta.sites||['siteA','siteB'],spawns:{attack:'attackSpawn',defense:'defenseSpawn'},labels:meta.labels||[]});
-  }
+  function add(name,anchors,edges,meta={}){maps[name]=validateMap({name,anchors,edges,sites:meta.sites||['siteA','siteB'],spawns:{attack:'attackSpawn',defense:'defenseSpawn'},labels:meta.labels||[]})}
   function validateMap(raw){
-    const arr=Array.isArray(raw.anchors)?raw.anchors:Object.values(raw.anchors||{});
-    const seen=new Set(),anchors={};
-    for(const a of arr){
-      if(seen.has(a.id))throw new Error(`duplicate anchor id: ${a.id}`);seen.add(a.id);
-      if(!(a.x>=0&&a.x<=1&&a.y>=0&&a.y<=1))throw new Error(`anchor out of bounds: ${a.id}`);
-      if(!['verified','template'].includes(a.confidence))throw new Error(`anchor confidence missing: ${a.id}`);
-      anchors[a.id]={...a,map:raw.name};
-    }
-    for(const [u,v] of raw.edges||[]) if(!anchors[u]||!anchors[v])throw new Error(`invalid route node: ${u}-${v}`);
-    return {...raw,anchors,edges:raw.edges||[]};
+    const arr=Array.isArray(raw.anchors)?raw.anchors:Object.values(raw.anchors||{}),seen=new Set(),anchors={};
+    for(const a of arr){if(seen.has(a.id))throw new Error(`duplicate anchor id: ${a.id}`);seen.add(a.id);if(!(a.x>=0&&a.x<=1&&a.y>=0&&a.y<=1))throw new Error(`anchor out of bounds: ${a.id}`);if(!['verified','template'].includes(a.confidence))throw new Error(`anchor confidence missing: ${a.id}`);anchors[a.id]={...a,map:raw.name}}
+    for(const [u,v] of raw.edges||[])if(!anchors[u]||!anchors[v])throw new Error(`invalid route node: ${u}-${v}`);return{...raw,anchors,edges:raw.edges||[]}
   }
   function addCommon(name,p){
-    const a=[
-      A('attackSpawn',.50,.91,'Attack Spawn'),A('defenseSpawn',.50,.09,'Defense Spawn'),
-      A('aMain',p.aMain[0],p.aMain[1],'A Main'),A('aEntry',p.aEntry[0],p.aEntry[1],'A Entry'),A('siteA',p.siteA[0],p.siteA[1],'A Site'),A('aLink',p.aLink[0],p.aLink[1],'A Link'),
-      A('bMain',p.bMain[0],p.bMain[1],'B Main'),A('bEntry',p.bEntry[0],p.bEntry[1],'B Entry'),A('siteB',p.siteB[0],p.siteB[1],'B Site'),A('bLink',p.bLink[0],p.bLink[1],'B Link'),
-      A('midLeft',p.midLeft[0],p.midLeft[1],'Mid Left'),A('mid',p.mid[0],p.mid[1],'Mid'),A('midRight',p.midRight[0],p.midRight[1],'Mid Right'),
-      A('flankLeft',p.flankLeft[0],p.flankLeft[1],'Left Extremity'),A('flankRight',p.flankRight[0],p.flankRight[1],'Right Extremity'),
-      A('plantA',p.plantA[0],p.plantA[1],'A Plant'),A('plantB',p.plantB[0],p.plantB[1],'B Plant'),A('postA',p.postA[0],p.postA[1],'A Post Plant'),A('postB',p.postB[0],p.postB[1],'B Post Plant')
-    ];
-    const e=[
-      ['attackSpawn','flankLeft'],['attackSpawn','mid'],['attackSpawn','flankRight'],
-      ['flankLeft','aMain'],['aMain','aEntry'],['aEntry','siteA'],['siteA','plantA'],['siteA','aLink'],['plantA','postA'],
-      ['flankRight','bMain'],['bMain','bEntry'],['bEntry','siteB'],['siteB','plantB'],['siteB','bLink'],['plantB','postB'],
-      ['mid','midLeft'],['mid','midRight'],['midLeft','aLink'],['midRight','bLink'],['aLink','siteA'],['bLink','siteB'],
-      ['aLink','defenseSpawn'],['bLink','defenseSpawn'],['siteA','defenseSpawn'],['siteB','defenseSpawn']
-    ];
-    add(name,a,e,{sites:['siteA','siteB']});
+    const a=[A('attackSpawn',.50,.91,'Attack Spawn'),A('defenseSpawn',.50,.09,'Defense Spawn'),A('aMain',p.aMain[0],p.aMain[1],'A Main'),A('aEntry',p.aEntry[0],p.aEntry[1],'A Entry'),A('siteA',p.siteA[0],p.siteA[1],'A Site'),A('aLink',p.aLink[0],p.aLink[1],'A Link'),A('bMain',p.bMain[0],p.bMain[1],'B Main'),A('bEntry',p.bEntry[0],p.bEntry[1],'B Entry'),A('siteB',p.siteB[0],p.siteB[1],'B Site'),A('bLink',p.bLink[0],p.bLink[1],'B Link'),A('midLeft',p.midLeft[0],p.midLeft[1],'Mid Left'),A('mid',p.mid[0],p.mid[1],'Mid'),A('midRight',p.midRight[0],p.midRight[1],'Mid Right'),A('flankLeft',p.flankLeft[0],p.flankLeft[1],'Left Extremity'),A('flankRight',p.flankRight[0],p.flankRight[1],'Right Extremity'),A('plantA',p.plantA[0],p.plantA[1],'A Plant'),A('plantB',p.plantB[0],p.plantB[1],'B Plant'),A('postA',p.postA[0],p.postA[1],'A Post Plant'),A('postB',p.postB[0],p.postB[1],'B Post Plant')];
+    const e=[['attackSpawn','flankLeft'],['attackSpawn','mid'],['attackSpawn','flankRight'],['flankLeft','aMain'],['aMain','aEntry'],['aEntry','siteA'],['siteA','plantA'],['siteA','aLink'],['plantA','postA'],['flankRight','bMain'],['bMain','bEntry'],['bEntry','siteB'],['siteB','plantB'],['siteB','bLink'],['plantB','postB'],['mid','midLeft'],['mid','midRight'],['midLeft','aLink'],['midRight','bLink'],['aLink','siteA'],['bLink','siteB'],['aLink','defenseSpawn'],['bLink','defenseSpawn'],['siteA','defenseSpawn'],['siteB','defenseSpawn']];add(name,a,e,{sites:['siteA','siteB']})
   }
   addCommon('Ascent',{aMain:[.28,.72],aEntry:[.30,.58],siteA:[.30,.39],aLink:[.43,.42],bMain:[.72,.72],bEntry:[.70,.57],siteB:[.70,.39],bLink:[.58,.43],midLeft:[.43,.62],mid:[.50,.69],midRight:[.57,.62],flankLeft:[.34,.82],flankRight:[.66,.82],plantA:[.32,.42],plantB:[.68,.42],postA:[.25,.54],postB:[.75,.54]});
   addCommon('Abyss',{aMain:[.27,.73],aEntry:[.30,.57],siteA:[.31,.36],aLink:[.43,.43],bMain:[.73,.73],bEntry:[.70,.57],siteB:[.69,.36],bLink:[.57,.43],midLeft:[.43,.61],mid:[.50,.68],midRight:[.57,.61],flankLeft:[.34,.82],flankRight:[.66,.82],plantA:[.32,.39],plantB:[.68,.39],postA:[.25,.52],postB:[.75,.52]});
@@ -42,27 +19,24 @@
   addCommon('Split',{aMain:[.25,.72],aEntry:[.28,.56],siteA:[.29,.35],aLink:[.42,.43],bMain:[.75,.72],bEntry:[.71,.56],siteB:[.70,.35],bLink:[.58,.43],midLeft:[.43,.61],mid:[.50,.67],midRight:[.57,.61],flankLeft:[.33,.82],flankRight:[.67,.82],plantA:[.31,.38],plantB:[.68,.38],postA:[.23,.50],postB:[.77,.50]});
   addCommon('Summit',{aMain:[.26,.74],aEntry:[.29,.58],siteA:[.30,.37],aLink:[.43,.44],bMain:[.74,.74],bEntry:[.71,.58],siteB:[.70,.37],bLink:[.57,.44],midLeft:[.43,.62],mid:[.50,.69],midRight:[.57,.62],flankLeft:[.34,.83],flankRight:[.66,.83],plantA:[.32,.40],plantB:[.68,.40],postA:[.24,.52],postB:[.76,.52]});
   addCommon('Sunset',{aMain:[.27,.73],aEntry:[.30,.57],siteA:[.31,.37],aLink:[.43,.44],bMain:[.73,.73],bEntry:[.70,.57],siteB:[.69,.37],bLink:[.57,.44],midLeft:[.43,.62],mid:[.50,.69],midRight:[.57,.62],flankLeft:[.34,.82],flankRight:[.66,.82],plantA:[.33,.40],plantB:[.67,.40],postA:[.25,.52],postB:[.75,.52]});
-  // Haven has three sites and explicit Garage/C-long routing.
-  add('Haven',[
-    A('attackSpawn',.50,.92,'Attack Spawn'),A('defenseSpawn',.50,.08,'Defense Spawn'),
-    A('aMain',.24,.73,'A Long'),A('aEntry',.27,.56,'A Entry'),A('siteA',.28,.35,'A Site'),A('aLink',.40,.42,'A Link'),
-    A('garage',.50,.61,'Garage'),A('mid',.48,.70,'Mid Courtyard'),A('bMain',.48,.57,'B Main'),A('bEntry',.49,.48,'B Entry'),A('siteB',.49,.37,'B Site'),A('bLink',.55,.43,'B Link'),
-    A('cLong',.76,.73,'C Long'),A('cEntry',.72,.56,'C Entry'),A('siteC',.72,.35,'C Site'),A('cLink',.60,.42,'C Link'),
-    A('flankLeft',.34,.82,'A Lobby'),A('flankRight',.67,.82,'C Lobby'),A('midLeft',.42,.63,'A Short'),A('midRight',.57,.62,'Garage Doors'),
-    A('plantA',.30,.38,'A Plant'),A('plantB',.49,.39,'B Plant'),A('plantC',.70,.38,'C Plant'),A('postA',.22,.52,'A Post Plant'),A('postB',.49,.52,'B Post Plant'),A('postC',.78,.52,'C Post Plant')
-  ],[
-    ['attackSpawn','flankLeft'],['attackSpawn','mid'],['attackSpawn','flankRight'],['flankLeft','aMain'],['aMain','aEntry'],['aEntry','siteA'],['siteA','plantA'],['plantA','postA'],['siteA','aLink'],
-    ['mid','midLeft'],['midLeft','aLink'],['mid','garage'],['garage','midRight'],['midRight','cLink'],['garage','bMain'],['bMain','bEntry'],['bEntry','siteB'],['siteB','plantB'],['plantB','postB'],['siteB','bLink'],
-    ['flankRight','cLong'],['cLong','cEntry'],['cEntry','siteC'],['siteC','plantC'],['plantC','postC'],['siteC','cLink'],['aLink','defenseSpawn'],['bLink','defenseSpawn'],['cLink','defenseSpawn']
-  ],{sites:['siteA','siteB','siteC']});
+  add('Haven',[A('attackSpawn',.50,.92,'Attack Spawn'),A('defenseSpawn',.50,.08,'Defense Spawn'),A('aMain',.24,.73,'A Long'),A('aEntry',.27,.56,'A Entry'),A('siteA',.28,.35,'A Site'),A('aLink',.40,.42,'A Link'),A('garage',.50,.61,'Garage'),A('mid',.48,.70,'Mid Courtyard'),A('bMain',.48,.57,'B Main'),A('bEntry',.49,.48,'B Entry'),A('siteB',.49,.37,'B Site'),A('bLink',.55,.43,'B Link'),A('cLong',.76,.73,'C Long'),A('cEntry',.72,.56,'C Entry'),A('siteC',.72,.35,'C Site'),A('cLink',.60,.42,'C Link'),A('flankLeft',.34,.82,'A Lobby'),A('flankRight',.67,.82,'C Lobby'),A('midLeft',.42,.63,'A Short'),A('midRight',.57,.62,'Garage Doors'),A('plantA',.30,.38,'A Plant'),A('plantB',.49,.39,'B Plant'),A('plantC',.70,.38,'C Plant'),A('postA',.22,.52,'A Post Plant'),A('postB',.49,.52,'B Post Plant'),A('postC',.78,.52,'C Post Plant')],[['attackSpawn','flankLeft'],['attackSpawn','mid'],['attackSpawn','flankRight'],['flankLeft','aMain'],['aMain','aEntry'],['aEntry','siteA'],['siteA','plantA'],['plantA','postA'],['siteA','aLink'],['mid','midLeft'],['midLeft','aLink'],['mid','garage'],['garage','midRight'],['midRight','cLink'],['garage','bMain'],['bMain','bEntry'],['bEntry','siteB'],['siteB','plantB'],['plantB','postB'],['siteB','bLink'],['flankRight','cLong'],['cLong','cEntry'],['cEntry','siteC'],['siteC','plantC'],['plantC','postC'],['siteC','cLink'],['aLink','defenseSpawn'],['bLink','defenseSpawn'],['cLink','defenseSpawn']],{sites:['siteA','siteB','siteC']});
 
+  const exactKeys={
+    Ascent:{aMain:['A','Main'],siteA:['A','Site'],aLink:['A','Link'],bMain:['B','Main'],siteB:['B','Site'],bLink:['B','Link'],midLeft:['Mid','Top'],mid:['Mid','Courtyard'],midRight:['Mid','Market'],flankLeft:['A','Lobby'],flankRight:['B','Lobby']},
+    Haven:{aMain:['A','Long'],siteA:['A','Site'],aLink:['A','Link'],siteB:['B','Site'],cLong:['C','Long'],siteC:['C','Site'],cLink:['C','Link'],mid:['Mid','Courtyard'],midRight:['Mid','Doors'],flankLeft:['A','Lobby'],flankRight:['C','Lobby']}
+  };
+  function genericKeys(){return{aMain:['A','Main'],siteA:['A','Site'],aLink:['A','Link'],bMain:['B','Main'],siteB:['B','Site'],bLink:['B','Link']}}
+  function hydrateFromValorantApi(mapName,apiMap){
+    const m=maps[mapName];if(!m||!apiMap||apiMap.displayName!==mapName)return 0;const keys={...genericKeys(),...(exactKeys[mapName]||{})};let count=0;
+    for(const [id,[superRegion,region]] of Object.entries(keys)){
+      const c=(apiMap.callouts||[]).find(x=>x.superRegionName===superRegion&&x.regionName===region);if(!c||!m.anchors[id])continue;
+      const gx=Number(c.location?.x),gy=Number(c.location?.y),xm=Number(apiMap.xMultiplier),ym=Number(apiMap.yMultiplier),xs=Number(apiMap.xScalarToAdd),ys=Number(apiMap.yScalarToAdd);const x=gy*xm+xs,y=gx*ym+ys;
+      if(Number.isFinite(x)&&Number.isFinite(y)&&x>=0&&x<=1&&y>=0&&y<=1){Object.assign(m.anchors[id],{x,y,confidence:'verified',sourceNote:`Valorant API exact callout: ${superRegion} ${region}`});count++}
+    }
+    return count;
+  }
   function getMap(name){return maps[name]||null}
   function anchor(map,id){return maps[map]?.anchors?.[id]||null}
-  function path(map,start,end){
-    const m=maps[map];if(!m||!m.anchors[start]||!m.anchors[end])return[];if(start===end)return[m.anchors[start]];
-    const adj={};for(const id of Object.keys(m.anchors))adj[id]=[];for(const [a,b] of m.edges){adj[a].push(b);adj[b].push(a)}
-    const q=[start],prev={[start]:null};for(let i=0;i<q.length;i++){const u=q[i];if(u===end)break;for(const v of adj[u])if(!(v in prev)){prev[v]=u;q.push(v)}}
-    if(!(end in prev))return[];const ids=[];for(let u=end;u!=null;u=prev[u])ids.push(u);ids.reverse();return ids.map(id=>m.anchors[id]);
-  }
-  return{MAPS:Object.keys(maps),getMap,anchor,path,validateMap};
+  function path(map,start,end){const m=maps[map];if(!m||!m.anchors[start]||!m.anchors[end])return[];if(start===end)return[m.anchors[start]];const adj={};for(const id of Object.keys(m.anchors))adj[id]=[];for(const [a,b] of m.edges){adj[a].push(b);adj[b].push(a)}const q=[start],prev={[start]:null};for(let i=0;i<q.length;i++){const u=q[i];if(u===end)break;for(const v of adj[u])if(!(v in prev)){prev[v]=u;q.push(v)}}if(!(end in prev))return[];const ids=[];for(let u=end;u!=null;u=prev[u])ids.push(u);ids.reverse();return ids.map(id=>m.anchors[id])}
+  return{MAPS:Object.keys(maps),getMap,anchor,path,validateMap,hydrateFromValorantApi};
 });
