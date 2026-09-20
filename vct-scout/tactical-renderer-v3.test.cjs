@@ -17,6 +17,7 @@ for(const f of fixtures)test(f.name,()=>{
   assert.ok(model.routes.every(r=>r.points.length>=2),'all routes resolve');
   assert.ok(model.utility.every(u=>u.ownerSlot&&u.ownerAgent),'utility owner missing');
   assert.ok(model.spike&&model.plant,'attack spike/plant missing');
+  assert.ok(model.players.every(p=>p.postPlant&&p.postPlantRoute?.length>=1),'post-plant model missing');
   assert.ok(model.players.some(p=>p.start.confidence==='template')||model.players.every(p=>p.start.confidence==='verified'));
 });
 
