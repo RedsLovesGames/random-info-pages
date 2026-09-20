@@ -36,6 +36,14 @@ jobs:
           node --check vct-scout/app-lab.js
           node --check vct-scout/tactical-data.js
           node --check vct-scout/tactical-v2.js
+          node --check vct-scout/tactical-fixes-v3.js
+          grep -Fq 'RIB match + Replay tab' vct-scout/tactical-fixes-v3.js
+          grep -Fq 'Watch exact' vct-scout/tactical-fixes-v3.js
+          grep -Fq 'Site letters such as A, B, and C' vct-scout/index.html
+          if grep -Fq 'Open ValoPlant replay viewer' vct-scout/index.html; then
+            echo 'Generic ValoPlant source link should not be in the page shell'
+            exit 1
+          fi
 
       - name: Refresh public VCT team logos
         run: |
@@ -76,16 +84,20 @@ jobs:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           base="${SITE_URL%/}"
-          curl --fail --silent --show-error --location \
-            --retry 5 --retry-all-errors --retry-delay 2 \
-            "$base/school-schedule/" | grep -Fq 'Fall 2026 School Schedule'
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/school.html "$base/school-schedule/"
+          grep -Fq 'Fall 2026 School Schedule' /tmp/school.html
 
       - name: Check VCT tactical planner
         env:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           base="${SITE_URL%/}"
-          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 "$base/vct-scout/" | grep -Fq 'replay-backed tactics'
-          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 "$base/vct-scout/tactical-data.js" | grep -Fq 'three-lane-default'
-          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 "$base/vct-scout/tactical-v2.js" | grep -Fq 'Open RIB 2D replay'
-          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 "$base/vct-scout/team-logos.json" | grep -Fq '"120"'
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/vct.html "$base/vct-scout/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/tactical-data.js "$base/vct-scout/tactical-data.js"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/tactical-v3.js "$base/vct-scout/tactical-fixes-v3.js"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/team-logos.json "$base/vct-scout/team-logos.json"
+          grep -Fq 'tactical-fixes-v3.css' /tmp/vct.html
+          grep -Fq 'tactical-fixes-v3.js' /tmp/vct.html
+          grep -Fq 'three-lane-default' /tmp/tactical-data.js
+          grep -Fq 'RIB match + Replay tab' /tmp/tactical-v3.js
+          grep -Fq '"120"' /tmp/team-logos.json
