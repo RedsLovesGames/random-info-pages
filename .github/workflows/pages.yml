@@ -27,12 +27,26 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Verify VCT comp lab
+      - name: Verify VCT comp lab and tactical planner
         run: |
           node --test vct-scout/recommendation.test.cjs
+          node --test vct-scout/tactical-data.test.cjs
           node --check vct-scout/recommendation.js
           node --check vct-scout/app-core.js
           node --check vct-scout/app-lab.js
+          node --check vct-scout/tactical-data.js
+          node --check vct-scout/tactical-v2.js
+
+      - name: Refresh public VCT team logos
+        run: |
+          python3 scripts/update_vct_branding.py
+          python3 - <<'PY'
+          import json
+          p=json.load(open('vct-scout/team-logos.json',encoding='utf-8'))
+          print(f'Generated {len(p)} VCT team logos')
+          if len(p) < 12:
+              raise SystemExit('Too few team logos were resolved from VLR')
+          PY
 
       - name: Build Tideborne fish index
         run: python3 scripts/build_tideborne_fish_index.py
@@ -66,14 +80,12 @@ jobs:
             --retry 5 --retry-all-errors --retry-delay 2 \
             "$base/school-schedule/" | grep -Fq 'Fall 2026 School Schedule'
 
-      - name: Check VCT comp lab
+      - name: Check VCT tactical planner
         env:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           base="${SITE_URL%/}"
-          curl --fail --silent --show-error --location \
-            --retry 5 --retry-all-errors --retry-delay 2 \
-            "$base/vct-scout/" | grep -Fq 'Our Comp Lab'
-          curl --fail --silent --show-error --location \
-            --retry 5 --retry-all-errors --retry-delay 2 \
-            "$base/vct-scout/recommendation.js" | grep -Fq 'recommendComps'
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 "$base/vct-scout/" | grep -Fq 'replay-backed tactics'
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 "$base/vct-scout/tactical-data.js" | grep -Fq 'three-lane-default'
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 "$base/vct-scout/tactical-v2.js" | grep -Fq 'Open RIB 2D replay'
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 "$base/vct-scout/team-logos.json" | grep -Fq '"120"'
