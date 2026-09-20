@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-19T21:56:00-04:00",
+  "window_start": "2026-07-01",
+  "window_end": "2026-09-19",
+  "status": "seed",
+  "source_note": "Initial seed. Automated VLR refresh populates official VCT team map data.",
+  "map_pool": ["Abyss", "Ascent", "Haven", "Lotus", "Split", "Summit", "Sunset"],
+  "teams": [
+    {"id": 120, "name": "100 Thieves", "tag": "100T", "region": "Americas", "maps": {}},
+    {"id": 6961, "name": "LOUD", "tag": "LOUD", "region": "Americas", "maps": {}},
+    {"id": 1034, "name": "NRG", "tag": "NRG", "region": "Americas", "maps": {}},
+    {"id": 11058, "name": "G2 Esports", "tag": "G2", "region": "Americas", "maps": {}},
+    {"id": 731, "name": "TYLOO", "tag": "TYL", "region": "China", "maps": {}},
+    {"id": 13576, "name": "JD Gaming", "tag": "JDG", "region": "China", "maps": {}},
+    {"id": 1120, "name": "EDward Gaming", "tag": "EDG", "region": "China", "maps": {}},
+    {"id": 13581, "name": "Xi Lai Gaming", "tag": "XLG", "region": "China", "maps": {}},
+    {"id": 8877, "name": "Karmine Corp", "tag": "KC", "region": "EMEA", "maps": {}},
+    {"id": 474, "name": "Team Liquid", "tag": "TL", "region": "EMEA", "maps": {}},
+    {"id": 1184, "name": "FUT Esports", "tag": "FUT", "region": "EMEA", "maps": {}},
+    {"id": 2059, "name": "Team Vitality", "tag": "VIT", "region": "EMEA", "maps": {}},
+    {"id": 918, "name": "Global Esports", "tag": "GE", "region": "Pacific", "maps": {}},
+    {"id": 11060, "name": "Nongshim RedForce", "tag": "NS", "region": "Pacific", "maps": {}},
+    {"id": 624, "name": "Paper Rex", "tag": "PRX", "region": "Pacific", "maps": {}},
+    {"id": 14, "name": "T1", "tag": "T1", "region": "Pacific", "maps": {}}
+  ],
+  "stage2_seed": {
+    "label": "Americas Stage 2 reference lineups",
+    "note": "Fallback reference from VCT Reference while the team snapshot refreshes. These are Americas Stage 2 most-played lineups, not a global ranking.",
+    "maps": {
+      "Ascent": {"agents": ["Chamber", "Neon", "Omen", "Phoenix", "Sova"], "games": 7},
+      "Haven": {"agents": ["Cypher", "Neon", "Omen", "Phoenix", "Sova"], "games": 16},
+      "Lotus": {"agents": ["Fade", "Omen", "Raze", "Viper", "Vyse"], "games": 11},
+      "Split": {"agents": ["Fade", "Neon", "Omen", "Phoenix", "Viper"], "games": 16},
+      "Summit": {"agents": ["Chamber", "Fade", "Neon", "Omen", "Sage"], "games": 8},
+      "Sunset": {"agents": ["Cypher", "Neon", "Omen", "Phoenix", "Sova"], "games": 11}
+    },
+    "overall_pick_rates": [
+      {"agent": "Omen", "rate": 73.0},
+      {"agent": "Neon", "rate": 71.7},
+      {"agent": "Sova", "rate": 59.7},
+      {"agent": "Phoenix", "rate": 41.7},
+      {"agent": "Viper", "rate": 37.7},
+      {"agent": "Cypher", "rate": 37.3},
+      {"agent": "Fade", "rate": 31.3},
+      {"agent": "Chamber", "rate": 31.0}
+    ]
+  },
+  "errors": []
+}
