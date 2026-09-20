@@ -27,6 +27,13 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Verify VCT comp lab
+        run: |
+          node --test vct-scout/recommendation.test.cjs
+          node --check vct-scout/recommendation.js
+          node --check vct-scout/app-core.js
+          node --check vct-scout/app-lab.js
+
       - name: Build Tideborne fish index
         run: python3 scripts/build_tideborne_fish_index.py
 
@@ -58,3 +65,15 @@ jobs:
           curl --fail --silent --show-error --location \
             --retry 5 --retry-all-errors --retry-delay 2 \
             "$base/school-schedule/" | grep -Fq 'Fall 2026 School Schedule'
+
+      - name: Check VCT comp lab
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          base="${SITE_URL%/}"
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-all-errors --retry-delay 2 \
+            "$base/vct-scout/" | grep -Fq 'Our Comp Lab'
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-all-errors --retry-delay 2 \
+            "$base/vct-scout/recommendation.js" | grep -Fq 'recommendComps'
