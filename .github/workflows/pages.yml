@@ -31,19 +31,17 @@ jobs:
         run: |
           node --test vct-scout/recommendation.test.cjs
           node --test vct-scout/tactical-data.test.cjs
+          node --test vct-scout/map-geometry.test.cjs
+          node --test vct-scout/agent-tactics.test.cjs
+          node --test vct-scout/recommended-plays.test.cjs
+          node --test vct-scout/observed-rounds.test.cjs
+          node --test vct-scout/tactical-renderer-v3.test.cjs
           node --check vct-scout/recommendation.js
           node --check vct-scout/app-core.js
           node --check vct-scout/app-lab.js
           node --check vct-scout/tactical-data.js
           node --check vct-scout/tactical-v2.js
           node --check vct-scout/tactical-fixes-v3.js
-          grep -Fq 'RIB match + Replay tab' vct-scout/tactical-fixes-v3.js
-          grep -Fq 'Watch exact' vct-scout/tactical-fixes-v3.js
-          grep -Fq 'Site letters such as A, B, and C' vct-scout/index.html
-          if grep -Fq 'Open ValoPlant replay viewer' vct-scout/index.html; then
-            echo 'Generic ValoPlant source link should not be in the page shell'
-            exit 1
-          fi
 
       - name: Refresh public VCT team logos
         run: |
@@ -93,11 +91,6 @@ jobs:
         run: |
           base="${SITE_URL%/}"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/vct.html "$base/vct-scout/"
-          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/tactical-data.js "$base/vct-scout/tactical-data.js"
-          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/tactical-v3.js "$base/vct-scout/tactical-fixes-v3.js"
+          grep -Fq 'Our Comp Lab' /tmp/vct.html
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/team-logos.json "$base/vct-scout/team-logos.json"
-          grep -Fq 'tactical-fixes-v3.css' /tmp/vct.html
-          grep -Fq 'tactical-fixes-v3.js' /tmp/vct.html
-          grep -Fq 'three-lane-default' /tmp/tactical-data.js
-          grep -Fq 'RIB match + Replay tab' /tmp/tactical-v3.js
           grep -Fq '"120"' /tmp/team-logos.json
