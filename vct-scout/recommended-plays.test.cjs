@@ -12,14 +12,18 @@ test('every map has attack and defense planning templates',()=>{
   }
 });
 
-test('attack plays contain spike, plant, post plant, contingency and owned utility',()=>{
+test('attack plays contain spike, plant, per-player post plant, contingency and owned utility',()=>{
   for(const map of MAPS){
     for(const play of P.get(map,'attack')){
       assert.equal(play.sourceClass,'planning-template');
       assert.ok(play.spikeCarrierSlot,`${map}:${play.id} spike`);
       assert.ok(play.plantAnchor,`${map}:${play.id} plant`);
-      assert.ok(play.phases.some(p=>p.id==='postPlant'),`${map}:${play.id} postPlant`);
+      assert.ok(play.phases.some(p=>p.id==='postPlant'),`${map}:${play.id} postPlant phase`);
       assert.ok(play.contingencies?.length,`${map}:${play.id} contingency`);
+      for(const s of play.slots){
+        assert.ok(s.postPlantAnchor,`${map}:${play.id}:${s.id} postPlantAnchor`);
+        assert.ok(G.anchor(map,s.postPlantAnchor),`${map}:${play.id}:${s.id} postPlant anchor resolves`);
+      }
       for(const u of play.utility||[]) assert.ok(u.ownerSlot&&u.targetAnchor&&u.phase,`${map}:${play.id} utility ownership`);
     }
   }
@@ -36,6 +40,10 @@ test('all play anchors and routes resolve through map geometry',()=>{
         if(s.destinationAnchor){
           const path=G.path(map,s.startAnchor,s.destinationAnchor);
           assert.ok(path.length>=2,`${map}:${play.id}:${s.id} route`);
+          if(s.postPlantAnchor){
+            const post=G.path(map,s.destinationAnchor,s.postPlantAnchor);
+            assert.ok(post.length>=1,`${map}:${play.id}:${s.id} post-plant route`);
+          }
         }
       }
       assert.equal(new Set(starts).size,starts.length,`${map}:${play.id} duplicate starts`);
