@@ -30,7 +30,6 @@ jobs:
       - name: Verify VCT comp lab and tactical planner
         run: |
           node --test vct-scout/recommendation.test.cjs
-          node --test vct-scout/tactical-data.test.cjs
           node --test vct-scout/map-geometry.test.cjs
           node --test vct-scout/agent-tactics.test.cjs
           node --test vct-scout/recommended-plays.test.cjs
@@ -39,9 +38,19 @@ jobs:
           node --check vct-scout/recommendation.js
           node --check vct-scout/app-core.js
           node --check vct-scout/app-lab.js
-          node --check vct-scout/tactical-data.js
-          node --check vct-scout/tactical-v2.js
-          node --check vct-scout/tactical-fixes-v3.js
+          node --check vct-scout/map-geometry.js
+          node --check vct-scout/agent-tactics.js
+          node --check vct-scout/recommended-plays.js
+          node --check vct-scout/observed-rounds.js
+          node --check vct-scout/tactical-renderer-v3.js
+          grep -Fq 'Recommended Play' vct-scout/index.html
+          grep -Fq 'Observed VCT Round' vct-scout/index.html
+          grep -Fq 'tactical-renderer-v3.js' vct-scout/index.html
+          grep -Fq 'tactical-renderer-v3.css' vct-scout/index.html
+          if grep -Eq 'tactical-v2|tactical-fixes-v3' vct-scout/index.html; then
+            echo 'Legacy tactical renderer is still referenced by the page'
+            exit 1
+          fi
 
       - name: Refresh public VCT team logos
         run: |
@@ -91,6 +100,10 @@ jobs:
         run: |
           base="${SITE_URL%/}"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/vct.html "$base/vct-scout/"
-          grep -Fq 'Our Comp Lab' /tmp/vct.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/v3.js "$base/vct-scout/tactical-renderer-v3.js"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/team-logos.json "$base/vct-scout/team-logos.json"
+          grep -Fq 'Our Comp Lab' /tmp/vct.html
+          grep -Fq 'Recommended Play' /tmp/vct.html
+          grep -Fq 'Observed VCT Round' /tmp/vct.html
+          grep -Fq 'buildModel' /tmp/v3.js
           grep -Fq '"120"' /tmp/team-logos.json
