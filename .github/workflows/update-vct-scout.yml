@@ -8,10 +8,10 @@ on:
     paths:
       - "scripts/update_vct_scout.py"
       - "scripts/update_vct_scout_cached.py"
-      - ".github/workflows/update-vct-scout.yml"
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: vct-scout-refresh
@@ -39,8 +39,10 @@ jobs:
         run: python scripts/update_vct_scout_cached.py
 
       - name: Commit changed snapshot
+        id: snapshot
         run: |
           if git diff --quiet -- vct-scout/data.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No snapshot changes."
             exit 0
           fi
@@ -49,3 +51,10 @@ jobs:
           git add vct-scout/data.json
           git commit -m "Update VCT scout data"
           git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy refreshed snapshot
+        if: steps.snapshot.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main
