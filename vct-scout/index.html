@@ -5,151 +5,34 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080a10">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Interactive VCT agent composition and map scouting dashboard for the 2026 Champions field.">
-<title>VCT Scout Board | Random Info Pages</title>
-<style>
-:root{--bg:#07090e;--panel:#10131c;--panel2:#151a25;--panel3:#0c0f16;--line:#272d3c;--text:#f4f6fb;--muted:#97a0b2;--red:#ff4655;--red2:#ff6874;--cyan:#5ee7ff;--green:#70e2a8;--amber:#ffca6a;--violet:#b89cff;--blue:#7eb1ff;--shadow:0 22px 70px rgba(0,0,0,.34);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(900px 420px at 12% -8%,rgba(255,70,85,.13),transparent 68%),radial-gradient(900px 500px at 95% 5%,rgba(94,231,255,.08),transparent 72%),linear-gradient(180deg,#0b0d13,var(--bg) 55%);color:var(--text)}button,select{font:inherit}button{color:inherit}.wrap{width:min(1500px,calc(100% - 28px));margin:auto}.top{position:sticky;top:0;z-index:40;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(7,9,14,.82);backdrop-filter:blur(18px)}.topin{min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:850;letter-spacing:-.03em}.brandmark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,var(--red),#ff8a64);color:white;font-weight:1000}.toplinks{display:flex;align-items:center;gap:8px}.pilllink{font-size:.8rem;color:#dfe5f1;text-decoration:none;border:1px solid var(--line);padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.025)}header{padding:36px 0 22px}.eyebrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.72rem;text-transform:uppercase;letter-spacing:.13em;font-weight:900;color:var(--red2)}.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 5px rgba(112,226,168,.08)}h1{font-size:clamp(2.5rem,7vw,5.6rem);line-height:.9;letter-spacing:-.07em;margin:10px 0 14px;max-width:1050px}.lead{margin:0;max-width:900px;color:var(--muted);font-size:1rem;line-height:1.65}.statusline{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}.statuschip{border:1px solid var(--line);border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.025);font-size:.77rem;color:#c5ccda}.statuschip strong{color:white}.controls-shell{position:sticky;top:58px;z-index:30;background:linear-gradient(180deg,rgba(7,9,14,.98),rgba(7,9,14,.9));border-bottom:1px solid rgba(255,255,255,.05);padding:10px 0 12px}.controls{display:grid;grid-template-columns:minmax(210px,300px) 1fr auto;gap:12px;align-items:end}.field label,.label{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:850;margin-bottom:6px}.team-select{width:100%;height:43px;border:1px solid var(--line);border-radius:12px;color:var(--text);background:#11151e;padding:0 12px;outline:none}.team-select:focus{border-color:#5b6578}.maptabs{display:flex;gap:7px;overflow:auto;padding-bottom:1px;scrollbar-width:none}.maptabs::-webkit-scrollbar{display:none}.mapbtn,.segbtn{border:1px solid var(--line);background:#10141d;border-radius:11px;padding:10px 12px;white-space:nowrap;cursor:pointer;font-weight:750;font-size:.82rem}.mapbtn:hover,.segbtn:hover{border-color:#465064}.mapbtn.active{background:var(--red);border-color:var(--red);color:#fff}.seg{display:flex;border:1px solid var(--line);border-radius:12px;padding:3px;background:#0d1118}.segbtn{border:0;background:transparent;padding:7px 10px}.segbtn.active{background:#242b3a}.main{padding:20px 0 48px}.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(380px,.85fr);gap:16px}.stack{display:grid;gap:16px}.panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(160deg,rgba(17,21,31,.98),rgba(11,14,21,.98));box-shadow:var(--shadow);overflow:hidden}.panelhead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:18px 20px 0}.paneltitle{margin:0;font-size:1.1rem;letter-spacing:-.025em}.panelsub{margin:5px 0 0;color:var(--muted);font-size:.8rem;line-height:1.45}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 20px 20px}.metric{border:1px solid rgba(255,255,255,.065);background:rgba(255,255,255,.025);border-radius:14px;padding:14px}.metric .k{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:800}.metric .v{font-size:1.65rem;font-weight:900;letter-spacing:-.04em;margin-top:4px}.metric .s{font-size:.72rem;color:var(--muted);margin-top:2px}.comp-area{padding:16px 20px 20px}.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.comp-card{border:1px solid rgba(255,255,255,.07);background:#0c1017;border-radius:15px;padding:14px}.comp-card.accent{background:linear-gradient(145deg,rgba(255,70,85,.1),rgba(12,16,23,.98));border-color:rgba(255,70,85,.28)}.comp-k{font-size:.67rem;text-transform:uppercase;letter-spacing:.11em;font-weight:850;color:var(--muted)}.comp-meta{margin-top:6px;color:#c5cedd;font-size:.78rem;line-height:1.45}.agents{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}.agent{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,.09);background:#171c27;border-radius:999px;padding:5px 9px 5px 6px;font-size:.79rem;font-weight:760}.agent img{width:25px;height:25px;object-fit:contain;border-radius:50%;background:#252b38}.agent .role{font-size:.61rem;color:var(--muted);font-weight:650}.empty{padding:28px 20px;color:var(--muted);line-height:1.55}.chart{padding:16px 20px 22px}.barrow{display:grid;grid-template-columns:minmax(92px,140px) 1fr 48px;gap:10px;align-items:center;margin:9px 0}.barname{display:flex;align-items:center;gap:8px;min-width:0;font-size:.8rem;font-weight:750}.barname img{width:24px;height:24px;object-fit:contain}.barname span{overflow:hidden;text-overflow:ellipsis}.track{height:9px;background:#222836;border-radius:99px;overflow:hidden}.fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--red),#ff8a68)}.barval{text-align:right;font-variant-numeric:tabular-nums;font-size:.77rem;color:#d8dfeb}.history{padding:10px 20px 20px}.historyrow{display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid rgba(255,255,255,.055)}.historyrow:first-child{border-top:0}.count{font-weight:900;font-size:1rem}.tinyagents{display:flex;flex-wrap:wrap;gap:4px}.tinyagent{font-size:.67rem;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:4px 6px;background:#121722}.win{font-size:.73rem;color:var(--green);white-space:nowrap}.map-panel{min-height:610px;display:flex;flex-direction:column}.maptop{padding:18px 20px 0;display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.setupseg{display:flex;gap:6px}.mapstage{position:relative;flex:1;min-height:460px;margin:14px;border:1px solid rgba(255,255,255,.07);border-radius:18px;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.045),transparent 58%),#080b11;overflow:hidden}.mapstage img.mapimg{position:absolute;inset:5%;width:90%;height:90%;object-fit:contain;filter:brightness(.8) contrast(1.18) saturate(.72);opacity:.88}.mapstage:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,transparent 52%,rgba(7,9,14,.4));pointer-events:none}.marker{position:absolute;z-index:3;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;transition:.2s ease}.markericon{width:44px;height:44px;border-radius:50%;border:2px solid white;background:#171c25;box-shadow:0 8px 22px rgba(0,0,0,.48),0 0 0 4px rgba(255,70,85,.18);display:grid;place-items:center;overflow:hidden;font-weight:900}.markericon img{width:100%;height:100%;object-fit:cover}.markerlabel{font-size:.62rem;background:rgba(6,8,12,.86);border:1px solid rgba(255,255,255,.13);border-radius:6px;padding:3px 5px;color:#fff;white-space:nowrap}.mapnote{padding:0 20px 18px;color:var(--muted);font-size:.73rem;line-height:1.5}.meta-banner{margin:0 20px 15px;padding:12px 14px;border:1px solid rgba(94,231,255,.18);border-radius:13px;background:rgba(94,231,255,.055);font-size:.78rem;color:#c7dce2;line-height:1.5}.sources{margin-top:16px;padding:18px 20px}.sources p{margin:6px 0;color:var(--muted);font-size:.75rem;line-height:1.55}.sources a{color:#d8e7ff}.errorbox{display:none;margin-bottom:16px;border:1px solid rgba(255,202,106,.32);background:rgba(255,202,106,.06);padding:12px 14px;border-radius:13px;color:#f2d9a4;font-size:.79rem}.errorbox.show{display:block}.skeleton{animation:pulse 1.5s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:.4}50%{opacity:.8}}@media(max-width:1050px){.grid{grid-template-columns:1fr}.map-panel{min-height:560px}.controls{grid-template-columns:240px 1fr}.controls .view-control{grid-column:1/-1;justify-self:start}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:720px){.wrap{width:min(100% - 18px,1500px)}header{padding-top:27px}.toplinks .hide-sm{display:none}.controls-shell{top:58px}.controls{grid-template-columns:1fr}.maptabs{grid-row:2}.controls .view-control{grid-column:auto}.metrics{padding:13px;gap:8px}.metric{padding:12px}.metric .v{font-size:1.35rem}.comp-area,.chart,.history{padding-left:13px;padding-right:13px}.comp-grid{grid-template-columns:1fr}.panelhead,.maptop{padding-left:14px;padding-right:14px}.maptop{flex-direction:column}.mapstage{margin:10px;min-height:390px}.markericon{width:38px;height:38px}.barrow{grid-template-columns:94px 1fr 42px;gap:7px}.mapnote{padding-left:14px;padding-right:14px}.meta-banner{margin-left:14px;margin-right:14px}}
-</style>
+<meta name="description" content="VCT scouting, custom roster comp recommendations, pro-team similarity, and tactical play ideas.">
+<title>VCT Scout + Comp Lab | Random Info Pages</title>
+<link rel="stylesheet" href="./app.css">
 </head>
 <body>
-<div class="top"><div class="wrap topin"><a class="brand" href="../"><span class="brandmark">V</span><span>VCT Scout Board</span></a><div class="toplinks"><a class="pilllink hide-sm" href="https://www.vlr.gg/">VLR source ↗</a><a class="pilllink" href="../">Random Info Pages</a></div></div></div>
+<div class="top"><div class="wrap topin"><a class="brand" href="../"><span class="brandmark">V</span><span>VCT Scout + Comp Lab</span></a><div class="toplinks"><a class="pilllink hide-sm" href="https://www.vlr.gg/">VLR source ↗</a><a class="pilllink" href="../">Random Info Pages</a></div></div></div>
 <header class="wrap">
-  <div class="eyebrow"><span class="live-dot"></span><span>2026 Champions scouting</span><span>•</span><span>agent comps + map trends</span></div>
-  <h1>See what every Champions team is actually picking.</h1>
-  <p class="lead">Choose a team and map to inspect its latest observed five-agent composition, common lineups, agent pick frequency, map record, side performance, and a role-based setup overlay. Switch to Meta Board to compare the full Champions field.</p>
+  <div class="eyebrow"><span class="live-dot"></span><span>2026 VCT data</span><span>•</span><span>scouting + your roster</span></div>
+  <h1>Scout the pros. Build what your team can actually play.</h1>
+  <p class="lead">Use the live VCT board to inspect pro comps by map, then switch into Our Comp Lab for Linh, Jon, Ben, Tommy, and Dylan, with Michael available as backup. Recommendations only use agents from the player pools you supplied, then compare the result against observed VCT compositions and generate map-aware play ideas.</p>
   <div class="statusline"><span class="statuschip">Snapshot: <strong id="freshness">loading</strong></span><span class="statuschip">Window: <strong id="window">loading</strong></span><span class="statuschip">Data state: <strong id="datastate">loading</strong></span></div>
 </header>
-<div class="controls-shell"><div class="wrap controls">
-  <div class="field"><label for="teamSelect">Team</label><select id="teamSelect" class="team-select" aria-label="Choose VCT team"></select></div>
-  <div><span class="label">Map</span><div id="mapTabs" class="maptabs" role="tablist" aria-label="Choose map"></div></div>
-  <div class="view-control"><span class="label">Board</span><div class="seg"><button class="segbtn active" data-view="team">Team</button><button class="segbtn" data-view="meta">Meta</button></div></div>
+<div class="controlbar"><div class="wrap controlin">
+  <div class="seg" aria-label="Workspace"><button class="segbtn active" data-mode="scout">VCT Scout</button><button class="segbtn" data-mode="lab">Our Comp Lab</button></div>
+  <div id="mapTabs" class="maptabs" role="tablist" aria-label="Choose map"></div>
 </div></div>
 <main class="wrap main">
   <div id="errorBox" class="errorbox"></div>
-  <div class="grid">
-    <div class="stack">
-      <section class="panel" id="summaryPanel">
-        <div class="panelhead"><div><h2 class="paneltitle" id="summaryTitle">Map snapshot</h2><p class="panelsub" id="summarySub">Loading the latest VCT observations.</p></div></div>
-        <div id="metrics" class="metrics"></div>
-      </section>
-      <section class="panel">
-        <div class="panelhead"><div><h2 class="paneltitle">Agent composition</h2><p class="panelsub" id="compSub">Latest observed lineup and most-used lineup.</p></div></div>
-        <div id="compositionArea" class="comp-area"></div>
-      </section>
-      <section class="panel">
-        <div class="panelhead"><div><h2 class="paneltitle">Agent pick board</h2><p class="panelsub" id="pickSub">Share of this team’s VCT map appearances using each agent.</p></div></div>
-        <div id="pickChart" class="chart"></div>
-      </section>
-      <section class="panel">
-        <div class="panelhead"><div><h2 class="paneltitle">Composition frequency</h2><p class="panelsub">Most repeated five-agent structures in the selected window.</p></div></div>
-        <div id="history" class="history"></div>
-      </section>
-    </div>
-    <div class="stack">
-      <section class="panel map-panel">
-        <div class="maptop"><div><h2 class="paneltitle" id="mapTitle">Map setup</h2><p class="panelsub">Role-based starting structure using the selected composition.</p></div><div class="setupseg seg"><button class="segbtn active" data-side="attack">Attack</button><button class="segbtn" data-side="defense">Defense</button></div></div>
-        <div id="mapStage" class="mapstage" aria-label="Map outline with common setup markers"></div>
-        <div class="mapnote">Setup markers are a scouting template for common lane coverage and default spacing. They are not player tracking or a claim that the selected team used these exact starting coordinates every round.</div>
-      </section>
-      <section class="panel">
-        <div class="panelhead"><div><h2 class="paneltitle">Reading the board</h2><p class="panelsub">What the numbers mean.</p></div></div>
-        <div class="sources">
-          <p><strong>Latest comp:</strong> newest official VCT map observation found for the selected team and map.</p>
-          <p><strong>Common comp:</strong> most frequently observed exact five-agent set inside the current data window.</p>
-          <p><strong>Meta Board:</strong> aggregated team-side map observations for the 16-team Champions field, so both teams in a head-to-head contribute one composition observation.</p>
-          <p><strong>Sources:</strong> public <a href="https://www.vlr.gg/">VLR.gg</a> match data. The fallback Stage 2 reference uses <a href="https://vct-reference.vercel.app/">VCT Reference</a>. Map and agent artwork loads from <a href="https://valorant-api.com/">Valorant-API</a>.</p>
-          <p>This is an unofficial fan scouting tool and is not affiliated with Riot Games or the Valorant Champions Tour.</p>
-        </div>
-      </section>
-    </div>
-  </div>
+  <div id="scoutWorkspace"></div>
+  <div id="labWorkspace" class="hidden"></div>
+  <section class="panel sources">
+    <p><strong>Observed data:</strong> VCT compositions, map results, pick frequencies, side results, and team comparisons come from the site's VLR-backed snapshot.</p>
+    <p><strong>Recommendation method:</strong> the Comp Lab combines current-map agent frequency, similarity to observed VCT compositions, and role-structure fit. The score is a scouting heuristic, not a prediction of match outcome or proof that a composition is optimal.</p>
+    <p><strong>Play and setup notes:</strong> map markers and recommended plays are role-based planning templates derived from the selected composition. They are not exact VCT player coordinates, round protocols, or private team strategy.</p>
+  </section>
 </main>
-<script>
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const MAP_FALLBACK=["Abyss","Ascent","Haven","Lotus","Split","Summit","Sunset"];
-const state={data:null,teamId:120,map:"Haven",view:"team",side:"attack",agents:new Map(),maps:new Map()};
-const setup={
-  Abyss:{attack:[[23,75,"A pressure"],[37,64,"A link"],[50,76,"mid flex"],[63,63,"B link"],[77,75,"B pressure"]],defense:[[23,29,"A anchor"],[37,40,"A link"],[50,31,"mid"],[63,40,"B link"],[77,29,"B anchor"]]},
-  Ascent:{attack:[[20,72,"A main"],[38,64,"cat"],[50,76,"mid"],[64,62,"market"],[80,72,"B main"]],defense:[[22,28,"A site"],[38,40,"tree"],[50,34,"mid"],[64,40,"market"],[78,28,"B site"]]},
-  Haven:{attack:[[18,72,"A long"],[35,62,"A/C link"],[50,76,"mid"],[66,62,"garage"],[82,72,"C long"]],defense:[[20,28,"A site"],[38,40,"B/A link"],[50,30,"B site"],[65,40,"garage"],[80,28,"C site"]]},
-  Lotus:{attack:[[19,72,"A root"],[34,63,"A rubble"],[50,76,"B main"],[66,63,"C mound"],[81,72,"C main"]],defense:[[20,28,"A site"],[36,40,"A link"],[50,31,"B site"],[64,40,"C link"],[80,28,"C site"]]},
-  Split:{attack:[[20,72,"A main"],[36,62,"A ramp"],[50,76,"mid"],[64,62,"B heaven"],[80,72,"B main"]],defense:[[22,27,"A site"],[38,40,"A heaven"],[50,33,"mid"],[63,40,"B heaven"],[78,27,"B site"]]},
-  Summit:{attack:[[20,73,"A lane"],[36,63,"A link"],[50,76,"mid"],[64,63,"B link"],[80,73,"B lane"]],defense:[[22,28,"A anchor"],[38,41,"A link"],[50,32,"mid"],[62,41,"B link"],[78,28,"B anchor"]]},
-  Sunset:{attack:[[20,72,"A main"],[37,62,"A link"],[50,76,"mid"],[64,62,"market"],[80,72,"B main"]],defense:[[22,28,"A site"],[38,40,"A link"],[50,32,"mid"],[63,40,"market"],[78,28,"B site"]]}
-};
-const fallbackRoles={Jett:"Duelist",Raze:"Duelist",Reyna:"Duelist",Yoru:"Duelist",Neon:"Duelist",Iso:"Duelist",Phoenix:"Duelist",Waylay:"Duelist",Brimstone:"Controller",Omen:"Controller",Viper:"Controller",Astra:"Controller",Harbor:"Controller",Clove:"Controller",Sova:"Initiator",Breach:"Initiator",Skye:"Initiator","KAY/O":"Initiator",Fade:"Initiator",Gekko:"Initiator",Tejo:"Initiator",Killjoy:"Sentinel",Cypher:"Sentinel",Sage:"Sentinel",Chamber:"Sentinel",Deadlock:"Sentinel",Vyse:"Sentinel",Veto:"Sentinel"};
-function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
-function pct(v){return v==null?"n/a":`${Number(v).toFixed(1)}%`;}
-function shortDate(v){if(!v)return"n/a";const d=new Date(`${v}T12:00:00`);return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});}
-function agentInfo(name){const a=state.agents.get(name.toLowerCase());return {name,role:a?.role?.displayName||fallbackRoles[name]||"Agent",icon:a?.displayIconSmall||a?.displayIcon||""};}
-function agentChip(name,small=false){const a=agentInfo(name);if(small)return `<span class="tinyagent">${esc(name)}</span>`;return `<span class="agent">${a.icon?`<img src="${esc(a.icon)}" alt="">`:""}<span>${esc(name)}<span class="role"> · ${esc(a.role)}</span></span></span>`;}
-function team(){return state.data?.teams?.find(t=>Number(t.id)===Number(state.teamId));}
-function currentRow(){return team()?.maps?.[state.map]||null;}
-function roleSort(names){const order={Controller:0,Initiator:1,Sentinel:2,Duelist:3,Agent:4};return [...(names||[])].sort((a,b)=>(order[agentInfo(a).role]??9)-(order[agentInfo(b).role]??9)||a.localeCompare(b));}
-function setupAgents(){if(state.view==="team"){const row=currentRow();return roleSort(row?.latest?.agents||row?.common?.agents||seedComp()?.agents||[]);}const meta=state.data?.meta_by_map?.[state.map];return roleSort(meta?.top_compositions?.[0]?.agents||seedComp()?.agents||[]);}
-function seedComp(){return state.data?.stage2_seed?.maps?.[state.map]||null;}
-function renderSelectors(){
- const teams=state.data?.teams||[];$("#teamSelect").innerHTML=teams.map(t=>`<option value="${t.id}" ${Number(t.id)===Number(state.teamId)?"selected":""}>${esc(t.tag)} · ${esc(t.name)} · ${esc(t.region)}</option>`).join("");
- const maps=state.data?.map_pool?.length?state.data.map_pool:MAP_FALLBACK;$("#mapTabs").innerHTML=maps.map(m=>`<button class="mapbtn ${m===state.map?"active":""}" data-map="${esc(m)}">${esc(m)}</button>`).join("");
- $$(".mapbtn").forEach(b=>b.onclick=()=>{state.map=b.dataset.map;renderSelectors();render();});
-}
-function renderStatus(){
- const d=state.data||{};$("#freshness").textContent=d.generated_at?new Date(d.generated_at).toLocaleString():"unknown";$("#window").textContent=`${d.window_start||"?"} to ${d.window_end||"?"}`;$("#datastate").textContent=(d.status||"unknown").toUpperCase();
- const errors=d.errors||[];const box=$("#errorBox");if(errors.length){box.classList.add("show");box.textContent=`Partial refresh: ${errors.length} team${errors.length===1?"":"s"} could not refresh. Last good data is retained when available.`;}else box.classList.remove("show");
-}
-function metric(k,v,s=""){return `<div class="metric"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div>${s?`<div class="s">${esc(s)}</div>`:""}</div>`;}
-function renderSummary(){
- const t=team(), row=currentRow(), meta=state.data?.meta_by_map?.[state.map];
- if(state.view==="meta"){
-  $("#summaryTitle").textContent=`${state.map} · Champions field meta`;$("#summarySub").textContent="Aggregated official VCT team-side observations for the 16-team Champions field.";
-  $("#metrics").innerHTML=metric("Team-side maps",meta?.team_side_maps??0,"composition observations")+metric("Top agent",meta?.agent_pick_rates?.[0]?.agent||"n/a",pct(meta?.agent_pick_rates?.[0]?.rate))+metric("Top comp uses",meta?.top_compositions?.[0]?.games??0,"exact five-agent set")+metric("Newest map",shortDate(meta?.latest_date),"in snapshot");return;
- }
- $("#summaryTitle").textContent=`${t?.name||"Team"} · ${state.map}`;
- $("#summarySub").textContent=row?`Official VCT maps observed since ${state.data.window_start}. Latest: ${shortDate(row.latest?.date)} vs ${row.latest?.opponent||"unknown opponent"}.`:`No official VCT ${state.map} observation found in this window.`;
- $("#metrics").innerHTML=metric("Maps",row?.games??0,`${row?.wins??0}W · ${row?.losses??0}L`)+metric("Map win",pct(row?.win_rate),"series map result")+metric("Attack rounds",pct(row?.attack_round_win_rate),"round win rate")+metric("Defense rounds",pct(row?.defense_round_win_rate),"round win rate");
-}
-function renderCompositions(){
- const area=$("#compositionArea"), row=currentRow(), meta=state.data?.meta_by_map?.[state.map];
- if(state.view==="meta"){
-  const top=meta?.top_compositions?.[0];if(!top){const seed=seedComp();area.innerHTML=seed?`<div class="meta-banner">Live field aggregation is not populated yet. Showing the Americas Stage 2 fallback reference for this map.</div><div class="comp-card accent"><div class="comp-k">Stage 2 reference</div><div class="agents">${seed.agents.map(a=>agentChip(a)).join("")}</div><div class="comp-meta">Observed ${seed.games} times in the Americas Stage 2 reference table.</div></div>`:`<div class="empty">No live field composition is available for this map yet.</div>`;return;}
-  area.innerHTML=`<div class="comp-card accent"><div class="comp-k">Most common across Champions field</div><div class="agents">${top.agents.map(a=>agentChip(a)).join("")}</div><div class="comp-meta">${top.games} team-side maps · ${pct(top.win_rate)} observed map win rate</div></div>`;return;
- }
- if(!row){const seed=seedComp();area.innerHTML=seed?`<div class="meta-banner">No ${esc(team()?.tag||"")} observation is available for ${esc(state.map)} in the current window. The fallback below is an Americas Stage 2 meta reference, not this team’s lineup.</div><div class="comp-card"><div class="comp-k">Stage 2 reference</div><div class="agents">${seed.agents.map(a=>agentChip(a)).join("")}</div><div class="comp-meta">${seed.games} reference appearances</div></div>`:`<div class="empty">No composition observation is available for this team and map in the current VCT window.</div>`;return;}
- const latest=row.latest||{}, common=row.common||{};
- area.innerHTML=`<div class="comp-grid"><div class="comp-card accent"><div class="comp-k">Latest observed</div><div class="agents">${(latest.agents||[]).map(a=>agentChip(a)).join("")}</div><div class="comp-meta">${shortDate(latest.date)} · vs ${esc(latest.opponent||"unknown")} · ${esc(latest.result||"")} ${latest.team_score??""}-${latest.opponent_score??""}${latest.patch?` · patch ${esc(latest.patch)}`:""}</div></div><div class="comp-card"><div class="comp-k">Most used</div><div class="agents">${(common.agents||[]).map(a=>agentChip(a)).join("")}</div><div class="comp-meta">${common.games||0} map${common.games===1?"":"s"} · ${pct(common.win_rate)} observed win rate · last used ${shortDate(common.last_used)}</div></div></div>`;
-}
-function renderPickChart(){
- let rows=[];if(state.view==="meta")rows=state.data?.meta_by_map?.[state.map]?.agent_pick_rates||[];else rows=currentRow()?.agent_pick_rates||[];
- if(!rows.length&&state.view==="meta"&&!state.data?.meta_by_map?.[state.map])rows=state.data?.stage2_seed?.overall_pick_rates||[];
- if(!rows.length){$("#pickChart").innerHTML='<div class="empty">No pick-rate observations for this selection.</div>';return;}
- $("#pickSub").textContent=state.view==="meta"?"Share of Champions-field team-side map observations containing each agent.":"Share of this team’s VCT map appearances using each agent.";
- $("#pickChart").innerHTML=rows.slice(0,14).map(r=>{const a=agentInfo(r.agent);return `<div class="barrow"><div class="barname">${a.icon?`<img src="${esc(a.icon)}" alt="">`:""}<span>${esc(r.agent)}</span></div><div class="track"><div class="fill" style="width:${Math.max(0,Math.min(100,Number(r.rate)||0))}%"></div></div><div class="barval">${pct(r.rate)}</div></div>`;}).join("");
-}
-function renderHistory(){
- let comps=[];if(state.view==="meta")comps=state.data?.meta_by_map?.[state.map]?.top_compositions||[];else comps=currentRow()?.compositions||[];
- if(!comps.length){const seed=seedComp();$("#history").innerHTML=seed?`<div class="historyrow"><div class="count">${seed.games}x</div><div class="tinyagents">${seed.agents.map(a=>agentChip(a,true)).join("")}</div><div class="win">Stage 2 reference</div></div>`:'<div class="empty">No composition history for this selection.</div>';return;}
- $("#history").innerHTML=comps.slice(0,6).map(c=>`<div class="historyrow"><div class="count">${c.games}x</div><div class="tinyagents">${(c.agents||[]).map(a=>agentChip(a,true)).join("")}</div><div class="win">${pct(c.win_rate)} WR</div></div>`).join("");
-}
-function renderMap(){
- const stage=$("#mapStage"), asset=state.maps.get(state.map.toLowerCase()), positions=setup[state.map]?.[state.side]||[], agents=setupAgents();$("#mapTitle").textContent=`${state.map} · ${state.side==="attack"?"Attack default":"Defense default"}`;
- let html=asset?.displayIcon?`<img class="mapimg" src="${esc(asset.displayIcon)}" alt="${esc(state.map)} map outline">`:"";
- positions.forEach((p,i)=>{const name=agents[i]||String(i+1),a=agentInfo(name);html+=`<div class="marker" style="left:${p[0]}%;top:${p[1]}%"><div class="markericon">${a.icon?`<img src="${esc(a.icon)}" alt="${esc(name)}">`:esc(name.slice(0,2).toUpperCase())}</div><div class="markerlabel">${esc(name)} · ${esc(p[2])}</div></div>`;});stage.innerHTML=html;
-}
-function render(){renderStatus();renderSummary();renderCompositions();renderPickChart();renderHistory();renderMap();}
-async function loadAssets(){
- const jobs=[fetch("https://valorant-api.com/v1/agents?isPlayableCharacter=true").then(r=>r.json()),fetch("https://valorant-api.com/v1/maps").then(r=>r.json())];const [agents,maps]=await Promise.allSettled(jobs);
- if(agents.status==="fulfilled")for(const a of agents.value.data||[])state.agents.set(a.displayName.toLowerCase(),a);
- if(maps.status==="fulfilled")for(const m of maps.value.data||[])state.maps.set(m.displayName.toLowerCase(),m);
-}
-async function boot(){
- try{const [data]=await Promise.all([fetch(`data.json?v=${Date.now()}`).then(r=>{if(!r.ok)throw new Error(`data ${r.status}`);return r.json()}),loadAssets()]);state.data=data;if(!data.teams?.some(t=>Number(t.id)===Number(state.teamId)))state.teamId=data.teams?.[0]?.id||120;const available=team()?.maps||{};if(!available[state.map]){const first=(data.map_pool||MAP_FALLBACK).find(m=>available[m]);if(first)state.map=first;}renderSelectors();render();}
- catch(err){console.error(err);$("#errorBox").classList.add("show");$("#errorBox").textContent="The live VCT snapshot could not be loaded. Refresh the page or check the repository data file.";}
-}
-$("#teamSelect").addEventListener("change",e=>{state.teamId=Number(e.target.value);const t=team(),available=t?.maps||{};if(!available[state.map]){const first=(state.data.map_pool||MAP_FALLBACK).find(m=>available[m]);if(first)state.map=first;}renderSelectors();render();});
-$$('[data-view]').forEach(b=>b.addEventListener("click",()=>{state.view=b.dataset.view;$$('[data-view]').forEach(x=>x.classList.toggle("active",x===b));$("#teamSelect").disabled=state.view==="meta";render();}));
-$$('[data-side]').forEach(b=>b.addEventListener("click",()=>{state.side=b.dataset.side;$$('[data-side]').forEach(x=>x.classList.toggle("active",x===b));renderMap();}));
-boot();
-</script>
+<script src="./recommendation.js"></script>
+<script src="./app-core.js"></script>
+<script src="./app-lab.js"></script>
 </body>
 </html>
