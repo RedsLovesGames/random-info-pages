@@ -39,3 +39,14 @@ test('route graph returns traversable multi-node paths for major lanes',()=>{
 test('validator rejects duplicate anchor ids',()=>{
   assert.throws(()=>G.validateMap({name:'Bad',anchors:[{id:'x',x:.1,y:.1,confidence:'template'},{id:'x',x:.2,y:.2,confidence:'template'}],edges:[]}),/duplicate anchor/i);
 });
+
+test('exact Valorant API callouts upgrade template anchors without fuzzy matching',()=>{
+  const fake={displayName:'Ascent',xMultiplier:1,yMultiplier:1,xScalarToAdd:0,yScalarToAdd:0,callouts:[{regionName:'Main',superRegionName:'A',location:{x:.2,y:.3}},{regionName:'Main',superRegionName:'B',location:{x:.8,y:.7}}]};
+  const n=G.hydrateFromValorantApi('Ascent',fake);
+  assert.ok(n>=2);
+  assert.equal(G.anchor('Ascent','aMain').confidence,'verified');
+  assert.equal(G.anchor('Ascent','aMain').x,.3);
+  assert.equal(G.anchor('Ascent','aMain').y,.2);
+  assert.equal(G.anchor('Ascent','bMain').x,.7);
+  assert.equal(G.anchor('Ascent','bMain').y,.8);
+});
