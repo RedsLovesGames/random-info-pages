@@ -5,16 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080a10">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="VCT scouting, custom roster comp recommendations, pro-team similarity, and tactical play ideas.">
+<meta name="description" content="VCT scouting, custom roster comp recommendations, pro-team similarity, and replay-backed tactical play ideas.">
 <title>VCT Scout + Comp Lab | Random Info Pages</title>
 <link rel="stylesheet" href="./app.css">
+<link rel="stylesheet" href="./tactical-v2.css">
 </head>
 <body>
-<div class="top"><div class="wrap topin"><a class="brand" href="../"><span class="brandmark">V</span><span>VCT Scout + Comp Lab</span></a><div class="toplinks"><a class="pilllink hide-sm" href="https://www.vlr.gg/">VLR source ↗</a><a class="pilllink" href="../">Random Info Pages</a></div></div></div>
+<div class="top"><div class="wrap topin"><a class="brand" href="../"><span class="brandmark">V</span><span>VCT Scout + Comp Lab</span></a><div class="toplinks"><a class="pilllink hide-sm" href="https://www.rib.gg/">RIB 2D Replay ↗</a><a class="pilllink" href="../">Random Info Pages</a></div></div></div>
 <header class="wrap">
-  <div class="eyebrow"><span class="live-dot"></span><span>2026 VCT data</span><span>•</span><span>scouting + your roster</span></div>
+  <div class="eyebrow"><span class="live-dot"></span><span>2026 VCT data</span><span>•</span><span>scouting + your roster + replay-backed tactics</span></div>
   <h1>Scout the pros. Build what your team can actually play.</h1>
-  <p class="lead">Use the live VCT board to inspect pro comps by map, then switch into Our Comp Lab for Linh, Jon, Ben, Tommy, and Dylan, with Michael available as backup. Recommendations only use agents from the player pools you supplied, then compare the result against observed VCT compositions and generate map-aware play ideas.</p>
+  <p class="lead">Inspect current VCT comps by map, build legal comps for Linh, Jon, Ben, Tommy, and Dylan with Michael as backup, then turn the selected five into a map-specific tactical board. The upgraded board uses Riot/Valorant-API minimap coordinates for named callouts, adds team logos, movement routes, utility target zones, and direct RIB 2D Replay examples.</p>
   <div class="statusline"><span class="statuschip">Snapshot: <strong id="freshness">loading</strong></span><span class="statuschip">Window: <strong id="window">loading</strong></span><span class="statuschip">Data state: <strong id="datastate">loading</strong></span></div>
 </header>
 <div class="controlbar"><div class="wrap controlin">
@@ -27,12 +28,14 @@
   <div id="labWorkspace" class="hidden"></div>
   <section class="panel sources">
     <p><strong>Observed data:</strong> VCT compositions, map results, pick frequencies, side results, and team comparisons come from the site's VLR-backed snapshot.</p>
-    <p><strong>Recommendation method:</strong> the Comp Lab combines current-map agent frequency, similarity to observed VCT compositions, and role-structure fit. The score is a scouting heuristic, not a prediction of match outcome or proof that a composition is optimal.</p>
-    <p><strong>Play and setup notes:</strong> map markers and recommended plays are role-based planning templates derived from the selected composition. They are not exact VCT player coordinates, round protocols, or private team strategy.</p>
+    <p><strong>Tactical sources:</strong> every current map now links to a real 2026 VCT match on RIB with its 2D Replay tab. Riot/Valorant-API map metadata is used to translate named callout locations onto the official minimap coordinate space. ValoPlant is linked for replay review of .vrf files with player positions and ability locations.</p>
+    <p><strong>Important boundary:</strong> the tactical routes are source-backed planning templates, not a claim that a professional team used those exact arrows in a private protocol. Open the linked RIB replay when you want the actual round-by-round pro movement.</p>
   </section>
 </main>
 <script src="./recommendation.js"></script>
 <script src="./app-core.js"></script>
 <script src="./app-lab.js"></script>
+<script src="./tactical-data.js"></script>
+<script src="./tactical-v2.js"></script>
 </body>
 </html>
