@@ -5,18 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080a10">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="VCT scouting, custom roster comp recommendations, pro-team similarity, and map-aware tactical planning.">
+<meta name="description" content="VCT scouting, custom roster comp recommendations, pro-team similarity, recommended plays, and separately verified observed VCT rounds.">
 <title>VCT Scout + Comp Lab | Random Info Pages</title>
 <link rel="stylesheet" href="./app.css">
-<link rel="stylesheet" href="./tactical-v2.css">
-<link rel="stylesheet" href="./tactical-fixes-v3.css">
+<link rel="stylesheet" href="./tactical-renderer-v3.css">
 </head>
 <body>
 <div class="top"><div class="wrap topin"><a class="brand" href="../"><span class="brandmark">V</span><span>VCT Scout + Comp Lab</span></a><div class="toplinks"><a class="pilllink hide-sm" href="https://www.rib.gg/matches">RIB match database ↗</a><a class="pilllink" href="../">Random Info Pages</a></div></div></div>
 <header class="wrap">
   <div class="eyebrow"><span class="live-dot"></span><span>2026 VCT data</span><span>•</span><span>scouting + roster + tactical planning</span></div>
   <h1>Scout the pros. Build what your team can actually play.</h1>
-  <p class="lead">Inspect current VCT comps by map, build legal comps for Linh, Jon, Ben, Tommy, and Dylan with Michael as backup, then turn the selected five into a map-specific tactical board. The board uses VALORANT minimap callout coordinates, team logos, movement routes, utility target zones, and exact VCT match references.</p>
+  <p class="lead">Inspect current VCT comps by map, build legal comps for Linh, Jon, Ben, Tommy, and Dylan with Michael as backup, then use Recommended Play for your roster or Observed VCT Round for evidence that has been verified to a specific round and timestamp.</p>
   <div class="statusline"><span class="statuschip">Snapshot: <strong id="freshness">loading</strong></span><span class="statuschip">Window: <strong id="window">loading</strong></span><span class="statuschip">Data state: <strong id="datastate">loading</strong></span></div>
 </header>
 <div class="controlbar"><div class="wrap controlin">
@@ -28,17 +27,18 @@
   <div id="scoutWorkspace"></div>
   <div id="labWorkspace" class="hidden"></div>
   <section class="panel sources">
-    <p><strong>Observed data:</strong> VCT compositions, map results, pick frequencies, side results, and team comparisons come from the site's VLR-backed snapshot.</p>
-    <p><strong>Tactical references:</strong> each current map points to an exact 2026 VCT match on RIB. Where a map-specific VOD timestamp is verified, the board also links directly to that map. RIB exposes Replay as an in-page tab, so the UI no longer labels the match URL as a direct Replay permalink.</p>
-    <p><strong>Map placement:</strong> named callouts are converted from VALORANT map metadata into minimap positions. Site letters such as A, B, and C are treated as meaningful parts of a callout so A Main, B Main, A Site, and B Site cannot collapse onto the same location.</p>
-    <p><strong>Important boundary:</strong> the named plays, route arrows, and utility plans are planning templates unless a specific round is explicitly identified. ValoPlant exact replay links are only shown when a particular shared .vrf replay exists, so the generic ValoPlant landing-page button has been removed.</p>
+    <p><strong>Observed scouting data:</strong> VCT compositions, results, pick frequencies, side results, and team comparisons come from the site's VLR-backed snapshot.</p>
+    <p><strong>Recommended Play:</strong> routes, tactical assignments, utility ownership, spike carrier, plant, and post-plant positions are planning templates generated from deterministic map anchors and agent tactical subroles. Template coordinates are visibly marked.</p>
+    <p><strong>Observed VCT Round:</strong> this mode is deliberately stricter. It only publishes an example after match, map, round, side, and exact VOD start/end timestamps have been manually verified. A map-level VOD link alone is not enough.</p>
   </section>
 </main>
 <script src="./recommendation.js"></script>
 <script src="./app-core.js"></script>
 <script src="./app-lab.js"></script>
-<script src="./tactical-data.js"></script>
-<script src="./tactical-v2.js"></script>
-<script src="./tactical-fixes-v3.js"></script>
+<script src="./map-geometry.js"></script>
+<script src="./agent-tactics.js"></script>
+<script src="./recommended-plays.js"></script>
+<script src="./observed-rounds.js"></script>
+<script src="./tactical-renderer-v3.js"></script>
 </body>
 </html>
