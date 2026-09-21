@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090d16">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Nerdcore Prompt Forge builds corpus-grounded songwriting prompts from the Nerdcore Reference Package.">
+<title>Nerdcore Prompt Forge</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="top"><div class="wrap topin"><a class="brand" href="../"><div class="brandmark">N</div><span>Nerdcore Prompt Forge</span></a><div class="toplinks"><a class="pilllink" href="../">Random Info Pages</a><a class="pilllink repoonly" href="https://github.com/RedsLovesGames/random-info-pages">GitHub ↗</a></div></div></div>
+<header class="wrap"><div class="eyebrow">Corpus-grounded songwriting prompt builder</div><h1>Build a better nerdcore prompt.</h1><p class="lead">Turn a character idea into a structured prompt that uses the Nerdcore Reference Package correctly. The generator emphasizes character voice, functional lore references, rhyme chains, hook clarity, escalation, and original wording.</p><div class="stats"><span class="stat">13,819-song reference corpus</span><span class="stat">1,118 primary artists</span><span class="stat">No AI backend required</span><span class="stat">Everything stays in your browser</span></div></header>
+<main class="wrap layout">
+<section class="panel">
+<div class="panelhead"><div><h2>Song brief</h2><p>Fill only what matters. The rest gets sensible defaults.</p></div><div class="qualitytag">Reference-package rules built in</div></div>
+<div class="panelbody">
+<div class="section">
+<div class="sectiontitle"><h3>Start fast</h3><span>Presets set the technical controls, not the character.</span></div>
+<div class="presets">
+<button class="preset" data-preset="villain">Menacing villain</button>
+<button class="preset" data-preset="hero">Broken hero</button>
+<button class="preset" data-preset="technical">Technical flex</button>
+<button class="preset" data-preset="narrative">Narrative arc</button>
+<button class="preset" data-preset="anthem">Anthem</button>
+<button class="preset" data-preset="duet">Duet</button>
+<button class="preset" id="surpriseBtn">Surprise me</button>
+</div>
+</div>
+<div class="section">
+<div class="grid2">
+<div class="field"><label for="character">Character / topic *</label><input id="character" placeholder="Sukuna, Doctor Doom, a Minecraft boss..." autocomplete="off"></div>
+<div class="field"><label for="franchise">Franchise / source</label><input id="franchise" placeholder="Jujutsu Kaisen"></div>
+<div class="field"><label for="songGoal">Song goal</label><select id="songGoal"><option>Character anthem</option><option>Villain manifesto</option><option>Emotional character study</option><option>Narrative retelling</option><option>Battle / cypher verse</option><option>Transformation arc</option><option>Tragic descent</option><option>Victory lap / flex</option><option>Duet / conflict</option><option>Tribute</option></select></div>
+<div class="field"><label for="pov">POV</label><select id="pov"><option value="first_person">First person</option><option value="second_person">Second person</option><option value="third_person">Third person</option><option value="battle">Battle / direct address</option><option value="mixed">Mixed perspectives</option></select></div>
+<div class="field full"><label for="thesis">Core thesis *</label><textarea id="thesis" placeholder="Absolute power isolates you from everyone beneath you."></textarea><div class="toolbar"><button class="btn" id="suggestThesis">Suggest thesis</button><select id="thesisTheme" style="max-width:210px"><option value="power">Power and cost</option><option value="duty">Duty and burden</option><option value="identity">Identity conflict</option><option value="revenge">Revenge</option><option value="legacy">Legacy</option><option value="isolation">Isolation</option><option value="ambition">Ambition</option><option value="loss">Loss and grief</option><option value="control">Control vs chaos</option><option value="redemption">Redemption</option></select></div></div>
+<div class="field full"><label for="arc">Emotional / narrative arc</label><input id="arc" placeholder="Starts untouchable, reveals the cost of supremacy, ends embracing the isolation."></div>
+</div>
+</div>
+<div class="section">
+<div class="sectiontitle"><h3>Core controls</h3><span>These map directly to the reference package vocabulary.</span></div>
+<div class="grid3">
+<div class="field"><label for="emotion">Primary emotion</label><select id="emotion"><option>menacing</option><option>triumphant</option><option>tragic</option><option>defiant</option><option>reflective</option><option>playful</option><option>furious</option><option>haunting</option><option>hopeful</option><option>mixed</option></select></div>
+<div class="field"><label for="secondaryEmotion">Secondary emotion</label><select id="secondaryEmotion"><option>triumphant</option><option>menacing</option><option>tragic</option><option>defiant</option><option>reflective</option><option>playful</option><option>furious</option><option>haunting</option><option>hopeful</option><option>none</option></select></div>
+<div class="field"><label for="energy">Energy</label><select id="energy"><option>escalating</option><option>high</option><option>medium</option><option>low</option></select></div>
+<div class="field"><label for="rhyme">Rhyme density</label><select id="rhyme"><option>high</option><option>extreme</option><option>medium</option><option>low</option></select></div>
+<div class="field"><label for="refs">Reference density</label><select id="refs"><option>high</option><option>medium</option><option>low</option></select></div>
+<div class="field"><label for="accessibility">Accessibility</label><select id="accessibility"><option value="layered">Layered</option><option value="broad">Broad</option><option value="fan_only">Fan only</option></select></div>
+<div class="field"><label for="hook">Hook</label><select id="hook"><option>anthemic</option><option>melodic</option><option>chant</option><option>dark</option><option>emotional</option><option>minimal</option></select></div>
+<div class="field"><label for="structure">Structure</label><select id="structure"><option>I-V-C-V-C-B-C-O</option><option>V-C-V-C</option><option>C-V-C-V-C</option><option>I-V-C-V-C-O</option><option>V-C-V-C-B-C</option><option>I-V-PC-C-V-PC-C-B-C-O</option><option>V-PC-C-V-PC-C-B-C</option><option value="custom">Custom</option><option value="free">Free structure</option></select></div>
+<div class="field" id="customStructureField" style="display:none"><label for="customStructure">Custom structure</label><input id="customStructure" placeholder="I-V-C-V-C-V-C-O"></div>
+<div class="field"><label for="length">Length</label><select id="length"><option>Standard, about 2:30 to 3:30</option><option>Short, about 1:30 to 2:15</option><option>Long, about 3:30 to 5:00</option><option>One 16-bar verse</option><option>One 32-bar verse</option></select></div>
+<div class="field"><label for="performance">Performance feel</label><select id="performance"><option>Technical rap</option><option>Modern trap rap</option><option>Boom-bap</option><option>Melodic rap</option><option>Rap-rock</option><option>Cinematic</option><option>Theatrical</option><option>Cypher</option><option>Free / infer from premise</option></select></div>
+<div class="field"><label for="loreAccuracy">Lore accuracy</label><select id="loreAccuracy"><option>Strict canon-first</option><option>Canon-first, allow metaphorical compression</option><option>Flexible</option></select></div>
+</div>
+</div>
+<div class="section advanced">
+<details open>
+<summary>Technical writing controls</summary>
+<div class="grid2" style="margin-top:13px">
+<div class="field"><label>Internal rhyme</label><div class="rangebox"><input type="range" id="internalRhyme" min="0" max="4" value="3"><output for="internalRhyme">High</output></div></div>
+<div class="field"><label>Multisyllabic rhyme</label><div class="rangebox"><input type="range" id="multiRhyme" min="0" max="4" value="3"><output for="multiRhyme">High</output></div></div>
+<div class="field"><label>Punchlines / wordplay</label><div class="rangebox"><input type="range" id="punchlines" min="0" max="4" value="3"><output for="punchlines">High</output></div></div>
+<div class="field"><label>Storytelling</label><div class="rangebox"><input type="range" id="storytelling" min="0" max="4" value="2"><output for="storytelling">Medium</output></div></div>
+<div class="field"><label>Imagery</label><div class="rangebox"><input type="range" id="imagery" min="0" max="4" value="3"><output for="imagery">High</output></div></div>
+<div class="field"><label>Flow variation</label><div class="rangebox"><input type="range" id="flowVariation" min="0" max="4" value="3"><output for="flowVariation">High</output></div></div>
+<div class="field"><label>Callbacks / motifs</label><div class="rangebox"><input type="range" id="callbacks" min="0" max="4" value="2"><output for="callbacks">Medium</output></div></div>
+<div class="field"><label>Emotional depth</label><div class="rangebox"><input type="range" id="emotionalDepth" min="0" max="4" value="3"><output for="emotionalDepth">High</output></div></div>
+</div>
+</details>
+</div>
+<div class="section advanced">
+<details open>
+<summary>Lore integration</summary>
+<div style="margin-top:13px">
+<div class="field full"><label>Every reference should do at least one of these jobs</label><div class="checks" id="referenceFunctions">
+<label class="check"><input type="checkbox" value="characterization" checked> Characterization</label>
+<label class="check"><input type="checkbox" value="wordplay or a double meaning" checked> Wordplay / double meaning</label>
+<label class="check"><input type="checkbox" value="metaphor" checked> Metaphor</label>
+<label class="check"><input type="checkbox" value="imagery" checked> Imagery</label>
+<label class="check"><input type="checkbox" value="a punchline" checked> Punchline</label>
+<label class="check"><input type="checkbox" value="a callback or setup/payoff" checked> Callback / payoff</label>
+<label class="check"><input type="checkbox" value="plot or emotional movement" checked> Plot / emotional movement</label>
+<label class="check"><input type="checkbox" value="evidence for the song's thesis" checked> Evidence for thesis</label>
+</div></div>
+<div class="grid2" style="margin-top:10px">
+<div class="field"><label for="loreAnchors">Must-use lore / character anchors</label><textarea id="loreAnchors" placeholder="Domain Expansion, binding vows, Yuji rivalry, shrine imagery..."></textarea></div>
+<div class="field"><label for="deepFan">Deep-fan rewards / callbacks</label><textarea id="deepFan" placeholder="Specific chronology, mechanics, visual motifs, subtle callbacks..."></textarea></div>
+</div>
+</div>
+</details>
+</div>
+<div class="section advanced">
+<details>
+<summary>Section jobs and hook concept</summary>
+<div class="grid2" style="margin-top:13px">
+<div class="field"><label for="verse1Job">Verse 1 job</label><input id="verse1Job" placeholder="Establish voice and worldview"></div>
+<div class="field"><label for="verse2Job">Verse 2 job</label><input id="verse2Job" placeholder="Escalate power and reveal cost"></div>
+<div class="field"><label for="verse3Job">Verse 3 / bridge job</label><input id="verse3Job" placeholder="Complicate thesis or deliver final turn"></div>
+<div class="field"><label for="hookConcept">Hook concept</label><input id="hookConcept" placeholder="One simple phrase that compresses the thesis"></div>
+</div>
+</details>
+</div>
+<div class="section advanced">
+<details>
+<summary>Guardrails and corpus lens</summary>
+<div class="grid2" style="margin-top:13px">
+<div class="field"><label for="corpusLens">Corpus lens</label><select id="corpusLens"><option>Balanced full-corpus nerdcore</option><option>Technical / rap-forward</option><option>Hook-heavy / anthemic</option><option>Narrative / cinematic</option><option>Emotional / melodic</option><option>Battle / cypher</option><option>Theatrical / character-performance</option></select></div>
+<div class="field"><label for="influences">Optional artist examples</label><input id="influences" placeholder="Rustage, Daddyphatsnaps, FabvL"><small>Used only as a measurable trait palette. The generated prompt forbids copying wording or signature phrases.</small></div>
+<div class="field"><label for="avoid">Avoid</label><textarea id="avoid" placeholder="Generic anime bars, wiki-summary exposition, name spam, forced rhyme filler..."></textarea></div>
+<div class="field"><label for="mustInclude">Other must-haves</label><textarea id="mustInclude" placeholder="One extended metaphor, a callback in the final chorus, title phrase appears only in hook..."></textarea></div>
+</div>
+<div class="checks" style="margin-top:10px" id="guardrails">
+<label class="check"><input type="checkbox" value="Avoid generic lines that could fit almost any character" checked> No generic character bars</label>
+<label class="check"><input type="checkbox" value="Do not turn verses into a wiki-summary plot recap" checked> No wiki-summary exposition</label>
+<label class="check"><input type="checkbox" value="Do not spam the character's name or franchise nouns" checked> No name spam</label>
+<label class="check"><input type="checkbox" value="Do not sacrifice syntax or meaning just to force a rhyme" checked> No rhyme-over-meaning filler</label>
+<label class="check"><input type="checkbox" value="Keep the hook simpler and more repeatable than the verses unless the premise specifically needs otherwise" checked> Hook simpler than verses</label>
+<label class="check"><input type="checkbox" value="Use original wording and do not reuse lyric lines from the corpus" checked> Original wording only</label>
+</div>
+</details>
+</div>
+<div class="section">
+<div class="toolbar"><button class="btn danger" id="resetBtn">Reset</button><button class="btn" id="saveBtn">Save settings</button><button class="btn" id="loadBtn">Load saved</button><button class="btn" id="shareBtn">Copy share link</button></div>
+</div>
+</div>
+</section>
+<aside class="panel sticky">
+<div class="panelhead"><div class="scorebox"><div class="score" id="scoreRing" style="--score:0"><span id="scoreNum">0</span></div><div class="scoremeta"><b id="scoreLabel">Prompt strength</b><span id="scoreText">Add a character and thesis to start.</span></div></div><div class="modebar"><button id="compactMode">Compact</button><button id="fullMode" class="active">Full</button></div></div>
+<textarea class="promptbox" id="promptOutput" spellcheck="false" aria-label="Generated prompt"></textarea>
+<div class="actionbar"><button class="btn green" id="copyBtn">Copy prompt</button><button class="btn primary" id="chatgptBtn">Open ChatGPT</button><button class="btn" id="downloadBtn">Download .txt</button></div>
+<div class="hint"><b>Quality check</b><div class="suggestions" id="suggestions"></div><div style="margin-top:8px">Shortcut: <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> copies the current prompt.</div></div>
+</aside>
+</main>
+<footer class="wrap footer">Built from the Nerdcore Reference Package derived from the supplied 13,819-song corpus. <a href="../">Back to Random Info Pages</a>.</footer>
+<div class="toast" id="toast">Copied</div>
+<script src="./app.js"></script>
+</body>
+</html>
