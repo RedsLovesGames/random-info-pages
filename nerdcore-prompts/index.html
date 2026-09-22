@@ -22,6 +22,7 @@
 <button class="preset" data-preset="villain">Menacing villain</button>
 <button class="preset" data-preset="hero">Broken hero</button>
 <button class="preset" data-preset="technical">Technical flex</button>
+<button class="preset" data-preset="referenceRap">Hyper-technical reference rap</button>
 <button class="preset" data-preset="narrative">Narrative arc</button>
 <button class="preset" data-preset="anthem">Anthem</button>
 <button class="preset" data-preset="duet">Duet</button>
@@ -41,16 +42,17 @@
 <div class="section">
 <div class="sectiontitle"><h3>Core controls</h3><span>These map directly to the reference package vocabulary.</span></div>
 <div class="grid3">
+<div class="field"><label for="writingMode">Writing mode</label><select id="writingMode"><option value="standard">Standard nerdcore song</option><option value="reference_rap">Hyper-technical reference rap</option></select></div>
 <div class="field"><label for="emotion">Primary emotion</label><select id="emotion"><option>menacing</option><option>triumphant</option><option>tragic</option><option>defiant</option><option>reflective</option><option>playful</option><option>furious</option><option>haunting</option><option>hopeful</option><option>mixed</option></select></div>
 <div class="field"><label for="secondaryEmotion">Secondary emotion</label><select id="secondaryEmotion"><option>triumphant</option><option>menacing</option><option>tragic</option><option>defiant</option><option>reflective</option><option>playful</option><option>furious</option><option>haunting</option><option>hopeful</option><option>none</option></select></div>
 <div class="field"><label for="energy">Energy</label><select id="energy"><option>escalating</option><option>high</option><option>medium</option><option>low</option></select></div>
 <div class="field"><label for="rhyme">Rhyme density</label><select id="rhyme"><option>high</option><option>extreme</option><option>medium</option><option>low</option></select></div>
-<div class="field"><label for="refs">Reference density</label><select id="refs"><option>high</option><option>medium</option><option>low</option></select></div>
+<div class="field"><label for="refs">Reference density</label><select id="refs"><option>high</option><option>extreme</option><option>medium</option><option>low</option></select></div>
 <div class="field"><label for="accessibility">Accessibility</label><select id="accessibility"><option value="layered">Layered</option><option value="broad">Broad</option><option value="fan_only">Fan only</option></select></div>
-<div class="field"><label for="hook">Hook</label><select id="hook"><option>anthemic</option><option>melodic</option><option>chant</option><option>dark</option><option>emotional</option><option>minimal</option></select></div>
-<div class="field"><label for="structure">Structure</label><select id="structure"><option>I-V-C-V-C-B-C-O</option><option>V-C-V-C</option><option>C-V-C-V-C</option><option>I-V-C-V-C-O</option><option>V-C-V-C-B-C</option><option>I-V-PC-C-V-PC-C-B-C-O</option><option>V-PC-C-V-PC-C-B-C</option><option value="custom">Custom</option><option value="free">Free structure</option></select></div>
+<div class="field"><label for="hook">Hook</label><select id="hook"><option>anthemic</option><option>melodic</option><option>chant</option><option>dark</option><option>emotional</option><option>minimal</option><option>none</option></select></div>
+<div class="field"><label for="structure">Structure</label><select id="structure"><option>I-V-C-V-C-B-C-O</option><option>V-C-V-C</option><option>C-V-C-V-C</option><option>I-V-C-V-C-O</option><option>V-C-V-C-B-C</option><option>I-V-PC-C-V-PC-C-B-C-O</option><option>V-PC-C-V-PC-C-B-C</option><option value="continuous_verse">Continuous verse, no chorus</option><option value="custom">Custom</option><option value="free">Free structure</option></select></div>
 <div class="field" id="customStructureField" style="display:none"><label for="customStructure">Custom structure</label><input id="customStructure" placeholder="I-V-C-V-C-V-C-O"></div>
-<div class="field"><label for="length">Length</label><select id="length"><option>Standard, about 2:30 to 3:30</option><option>Short, about 1:30 to 2:15</option><option>Long, about 3:30 to 5:00</option><option>One 16-bar verse</option><option>One 32-bar verse</option></select></div>
+<div class="field"><label for="length">Length</label><select id="length"><option>Standard, about 2:30 to 3:30</option><option>Short, about 1:30 to 2:15</option><option>Long, about 3:30 to 5:00</option><option>One 16-bar verse</option><option>One 32-bar verse</option><option>Continuous 48 to 64 bar verse</option></select></div>
 <div class="field"><label for="performance">Performance feel</label><select id="performance"><option>Technical rap</option><option>Modern trap rap</option><option>Boom-bap</option><option>Melodic rap</option><option>Rap-rock</option><option>Cinematic</option><option>Theatrical</option><option>Cypher</option><option>Free / infer from premise</option></select></div>
 <div class="field"><label for="loreAccuracy">Lore accuracy</label><select id="loreAccuracy"><option>Strict canon-first</option><option>Canon-first, allow metaphorical compression</option><option>Flexible</option></select></div>
 </div>
