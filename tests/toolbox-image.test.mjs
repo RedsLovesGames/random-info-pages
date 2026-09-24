@@ -63,3 +63,14 @@ test('image studio exposes still-image gif creation', () => {
   assert.match(html, /id="gifDownload"/);
   assert.match(html, /gif-maker\.js/);
 });
+
+test('image studio exposes browser-native video to gif controls', () => {
+  assert.match(html, /id="gifImagesMode"/);
+  assert.match(html, /id="gifVideoMode"/);
+  assert.match(html, /id="gifVideoPicker"/);
+  assert.match(html, /id="gifChooseVideo"/);
+  assert.match(html, /id="gifVideoPreview"/);
+  assert.match(html, /id="gifVideoStart"/);
+  assert.match(html, /id="gifVideoEnd"/);
+  assert.match(html, /id="gifVideoMeta"/);
+});
