@@ -1,35 +1,28 @@
 # Random Info Pages Toolbox Implementation Plan
 
-> Branch: `toolbox`
-> Approved design: `docs/superpowers/specs/2026-09-24-toolbox-design.md`
+The approved implementation plan remains: audit repository and upstream licenses first; then implement the Toolbox shell, Time Zone Board, browser-local Image Studio, optional GIF/background removal, sourced inflation calculator, live multi-currency conversion, text utilities, homepage integration, and full regression/deployment verification.
 
-## Goal
-Implement the approved Toolbox as a static, GitHub-Pages-compatible extension of Random Info Pages without changing unrelated existing tools. Work only on the existing `toolbox` branch until the feature is ready for review.
+## Non-negotiable execution rules
+- Work only on the existing `toolbox` branch.
+- Do not create another branch.
+- Do not modify `main` until review/merge.
+- Preserve Wheel, When We Meet, and existing routes.
+- Keep the static HTML/CSS/JavaScript architecture.
+- Prefer browser-native APIs for simple operations.
+- Keep user image processing local.
+- Audit exact third-party revisions/licenses before incorporation and record them in `/tools/OPEN_SOURCE.md`.
+- Heavy media/ML code must lazy-load.
+- Add deterministic checks for pure logic and route integrity.
+- Do not claim tests, deployment, or manual checks succeeded unless actually observed.
 
-## Guardrails
-- Do not create additional branches.
-- Do not modify `main` during implementation.
-- Preserve Wheel, When We Meet, and all existing routes.
-- Keep the existing static HTML/CSS/JavaScript architecture. Do not migrate the repository to React/Vite or another framework.
-- User image processing stays local to the browser.
-- Heavy media/ML dependencies load only when invoked.
-- Verify third-party licenses before copying implementation code.
-- Record every incorporated third-party source in `/tools/OPEN_SOURCE.md`.
-- Commit in small functional stages and run deterministic checks before claiming completion.
-
-## Delivery
-0. Audit repository and upstream candidates.
+## Delivery order
 1. Toolbox shell/index and shared primitives.
-2. Time Zone Board.
-3. Image Studio core.
-4. GIF and background-removal enhancements.
-5. Historical inflation calculator.
-6. Multi-currency conversion.
-7. Text utilities.
-8. Homepage integration and full verification.
+2. Time Zone Board with DST-correct IANA zones, persistence, slider, and overlap view.
+3. Image Studio conversion/resize/compression/batch flow using native browser APIs first.
+4. GIF/media/background-removal enhancements after license and performance review.
+5. Historical U.S. inflation using a frozen sourced dataset.
+6. One-to-many live currency conversion with dated rates and stale-cache handling.
+7. Local text utilities.
+8. Homepage integration, attribution audit, deterministic regression checks, and mobile/desktop validation.
 
-## Definition of Done
-The Toolbox v1 is done only when all four routes work independently, time-zone behavior is DST-correct, image processing is local, sourced money data is transparent, third-party reuse is documented, existing routes remain intact, and deterministic plus mobile/desktop checks have actually been run.
-
-## Execution rule
-Execute sequentially on the existing `toolbox` branch. Do not create another branch. If implementation discovery materially changes the architecture, update the design/plan explicitly first.
+The detailed design specification in `docs/superpowers/specs/2026-09-24-toolbox-design.md` is authoritative for feature behavior.
