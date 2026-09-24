@@ -3,7 +3,6 @@
   const picker = $('#picker');
   const drop = $('#drop');
   const preview = $('#preview');
-  const previewEmpty = $('#previewEmpty');
   const sourceMeta = $('#sourceMeta');
   const queue = $('#queue');
   const format = $('#format');
@@ -17,6 +16,13 @@
   const qualityWrap = $('#qualityWrap');
   const dimensions = $('#dimensions');
   const percentWrap = $('#percentWrap');
+  const targetSizeEnabled = $('#targetSizeEnabled');
+  const targetSizeControls = $('#targetSizeControls');
+  const targetSize = $('#targetSize');
+  const targetUnit = $('#targetUnit');
+  const preserveResolutionWrap = $('#preserveResolutionWrap');
+  const preserveResolution = $('#preserveResolution');
+  const targetSizeHint = $('#targetSizeHint');
   const processSelected = $('#processSelected');
   const processAll = $('#processAll');
   const downloadAll = $('#downloadAll');
@@ -56,7 +62,7 @@
   }
 
   function releaseResult(item) {
-    if (item && item.resultUrl) URL.revokeObjectURL(item.resultUrl);
+    if (item?.resultUrl) URL.revokeObjectURL(item.resultUrl);
     if (item) {
       item.resultUrl = null;
       item.result = null;
@@ -65,7 +71,10 @@
 
   function fileLabel(item) {
     if (item.status === 'processing') return 'Processing';
-    if (item.status === 'done') return `${bytes(item.result.outputSize)} · ${item.result.width}×${item.result.height}`;
+    if (item.status === 'done') {
+      const target = item.result.targetReached === false ? ' · best effort' : '';
+      return `${bytes(item.result.outputSize)} · ${item.result.width}×${item.result.height}${target}`;
+    }
     if (item.status === 'error') return item.error || 'Failed';
     return `${bytes(item.file.size)} · ${item.file.type.replace('image/', '').toUpperCase()}`;
   }
@@ -82,14 +91,10 @@
     for (const item of items) {
       const row = document.createElement('div');
       row.className = `queue-item${item.id === selectedId ? ' selected' : ''}`;
-
       const main = document.createElement('button');
       main.type = 'button';
       main.className = 'queue-main queue-btn';
-      main.style.textAlign = 'left';
-      main.style.border = '0';
-      main.style.background = 'transparent';
-      main.style.padding = '0';
+      Object.assign(main.style, { textAlign: 'left', border: '0', background: 'transparent', padding: '0' });
       const name = document.createElement('span');
       name.className = 'queue-name';
       name.textContent = item.file.name;
@@ -115,18 +120,18 @@
       remove.type = 'button';
       remove.className = 'queue-btn';
       remove.textContent = 'Remove';
+      remove.disabled = Boolean(batchController);
       remove.addEventListener('click', () => removeItem(item.id));
       actions.append(remove);
-
       row.append(main, actions);
       queue.append(row);
     }
 
-    const hasFiles = items.length > 0;
-    processSelected.disabled = !selectedItem() || Boolean(batchController);
-    processAll.disabled = !hasFiles || Boolean(batchController);
-    clearAll.disabled = !hasFiles || Boolean(batchController);
-    downloadAll.disabled = !items.some((item) => item.result);
+    const busy = Boolean(batchController);
+    processSelected.disabled = !selectedItem() || busy;
+    processAll.disabled = !items.length || busy;
+    clearAll.disabled = !items.length || busy;
+    downloadAll.disabled = !items.some((item) => item.result) || busy;
   }
 
   function updatePreviewButtons(item) {
@@ -139,12 +144,10 @@
   function showPreview(item, mode = previewMode) {
     releasePreview();
     preview.innerHTML = '';
-    previewMode = mode === 'result' && item && item.result ? 'result' : 'original';
+    previewMode = mode === 'result' && item?.result ? 'result' : 'original';
     updatePreviewButtons(item);
-
     if (!item) {
       const empty = document.createElement('div');
-      empty.id = 'previewEmpty';
       empty.className = 'preview-empty';
       empty.textContent = 'Choose an image to preview it.';
       preview.append(empty);
@@ -175,7 +178,9 @@
   function updateSourceMeta(item) {
     if (!item) return;
     if (previewMode === 'result' && item.result) {
-      sourceMeta.textContent = `${item.result.name} · ${item.result.width}×${item.result.height} · ${bytes(item.result.outputSize)} · ${item.result.outputMime}`;
+      const target = item.result.targetReached === false ? ' · target not reached' : item.result.targetReached ? ' · target reached' : '';
+      const reduced = item.result.resolutionReduced ? ' · resolution reduced' : '';
+      sourceMeta.textContent = `${item.result.name} · ${item.result.width}×${item.result.height} · ${bytes(item.result.outputSize)} · ${item.result.outputMime}${target}${reduced}`;
     } else {
       const dims = item.width && item.height ? ` · ${item.width}×${item.height}` : '';
       sourceMeta.textContent = `${item.file.name}${dims} · ${bytes(item.file.size)} · ${item.file.type}`;
@@ -206,9 +211,7 @@
     const incoming = Array.from(fileList || []);
     const supported = incoming.filter((file) => ImageEngine.isSupportedInputType(file.type));
     const rejected = incoming.length - supported.length;
-    for (const file of supported) {
-      items.push({ id: nextId++, file, status: 'pending', result: null, resultUrl: null, error: '' });
-    }
+    for (const file of supported) items.push({ id: nextId++, file, status: 'pending', result: null, resultUrl: null, error: '' });
     if (!selectedId && items.length) selectedId = items[0].id;
     if (selectedItem()) showPreview(selectedItem(), selectedItem().result ? 'result' : 'original');
     renderQueue();
@@ -230,11 +233,14 @@
   }
 
   function conversionOptions() {
+    return { outputMime: format.value, quality: Number(quality.value), backgroundColor: '#ffffff', resize: resizeOptions() };
+  }
+
+  function activeTarget() {
+    if (!targetSizeEnabled.checked || format.value === 'image/png') return null;
     return {
-      outputMime: format.value,
-      quality: Number(quality.value),
-      backgroundColor: '#ffffff',
-      resize: resizeOptions(),
+      bytes: ImageCore.parseTargetBytes(Number(targetSize.value), targetUnit.value),
+      preserveResolution: preserveResolution.checked,
     };
   }
 
@@ -245,18 +251,24 @@
   }
 
   async function processOne(item) {
-    if (!item) return;
-    if (!warnForLarge([item.file])) return;
+    if (!item || !warnForLarge([item.file])) return;
     item.status = 'processing';
     item.error = '';
     releaseResult(item);
     renderQueue();
-    setStatus(`Processing ${item.file.name} locally…`);
+    const target = activeTarget();
+    setStatus(target ? `Searching for a result near ${bytes(target.bytes)}…` : `Processing ${item.file.name} locally…`);
     try {
-      item.result = await ImageEngine.convertFile(item.file, conversionOptions());
+      item.result = target
+        ? await ImageEngine.compressToTarget(item.file, conversionOptions(), target.bytes, {
+            preserveResolution: target.preserveResolution,
+            onAttempt(info) { setStatus(`Trying ${Math.round(info.quality * 100)}% quality · ${bytes(info.outputBytes)} / ${bytes(info.targetBytes)} target…`); },
+          })
+        : await ImageEngine.convertFile(item.file, conversionOptions());
       item.resultUrl = URL.createObjectURL(item.result.blob);
       item.status = 'done';
-      setStatus(`Finished ${item.result.name}: ${bytes(item.result.outputSize)}.`, 'good');
+      const note = item.result.targetReached === false ? ' Best effort: target was not reached.' : '';
+      setStatus(`Finished ${item.result.name}: ${bytes(item.result.outputSize)}.${note}`, item.result.targetReached === false ? 'error' : 'good');
       previewMode = 'result';
       showPreview(item, 'result');
     } catch (error) {
@@ -268,16 +280,12 @@
   }
 
   async function processBatch() {
-    if (!items.length || batchController) return;
-    if (!warnForLarge(items.map((item) => item.file))) return;
+    if (!items.length || batchController || !warnForLarge(items.map((item) => item.file))) return;
     batchController = new AbortController();
     cancelBatch.hidden = false;
-    processSelected.disabled = true;
-    processAll.disabled = true;
-    clearAll.disabled = true;
     progressBar.style.width = '0%';
-    setStatus(`Processing ${items.length} images locally…`);
-
+    const target = activeTarget();
+    setStatus(target ? `Processing ${items.length} images toward ${bytes(target.bytes)} each…` : `Processing ${items.length} images locally…`);
     for (const item of items) {
       releaseResult(item);
       item.status = 'pending';
@@ -286,8 +294,11 @@
     renderQueue();
 
     const byFile = new Map(items.map((item) => [item.file, item]));
+    const controller = batchController;
     const results = await ImageEngine.processBatch(items.map((item) => item.file), conversionOptions(), {
-      signal: batchController.signal,
+      signal: controller.signal,
+      targetBytes: target?.bytes,
+      preserveResolution: target?.preserveResolution,
       onProgress(info) {
         const item = byFile.get(info.file);
         if (!item) return;
@@ -297,23 +308,23 @@
           item.resultUrl = URL.createObjectURL(item.result.blob);
         }
         if (info.entry?.error) item.error = info.entry.error.message || String(info.entry.error);
-        const finished = resultsSoFarCount();
-        progressBar.style.width = `${Math.round(finished / items.length * 100)}%`;
+        progressBar.style.width = `${Math.round(resultsSoFarCount() / items.length * 100)}%`;
         renderQueue();
       },
     });
 
-    const aborted = batchController.signal.aborted;
+    const aborted = controller.signal.aborted;
     batchController = null;
     cancelBatch.hidden = true;
     progressBar.style.width = aborted ? `${Math.round(results.length / items.length * 100)}%` : '100%';
     const succeeded = items.filter((item) => item.status === 'done').length;
     const failed = items.filter((item) => item.status === 'error').length;
-    setStatus(aborted ? `Batch stopped. ${succeeded} completed.` : `${succeeded} completed${failed ? ` · ${failed} failed` : ''}.`, failed ? 'error' : 'good');
-    if (selectedItem()?.result) {
-      previewMode = 'result';
-      showPreview(selectedItem(), 'result');
-    }
+    const misses = items.filter((item) => item.result?.targetReached === false).length;
+    setStatus(
+      aborted ? `Batch stopped. ${succeeded} completed.` : `${succeeded} completed${failed ? ` · ${failed} failed` : ''}${misses ? ` · ${misses} target miss${misses === 1 ? '' : 'es'}` : ''}.`,
+      failed || misses ? 'error' : 'good',
+    );
+    if (selectedItem()?.result) showPreview(selectedItem(), 'result');
     renderQueue();
   }
 
@@ -358,10 +369,7 @@
   async function downloadAllResults() {
     const successful = items.filter((item) => item.result).map((item) => ({ result: item.result }));
     if (!successful.length) return;
-    if (successful.length === 1) {
-      downloadBlob(successful[0].result.blob, successful[0].result.name);
-      return;
-    }
+    if (successful.length === 1) return downloadBlob(successful[0].result.blob, successful[0].result.name);
     downloadAll.disabled = true;
     setStatus('Building ZIP locally…');
     try {
@@ -383,40 +391,33 @@
     width.closest('label').hidden = !['width', 'max-width', 'fit', 'fill', 'exact'].includes(mode);
     height.closest('label').hidden = !['height', 'max-height', 'fit', 'fill', 'exact'].includes(mode);
     qualityWrap.hidden = format.value === 'image/png';
+    const targetAllowed = format.value !== 'image/png';
+    targetSizeEnabled.disabled = !targetAllowed;
+    if (!targetAllowed) targetSizeEnabled.checked = false;
+    const targetOn = targetAllowed && targetSizeEnabled.checked;
+    targetSizeControls.hidden = !targetOn;
+    preserveResolutionWrap.hidden = !targetOn;
+    targetSizeHint.hidden = !targetOn;
   }
 
   drop.addEventListener('click', () => picker.click());
   drop.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      picker.click();
-    }
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); picker.click(); }
   });
-  picker.addEventListener('change', () => {
-    addFiles(picker.files);
-    picker.value = '';
-  });
-  for (const type of ['dragenter', 'dragover']) drop.addEventListener(type, (event) => {
-    event.preventDefault();
-    drop.classList.add('drag');
-  });
-  for (const type of ['dragleave', 'drop']) drop.addEventListener(type, (event) => {
-    event.preventDefault();
-    drop.classList.remove('drag');
-  });
+  picker.addEventListener('change', () => { addFiles(picker.files); picker.value = ''; });
+  for (const type of ['dragenter', 'dragover']) drop.addEventListener(type, (event) => { event.preventDefault(); drop.classList.add('drag'); });
+  for (const type of ['dragleave', 'drop']) drop.addEventListener(type, (event) => { event.preventDefault(); drop.classList.remove('drag'); });
   drop.addEventListener('drop', (event) => addFiles(event.dataTransfer.files));
 
   quality.addEventListener('input', () => { qualityValue.textContent = `${quality.value}%`; });
   resizeMode.addEventListener('change', updateControlVisibility);
   format.addEventListener('change', updateControlVisibility);
+  targetSizeEnabled.addEventListener('change', updateControlVisibility);
   processSelected.addEventListener('click', () => processOne(selectedItem()));
   processAll.addEventListener('click', processBatch);
   downloadAll.addEventListener('click', downloadAllResults);
   cancelBatch.addEventListener('click', () => {
-    if (batchController) {
-      batchController.abort();
-      setStatus('Stopping after the current image…');
-    }
+    if (batchController) { batchController.abort(); setStatus('Stopping after the current image…'); }
   });
   clearAll.addEventListener('click', () => {
     releasePreview();
