@@ -41,3 +41,12 @@ test('moveFrame reorders without losing frames', () => {
   assert.deepEqual(GifMaker.moveFrame(['a', 'b', 'c'], 2, 0), ['c', 'a', 'b']);
   assert.deepEqual(GifMaker.moveFrame(['a', 'b'], 0, -1), ['a', 'b']);
 });
+
+test('video sample times exclude the end boundary', () => {
+  assert.deepEqual(GifMaker.sampleTimes(0, 2, 2), [0, 0.5, 1, 1.5]);
+});
+
+test('video sample times clamp invalid ranges and frame count', () => {
+  assert.deepEqual(GifMaker.sampleTimes(1, 1, 10), []);
+  assert.equal(GifMaker.sampleTimes(0, 100, 100, 300).length, 300);
+});
