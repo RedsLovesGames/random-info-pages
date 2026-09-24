@@ -1,0 +1,4 @@
+577ca04282d14688cb14f6559eb27b52bdc50dfc
+Snapshot date: 2026-09-24
+Source: unitedstates/congress-legislators gh-pages
+Refresh policy: manual workflow_dispatch only; do not refresh on a schedule.
