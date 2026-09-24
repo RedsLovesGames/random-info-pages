@@ -1,3 +1,46 @@
+const SHARED_API_BASE = 'https://superjsonblob.com/api/jsonBlob';
+const LEGACY_API_BASE = 'https://jsonblob.com/api/jsonBlob';
+
+function sharedCloudUrl(roomRef) {
+  const ref = String(roomRef || '');
+  if (ref.startsWith('sjb:')) {
+    return `${SHARED_API_BASE}/${encodeURIComponent(ref.slice('sjb:'.length))}`;
+  }
+  return `${LEGACY_API_BASE}/${encodeURIComponent(ref)}`;
+}
+
+async function createCloudEvent(event, fetchImpl = globalThis.fetch) {
+  const response = ensureOk(await fetchImpl(SHARED_API_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(event),
+  }), 'Creating room');
+  const ref = roomRefFromUri(response.headers?.get?.('Location') || response.headers?.get?.('location'));
+  if (!ref) throw new Error('Storage service did not return a usable room URL.');
+  return `sjb:${ref}`;
+}
+
+async function loadCloudEvent(roomRef, fetchImpl = globalThis.fetch) {
+  const response = ensureOk(await fetchImpl(sharedCloudUrl(roomRef), {
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  }), 'Loading room');
+  return response.json();
+}
+
+async function replaceCloudEvent(roomRef, event, fetchImpl = globalThis.fetch) {
+  const response = ensureOk(await fetchImpl(sharedCloudUrl(roomRef), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(event),
+  }), 'Saving room');
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
 async function handleCreate(event) {
   event.preventDefault();
   const draft = createDraftFromForm();
@@ -7,23 +50,19 @@ async function handleCreate(event) {
   showCreateErrors(errors);
   if (errors.length) return;
 
-  setBusy(els.createButton, true, 'Creating room…');
-  let ref = '';
+  setBusy(els.createButton, true, 'Creating shared room…');
   try {
-    ref = await createCloudEvent(draft);
+    const ref = await createCloudEvent(draft);
     localStorage.setItem(`whenwemeet:created:${ref}`, '1');
+    location.hash = roomHash(ref);
+    await routeFromHash();
+    toast('Shared room created. This link works on other devices.');
   } catch (error) {
-    const localId = makeLocalRoomId();
-    saveLocalEvent(localId, draft);
-    ref = `local:${localId}`;
-    console.warn('Cloud room creation failed; using local fallback.', error);
+    console.error('Shared room creation failed.', error);
+    showCreateErrors(['Could not create a shared room. Check your connection and try again. No device-only room was created.']);
   } finally {
     setBusy(els.createButton, false);
   }
-  location.hash = roomHash(ref);
-  await routeFromHash();
-  if (ref.startsWith('local:')) toast('Cloud sync was unavailable. This fallback room only exists on this device.');
-  else toast('Room created. Share the link when you are ready.');
 }
 
 function roomIsLocal() {
@@ -232,4 +271,3 @@ function finishPaint() {
   state.activePointerId = null;
   if (state.dirty) scheduleSave();
 }
-
