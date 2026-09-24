@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>Image core tests</title><pre id="out"></pre><script src="image-core.js"></script><script>
+const out=document.querySelector('#out');let failed=0;
+function test(name,fn){try{fn();out.textContent+=`PASS ${name}\n`}catch(e){failed++;out.textContent+=`FAIL ${name}: ${e.message}\n`}}
+function eq(a,b){if(JSON.stringify(a)!==JSON.stringify(b))throw new Error(`${JSON.stringify(a)} != ${JSON.stringify(b)}`)}
+test('width resize preserves ratio',()=>eq(ImageCore.resizeFromWidth(4000,3000,1000),{width:1000,height:750}));
+test('height resize preserves ratio',()=>eq(ImageCore.resizeFromHeight(4000,3000,600),{width:800,height:600}));
+test('percent resize',()=>eq(ImageCore.resizeByPercent(1200,800,50),{width:600,height:400}));
+test('fit stays inside bounds',()=>eq(ImageCore.fitDimensions(4000,3000,1000,1000),{width:1000,height:750}));
+test('fill covers bounds',()=>eq(ImageCore.fillDimensions(4000,3000,1000,1000),{width:1333,height:1000}));
+test('rejects zero dimension',()=>{let threw=false;try{ImageCore.resizeFromWidth(4000,3000,0)}catch(e){threw=true}if(!threw)throw new Error('expected throw')});
+out.textContent+=failed?`\n${failed} failed`:'\nAll passed';document.documentElement.dataset.result=failed?'fail':'pass';
+</script>
