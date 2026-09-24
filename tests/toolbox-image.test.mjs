@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const html = readFileSync(new URL('../tools/image/index.html', import.meta.url), 'utf8');
+
+test('image studio loads hardened local processing modules', () => {
+  assert.match(html, /image-core\.js/);
+  assert.match(html, /image-engine\.js/);
+  assert.match(html, /image-app\.js/);
+  assert.match(html, /image\.css/);
+  assert.match(html, /LOCAL PROCESSING/i);
+});
+
+test('image studio exposes real batch controls', () => {
+  assert.match(html, /id="processSelected"/);
+  assert.match(html, /id="processAll"/);
+  assert.match(html, /id="downloadAll"/);
+  assert.match(html, /id="cancelBatch"/);
+  assert.match(html, /id="queue"/);
+});
+
+test('image studio exposes robust resize and output controls', () => {
+  assert.match(html, /id="resizeMode"/);
+  assert.match(html, /id="preventUpscale"/);
+  assert.match(html, /id="format"/);
+  assert.match(html, /id="quality"/);
+  assert.match(html, /id="width"/);
+  assert.match(html, /id="height"/);
+  assert.match(html, /id="percent"/);
+});
