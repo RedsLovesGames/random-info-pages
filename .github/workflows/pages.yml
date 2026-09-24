@@ -27,6 +27,14 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Verify archive home
+        run: |
+          node --test tests/home-index.test.mjs
+          grep -Fq 'data-archive-home' index.html
+          grep -Fq 'id="searchDialog"' index.html
+          grep -Fq 'data-folder="tools"' index.html
+          grep -Fq 'data-folder="experiments"' index.html
+
       - name: Verify VCT comp lab and tactical planner
         run: |
           node --test vct-scout/recommendation.test.cjs
@@ -93,6 +101,17 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Check archive home
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          base="${SITE_URL%/}"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/home.html "$base/"
+          grep -Fq 'data-archive-home' /tmp/home.html
+          grep -Fq 'id="searchDialog"' /tmp/home.html
+          grep -Fq './wheel/' /tmp/home.html
+          grep -Fq './friends/' /tmp/home.html
 
       - name: Check school schedule
         env:
