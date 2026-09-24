@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f7fb">
+  <meta name="description" content="WhenWeMeet is a faster, mobile-friendly group availability planner with ranked meeting times, maybe availability, and a clear overlap heatmap.">
+  <title>WhenWeMeet | Find a time without the group-chat spiral</title>
+  <link rel="stylesheet" href="./styles-1.css">
+  <link rel="stylesheet" href="./styles-2.css">
+  <link rel="stylesheet" href="./styles-3.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="WhenWeMeet home">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span>WhenWeMeet</span>
+    </a>
+    <nav class="header-actions" aria-label="Page actions">
+      <button class="button ghost compact" id="new-event-button" type="button" hidden>New event</button>
+      <a class="button ghost compact" href="https://github.com/RedsLovesGames/random-info-pages/tree/main/whenwemeet" target="_blank" rel="noreferrer">Source</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="create-view" class="create-view">
+      <div class="hero-copy">
+        <p class="eyebrow">Group scheduling, minus the friction</p>
+        <h1>Find the time that actually works.</h1>
+        <p class="hero-lead">Pick the possible dates once. Everyone paints availability. WhenWeMeet ranks the best meeting windows automatically.</p>
+        <div class="feature-row" aria-label="Key features">
+          <span>Works on phones</span>
+          <span>No accounts</span>
+          <span>Yes + if needed</span>
+          <span>Best times ranked</span>
+        </div>
+        <div class="mini-preview" aria-hidden="true">
+          <div class="preview-label">Best overlap</div>
+          <div class="preview-row"><strong>Tue 6:30 PM</strong><span>7 yes · 1 maybe</span></div>
+          <div class="preview-grid">
+            <i></i><i class="hot"></i><i class="hot"></i><i></i><i></i>
+            <i></i><i class="warm"></i><i class="hot"></i><i class="warm"></i><i></i>
+            <i></i><i></i><i class="warm"></i><i class="hot"></i><i></i>
+          </div>
+        </div>
+      </div>
+
+      <form id="create-form" class="create-card" novalidate>
+        <div class="card-heading">
+          <div>
+            <p class="step-label">Create an event</p>
+            <h2>What are you planning?</h2>
+          </div>
+          <span class="pill">~30 sec</span>
+        </div>
+
+        <div class="field full">
+          <label for="event-title">Event name</label>
+          <input id="event-title" name="title" autocomplete="off" maxlength="80" placeholder="Study group, team dinner, raid night…" required>
+        </div>
+
+        <div class="field full">
+          <label for="event-description">Note <span class="optional">optional</span></label>
+          <input id="event-description" name="description" autocomplete="off" maxlength="160" placeholder="Anything the group should know">
+        </div>
+
+        <fieldset class="field-group">
+          <legend>Possible dates</legend>
+          <div class="two-column">
+            <div class="field">
+              <label for="date-start">From</label>
+              <input id="date-start" type="date" required>
+            </div>
+            <div class="field">
+              <label for="date-end">To</label>
+              <input id="date-end" type="date" required>
+            </div>
+          </div>
+          <label class="check-row"><input id="weekdays-only" type="checkbox"> Start with weekdays only</label>
+          <div id="selected-dates" class="date-chips" aria-label="Selected possible dates"></div>
+          <p class="field-help">Tap any date to include or exclude it.</p>
+        </fieldset>
+
+        <fieldset class="field-group">
+          <legend>Time setup</legend>
+          <div class="two-column">
+            <div class="field">
+              <label for="start-time">Earliest</label>
+              <select id="start-time"></select>
+            </div>
+            <div class="field">
+              <label for="end-time">Latest</label>
+              <select id="end-time"></select>
+            </div>
+          </div>
+          <div class="two-column">
+            <div class="field">
+              <label for="meeting-duration">Meeting length</label>
+              <select id="meeting-duration">
+                <option value="30">30 minutes</option>
+                <option value="60" selected>1 hour</option>
+                <option value="90">1.5 hours</option>
+                <option value="120">2 hours</option>
+                <option value="180">3 hours</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="slot-size">Grid detail</label>
+              <select id="slot-size">
+                <option value="15">15 minutes</option>
+                <option value="30" selected>30 minutes</option>
+                <option value="60">1 hour</option>
+              </select>
+            </div>
+          </div>
+          <div class="field full">
+            <label for="time-zone">Event time zone</label>
+            <select id="time-zone"></select>
+          </div>
+        </fieldset>
+
+        <div id="create-errors" class="form-errors" role="alert" hidden></div>
+        <button id="create-event-button" class="button primary create-button" type="submit">Create event <span aria-hidden="true">→</span></button>
+        <p class="privacy-note">No account required. A random room link acts as the invitation.</p>
+      </form>
+    </section>
+
+    <section id="room-view" class="room-view" hidden>
+      <div class="room-shell">
+        <div class="event-header">
+          <div>
+            <div class="event-kicker"><span id="sync-dot" class="sync-dot"></span><span id="sync-label">Synced room</span></div>
+            <h1 id="room-title">Event</h1>
+            <p id="room-description" class="room-description"></p>
+            <div class="event-meta">
+              <span id="room-date-summary"></span>
+              <span id="room-duration"></span>
+              <span id="room-timezone"></span>
+            </div>
+          </div>
+          <div class="event-actions">
+            <button id="refresh-button" class="button ghost" type="button">Refresh</button>
+            <button id="share-button" class="button primary" type="button">Share room</button>
+          </div>
+        </div>
+
+        <div id="timezone-warning" class="notice subtle" hidden></div>
+        <div id="storage-warning" class="notice warning" hidden></div>
+
+        <section id="join-card" class="join-card">
+          <div>
+            <p class="step-label">Your response</p>
+            <h2>Add your name, then paint your availability.</h2>
+            <p>This is not an account. It only identifies your response in this event.</p>
+          </div>
+          <form id="join-form" class="join-form">
+            <div class="field">
+              <label for="participant-name">Your name</label>
+              <input id="participant-name" maxlength="50" autocomplete="name" placeholder="Name people will recognize" required>
+            </div>
+            <button class="button primary" type="submit">Start</button>
+          </form>
+        </section>
+
+        <div class="workspace">
+          <section class="planner-panel">
+            <div class="panel-topline">
+              <div class="mode-tabs" role="tablist" aria-label="Planner view">
+                <button class="mode-tab active" type="button" role="tab" aria-selected="true" data-mode="availability">My availability</button>
+                <button class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="results">Group results</button>
+              </div>
+              <div class="save-state" id="save-state">Not started</div>
+            </div>
+
+            <div id="availability-pane">
+              <div class="planner-toolbar">
+                <div class="brushes" role="group" aria-label="Availability brush">
+                  <span class="toolbar-label">Paint:</span>
+                  <button class="brush active yes" type="button" data-brush="2"><span></span>Available</button>
+                  <button class="brush maybe" type="button" data-brush="1"><span></span>If needed</button>
+                  <button class="brush no" type="button" data-brush="0"><span></span>Unavailable</button>
+                </div>
+                <div class="quick-actions">
+                  <button class="text-button" type="button" data-quick="all">Fill all</button>
+                  <button class="text-button" type="button" data-quick="workday">9–5</button>
+                  <button class="text-button" type="button" data-quick="repeat">Repeat first day</button>
+                  <button class="text-button danger" type="button" data-quick="clear">Clear</button>
+                </div>
+              </div>
+              <p class="paint-hint">Click or drag. On touch screens, drag your finger across the cells.</p>
+              <div class="grid-scroll" id="availability-scroll">
+                <div id="availability-grid" class="availability-grid" aria-label="Your availability grid"></div>
+              </div>
+              <div class="availability-footer">
+                <span id="coverage-label">0 slots marked</span>
+                <button id="save-button" class="button primary" type="button">Save availability</button>
+              </div>
+            </div>
+
+            <div id="results-pane" hidden>
+              <div class="results-intro">
+                <div>
+                  <p class="step-label">Overlap heatmap</p>
+                  <h2>Where the group lines up</h2>
+                </div>
+                <div class="heat-legend" aria-label="Heatmap legend"><span>Fewer</span><i></i><i></i><i></i><i></i><span>More</span></div>
+              </div>
+              <div class="grid-scroll">
+                <div id="results-grid" class="availability-grid results-grid" aria-label="Group availability results"></div>
+              </div>
+              <div id="slot-detail" class="slot-detail" aria-live="polite">
+                <strong>Tap a time</strong>
+                <span>See exactly who is available, flexible, or unavailable.</span>
+              </div>
+            </div>
+          </section>
+
+          <aside class="insights-panel">
+            <section class="insight-card best-card">
+              <div class="insight-heading">
+                <div>
+                  <p class="step-label">Best times</p>
+                  <h2>Top matches</h2>
+                </div>
+                <span id="response-count" class="pill">0 responses</span>
+              </div>
+              <div id="best-times" class="best-times"></div>
+            </section>
+
+            <section class="insight-card">
+              <div class="insight-heading">
+                <div>
+                  <p class="step-label">People</p>
+                  <h2>Responses</h2>
+                </div>
+              </div>
+              <div id="participant-list" class="participant-list"></div>
+            </section>
+
+            <section class="insight-card tip-card">
+              <p class="step-label">Why this is faster</p>
+              <p>WhenWeMeet ranks full meeting-length windows, not just individual bright cells. A 60-minute meeting only ranks well when people are free for the whole hour.</p>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <footer class="site-footer">
+    <span>WhenWeMeet · a static GitHub Pages utility</span>
+    <a href="../">Random Info Pages</a>
+  </footer>
+
+  <noscript>This page needs JavaScript to create and edit availability grids.</noscript>
+  <script src="./runtime-1.js"></script>
+  <script src="./runtime-2.js"></script>
+  <script src="./runtime-3.js"></script>
+</body>
+</html>
