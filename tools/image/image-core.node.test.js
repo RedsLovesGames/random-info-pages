@@ -1,5 +1,8 @@
 const assert = require('node:assert/strict');
-const ImageCore = require('./image-core.js');
+
+global.window = global.window || {};
+const exported = require('./image-core.js');
+const ImageCore = exported && Object.keys(exported).length ? exported : global.window.ImageCore;
 
 function test(name, fn) {
   try {
