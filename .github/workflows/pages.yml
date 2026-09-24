@@ -130,8 +130,10 @@ jobs:
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wheel-app.js "$base/wheel/app.js"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wheel-css.css "$base/wheel/styles.css"
           grep -Fq 'Wheel · Random Info Pages' /tmp/wheel.html
+          grep -Fq 'id="entriesInput"' /tmp/wheel.html
           grep -Fq 'pickWeightedEntry' /tmp/wheel-app.js
-          grep -Fq '.wheelpane' /tmp/wheel-css.css
+          grep -Fq '.wheel-stage' /tmp/wheel-css.css
+          grep -Fq '.side-panel' /tmp/wheel-css.css
 
       - name: Check VCT tactical planner
         env:
