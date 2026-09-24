@@ -1,335 +1,50 @@
 (() => {
-  const DATA_URL = './schedule-data.json?v=20260924';
-  const CSS_URL = './schedule.css?v=20260924';
-  const PEOPLE_CLASSES = { Alex: 'person-alex', Doron: 'person-doron', Mike: 'person-mike', Tommy: 'person-tommy' };
+  const DATA_URL = './schedule-data.json?v=20260924b';
+  const CSS_URL = './schedule.css?v=20260924b';
   const appMain = document.querySelector('main');
   const header = document.querySelector('.site-header');
   const headerActions = document.querySelector('.header-actions');
   if (!appMain || !header || !headerActions || document.querySelector('#general-schedule-view')) return;
 
-  if (!document.querySelector(`link[href^="${CSS_URL.split('?')[0]}"]`)) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = CSS_URL;
-    document.head.append(link);
+  if (!document.querySelector('link[href^="./schedule.css"]')) {
+    const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = CSS_URL; document.head.append(link);
   }
+  const extra = document.createElement('style');
+  extra.textContent = `
+    .locked-grid-card{border:1px solid var(--line);border-radius:20px;background:var(--surface);overflow:hidden;box-shadow:0 16px 44px rgba(31,36,48,.055)}
+    .locked-grid-head{display:flex;justify-content:space-between;gap:18px;align-items:end;padding:17px 18px 14px;border-bottom:1px solid var(--line)}
+    .locked-grid-head h2{margin:4px 0 0;font-size:1.15rem}.locked-grid-head p:last-child{margin:0;color:var(--muted);font-size:.73rem}
+    .locked-scroll{overflow:auto;overscroll-behavior-inline:contain}.locked-grid{display:grid;min-width:650px;background:var(--surface-solid)}
+    .locked-grid .grid-corner,.locked-grid .date-head,.locked-grid .time-head{position:sticky;z-index:3}.locked-grid .grid-corner,.locked-grid .date-head{top:0}.locked-grid .time-head{left:0;z-index:2}
+    .locked-cell{min-height:36px;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font:inherit;font-size:.68rem;font-weight:800;cursor:pointer;color:var(--muted);background:var(--surface-solid)}
+    .locked-cell[data-heat="0"]{background:var(--surface-muted);color:var(--muted)}.locked-cell[data-heat="1"]{background:#eef8f3}.locked-cell[data-heat="2"]{background:#d8f1e5}.locked-cell[data-heat="3"]{background:#aee3ca}.locked-cell[data-heat="4"]{background:#62c99b;color:#10271e}
+    .locked-cell.selected{outline:3px solid var(--violet);outline-offset:-3px;position:relative;z-index:2}.locked-detail{margin:14px 0 0;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:grid;gap:5px}.locked-detail span{color:var(--muted);font-size:.8rem}
+    @media(prefers-color-scheme:dark){.locked-cell[data-heat="0"]{background:#191d26}.locked-cell[data-heat="1"]{background:#173126}.locked-cell[data-heat="2"]{background:#1c513a}.locked-cell[data-heat="3"]{background:#267a55}.locked-cell[data-heat="4"]{background:#35a874;color:#081c14}}
+    @media(max-width:760px){.locked-grid-head{align-items:flex-start;flex-direction:column}.general-schedule-view{padding-top:20px}.schedule-hero h1{font-size:clamp(2.5rem,13vw,4rem)}}`;
+  document.head.append(extra);
 
-  const state = {
-    data: null,
-    activePeople: new Set(),
-    showFlexible: true,
-    view: 'planner',
-    previousTitle: document.title,
-  };
-
+  const viewState = { data:null, active:new Set(), view:'planner', selected:null, previousTitle:document.title };
   const nav = document.createElement('nav');
-  nav.className = 'product-tabs';
-  nav.setAttribute('role', 'tablist');
-  nav.setAttribute('aria-label', 'WhenWeMeet sections');
-  nav.innerHTML = `
-    <button class="product-tab active" type="button" role="tab" aria-selected="true" data-product-tab="planner">Planner</button>
-    <button class="product-tab" type="button" role="tab" aria-selected="false" data-product-tab="schedule">General schedule</button>`;
-  header.insertBefore(nav, headerActions);
+  nav.className='product-tabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','WhenWeMeet sections');
+  nav.innerHTML='<button class="product-tab active" type="button" data-product-tab="planner">Planner</button><button class="product-tab" type="button" data-product-tab="schedule">Locked schedule</button>';
+  header.insertBefore(nav,headerActions);
 
-  const scheduleView = document.createElement('section');
-  scheduleView.id = 'general-schedule-view';
-  scheduleView.className = 'general-schedule-view';
-  scheduleView.hidden = true;
-  scheduleView.innerHTML = `
-    <div class="schedule-shell">
-      <div class="schedule-hero">
-        <div>
-          <p class="eyebrow">Alex · Doron · Mike · Tommy</p>
-          <h1>General weekly schedule</h1>
-          <p class="schedule-lead">Fixed classes and activities from the shared schedule sheet, aligned on one weekly timeline. Green bands show times when all four fixed schedules are free.</p>
-        </div>
-        <div class="schedule-key" aria-label="Schedule legend">
-          <span><i class="key-fixed"></i> Fixed conflict</span>
-          <span><i class="key-flex"></i> Tentative / asynchronous</span>
-          <span><i class="key-free"></i> All four free</span>
-        </div>
-      </div>
+  const section=document.createElement('section'); section.id='general-schedule-view'; section.className='general-schedule-view'; section.hidden=true;
+  section.innerHTML=`<div class="schedule-shell"><div class="schedule-hero"><div><p class="eyebrow">Recurring weekly availability</p><h1>Locked schedule</h1><p class="schedule-lead">The same overlap format as the planner, generated from fixed weekly commitments. Brighter green means more selected people are free.</p></div><div class="schedule-key"><span><i class="key-free"></i> More people free</span></div></div><section class="schedule-controls"><div class="schedule-filter-block"><span class="schedule-filter-label">People</span><div id="locked-people" class="person-filters"></div></div></section><section class="locked-grid-card"><div class="locked-grid-head"><div><p class="step-label">Weekly overlap</p><h2>Who is normally free?</h2></div><p>30-minute blocks · 8:00 AM to 10:00 PM</p></div><div class="locked-scroll"><div id="locked-grid" class="availability-grid locked-grid"></div></div></section><div id="locked-detail" class="locked-detail"><strong>Tap a time</strong><span>See who is free and who has a fixed conflict.</span></div><details class="schedule-notes"><summary>Spreadsheet assumptions</summary><ul id="locked-notes"></ul></details></div>`;
+  appMain.insertAdjacentElement('afterend',section);
+  const peopleEl=section.querySelector('#locked-people'), grid=section.querySelector('#locked-grid'), detail=section.querySelector('#locked-detail'), notes=section.querySelector('#locked-notes');
 
-      <section class="schedule-controls" aria-label="Schedule filters">
-        <div class="schedule-filter-block">
-          <span class="schedule-filter-label">People</span>
-          <div id="schedule-person-filters" class="person-filters"></div>
-        </div>
-        <label class="schedule-toggle"><input id="schedule-flexible-toggle" type="checkbox" checked> Show tentative & online items</label>
-      </section>
+  const fmt=(m)=>{const h=Math.floor(m/60)%24,mm=m%60;return `${h%12||12}:${String(mm).padStart(2,'0')} ${h>=12?'PM':'AM'}`};
+  const conflicts=(person,day,start,end)=>viewState.data.events.filter(e=>e.counted&&e.person===person&&e.day===day&&e.start<end&&e.end>start);
+  const activePeople=()=>viewState.data.people.filter(p=>viewState.active.has(p));
 
-      <section class="free-window-card">
-        <div>
-          <p class="step-label">Fixed-schedule overlap</p>
-          <h2>Everyone-free windows</h2>
-        </div>
-        <div id="free-window-list" class="free-window-list"></div>
-      </section>
-
-      <section class="calendar-card">
-        <div class="calendar-card-head">
-          <div>
-            <p class="step-label">Week view</p>
-            <h2>Busy blocks by person</h2>
-          </div>
-          <p>8:00 AM to 10:00 PM · scroll horizontally on smaller screens</p>
-        </div>
-        <div class="calendar-scroll">
-          <div id="schedule-calendar" class="schedule-calendar" aria-label="Weekly schedule"></div>
-        </div>
-      </section>
-
-      <section class="agenda-card">
-        <div class="calendar-card-head">
-          <div>
-            <p class="step-label">Compact view</p>
-            <h2>Weekly agenda</h2>
-          </div>
-        </div>
-        <div id="schedule-agenda" class="schedule-agenda"></div>
-      </section>
-
-      <details class="schedule-notes">
-        <summary>Modeling notes from the spreadsheet</summary>
-        <ul id="schedule-notes-list"></ul>
-      </details>
-    </div>`;
-  appMain.insertAdjacentElement('afterend', scheduleView);
-
-  const personFilters = scheduleView.querySelector('#schedule-person-filters');
-  const flexibleToggle = scheduleView.querySelector('#schedule-flexible-toggle');
-  const freeWindowList = scheduleView.querySelector('#free-window-list');
-  const calendar = scheduleView.querySelector('#schedule-calendar');
-  const agenda = scheduleView.querySelector('#schedule-agenda');
-  const notesList = scheduleView.querySelector('#schedule-notes-list');
-
-  function formatTime(minutes) {
-    if (minutes === 1440) return '12:00 AM';
-    const hour24 = Math.floor(minutes / 60) % 24;
-    const mins = minutes % 60;
-    const suffix = hour24 >= 12 ? 'PM' : 'AM';
-    const hour = hour24 % 12 || 12;
-    return `${hour}:${String(mins).padStart(2, '0')} ${suffix}`;
-  }
-
-  function formatRange(start, end) {
-    return `${formatTime(start)}–${formatTime(end)}`;
-  }
-
-  function visibleEvents() {
-    if (!state.data) return [];
-    return state.data.events.filter((event) => state.activePeople.has(event.person) && (state.showFlexible || event.counted));
-  }
-
-  function setView(view) {
-    state.view = view === 'schedule' ? 'schedule' : 'planner';
-    const scheduleActive = state.view === 'schedule';
-    if (scheduleActive) state.previousTitle = document.title;
-    appMain.hidden = scheduleActive;
-    scheduleView.hidden = !scheduleActive;
-    nav.querySelectorAll('[data-product-tab]').forEach((button) => {
-      const active = button.dataset.productTab === state.view;
-      button.classList.toggle('active', active);
-      button.setAttribute('aria-selected', active ? 'true' : 'false');
-    });
-    document.title = scheduleActive ? 'General Schedule | WhenWeMeet' : state.previousTitle;
-    if (scheduleActive && state.data) requestAnimationFrame(() => calendar.scrollLeft = 0);
-  }
-
-  function renderFilters() {
-    personFilters.replaceChildren();
-    const all = document.createElement('button');
-    all.type = 'button';
-    all.className = `person-filter all${state.activePeople.size === state.data.people.length ? ' active' : ''}`;
-    all.textContent = 'All';
-    all.addEventListener('click', () => {
-      state.activePeople = new Set(state.data.people);
-      renderAll();
-    });
-    personFilters.append(all);
-
-    for (const person of state.data.people) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = `person-filter ${PEOPLE_CLASSES[person] || ''}${state.activePeople.has(person) ? ' active' : ''}`;
-      button.textContent = person;
-      button.setAttribute('aria-pressed', state.activePeople.has(person) ? 'true' : 'false');
-      button.addEventListener('click', () => {
-        if (state.activePeople.has(person) && state.activePeople.size > 1) state.activePeople.delete(person);
-        else state.activePeople.add(person);
-        renderAll();
-      });
-      personFilters.append(button);
-    }
-  }
-
-  function renderFreeWindows() {
-    freeWindowList.replaceChildren();
-    for (const day of state.data.days) {
-      const item = document.createElement('div');
-      item.className = 'free-window-item';
-      const strong = document.createElement('strong');
-      strong.textContent = day.slice(0, 3);
-      const spans = document.createElement('div');
-      const windows = state.data.allFreeWindows[day] || [];
-      if (!windows.length) spans.textContent = 'No shared window';
-      else windows.forEach((window) => {
-        const tag = document.createElement('span');
-        tag.textContent = formatRange(window.start, window.end);
-        spans.append(tag);
-      });
-      item.append(strong, spans);
-      freeWindowList.append(item);
-    }
-  }
-
-  function makeEventBlock(event, activePeople, startMinute, endMinute) {
-    const block = document.createElement('article');
-    const personIndex = Math.max(0, activePeople.indexOf(event.person));
-    const laneCount = Math.max(1, activePeople.length);
-    const clippedStart = Math.max(startMinute, event.start);
-    const clippedEnd = Math.min(endMinute, event.end);
-    const heightMinutes = Math.max(15, clippedEnd - clippedStart);
-    block.className = `schedule-event ${PEOPLE_CLASSES[event.person] || ''}${event.counted ? '' : ' flexible'}`;
-    block.style.top = `${(clippedStart - startMinute) * 1.08}px`;
-    block.style.height = `${Math.max(28, heightMinutes * 1.08)}px`;
-    block.style.left = `calc(${personIndex * (100 / laneCount)}% + 3px)`;
-    block.style.width = `calc(${100 / laneCount}% - 6px)`;
-    block.title = `${event.person}: ${event.event} · ${formatRange(event.start, event.end)}${event.notes ? ` · ${event.notes}` : ''}`;
-    const who = document.createElement('span');
-    who.className = 'schedule-event-person';
-    who.textContent = event.person;
-    const name = document.createElement('strong');
-    name.textContent = event.event;
-    const time = document.createElement('span');
-    time.className = 'schedule-event-time';
-    time.textContent = formatRange(event.start, event.end);
-    block.append(who, name, time);
-    return block;
-  }
-
-  function renderCalendar() {
-    calendar.replaceChildren();
-    const startMinute = state.data.range.start;
-    const endMinute = state.data.range.end;
-    const totalHeight = (endMinute - startMinute) * 1.08;
-    const activePeople = state.data.people.filter((person) => state.activePeople.has(person));
-    calendar.style.setProperty('--schedule-height', `${totalHeight}px`);
-
-    const corner = document.createElement('div');
-    corner.className = 'schedule-day-head schedule-corner';
-    corner.textContent = 'Time';
-    calendar.append(corner);
-    state.data.days.forEach((day) => {
-      const head = document.createElement('div');
-      head.className = 'schedule-day-head';
-      head.innerHTML = `<strong>${day.slice(0, 3)}</strong><span>${day}</span>`;
-      calendar.append(head);
-    });
-
-    const timeRail = document.createElement('div');
-    timeRail.className = 'schedule-time-rail';
-    timeRail.style.height = `${totalHeight}px`;
-    for (let minute = startMinute; minute <= endMinute; minute += 60) {
-      const label = document.createElement('span');
-      label.style.top = `${(minute - startMinute) * 1.08}px`;
-      label.textContent = formatTime(minute).replace(':00 ', ' ');
-      timeRail.append(label);
-    }
-    calendar.append(timeRail);
-
-    const events = visibleEvents();
-    state.data.days.forEach((day) => {
-      const column = document.createElement('div');
-      column.className = 'schedule-day-column';
-      column.style.height = `${totalHeight}px`;
-      for (let minute = startMinute; minute <= endMinute; minute += 60) {
-        const line = document.createElement('i');
-        line.className = 'hour-line';
-        line.style.top = `${(minute - startMinute) * 1.08}px`;
-        column.append(line);
-      }
-      for (const window of state.data.allFreeWindows[day] || []) {
-        const band = document.createElement('div');
-        band.className = 'all-free-band';
-        band.style.top = `${(window.start - startMinute) * 1.08}px`;
-        band.style.height = `${(window.end - window.start) * 1.08}px`;
-        band.title = `All four fixed schedules free: ${formatRange(window.start, window.end)}`;
-        column.append(band);
-      }
-      events
-        .filter((event) => event.day === day && event.end > startMinute && event.start < endMinute)
-        .sort((a, b) => a.start - b.start || a.person.localeCompare(b.person))
-        .forEach((event) => column.append(makeEventBlock(event, activePeople, startMinute, endMinute)));
-      calendar.append(column);
-    });
-  }
-
-  function renderAgenda() {
-    agenda.replaceChildren();
-    const events = visibleEvents();
-    for (const day of state.data.days) {
-      const section = document.createElement('section');
-      section.className = 'agenda-day';
-      const heading = document.createElement('h3');
-      heading.textContent = day;
-      section.append(heading);
-      const dayEvents = events.filter((event) => event.day === day).sort((a, b) => a.start - b.start || a.person.localeCompare(b.person));
-      if (!dayEvents.length) {
-        const empty = document.createElement('p');
-        empty.className = 'agenda-empty';
-        empty.textContent = 'No listed commitments.';
-        section.append(empty);
-      } else {
-        dayEvents.forEach((event) => {
-          const row = document.createElement('div');
-          row.className = `agenda-row ${PEOPLE_CLASSES[event.person] || ''}${event.counted ? '' : ' flexible'}`;
-          row.innerHTML = `<span class="agenda-time">${formatRange(event.start, event.end)}</span><span class="agenda-person">${event.person}</span><strong>${event.event}</strong><span class="agenda-category">${event.category}</span>`;
-          if (event.notes) row.title = event.notes;
-          section.append(row);
-        });
-      }
-      agenda.append(section);
-    }
-  }
-
-  function renderAll() {
-    if (!state.data) return;
-    renderFilters();
-    renderFreeWindows();
-    renderCalendar();
-    renderAgenda();
-  }
-
-  async function loadData() {
-    try {
-      const response = await fetch(DATA_URL, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`Schedule data failed (${response.status})`);
-      state.data = await response.json();
-      state.activePeople = new Set(state.data.people);
-      state.showFlexible = true;
-      flexibleToggle.checked = true;
-      notesList.replaceChildren(...state.data.notes.map((note) => {
-        const li = document.createElement('li');
-        li.textContent = note;
-        return li;
-      }));
-      renderAll();
-    } catch (error) {
-      console.error(error);
-      calendar.innerHTML = '<div class="schedule-load-error">The general schedule could not be loaded.</div>';
-    }
-  }
-
-  nav.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-product-tab]');
-    if (button) setView(button.dataset.productTab);
-  });
-  flexibleToggle.addEventListener('change', () => {
-    state.showFlexible = flexibleToggle.checked;
-    renderCalendar();
-    renderAgenda();
-  });
-
-  loadData();
+  function renderFilters(){peopleEl.replaceChildren();for(const person of viewState.data.people){const b=document.createElement('button');b.type='button';b.className=`person-filter${viewState.active.has(person)?' active':''}`;b.textContent=person;b.setAttribute('aria-pressed',viewState.active.has(person));b.onclick=()=>{if(viewState.active.has(person)&&viewState.active.size>1)viewState.active.delete(person);else viewState.active.add(person);render();};peopleEl.append(b)}}
+  function renderGrid(){grid.replaceChildren();const days=viewState.data.days, people=activePeople();grid.style.setProperty('--days',days.length);grid.style.gridTemplateColumns=`76px repeat(${days.length},minmax(78px,1fr))`;
+    const corner=document.createElement('div');corner.className='grid-corner';grid.append(corner);for(const day of days){const h=document.createElement('div');h.className='date-head';h.innerHTML=`<strong>${day.slice(0,3)}</strong><span>weekly</span>`;grid.append(h)}
+    for(let minute=480;minute<1320;minute+=30){const t=document.createElement('div');t.className='time-head';t.textContent=fmt(minute);grid.append(t);for(const day of days){const free=people.filter(p=>conflicts(p,day,minute,minute+30).length===0);const ratio=people.length?free.length/people.length:0;const heat=ratio<=0?0:Math.max(1,Math.ceil(ratio*4));const cell=document.createElement('button');cell.type='button';cell.className=`locked-cell${viewState.selected===`${day}|${minute}`?' selected':''}`;cell.dataset.heat=heat;cell.textContent=`${free.length}/${people.length}`;cell.title=`${day} ${fmt(minute)}: ${free.length} of ${people.length} free`;cell.onclick=()=>{viewState.selected=`${day}|${minute}`;renderGrid();renderDetail(day,minute)};grid.append(cell)}}}
+  function renderDetail(day,minute){const people=activePeople(),free=[],busy=[];for(const p of people){const hits=conflicts(p,day,minute,minute+30);if(hits.length)busy.push(`${p} (${hits.map(e=>e.event).join(', ')})`);else free.push(p)}detail.replaceChildren();const strong=document.createElement('strong');strong.textContent=`${day} · ${fmt(minute)}–${fmt(minute+30)}`;const a=document.createElement('span');a.textContent=`Free: ${free.join(', ')||'None'}`;const b=document.createElement('span');b.textContent=`Busy: ${busy.join(' · ')||'None'}`;detail.append(strong,a,b)}
+  function render(){if(!viewState.data)return;renderFilters();renderGrid();if(viewState.selected){const [d,m]=viewState.selected.split('|');renderDetail(d,Number(m))}}
+  function setView(which){viewState.view=which==='schedule'?'schedule':'planner';const on=viewState.view==='schedule';if(on)viewState.previousTitle=document.title;appMain.hidden=on;section.hidden=!on;nav.querySelectorAll('[data-product-tab]').forEach(b=>{const active=b.dataset.productTab===viewState.view;b.classList.toggle('active',active);b.setAttribute('aria-selected',active)});document.title=on?'Locked Schedule | WhenWeMeet':viewState.previousTitle}
+  nav.onclick=e=>{const b=e.target.closest('[data-product-tab]');if(b)setView(b.dataset.productTab)};
+  fetch(DATA_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`Schedule data failed (${r.status})`);return r.json()}).then(data=>{viewState.data=data;viewState.active=new Set(data.people);notes.replaceChildren(...data.notes.map(n=>{const li=document.createElement('li');li.textContent=n;return li}));render()}).catch(err=>{console.error(err);grid.innerHTML='<div class="schedule-load-error">The locked schedule could not be loaded.</div>'});
 })();
