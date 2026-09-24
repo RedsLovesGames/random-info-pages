@@ -56,6 +56,14 @@
     return items.find((item) => item.id === selectedId) || null;
   }
 
+  function inputFor(item) {
+    return item?.workingFile || item?.file || null;
+  }
+
+  function announceSelection() {
+    window.dispatchEvent(new CustomEvent('imagestudio:selectionchange', { detail: { item: selectedItem() } }));
+  }
+
   function releasePreview() {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     previewUrl = null;
@@ -76,7 +84,8 @@
       return `${bytes(item.result.outputSize)} · ${item.result.width}×${item.result.height}${target}`;
     }
     if (item.status === 'error') return item.error || 'Failed';
-    return `${bytes(item.file.size)} · ${item.file.type.replace('image/', '').toUpperCase()}`;
+    const source = inputFor(item);
+    return `${bytes(source.size)} · ${source.type.replace('image/', '').toUpperCase()}${item.workingFile ? ' · edited' : ''}`;
   }
 
   function renderQueue() {
@@ -87,7 +96,6 @@
       empty.textContent = 'No files yet.';
       queue.append(empty);
     }
-
     for (const item of items) {
       const row = document.createElement('div');
       row.className = `queue-item${item.id === selectedId ? ' selected' : ''}`;
@@ -105,7 +113,6 @@
       meta.append(dot, document.createTextNode(fileLabel(item)));
       main.append(name, meta);
       main.addEventListener('click', () => selectItem(item.id));
-
       const actions = document.createElement('div');
       actions.className = 'queue-actions';
       if (item.result) {
@@ -126,7 +133,6 @@
       row.append(main, actions);
       queue.append(row);
     }
-
     const busy = Boolean(batchController);
     processSelected.disabled = !selectedItem() || busy;
     processAll.disabled = !items.length || busy;
@@ -154,8 +160,7 @@
       sourceMeta.textContent = 'PNG, JPEG and WebP are processed entirely on this device.';
       return;
     }
-
-    const source = previewMode === 'result' ? item.result.blob : item.file;
+    const source = previewMode === 'result' ? item.result.blob : inputFor(item);
     previewUrl = URL.createObjectURL(source);
     const image = new Image();
     image.alt = item.file.name;
@@ -182,8 +187,10 @@
       const reduced = item.result.resolutionReduced ? ' · resolution reduced' : '';
       sourceMeta.textContent = `${item.result.name} · ${item.result.width}×${item.result.height} · ${bytes(item.result.outputSize)} · ${item.result.outputMime}${target}${reduced}`;
     } else {
+      const source = inputFor(item);
       const dims = item.width && item.height ? ` · ${item.width}×${item.height}` : '';
-      sourceMeta.textContent = `${item.file.name}${dims} · ${bytes(item.file.size)} · ${item.file.type}`;
+      const edited = item.workingFile ? ' · edited source' : '';
+      sourceMeta.textContent = `${source.name}${dims} · ${bytes(source.size)} · ${source.type}${edited}`;
     }
   }
 
@@ -192,6 +199,7 @@
     previewMode = items.find((item) => item.id === id)?.result ? 'result' : 'original';
     showPreview(selectedItem(), previewMode);
     renderQueue();
+    announceSelection();
   }
 
   function removeItem(id) {
@@ -205,16 +213,18 @@
       showPreview(selectedItem(), previewMode);
     }
     renderQueue();
+    announceSelection();
   }
 
   function addFiles(fileList) {
     const incoming = Array.from(fileList || []);
     const supported = incoming.filter((file) => ImageEngine.isSupportedInputType(file.type));
     const rejected = incoming.length - supported.length;
-    for (const file of supported) items.push({ id: nextId++, file, status: 'pending', result: null, resultUrl: null, error: '' });
+    for (const file of supported) items.push({ id: nextId++, file, workingFile: null, status: 'pending', result: null, resultUrl: null, error: '' });
     if (!selectedId && items.length) selectedId = items[0].id;
     if (selectedItem()) showPreview(selectedItem(), selectedItem().result ? 'result' : 'original');
     renderQueue();
+    announceSelection();
     if (rejected) setStatus(`${rejected} unsupported file${rejected === 1 ? '' : 's'} skipped.`, 'error');
     else if (supported.length) setStatus(`${supported.length} image${supported.length === 1 ? '' : 's'} added.`);
   }
@@ -238,10 +248,7 @@
 
   function activeTarget() {
     if (!targetSizeEnabled.checked || format.value === 'image/png') return null;
-    return {
-      bytes: ImageCore.parseTargetBytes(Number(targetSize.value), targetUnit.value),
-      preserveResolution: preserveResolution.checked,
-    };
+    return { bytes: ImageCore.parseTargetBytes(Number(targetSize.value), targetUnit.value), preserveResolution: preserveResolution.checked };
   }
 
   function warnForLarge(files) {
@@ -251,25 +258,25 @@
   }
 
   async function processOne(item) {
-    if (!item || !warnForLarge([item.file])) return;
+    const source = inputFor(item);
+    if (!item || !source || !warnForLarge([source])) return;
     item.status = 'processing';
     item.error = '';
     releaseResult(item);
     renderQueue();
     const target = activeTarget();
-    setStatus(target ? `Searching for a result near ${bytes(target.bytes)}…` : `Processing ${item.file.name} locally…`);
+    setStatus(target ? `Searching for a result near ${bytes(target.bytes)}…` : `Processing ${source.name} locally…`);
     try {
       item.result = target
-        ? await ImageEngine.compressToTarget(item.file, conversionOptions(), target.bytes, {
+        ? await ImageEngine.compressToTarget(source, conversionOptions(), target.bytes, {
             preserveResolution: target.preserveResolution,
             onAttempt(info) { setStatus(`Trying ${Math.round(info.quality * 100)}% quality · ${bytes(info.outputBytes)} / ${bytes(info.targetBytes)} target…`); },
           })
-        : await ImageEngine.convertFile(item.file, conversionOptions());
+        : await ImageEngine.convertFile(source, conversionOptions());
       item.resultUrl = URL.createObjectURL(item.result.blob);
       item.status = 'done';
       const note = item.result.targetReached === false ? ' Best effort: target was not reached.' : '';
       setStatus(`Finished ${item.result.name}: ${bytes(item.result.outputSize)}.${note}`, item.result.targetReached === false ? 'error' : 'good');
-      previewMode = 'result';
       showPreview(item, 'result');
     } catch (error) {
       item.status = 'error';
@@ -280,7 +287,9 @@
   }
 
   async function processBatch() {
-    if (!items.length || batchController || !warnForLarge(items.map((item) => item.file))) return;
+    if (!items.length || batchController) return;
+    const inputs = items.map(inputFor);
+    if (!warnForLarge(inputs)) return;
     batchController = new AbortController();
     cancelBatch.hidden = false;
     progressBar.style.width = '0%';
@@ -292,15 +301,13 @@
       item.error = '';
     }
     renderQueue();
-
-    const byFile = new Map(items.map((item) => [item.file, item]));
     const controller = batchController;
-    const results = await ImageEngine.processBatch(items.map((item) => item.file), conversionOptions(), {
+    const results = await ImageEngine.processBatch(inputs, conversionOptions(), {
       signal: controller.signal,
       targetBytes: target?.bytes,
       preserveResolution: target?.preserveResolution,
       onProgress(info) {
-        const item = byFile.get(info.file);
+        const item = items[info.index];
         if (!item) return;
         item.status = info.status === 'done' ? 'done' : info.status === 'error' ? 'error' : 'processing';
         if (info.entry?.result) {
@@ -312,7 +319,6 @@
         renderQueue();
       },
     });
-
     const aborted = controller.signal.aborted;
     batchController = null;
     cancelBatch.hidden = true;
@@ -320,10 +326,7 @@
     const succeeded = items.filter((item) => item.status === 'done').length;
     const failed = items.filter((item) => item.status === 'error').length;
     const misses = items.filter((item) => item.result?.targetReached === false).length;
-    setStatus(
-      aborted ? `Batch stopped. ${succeeded} completed.` : `${succeeded} completed${failed ? ` · ${failed} failed` : ''}${misses ? ` · ${misses} target miss${misses === 1 ? '' : 'es'}` : ''}.`,
-      failed || misses ? 'error' : 'good',
-    );
+    setStatus(aborted ? `Batch stopped. ${succeeded} completed.` : `${succeeded} completed${failed ? ` · ${failed} failed` : ''}${misses ? ` · ${misses} target miss${misses === 1 ? '' : 'es'}` : ''}.`, failed || misses ? 'error' : 'good');
     if (selectedItem()?.result) showPreview(selectedItem(), 'result');
     renderQueue();
   }
@@ -384,6 +387,34 @@
     }
   }
 
+  function applyWorkingFile(file) {
+    const item = selectedItem();
+    if (!item || !file) return;
+    item.workingFile = file;
+    item.status = 'pending';
+    item.error = '';
+    releaseResult(item);
+    previewMode = 'original';
+    showPreview(item, 'original');
+    renderQueue();
+    announceSelection();
+    setStatus(`Source edit applied to ${item.file.name}.`, 'good');
+  }
+
+  function resetWorkingFile() {
+    const item = selectedItem();
+    if (!item?.workingFile) return;
+    item.workingFile = null;
+    item.status = 'pending';
+    item.error = '';
+    releaseResult(item);
+    previewMode = 'original';
+    showPreview(item, 'original');
+    renderQueue();
+    announceSelection();
+    setStatus(`Restored original source for ${item.file.name}.`);
+  }
+
   function updateControlVisibility() {
     const mode = resizeMode.value;
     dimensions.hidden = !['width', 'height', 'max-width', 'max-height', 'fit', 'fill', 'exact'].includes(mode);
@@ -408,7 +439,6 @@
   for (const type of ['dragenter', 'dragover']) drop.addEventListener(type, (event) => { event.preventDefault(); drop.classList.add('drag'); });
   for (const type of ['dragleave', 'drop']) drop.addEventListener(type, (event) => { event.preventDefault(); drop.classList.remove('drag'); });
   drop.addEventListener('drop', (event) => addFiles(event.dataTransfer.files));
-
   quality.addEventListener('input', () => { qualityValue.textContent = `${quality.value}%`; });
   resizeMode.addEventListener('change', updateControlVisibility);
   format.addEventListener('change', updateControlVisibility);
@@ -426,6 +456,7 @@
     selectedId = null;
     showPreview(null);
     renderQueue();
+    announceSelection();
     setStatus('Queue cleared.');
     progressBar.style.width = '0%';
   });
@@ -436,7 +467,17 @@
     for (const item of items) releaseResult(item);
   });
 
+  window.ImageStudioApp = {
+    getSelectedItem: selectedItem,
+    getInputFile: () => inputFor(selectedItem()),
+    applyWorkingFile,
+    resetWorkingFile,
+    setStatus,
+    isBusy: () => Boolean(batchController),
+  };
+
   updateControlVisibility();
   renderQueue();
   showPreview(null);
+  announceSelection();
 })();
