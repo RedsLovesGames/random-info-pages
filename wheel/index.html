@@ -1,8 +1,96 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a0d13"><meta name="description" content="Simple customizable random name wheel."><title>Wheel · Random Info Pages</title><link rel="stylesheet" href="./styles.css"></head><body>
-<header class="top"><div class="brand"><div class="mark">R</div><span>Wheel</span></div><div class="actions"><button class="btn secondary" id="saveBtn">Save</button><button class="btn secondary" id="shareBtn">Share</button><button class="btn secondary" id="presentBtn">Present</button><button class="btn" id="settingsBtn">Settings</button></div></header>
-<main class="app"><section class="wheelpane"><div class="tabs" id="wheelTabs"></div><div class="wheelwrap"><canvas id="wheel" width="700" height="700" aria-label="Random selection wheel"></canvas></div><div class="spinrow"><button class="btn primary" id="spinBtn">Spin</button></div><div class="status" id="status" aria-live="polite"></div></section>
-<aside class="editor"><div class="editorhead"><h2>Entries</h2><button class="btn" id="addBtn">+ Add</button></div><div class="entrytools"><button class="btn" id="shuffleBtn">Shuffle</button><button class="btn" id="sortBtn">Sort</button><button class="btn" id="clearBtn">Clear</button></div><div class="entries" id="entries"></div><p class="hint">Paste multiple lines into any name field to add them all. Weight 1 is normal; larger numbers make an entry more likely.</p><div class="history"><strong>Recent winners</strong><ul id="history"></ul></div></aside></main>
-<div class="modal hidden" id="winnerModal" role="dialog" aria-modal="true" aria-labelledby="winnerTitle"><div class="panel winner"><div class="hint" id="winnerTitle">Winner</div><div class="name" id="winnerName"></div><div class="row"><button class="btn primary" id="againBtn">Spin again</button><button class="btn" id="removeWinnerBtn">Remove winner</button><button class="btn" id="removeMatchesBtn">Remove all matches</button><button class="btn" id="closeWinnerBtn">Keep</button></div></div></div>
-<div class="sheet hidden" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="panel"><h2 id="settingsTitle">Settings</h2><div class="grid2"><div class="field"><label>Spin duration</label><input id="durationInput" type="range" min="500" max="12000" step="250"></div><div class="field"><label>Theme</label><select id="themeSelect"><option value="system">System</option><option value="dark">Dark</option><option value="light">Light</option></select></div><div class="field"><label>Sound</label><select id="soundSelect"><option value="true">On</option><option value="false">Off</option></select></div><div class="field"><label>Confetti</label><select id="confettiSelect"><option value="true">On</option><option value="false">Off</option></select></div></div><hr style="border-color:var(--line);border-style:solid;border-width:1px 0 0;margin:18px 0"><div class="row"><button class="btn" id="newWheelBtn">New wheel</button><button class="btn" id="duplicateWheelBtn">Duplicate wheel</button><button class="btn danger" id="deleteWheelBtn">Delete wheel</button></div><div class="row" style="margin-top:10px"><button class="btn" id="exportBtn">Export JSON</button><label class="btn" for="importInput">Import JSON</label><input class="hidden" id="importInput" type="file" accept="application/json,.json"><button class="btn" id="fullscreenBtn">Fullscreen</button></div><div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn primary" id="closeSettingsBtn">Done</button></div></div></div>
-<div class="sheet hidden" id="saveSheet" role="dialog" aria-modal="true"><div class="panel"><h2>Saved wheels</h2><div class="row"><input id="saveName" placeholder="Save name" style="flex:1;background:#0d131d;border:1px solid var(--line);color:var(--text);padding:10px;border-radius:10px"><button class="btn primary" id="saveNamedBtn">Save</button></div><div id="savedList" style="margin-top:14px"></div><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" id="closeSaveBtn">Close</button></div></div></div>
-<script type="module" src="./app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#202126">
+<meta name="description" content="A fast customizable random name wheel.">
+<title>Wheel · Random Info Pages</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../" aria-label="Random Info Pages home"><span class="mark">R</span><span>Wheel</span></a>
+  <nav class="top-actions" aria-label="Wheel actions">
+    <button class="toolbar-btn" id="customizeBtn">Customize</button>
+    <button class="toolbar-btn" id="newTopBtn">New</button>
+    <button class="toolbar-btn" id="openBtn">Open</button>
+    <button class="toolbar-btn" id="saveBtn">Save</button>
+    <button class="toolbar-btn" id="shareBtn">Share</button>
+    <div class="more-wrap"><button class="toolbar-btn" id="moreBtn" aria-expanded="false">More ▾</button><div class="more-menu hidden" id="moreMenu"><button id="duplicateWheelBtn">Duplicate wheel</button><button id="exportBtn">Export JSON</button><button id="presentBtn">Presentation</button><button class="danger-text" id="deleteWheelBtn">Delete wheel</button></div></div>
+    <button class="toolbar-btn icon-only" id="fullscreenTopBtn" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+  </nav>
+</header>
+
+<main class="workspace">
+  <section class="wheel-stage" id="wheelStage">
+    <div class="stage-head"><span class="wheel-name" id="wheelNameBadge">Wheel 1</span><span class="stage-help">Click the wheel or press Space</span></div>
+    <div class="wheel-shell">
+      <canvas id="wheel" width="900" height="900" tabindex="0" role="button" aria-label="Spin random selection wheel"></canvas>
+      <div class="spin-hint" aria-hidden="true"><strong>Click to spin</strong><span>Press Space or Enter</span></div>
+      <img class="center-image hidden" id="centerImageOverlay" alt="Wheel center image">
+    </div>
+    <div class="status" id="status" aria-live="polite"></div>
+  </section>
+
+  <aside class="side-panel">
+    <div class="side-tabs" role="tablist" aria-label="Wheel sidebar">
+      <button class="side-tab active" id="entriesTab" role="tab" aria-selected="true">Entries <span id="entryCount">0</span></button>
+      <button class="side-tab" id="resultsTab" role="tab" aria-selected="false">Results <span id="resultCount">0</span></button>
+    </div>
+
+    <section class="side-body" id="entriesPanel" role="tabpanel" aria-labelledby="entriesTab">
+      <div class="entry-toolbar">
+        <button class="small-btn" id="shuffleBtn">Shuffle</button>
+        <button class="small-btn" id="sortBtn">Sort</button>
+        <button class="small-btn" id="addImageBtn">Add image ▾</button>
+        <label class="advanced-toggle"><input id="advancedToggle" type="checkbox"> Advanced</label>
+      </div>
+      <textarea id="entriesInput" spellcheck="false" aria-label="Wheel entries" placeholder="Add one entry per line"></textarea>
+      <div class="advanced-list hidden" id="advancedRows"></div>
+    </section>
+
+    <section class="side-body hidden" id="resultsPanel" role="tabpanel" aria-labelledby="resultsTab">
+      <div class="results-head"><span>Recent winners</span><button class="text-btn" id="clearResultsBtn">Clear</button></div>
+      <div class="results-list" id="resultsList"></div>
+      <div class="empty-results" id="emptyResults">Spin the wheel to see results here.</div>
+    </section>
+
+    <footer class="wheel-footer">
+      <div class="wheel-tabs" id="wheelTabs"></div>
+      <button class="add-wheel" id="addWheelBtn">+ Add wheel</button>
+    </footer>
+  </aside>
+</main>
+
+<div class="modal hidden" id="winnerModal" role="dialog" aria-modal="true" aria-labelledby="winnerTitle">
+  <div class="panel winner-panel"><div class="eyebrow" id="winnerTitle">Winner</div><div class="winner-name" id="winnerName"></div><div class="winner-actions"><button class="btn primary" id="againBtn">Spin again</button><button class="btn" id="removeWinnerBtn">Remove</button><button class="btn" id="removeMatchesBtn">Remove all matches</button><button class="btn ghost" id="closeWinnerBtn">Keep</button></div></div>
+</div>
+
+<div class="sheet hidden" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="panel settings-panel">
+    <div class="panel-head"><div><div class="eyebrow">Wheel settings</div><h2 id="settingsTitle">Customize</h2></div><button class="close-btn" id="closeSettingsBtn" aria-label="Close settings">×</button></div>
+    <div class="settings-grid">
+      <label class="field"><span>Spin duration <b id="durationValue"></b></span><input id="durationInput" type="range" min="500" max="12000" step="250"></label>
+      <label class="field"><span>Palette</span><select id="paletteSelect"><option value="auto">Bright</option><option value="pastel">Pastel</option><option value="cool">Cool</option><option value="warm">Warm</option><option value="mono">Monochrome</option></select></label>
+      <label class="field"><span>Theme</span><select id="themeSelect"><option value="system">System</option><option value="dark">Dark</option><option value="light">Light</option></select></label>
+      <label class="field"><span>Sound</span><select id="soundSelect"><option value="true">On</option><option value="false">Off</option></select></label>
+      <label class="field"><span>Confetti</span><select id="confettiSelect"><option value="true">On</option><option value="false">Off</option></select></label>
+      <label class="field"><span>Extra turns</span><input id="extraTurnsInput" type="range" min="2" max="14" step="1"></label>
+    </div>
+    <div class="asset-settings">
+      <div><strong>Center image</strong><div class="row"><label class="btn" for="centerImageInput">Choose image</label><input class="hidden" id="centerImageInput" type="file" accept="image/*"><button class="btn ghost" id="clearCenterImageBtn">Clear</button></div></div>
+      <div><strong>Background</strong><div class="row"><label class="btn" for="backgroundInput">Choose image</label><input class="hidden" id="backgroundInput" type="file" accept="image/*"><button class="btn ghost" id="clearBackgroundBtn">Clear</button></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="sheet hidden" id="saveSheet" role="dialog" aria-modal="true">
+  <div class="panel"><div class="panel-head"><div><div class="eyebrow">Local storage</div><h2>Saved wheels</h2></div><button class="close-btn" id="closeSaveBtn">×</button></div><div class="save-row"><input id="saveName" placeholder="Save name"><button class="btn primary" id="saveNamedBtn">Save</button></div><div id="savedList"></div></div>
+</div>
+
+<input class="hidden" id="importInput" type="file" accept="application/json,.json">
+<input class="hidden" id="imageInput" type="file" accept="image/*" multiple>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

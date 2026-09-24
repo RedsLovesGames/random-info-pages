@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDefaultState, sanitizeState, eligibleEntries, createWheel, createEntry, getActiveWheel, SCHEMA_VERSION } from './model.js';
+import { createDefaultState, sanitizeState, eligibleEntries, createWheel, createEntry, getActiveWheel, entriesFromText, entriesToText, patchEntry, SCHEMA_VERSION } from './model.js';
 test('default state has one active wheel and starter entries', () => { const state=createDefaultState(); assert.equal(state.schemaVersion,SCHEMA_VERSION); assert.equal(state.wheels.length,1); assert.equal(getActiveWheel(state).id,state.activeWheelId); assert.ok(getActiveWheel(state).entries.length>=2); });
 test('duplicate labels remain separate eligible entries',()=>{const s=createDefaultState();s.wheels[0].entries=[{id:'a',label:'Alex',weight:1},{id:'b',label:'Alex',weight:1}];assert.deepEqual(eligibleEntries(s.wheels[0]).map(e=>e.id),['a','b'])});
 test('blank and non-positive entries are excluded',()=>{const s=sanitizeState({schemaVersion:1,activeWheelId:'w',wheels:[{id:'w',entries:[{id:'a',label:' ',weight:1},{id:'b',label:'B',weight:0},{id:'c',label:'C',weight:2}]}]});assert.deepEqual(eligibleEntries(s.wheels[0]).map(e=>e.id),['c'])});
@@ -8,3 +8,6 @@ test('sanitization preserves 500 entries and long labels safely',()=>{const labe
 test('missing active wheel is recovered',()=>{const s=sanitizeState({schemaVersion:1,activeWheelId:'missing',wheels:[{id:'w',entries:[]}]});assert.equal(s.activeWheelId,'w')});
 test('malformed settings fall back',()=>{const s=sanitizeState({schemaVersion:1,wheels:[{id:'w',entries:[]}],settings:'bad'});assert.equal(typeof s.settings.spinDurationMs,'number')});
 test('factories create distinct IDs',()=>{assert.notEqual(createEntry('A').id,createEntry('A').id);assert.notEqual(createWheel('A').id,createWheel('A').id)});
+test('entry text round trips duplicate names and ignores blank lines',()=>{const existing=[createEntry('Alex'),createEntry('Tommy')];const next=entriesFromText('Alex\n\nTommy\nAlex',existing);assert.deepEqual(next.map(e=>e.label),['Alex','Tommy','Alex']);assert.equal(entriesToText({entries:next}),'Alex\nTommy\nAlex')});
+test('entry text preserves advanced data for unchanged rows',()=>{const a={...createEntry('Alex'),weight:3,color:'#ff0000'};const next=entriesFromText('Alex\nMike',[a]);assert.equal(next[0].id,a.id);assert.equal(next[0].weight,3);assert.equal(next[0].color,'#ff0000');assert.equal(next[1].label,'Mike')});
+test('patchEntry updates the current entry by id without touching siblings',()=>{const a=createEntry('Alex'),b=createEntry('Mike');const first=patchEntry([a,b],a.id,{color:'#123456'});const second=patchEntry(first,a.id,{color:'#abcdef',weight:4});assert.equal(second[0].id,a.id);assert.equal(second[0].color,'#abcdef');assert.equal(second[0].weight,4);assert.deepEqual(second[1],b)});
