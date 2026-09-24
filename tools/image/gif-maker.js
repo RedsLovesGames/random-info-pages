@@ -4,6 +4,7 @@
   if (root) root.GifMaker = api;
 })(typeof window !== 'undefined' ? window : globalThis, function (root) {
   const GIFENC_URL = 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm';
+  const MAX_VIDEO_FRAMES = 300;
   let gifencPromise = null;
 
   function delayFromFps(value) {
@@ -46,6 +47,21 @@
     return list;
   }
 
+  function sampleTimes(start, end, fps, maxFrames = MAX_VIDEO_FRAMES) {
+    const s = Number(start);
+    const e = Number(end);
+    const rawFps = Number(fps);
+    const rate = Number.isFinite(rawFps) ? Math.min(100, Math.max(1, rawFps)) : 10;
+    const limit = Math.max(1, Math.floor(Number(maxFrames) || MAX_VIDEO_FRAMES));
+    if (!Number.isFinite(s) || !Number.isFinite(e) || e <= s) return [];
+
+    const duration = e - s;
+    const desiredCount = Math.max(1, Math.ceil(duration * rate - 1e-9));
+    const count = Math.min(limit, desiredCount);
+    const step = desiredCount > limit ? duration / count : 1 / rate;
+    return Array.from({ length: count }, (_, index) => Number((s + index * step).toFixed(6)));
+  }
+
   function loadGifenc() {
     if (!gifencPromise) {
       gifencPromise = import(GIFENC_URL).catch((error) => {
@@ -75,13 +91,34 @@
     const downloadButton = $('#gifDownload');
     const preview = $('#gifPreview');
     const status = $('#gifStatus');
-    if (!openButton || !dialog || !picker || !frameList) return;
+    const imagesModeButton = $('#gifImagesMode');
+    const videoModeButton = $('#gifVideoMode');
+    const imagePanel = $('#gifImagesPanel');
+    const videoPanel = $('#gifVideoPanel');
+    const videoPicker = $('#gifVideoPicker');
+    const chooseVideoButton = $('#gifChooseVideo');
+    const videoPreview = $('#gifVideoPreview');
+    const videoStart = $('#gifVideoStart');
+    const videoEnd = $('#gifVideoEnd');
+    const videoMeta = $('#gifVideoMeta');
+    if (!openButton || !dialog || !picker || !frameList || !createButton || !status) return;
 
     let frames = [];
+    let sourceMode = 'images';
+    let videoFile = null;
+    let videoObjectUrl = null;
+    let videoDuration = 0;
     let outputBlob = null;
     let outputUrl = null;
     let encoding = false;
     let cancelRequested = false;
+
+    function bytes(value) {
+      const size = Number(value) || 0;
+      if (size < 1024) return `${size} B`;
+      if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+      return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+    }
 
     function setStatus(message, kind = '') {
       status.textContent = message || '';
@@ -95,6 +132,47 @@
       preview.removeAttribute('src');
       preview.hidden = true;
       downloadButton.disabled = true;
+    }
+
+    function cleanupVideo() {
+      if (videoObjectUrl) root.URL.revokeObjectURL(videoObjectUrl);
+      videoObjectUrl = null;
+      videoFile = null;
+      videoDuration = 0;
+      if (videoPreview) {
+        videoPreview.pause();
+        videoPreview.removeAttribute('src');
+        videoPreview.load();
+        videoPreview.hidden = true;
+      }
+      if (videoStart) videoStart.value = '0';
+      if (videoEnd) videoEnd.value = '';
+      if (videoMeta) videoMeta.textContent = 'Choose a browser-decodable video. Nothing is uploaded.';
+    }
+
+    function updateCreateState() {
+      const readyForImages = sourceMode === 'images' && frames.length >= 2;
+      const start = Number(videoStart?.value);
+      const end = Number(videoEnd?.value);
+      const readyForVideo = sourceMode === 'video' && videoFile && videoDuration > 0 && Number.isFinite(start) && Number.isFinite(end) && end > start;
+      createButton.disabled = encoding || !(readyForImages || readyForVideo);
+      createButton.textContent = sourceMode === 'video' ? 'Create GIF from video' : 'Create GIF';
+      addFramesButton.disabled = encoding;
+      if (chooseVideoButton) chooseVideoButton.disabled = encoding;
+      cancelButton.hidden = !encoding;
+      delayLabel.textContent = `${delayFromFps(fpsInput.value)} ms/frame`;
+    }
+
+    function setSourceMode(mode) {
+      sourceMode = mode === 'video' ? 'video' : 'images';
+      if (imagePanel) imagePanel.hidden = sourceMode !== 'images';
+      if (videoPanel) videoPanel.hidden = sourceMode !== 'video';
+      imagesModeButton?.classList.toggle('active', sourceMode === 'images');
+      videoModeButton?.classList.toggle('active', sourceMode === 'video');
+      cleanupOutput();
+      updateCreateState();
+      if (sourceMode === 'images') setStatus(frames.length ? `${frames.length} image frame${frames.length === 1 ? '' : 's'} ready.` : 'Add two or more images. All frame pixels stay on this device.');
+      else setStatus(videoFile ? 'Choose a clip range, then create the GIF.' : 'Choose a video. Decoding and frame sampling stay on this device.');
     }
 
     function renderFrames() {
@@ -137,10 +215,7 @@
         row.append(label, actions);
         frameList.append(row);
       });
-      createButton.disabled = encoding || frames.length < 2;
-      addFramesButton.disabled = encoding;
-      cancelButton.hidden = !encoding;
-      delayLabel.textContent = `${delayFromFps(fpsInput.value)} ms/frame`;
+      updateCreateState();
     }
 
     function addFrames(fileList) {
@@ -168,10 +243,30 @@
       }
     }
 
-    async function createGif() {
+    function outputDimensions() {
+      return {
+        width: Math.max(1, Math.min(2048, Math.round(Number(widthInput.value) || 480))),
+        height: Math.max(1, Math.min(2048, Math.round(Number(heightInput.value) || 480))),
+      };
+    }
+
+    function frameColors() {
+      return Math.min(256, Math.max(16, Number(colorsInput.value) || 128));
+    }
+
+    function completeGif(gif, outputWidth, outputHeight) {
+      gif.finish();
+      outputBlob = new Blob([gif.bytes()], { type: 'image/gif' });
+      outputUrl = root.URL.createObjectURL(outputBlob);
+      preview.src = outputUrl;
+      preview.hidden = false;
+      downloadButton.disabled = false;
+      setStatus(`GIF ready · ${outputWidth}×${outputHeight} · ${bytes(outputBlob.size)}.`, 'good');
+    }
+
+    async function createImageGif() {
       if (frames.length < 2 || encoding) return;
-      const outputWidth = Math.max(1, Math.min(2048, Math.round(Number(widthInput.value) || 480)));
-      const outputHeight = Math.max(1, Math.min(2048, Math.round(Number(heightInput.value) || 480)));
+      const { width: outputWidth, height: outputHeight } = outputDimensions();
       const maxPixels = outputWidth * outputHeight * frames.length;
       if (maxPixels > 180000000 && !root.confirm('This GIF is very large and may use substantial memory. Continue?')) return;
 
@@ -190,7 +285,7 @@
         if (!context) throw new Error('Could not create GIF canvas.');
         const delay = delayFromFps(fpsInput.value);
         const repeat = repeatFromLoop(loopInput.value);
-        const colors = Math.min(256, Math.max(16, Number(colorsInput.value) || 128));
+        const colors = frameColors();
 
         for (let index = 0; index < frames.length; index += 1) {
           if (cancelRequested) throw new Error('GIF creation cancelled.');
@@ -212,14 +307,7 @@
           });
           await new Promise((resolve) => root.requestAnimationFrame(resolve));
         }
-
-        gif.finish();
-        outputBlob = new Blob([gif.bytes()], { type: 'image/gif' });
-        outputUrl = root.URL.createObjectURL(outputBlob);
-        preview.src = outputUrl;
-        preview.hidden = false;
-        downloadButton.disabled = false;
-        setStatus(`GIF ready · ${outputWidth}×${outputHeight} · ${(outputBlob.size / 1024).toFixed(1)} KB.`, 'good');
+        completeGif(gif, outputWidth, outputHeight);
       } catch (error) {
         setStatus(error.message || String(error), cancelRequested ? '' : 'error');
       } finally {
@@ -229,12 +317,137 @@
       }
     }
 
+    function waitForVideoEvent(video, successEvent, timeoutMs = 10000) {
+      return new Promise((resolve, reject) => {
+        let timer = null;
+        const cleanup = () => {
+          video.removeEventListener(successEvent, onSuccess);
+          video.removeEventListener('error', onError);
+          if (timer) root.clearTimeout(timer);
+        };
+        const onSuccess = () => { cleanup(); resolve(); };
+        const onError = () => { cleanup(); reject(new Error('The browser could not decode this video.')); };
+        video.addEventListener(successEvent, onSuccess, { once: true });
+        video.addEventListener('error', onError, { once: true });
+        timer = root.setTimeout(() => { cleanup(); reject(new Error('Video decoding timed out.')); }, timeoutMs);
+      });
+    }
+
+    async function chooseVideo(file) {
+      cleanupVideo();
+      cleanupOutput();
+      if (!file || !String(file.type || '').startsWith('video/')) {
+        setStatus('Choose a supported video file.', 'error');
+        updateCreateState();
+        return;
+      }
+      videoFile = file;
+      videoObjectUrl = root.URL.createObjectURL(file);
+      videoPreview.hidden = false;
+      videoPreview.src = videoObjectUrl;
+      videoPreview.preload = 'metadata';
+      videoPreview.muted = true;
+      setStatus('Reading video metadata…');
+      try {
+        if (!(videoPreview.readyState >= 1 && Number.isFinite(videoPreview.duration))) {
+          await waitForVideoEvent(videoPreview, 'loadedmetadata');
+        }
+        videoDuration = Number(videoPreview.duration);
+        if (!(videoDuration > 0 && Number.isFinite(videoDuration))) throw new Error('This video has no readable duration.');
+        videoStart.value = '0';
+        videoEnd.value = String(Number(videoDuration.toFixed(3)));
+        videoStart.max = String(videoDuration);
+        videoEnd.max = String(videoDuration);
+        const dimensions = videoPreview.videoWidth && videoPreview.videoHeight ? ` · ${videoPreview.videoWidth}×${videoPreview.videoHeight}` : '';
+        videoMeta.textContent = `${file.name} · ${videoDuration.toFixed(2)} s${dimensions} · ${bytes(file.size)}`;
+        setStatus('Video ready. Choose a clip range, then create the GIF.');
+      } catch (error) {
+        cleanupVideo();
+        setStatus(error.message || String(error), 'error');
+      }
+      updateCreateState();
+    }
+
+    async function seekVideo(video, time) {
+      const target = Math.max(0, Math.min(Number(video.duration) || Number.MAX_SAFE_INTEGER, Number(time) || 0));
+      if (video.readyState >= 2 && Math.abs(video.currentTime - target) < 0.002) return;
+      const pending = waitForVideoEvent(video, 'seeked', 12000);
+      video.currentTime = target;
+      await pending;
+      if (video.readyState < 2) await waitForVideoEvent(video, 'loadeddata', 12000);
+    }
+
+    async function createVideoGif() {
+      if (!videoFile || !(videoDuration > 0) || encoding) return;
+      const start = Math.max(0, Math.min(videoDuration, Number(videoStart.value) || 0));
+      const end = Math.max(0, Math.min(videoDuration, Number(videoEnd.value) || videoDuration));
+      const samples = sampleTimes(start, end, fpsInput.value, MAX_VIDEO_FRAMES);
+      if (!samples.length) {
+        setStatus('End time must be after start time.', 'error');
+        return;
+      }
+
+      const { width: outputWidth, height: outputHeight } = outputDimensions();
+      const maxPixels = outputWidth * outputHeight * samples.length;
+      if (maxPixels > 180000000 && !root.confirm(`This conversion will sample ${samples.length} frames and may use substantial memory. Continue?`)) return;
+
+      encoding = true;
+      cancelRequested = false;
+      cleanupOutput();
+      updateCreateState();
+      setStatus('Loading GIF encoder…');
+      try {
+        const { GIFEncoder, quantize, applyPalette } = await loadGifenc();
+        const gif = GIFEncoder();
+        const canvas = root.document.createElement('canvas');
+        canvas.width = outputWidth;
+        canvas.height = outputHeight;
+        const context = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
+        if (!context) throw new Error('Could not create GIF canvas.');
+        const repeat = repeatFromLoop(loopInput.value);
+        const colors = frameColors();
+        const delay = Math.max(10, Math.round(((end - start) * 1000) / samples.length));
+        const wasCapped = Math.ceil((end - start) * Math.min(100, Math.max(1, Number(fpsInput.value) || 10))) > samples.length;
+
+        videoPreview.pause();
+        for (let index = 0; index < samples.length; index += 1) {
+          if (cancelRequested) throw new Error('GIF creation cancelled.');
+          setStatus(`${wasCapped ? 'Sampling across clip' : 'Sampling video'} · frame ${index + 1} of ${samples.length}…`);
+          await seekVideo(videoPreview, samples[index]);
+          context.fillStyle = '#000000';
+          context.fillRect(0, 0, outputWidth, outputHeight);
+          const rect = containRect(videoPreview.videoWidth, videoPreview.videoHeight, outputWidth, outputHeight);
+          context.imageSmoothingEnabled = true;
+          if ('imageSmoothingQuality' in context) context.imageSmoothingQuality = 'high';
+          context.drawImage(videoPreview, rect.x, rect.y, rect.width, rect.height);
+          const imageData = context.getImageData(0, 0, outputWidth, outputHeight);
+          const palette = quantize(imageData.data, colors, { format: 'rgb565' });
+          const indexed = applyPalette(imageData.data, palette, 'rgb565');
+          gif.writeFrame(indexed, outputWidth, outputHeight, { palette, delay, repeat });
+          await new Promise((resolve) => root.requestAnimationFrame(resolve));
+        }
+        completeGif(gif, outputWidth, outputHeight);
+        if (wasCapped) setStatus(`GIF ready · ${samples.length}-frame safety cap sampled across the full clip · ${bytes(outputBlob.size)}.`, 'good');
+      } catch (error) {
+        setStatus(error.message || String(error), cancelRequested ? '' : 'error');
+      } finally {
+        encoding = false;
+        cancelRequested = false;
+        updateCreateState();
+      }
+    }
+
+    async function createGif() {
+      if (sourceMode === 'video') await createVideoGif();
+      else await createImageGif();
+    }
+
     function downloadGif() {
       if (!outputBlob) return;
       const url = root.URL.createObjectURL(outputBlob);
       const anchor = root.document.createElement('a');
       anchor.href = url;
-      anchor.download = 'random-info-pages.gif';
+      anchor.download = sourceMode === 'video' ? 'random-info-pages-video.gif' : 'random-info-pages.gif';
       root.document.body.append(anchor);
       anchor.click();
       anchor.remove();
@@ -244,16 +457,24 @@
     openButton.addEventListener('click', () => {
       if (!dialog.open) dialog.showModal();
       renderFrames();
+      updateCreateState();
     });
+    imagesModeButton?.addEventListener('click', () => setSourceMode('images'));
+    videoModeButton?.addEventListener('click', () => setSourceMode('video'));
     addFramesButton.addEventListener('click', () => picker.click());
     picker.addEventListener('change', () => { addFrames(picker.files); picker.value = ''; });
-    fpsInput.addEventListener('input', renderFrames);
+    chooseVideoButton?.addEventListener('click', () => videoPicker.click());
+    videoPicker?.addEventListener('change', () => { chooseVideo(videoPicker.files?.[0]); videoPicker.value = ''; });
+    videoStart?.addEventListener('input', updateCreateState);
+    videoEnd?.addEventListener('input', updateCreateState);
+    fpsInput.addEventListener('input', updateCreateState);
     createButton.addEventListener('click', createGif);
     cancelButton.addEventListener('click', () => { cancelRequested = true; setStatus('Stopping after the current frame…'); });
     downloadButton.addEventListener('click', downloadGif);
     dialog.addEventListener('close', () => { if (encoding) cancelRequested = true; });
-    root.addEventListener('beforeunload', cleanupOutput);
+    root.addEventListener('beforeunload', () => { cleanupOutput(); cleanupVideo(); });
     renderFrames();
+    setSourceMode('images');
   }
 
   if (root?.document) {
@@ -261,5 +482,5 @@
     else initBrowserUi();
   }
 
-  return { delayFromFps, repeatFromLoop, containRect, moveFrame, loadGifenc };
+  return { delayFromFps, repeatFromLoop, containRect, moveFrame, sampleTimes, loadGifenc };
 });
