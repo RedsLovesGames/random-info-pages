@@ -92,6 +92,16 @@
           <div class="range-row"><input id="quality" type="range" min="1" max="100" value="86"><span id="qualityValue" class="quality-value">86%</span></div>
         </label>
 
+        <div class="setting-block">
+          <label class="checkbox"><input id="targetSizeEnabled" type="checkbox"> Compress toward a target file size</label>
+          <div id="targetSizeControls" class="setting-grid" hidden>
+            <label class="setting-block"><span>Target</span><input id="targetSize" type="number" min="1" step="1" value="500" inputmode="decimal"></label>
+            <label class="setting-block"><span>Unit</span><select id="targetUnit"><option value="KB">KB</option><option value="MB">MB</option></select></label>
+          </div>
+          <label id="preserveResolutionWrap" class="checkbox" hidden><input id="preserveResolution" type="checkbox"> Never lower resolution to hit target</label>
+          <span id="targetSizeHint" class="muted" hidden>JPEG/WebP only. Quality is searched first; resolution is reduced only when needed.</span>
+        </div>
+
         <div class="action-grid">
           <button id="processSelected" class="action-btn primary" type="button" disabled>Process selected</button>
           <button id="processAll" class="action-btn" type="button" disabled>Process all</button>
