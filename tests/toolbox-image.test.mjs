@@ -36,3 +36,15 @@ test('image studio exposes optional target-size compression', () => {
   assert.match(html, /id="targetUnit"/);
   assert.match(html, /id="preserveResolution"/);
 });
+
+test('image studio exposes a lazy crop editor', () => {
+  assert.match(html, /id="cropSelected"/);
+  assert.match(html, /id="resetCrop"/);
+  assert.match(html, /id="cropDialog"/);
+  assert.match(html, /id="cropRatio"/);
+  assert.match(html, /id="applyCrop"/);
+  assert.match(html, /id="cropRotateLeft"/);
+  assert.match(html, /id="cropRotateRight"/);
+  assert.match(html, /id="cropFlipX"/);
+  assert.match(html, /id="cropFlipY"/);
+});
