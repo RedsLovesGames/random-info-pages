@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="./image.css">
 <link rel="stylesheet" href="./crop.css">
 <link rel="stylesheet" href="./gif.css">
+<link rel="stylesheet" href="./bg-remove.css">
 </head>
 <body>
 <main class="image-shell">
@@ -55,6 +56,7 @@
           <div class="action-grid">
             <button id="cropSelected" class="action-btn" type="button" disabled>Crop / rotate</button>
             <button id="resetCrop" class="action-btn" type="button" disabled>Reset edit</button>
+            <button id="removeBgSelected" class="action-btn wide" type="button" disabled>Remove background (AI)</button>
           </div>
         </div>
 
@@ -172,10 +174,37 @@
   </form>
 </dialog>
 
+<dialog id="bgRemoveDialog" class="bg-dialog">
+  <form method="dialog" class="bg-card">
+    <div class="bg-head">
+      <div><span class="muted">LOCAL AI</span><h2>Remove background</h2></div>
+      <button class="mini-btn" value="cancel" type="submit">Close</button>
+    </div>
+    <div class="bg-main">
+      <div class="bg-preview-wrap"><img id="bgRemovePreview" alt="Background removal preview" hidden></div>
+      <div class="bg-controls">
+        <div class="bg-runtime">
+          <div class="bg-runtime-row"><strong>Inference backend</strong><span id="bgRemoveBackend">AUTO</span></div>
+          <div class="bg-progress-track" aria-hidden="true"><div id="bgRemoveProgress" class="bg-progress"></div></div>
+          <div id="bgRemoveStatus" class="status-line" aria-live="polite">Ready.</div>
+        </div>
+        <div class="bg-actions">
+          <button id="bgRemoveRun" class="action-btn primary" type="button">Remove background</button>
+          <button id="bgRemoveApply" class="action-btn" type="button" disabled>Use as edited source</button>
+          <button id="bgRemoveDownload" class="action-btn" type="button" disabled>Download transparent PNG</button>
+        </div>
+      </div>
+    </div>
+    <div class="bg-footer">The image never leaves this device. First use downloads ONNX Runtime and a pinned U²-Net-small model; the model is cached by the browser when possible. WebGPU is attempted where compatible, with WASM fallback.</div>
+  </form>
+</dialog>
+
 <script src="./image-core.js"></script>
 <script src="./image-engine.js"></script>
 <script src="./image-app.js"></script>
 <script src="./crop-editor.js"></script>
 <script src="./gif-maker.js"></script>
+<script src="./bg-remove-core.js"></script>
+<script src="./bg-remove.js"></script>
 </body>
 </html>
