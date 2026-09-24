@@ -49,3 +49,17 @@ test('image studio exposes a lazy crop editor', () => {
   assert.match(html, /id="cropFlipY"/);
   assert.match(html, /crop-editor\.js/);
 });
+
+test('image studio exposes still-image gif creation', () => {
+  assert.match(html, /id="gifMaker"/);
+  assert.match(html, /id="gifDialog"/);
+  assert.match(html, /id="gifFrameList"/);
+  assert.match(html, /id="gifWidth"/);
+  assert.match(html, /id="gifHeight"/);
+  assert.match(html, /id="gifFps"/);
+  assert.match(html, /id="gifLoop"/);
+  assert.match(html, /id="gifColors"/);
+  assert.match(html, /id="gifCreate"/);
+  assert.match(html, /id="gifDownload"/);
+  assert.match(html, /gif-maker\.js/);
+});
