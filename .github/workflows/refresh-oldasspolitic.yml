@@ -1,0 +1,58 @@
+name: Refresh Old Ass Politic roster snapshot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve latest frozen roster revision
+        id: roster
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHA="$(git ls-remote https://github.com/unitedstates/congress-legislators.git refs/heads/gh-pages | cut -f1)"
+          test -n "$SHA"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "$SHA" > oldasspolitic/ROSTER_SNAPSHOT_SHA.txt
+
+      - name: Update pinned snapshot references
+        shell: python
+        env:
+          SNAPSHOT_SHA: ${{ steps.roster.outputs.sha }}
+        run: |
+          from pathlib import Path
+          import os, re
+
+          sha = os.environ["SNAPSHOT_SHA"]
+          paths = [
+              Path("oldasspolitic/index.html"),
+              Path("oldasspolitic/member/member.js"),
+          ]
+          pattern = re.compile(r"congress-legislators@[0-9a-f]{40}/legislators-current\.json")
+          for path in paths:
+              text = path.read_text(encoding="utf-8")
+              new = pattern.sub(f"congress-legislators@{sha}/legislators-current.json", text)
+              if new == text:
+                  raise SystemExit(f"Pinned snapshot URL not found in {path}")
+              path.write_text(new, encoding="utf-8")
+
+      - name: Commit refreshed snapshot pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No roster revision change."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add oldasspolitic/index.html oldasspolitic/member/member.js oldasspolitic/ROSTER_SNAPSHOT_SHA.txt
+          git commit -m "Refresh Old Ass Politic roster snapshot"
+          git push
