@@ -48,3 +48,11 @@ export function sanitizeState(input) {
 }
 export function getActiveWheel(state) { return state.wheels.find(w=>w.id===state.activeWheelId) || state.wheels[0] || null; }
 export function eligibleEntries(wheel) { return (wheel?.entries || []).filter(e => String(e.label??'').trim() && Number.isFinite(Number(e.weight)) && Number(e.weight)>0); }
+export function entriesToText(wheel) { return (wheel?.entries || []).map(e=>String(e.label??'')).filter(label=>label.trim()).join('\n'); }
+export function entriesFromText(text, existing=[]) {
+  const lines=String(text??'').replace(/\r/g,'').split('\n').map(line=>line.trim()).filter(Boolean);
+  const pool=new Map();
+  for(const entry of existing||[]){const label=String(entry.label??'');if(!pool.has(label))pool.set(label,[]);pool.get(label).push(entry)}
+  return lines.map(label=>{const matches=pool.get(label);return matches?.length?{...matches.shift(),label}:createEntry(label)});
+}
+export function patchEntry(entries, entryId, patch={}) { return (entries||[]).map(entry=>entry.id===entryId?{...entry,...patch,id:entry.id}:entry); }
