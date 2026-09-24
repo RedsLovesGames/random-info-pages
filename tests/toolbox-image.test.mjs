@@ -47,4 +47,5 @@ test('image studio exposes a lazy crop editor', () => {
   assert.match(html, /id="cropRotateRight"/);
   assert.match(html, /id="cropFlipX"/);
   assert.match(html, /id="cropFlipY"/);
+  assert.match(html, /crop-editor\.js/);
 });
