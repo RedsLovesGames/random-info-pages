@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0a">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Fast, ad-free utilities from Random Info Pages.">
+<title>Toolbox · Random Info Pages</title>
+<link rel="stylesheet" href="./shared/toolbox.css">
+</head>
+<body>
+<header class="tb-top"><nav class="tb-shell tb-nav" aria-label="Toolbox"><a class="tb-brand" href="../">RIP/26 · TOOLBOX</a><a class="tb-back" href="../">← Archive</a></nav></header>
+<main class="tb-shell">
+<section class="tb-hero"><div class="tb-kicker">Local-first utility collection</div><h1 class="tb-title">Toolbox</h1><p class="tb-lede">The useful parts of single-purpose utility sites, without the ads, accounts, or clutter. Most work happens entirely on your device.</p><label><span style="position:absolute;clip:rect(0 0 0 0)">Filter tools</span><input id="toolSearch" class="tb-search" type="search" placeholder="Find a tool…" autocomplete="off"></label></section>
+<section id="toolGrid" class="tb-grid" aria-label="Tools">
+<a class="tb-card" href="./time/" data-tool="time zone clock world slider friends schedule"><small>01 / Time</small><h2>Time Zone Board</h2><p>Name clocks, compare everyone at once, and slide the reference time forward or backward.</p><div class="tb-meta"><span class="tb-pill local">Local</span><span class="tb-pill">DST aware</span></div></a>
+<a class="tb-card" href="./image/" data-tool="image converter resize compress gif background remover png jpeg webp"><small>02 / Media</small><h2>Image Studio</h2><p>Convert, resize, compress, make GIFs, and remove backgrounds without uploading your images.</p><div class="tb-meta"><span class="tb-pill local">On device</span><span class="tb-pill">Batch</span></div></a>
+<a class="tb-card" href="./money/" data-tool="money inflation calculator currency conversion exchange rates cpi"><small>03 / Money</small><h2>Money Through Time</h2><p>Compare purchasing power across years, then convert one amount across the currencies you care about.</p><div class="tb-meta"><span class="tb-pill">Historical data</span><span class="tb-pill">Live FX</span></div></a>
+<a class="tb-card" href="./text/" data-tool="text word character count case whitespace deduplicate lines"><small>04 / Text</small><h2>Text Tools</h2><p>Counts, case conversion, whitespace cleanup, blank-line removal, and line deduplication in one place.</p><div class="tb-meta"><span class="tb-pill local">Local</span><span class="tb-pill">Instant</span></div></a>
+</section>
+<p id="empty" class="tb-empty">No tools match that search.</p>
+</main>
+<script src="./shared/toolbox.js"></script>
+<script>
+const input=document.getElementById('toolSearch');const cards=[...document.querySelectorAll('.tb-card')];const empty=document.getElementById('empty');input.addEventListener('input',()=>{const q=input.value.trim().toLowerCase();let shown=0;cards.forEach(card=>{const ok=!q||(card.dataset.tool+' '+card.textContent).toLowerCase().includes(q);card.hidden=!ok;if(ok)shown++});empty.classList.toggle('show',shown===0)});cards.forEach(card=>card.addEventListener('click',()=>window.Toolbox?.recordRecent(card.getAttribute('href'))));
+</script>
+</body>
+</html>
