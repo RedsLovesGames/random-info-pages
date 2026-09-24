@@ -23,3 +23,5 @@ Implementation is sequential on the existing `toolbox` branch only.
 8. Homepage integration and full verification.
 
 The detailed approved behavior is defined in `docs/superpowers/specs/2026-09-24-toolbox-design.md`.
+
+Phase 0 audit confirmed the repository remains a static multi-route site. Phase 1 shell work is prepared as a single commit before Time Zone implementation.
