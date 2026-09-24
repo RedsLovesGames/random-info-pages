@@ -129,6 +129,10 @@
       <div><span class="muted">LOCAL ANIMATION</span><h2>GIF Maker</h2></div>
       <button class="mini-btn" value="cancel" type="submit">Close</button>
     </div>
+    <div class="gif-source-tabs" role="tablist" aria-label="GIF source type">
+      <button id="gifImagesMode" class="mini-btn active" type="button" role="tab" aria-selected="true">Images</button>
+      <button id="gifVideoMode" class="mini-btn" type="button" role="tab" aria-selected="false">Video</button>
+    </div>
     <div class="gif-config">
       <label class="setting-block"><span>Width</span><input id="gifWidth" type="number" min="1" max="2048" value="480" inputmode="numeric"></label>
       <label class="setting-block"><span>Height</span><input id="gifHeight" type="number" min="1" max="2048" value="480" inputmode="numeric"></label>
@@ -137,11 +141,23 @@
       <label class="setting-block"><span>Colors</span><select id="gifColors"><option value="64">64</option><option value="128" selected>128</option><option value="256">256</option></select></label>
     </div>
     <div class="gif-body">
-      <section class="gif-frames">
-        <input id="gifPicker" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
-        <div class="gif-add-row"><span class="muted">Frame order</span><button id="gifAddFrames" class="action-btn" type="button">Add images</button></div>
-        <div id="gifFrameList" class="gif-frame-list"></div>
-      </section>
+      <div class="gif-source-column">
+        <section id="gifImagesPanel" class="gif-frames">
+          <input id="gifPicker" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+          <div class="gif-add-row"><span class="muted">Frame order</span><button id="gifAddFrames" class="action-btn" type="button">Add images</button></div>
+          <div id="gifFrameList" class="gif-frame-list"></div>
+        </section>
+        <section id="gifVideoPanel" class="gif-video-panel" hidden>
+          <input id="gifVideoPicker" type="file" accept="video/*" hidden>
+          <div class="gif-add-row"><span class="muted">Video source</span><button id="gifChooseVideo" class="action-btn" type="button">Choose video</button></div>
+          <video id="gifVideoPreview" class="gif-video-preview" controls muted playsinline hidden></video>
+          <div class="setting-grid gif-video-range">
+            <label class="setting-block"><span>Start (seconds)</span><input id="gifVideoStart" type="number" min="0" step="0.01" value="0" inputmode="decimal"></label>
+            <label class="setting-block"><span>End (seconds)</span><input id="gifVideoEnd" type="number" min="0" step="0.01" inputmode="decimal"></label>
+          </div>
+          <div id="gifVideoMeta" class="gif-video-meta">Choose a browser-decodable video. Nothing is uploaded.</div>
+        </section>
+      </div>
       <section class="gif-preview-wrap"><img id="gifPreview" alt="Generated GIF preview" hidden></section>
     </div>
     <div class="gif-footer">
@@ -151,7 +167,7 @@
         <button id="gifDownload" class="action-btn" type="button" disabled>Download GIF</button>
       </div>
       <div id="gifStatus" class="status-line">Add two or more images. All frame pixels stay on this device.</div>
-      <div class="gif-note">GIF is limited to 256 colors. The selected encoder is fast and lightweight, but photographs can show more banding than modern video formats.</div>
+      <div class="gif-note">GIF is limited to 256 colors. Video conversion uses the browser's own decoder and samples at most 300 frames across the selected clip, so FFmpeg is not downloaded for the normal path.</div>
     </div>
   </form>
 </dialog>
