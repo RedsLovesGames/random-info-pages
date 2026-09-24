@@ -35,7 +35,8 @@
   const peopleEl=section.querySelector('#locked-people'), grid=section.querySelector('#locked-grid'), detail=section.querySelector('#locked-detail'), notes=section.querySelector('#locked-notes');
 
   const fmt=(m)=>{const h=Math.floor(m/60)%24,mm=m%60;return `${h%12||12}:${String(mm).padStart(2,'0')} ${h>=12?'PM':'AM'}`};
-  const conflicts=(person,day,start,end)=>viewState.data.events.filter(e=>e.counted&&e.person===person&&e.day===day&&e.start<end&&e.end>start);
+  const isGroupDnd=(e)=>e.person==='Alex'&&String(e.event||'').toLowerCase().includes('d&d');
+  const conflicts=(person,day,start,end)=>viewState.data.events.filter(e=>e.counted&&!isGroupDnd(e)&&e.person===person&&e.day===day&&e.start<end&&e.end>start);
   const activePeople=()=>viewState.data.people.filter(p=>viewState.active.has(p));
 
   function renderFilters(){peopleEl.replaceChildren();for(const person of viewState.data.people){const b=document.createElement('button');b.type='button';b.className=`person-filter${viewState.active.has(person)?' active':''}`;b.textContent=person;b.setAttribute('aria-pressed',viewState.active.has(person));b.onclick=()=>{if(viewState.active.has(person)&&viewState.active.size>1)viewState.active.delete(person);else viewState.active.add(person);render();};peopleEl.append(b)}}
@@ -46,5 +47,5 @@
   function render(){if(!viewState.data)return;renderFilters();renderGrid();if(viewState.selected){const [d,m]=viewState.selected.split('|');renderDetail(d,Number(m))}}
   function setView(which){viewState.view=which==='schedule'?'schedule':'planner';const on=viewState.view==='schedule';if(on)viewState.previousTitle=document.title;appMain.hidden=on;section.hidden=!on;nav.querySelectorAll('[data-product-tab]').forEach(b=>{const active=b.dataset.productTab===viewState.view;b.classList.toggle('active',active);b.setAttribute('aria-selected',active)});document.title=on?'Locked Schedule | WhenWeMeet':viewState.previousTitle}
   nav.onclick=e=>{const b=e.target.closest('[data-product-tab]');if(b)setView(b.dataset.productTab)};
-  fetch(DATA_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`Schedule data failed (${r.status})`);return r.json()}).then(data=>{viewState.data=data;viewState.active=new Set(data.people);notes.replaceChildren(...data.notes.map(n=>{const li=document.createElement('li');li.textContent=n;return li}));render()}).catch(err=>{console.error(err);grid.innerHTML='<div class="schedule-load-error">The locked schedule could not be loaded.</div>'});
+  fetch(DATA_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`Schedule data failed (${r.status})`);return r.json()}).then(data=>{data.events=data.events.filter(e=>!isGroupDnd(e));data.notes=[...data.notes,"Alex's D&D windows are free time for this group because Alex is the DM and the session is for these participants."];viewState.data=data;viewState.active=new Set(data.people);notes.replaceChildren(...data.notes.map(n=>{const li=document.createElement('li');li.textContent=n;return li}));render()}).catch(err=>{console.error(err);grid.innerHTML='<div class="schedule-load-error">The locked schedule could not be loaded.</div>'});
 })();
