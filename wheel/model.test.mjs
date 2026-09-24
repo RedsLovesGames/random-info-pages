@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createDefaultState, sanitizeState, eligibleEntries, createWheel, createEntry, getActiveWheel, SCHEMA_VERSION } from './model.js';
+test('default state has one active wheel and starter entries', () => { const state=createDefaultState(); assert.equal(state.schemaVersion,SCHEMA_VERSION); assert.equal(state.wheels.length,1); assert.equal(getActiveWheel(state).id,state.activeWheelId); assert.ok(getActiveWheel(state).entries.length>=2); });
+test('duplicate labels remain separate eligible entries',()=>{const s=createDefaultState();s.wheels[0].entries=[{id:'a',label:'Alex',weight:1},{id:'b',label:'Alex',weight:1}];assert.deepEqual(eligibleEntries(s.wheels[0]).map(e=>e.id),['a','b'])});
+test('blank and non-positive entries are excluded',()=>{const s=sanitizeState({schemaVersion:1,activeWheelId:'w',wheels:[{id:'w',entries:[{id:'a',label:' ',weight:1},{id:'b',label:'B',weight:0},{id:'c',label:'C',weight:2}]}]});assert.deepEqual(eligibleEntries(s.wheels[0]).map(e=>e.id),['c'])});
+test('sanitization preserves 500 entries and long labels safely',()=>{const label='x'.repeat(5000),entries=Array.from({length:500},(_,i)=>({id:`e${i}`,label:i===0?label:`Entry ${i}`,weight:1}));const s=sanitizeState({schemaVersion:1,activeWheelId:'w',wheels:[{id:'w',entries}]});assert.equal(s.wheels[0].entries.length,500);assert.equal(s.wheels[0].entries[0].label.length,5000)});
+test('missing active wheel is recovered',()=>{const s=sanitizeState({schemaVersion:1,activeWheelId:'missing',wheels:[{id:'w',entries:[]}]});assert.equal(s.activeWheelId,'w')});
+test('malformed settings fall back',()=>{const s=sanitizeState({schemaVersion:1,wheels:[{id:'w',entries:[]}],settings:'bad'});assert.equal(typeof s.settings.spinDurationMs,'number')});
+test('factories create distinct IDs',()=>{assert.notEqual(createEntry('A').id,createEntry('A').id);assert.notEqual(createWheel('A').id,createWheel('A').id)});

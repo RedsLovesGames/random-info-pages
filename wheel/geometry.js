@@ -1,0 +1,5 @@
+const TAU=Math.PI*2;
+export function normalizeAngle(a){return ((a%TAU)+TAU)%TAU}
+export function buildSegments(entries){const total=entries.reduce((s,e)=>s+Number(e.weight),0);if(!(total>0))return [];let cursor=0;return entries.map((entry,index)=>{const fraction=Number(entry.weight)/total,startAngle=cursor,endAngle=cursor+fraction*TAU,centerAngle=(startAngle+endAngle)/2;cursor=endAngle;return{entry,index,startAngle,endAngle,centerAngle,fraction}})}
+export function winnerIndexAtPointer(segments,rotation,pointerAngle=-Math.PI/2){if(!segments.length)return-1;const local=normalizeAngle(pointerAngle-rotation);for(let i=0;i<segments.length;i++){const s=segments[i];if(local>=s.startAngle&&local<s.endAngle)return i}return segments.length-1}
+export function landingRotationForIndex(segments,winnerIndex,currentRotation,extraTurns=6,pointerAngle=-Math.PI/2){const s=segments[winnerIndex];if(!s)throw new RangeError('Invalid winner index');const desired=pointerAngle-s.centerAngle;let delta=normalizeAngle(desired-currentRotation);return currentRotation+delta+Math.max(0,extraTurns)*TAU}

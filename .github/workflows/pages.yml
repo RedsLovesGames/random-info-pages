@@ -52,6 +52,14 @@ jobs:
             exit 1
           fi
 
+      - name: Verify wheel
+        run: |
+          node --test wheel/*.test.mjs
+          for f in wheel/*.js; do node --check "$f"; done
+          grep -Fq './styles.css' wheel/index.html
+          grep -Fq './app.js' wheel/index.html
+          grep -Fq './wheel/' index.html
+
       - name: Refresh public VCT team logos
         run: |
           python3 scripts/update_vct_branding.py
@@ -93,6 +101,18 @@ jobs:
           base="${SITE_URL%/}"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/school.html "$base/school-schedule/"
           grep -Fq 'Fall 2026 School Schedule' /tmp/school.html
+
+      - name: Check wheel
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          base="${SITE_URL%/}"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wheel.html "$base/wheel/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wheel-app.js "$base/wheel/app.js"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wheel-css.css "$base/wheel/styles.css"
+          grep -Fq 'Wheel · Random Info Pages' /tmp/wheel.html
+          grep -Fq 'pickWeightedEntry' /tmp/wheel-app.js
+          grep -Fq '.wheelpane' /tmp/wheel-css.css
 
       - name: Check VCT tactical planner
         env:
