@@ -74,3 +74,15 @@ test('image studio exposes browser-native video to gif controls', () => {
   assert.match(html, /id="gifVideoEnd"/);
   assert.match(html, /id="gifVideoMeta"/);
 });
+
+test('image studio exposes local ai background removal', () => {
+  assert.match(html, /id="removeBgSelected"/);
+  assert.match(html, /id="bgRemoveDialog"/);
+  assert.match(html, /id="bgRemovePreview"/);
+  assert.match(html, /id="bgRemoveRun"/);
+  assert.match(html, /id="bgRemoveApply"/);
+  assert.match(html, /id="bgRemoveDownload"/);
+  assert.match(html, /id="bgRemoveStatus"/);
+  assert.match(html, /bg-remove-core\.js/);
+  assert.match(html, /bg-remove\.js/);
+});
