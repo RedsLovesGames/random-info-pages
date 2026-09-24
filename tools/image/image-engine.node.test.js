@@ -38,3 +38,22 @@ test('large file warning is deterministic', () => {
   assert.equal(ImageEngine.shouldWarnForLargeFile({ size: 30 * 1024 * 1024 }), true);
   assert.equal(ImageEngine.shouldWarnForLargeFile({ size: 2 * 1024 * 1024 }), false);
 });
+
+test('high-quality resize is only needed when dimensions change', () => {
+  assert.equal(ImageEngine.shouldUseHighQualityResize(4000, 3000, 1000, 750), true);
+  assert.equal(ImageEngine.shouldUseHighQualityResize(4000, 3000, 4000, 3000), false);
+});
+
+test('compression bounds move upward when output is under target', () => {
+  assert.deepEqual(
+    ImageEngine.adjustQualityBounds({ low: 0.01, high: 1, quality: 0.5, outputBytes: 700, targetBytes: 800 }),
+    { low: 0.5, high: 1 },
+  );
+});
+
+test('compression bounds move downward when output is over target', () => {
+  assert.deepEqual(
+    ImageEngine.adjustQualityBounds({ low: 0.01, high: 1, quality: 0.5, outputBytes: 900, targetBytes: 800 }),
+    { low: 0.01, high: 0.5 },
+  );
+});
