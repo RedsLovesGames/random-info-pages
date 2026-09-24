@@ -29,3 +29,10 @@ test('image studio exposes robust resize and output controls', () => {
   assert.match(html, /id="height"/);
   assert.match(html, /id="percent"/);
 });
+
+test('image studio exposes optional target-size compression', () => {
+  assert.match(html, /id="targetSizeEnabled"/);
+  assert.match(html, /id="targetSize"/);
+  assert.match(html, /id="targetUnit"/);
+  assert.match(html, /id="preserveResolution"/);
+});
