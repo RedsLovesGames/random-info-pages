@@ -41,9 +41,7 @@ if (!mainSearch || !toolbar) {
   let currentMatches = [];
   let activeIndex = 0;
 
-  function record(route) {
-    window.Toolbox?.recordRecent?.(route);
-  }
+  function record(route) { window.Toolbox?.recordRecent?.(route); }
 
   function renderRows(target, matches, { compact = false } = {}) {
     target.innerHTML = '';
@@ -61,7 +59,7 @@ if (!mainSearch || !toolbar) {
   }
 
   function escapeHtml(value) {
-    return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch]));
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;' }[ch]));
   }
 
   function recentCommands() {
@@ -105,16 +103,22 @@ if (!mainSearch || !toolbar) {
     activeIndex = 0;
     updateDialogResults();
     await syncArtifactButton();
-    dialog.showModal();
+    if (!dialog.open) dialog.showModal();
     requestAnimationFrame(() => commandInput.focus());
   }
 
   button.addEventListener('click', () => openPalette(mainSearch.value.trim()));
   dialog.querySelector('[data-command-close]').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('cancel', event => { event.preventDefault(); dialog.close(); });
   commandInput.addEventListener('input', () => { activeIndex = 0; updateDialogResults(); });
   mainSearch.addEventListener('input', updateInlineResults);
 
   commandInput.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      dialog.close();
+      return;
+    }
     if (!currentMatches.length) return;
     if (event.key === 'ArrowDown') {
       event.preventDefault();
@@ -142,6 +146,9 @@ if (!mainSearch || !toolbar) {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
       event.preventDefault();
       if (dialog.open) dialog.close(); else openPalette(mainSearch.value.trim());
+    } else if (event.key === 'Escape' && dialog.open) {
+      event.preventDefault();
+      dialog.close();
     }
   });
 
