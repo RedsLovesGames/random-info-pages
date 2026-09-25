@@ -1,6 +1,6 @@
 const PAPA_URL = 'https://cdn.jsdelivr.net/npm/papaparse@5.7.0/papaparse.min.js';
 const XLSX_URL = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
-const DUCKDB_ESM_URL = 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.33.0/+esm';
+const DUCKDB_ESM_URL = 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.33.1-dev57.0/+esm';
 const PLOT_ESM_URL = 'https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.17/+esm';
 
 const scriptPromises = new Map();
@@ -112,6 +112,6 @@ export async function registerRowsAsDuckTable(rows, tableName = 'data', onProgre
 export const DATA_ENGINE_VERSIONS = Object.freeze({
   papaparse: '5.7.0',
   sheetjs: '0.20.3',
-  duckdbWasm: '1.33.0',
+  duckdbWasm: '1.33.1-dev57.0',
   observablePlot: '0.6.17',
 });
