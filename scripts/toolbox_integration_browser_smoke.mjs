@@ -114,6 +114,7 @@ try {
   const mobileErrors = [];
   mobile.on('pageerror', error => mobileErrors.push(error));
   await mobile.goto(`${base}/tools/`, { waitUntil: 'domcontentloaded' });
+  await mobile.locator('#commandSearchButton').waitFor({ state: 'visible' });
   await mobile.keyboard.press('Control+K');
   await mobile.locator('#toolboxCommandPalette').waitFor({ state: 'visible' });
   await mobile.locator('#commandSearchInput').fill('subnet');
