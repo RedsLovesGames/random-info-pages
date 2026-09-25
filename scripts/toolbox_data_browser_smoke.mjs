@@ -7,7 +7,9 @@ const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   const errors = [];
+  const consoleErrors = [];
   page.on('pageerror', error => errors.push(error));
+  page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   await page.goto(`${base}/tools/data/`, { waitUntil: 'domcontentloaded' });
   assert.ok(await page.locator('#dataWorkspace').isHidden(), 'Data Studio should start empty');
 
@@ -58,7 +60,21 @@ try {
   await page.locator('#sqlData').click();
   await page.locator('#sqlQuery').fill('SELECT team, SUM(score) AS total FROM data GROUP BY team ORDER BY team');
   await page.locator('#runSql').click();
-  await page.waitForFunction(() => document.querySelector('#sqlStatus')?.textContent?.includes('rows'), null, { timeout: 25000 });
+  try {
+    await page.waitForFunction(() => {
+      const status = document.querySelector('#sqlStatus')?.textContent || '';
+      return status.includes('rows') || (status && status !== 'Running locally…' && status !== 'Ready.');
+    }, null, { timeout: 25000 });
+  } catch (error) {
+    const diagnostics = await page.evaluate(() => ({
+      sqlStatus: document.querySelector('#sqlStatus')?.textContent || '(missing)',
+      progress: document.querySelector('#dataProgressLabel')?.textContent || '(missing)',
+      progressValue: document.querySelector('#dataProgressValue')?.textContent || '(missing)',
+    }));
+    throw new Error(`DuckDB SQL did not finish. status=${JSON.stringify(diagnostics.sqlStatus)} progress=${JSON.stringify(diagnostics.progress)} progressValue=${JSON.stringify(diagnostics.progressValue)} pageErrors=${JSON.stringify(errors.map(item => item.message))} consoleErrors=${JSON.stringify(consoleErrors)}`, { cause: error });
+  }
+  const sqlStatus = await page.locator('#sqlStatus').innerText();
+  assert.match(sqlStatus, /rows/, `DuckDB SQL failed: ${sqlStatus}; consoleErrors=${JSON.stringify(consoleErrors)}`);
   assert.match(await page.locator('#sqlResults').innerText(), /total/i);
   assert.match(await page.locator('#sqlResults').innerText(), /A/);
 
