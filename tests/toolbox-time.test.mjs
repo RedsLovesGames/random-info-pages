@@ -17,13 +17,11 @@ test('the entire time tool remains gated behind Tommy login', () => {
   assert.match(app, /lockTimeApp/);
 });
 
-test('time workspace exposes Map, Planner, and Board views', () => {
-  assert.match(html, /class="[^"]*time-view-tab[^"]*"[^>]*data-view="map"/);
-  assert.match(html, /class="[^"]*time-view-tab[^"]*"[^>]*data-view="planner"/);
-  assert.match(html, /class="[^"]*time-view-tab[^"]*"[^>]*data-view="board"/);
-  assert.match(html, /id="mapView"/);
-  assert.match(html, /id="plannerView"/);
-  assert.match(html, /id="boardView"/);
+test('time workspace exposes Map, Planner, Board, and Schedule Tools views', () => {
+  for (const view of ['map', 'planner', 'board', 'tools']) {
+    assert.match(html, new RegExp(`class="[^"]*time-view-tab[^"]*"[^>]*data-view="${view}"`));
+  }
+  for (const id of ['mapView', 'plannerView', 'boardView', 'scheduleView']) assert.match(html, new RegExp(`id="${id}"`));
 });
 
 test('map view exposes ZoneMap-style location rail, world map, markers, and shared timeline', () => {
@@ -47,6 +45,14 @@ test('planner and board expose grouped-person interfaces', () => {
   assert.match(html, /id="personCity"/);
   assert.match(html, /id="personAvailableStart"/);
   assert.match(html, /id="personAvailableEnd"/);
+});
+
+test('Schedule Tools exposes date math, timestamps, calendar, cron, and When We Meet handoff', () => {
+  for (const id of ['dateMathTool', 'timestampTool', 'calendarTool', 'cronTool', 'whenWeMeetLink', 'scheduleToolPanel']) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  assert.match(html, /time-utils\.js/);
+  assert.match(html, /time-tools\.js/);
 });
 
 test('time app renders locations once and groups their people', () => {
