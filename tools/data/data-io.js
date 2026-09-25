@@ -122,9 +122,19 @@ function blobDownload(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+function dispatchExport(rows, format, baseName) {
+  if (typeof window === 'undefined' || typeof CustomEvent === 'undefined') return true;
+  const event = new CustomEvent('toolbox:data-export', {
+    cancelable: true,
+    detail: { rows, format, baseName },
+  });
+  return window.dispatchEvent(event);
+}
+
 export async function exportRows(rows, format, baseName = 'data', onProgress = () => {}) {
   const normalized = normalizeRows(rows);
   const safeBase = String(baseName || 'data').replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9._-]+/g, '-') || 'data';
+  if (!dispatchExport(normalized, format, safeBase)) return;
   if (format === 'csv' || format === 'tsv') {
     const delimiter = format === 'tsv' ? '\t' : ',';
     const blob = new Blob([rowsToCsv(normalized, delimiter)], { type: format === 'tsv' ? 'text/tab-separated-values' : 'text/csv' });
