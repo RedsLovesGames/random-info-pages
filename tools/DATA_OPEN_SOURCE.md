@@ -24,7 +24,7 @@ Data Studio is a static, local-first Toolbox workspace. User-selected datasets a
 ## DuckDB-Wasm
 
 - Project: https://github.com/duckdb/duckdb-wasm
-- Package/version: `@duckdb/duckdb-wasm@1.33.0`
+- Package/version: `@duckdb/duckdb-wasm@1.33.1-dev57.0`
 - License: MIT, copyright Stichting DuckDB Foundation.
 - Toolbox use: lazy local SQL, Parquet import/export, and SQLite import where the official SQLite scanner extension is available.
 - Local integration: `tools/data/data-engines.js`, `tools/data/data-io.js`, `tools/data/data-app.js`.
