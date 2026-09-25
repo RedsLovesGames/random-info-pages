@@ -12,6 +12,7 @@ on:
       - 'scripts/toolbox_image_workspace_smoke.mjs'
       - 'scripts/toolbox_files_browser_smoke.mjs'
       - 'scripts/toolbox_media_browser_smoke.mjs'
+      - 'scripts/toolbox_data_browser_smoke.mjs'
       - 'index.html'
       - '.github/workflows/toolbox-ci.yml'
   workflow_dispatch:
@@ -91,3 +92,6 @@ jobs:
 
       - name: Media Studio persistent workspace smoke
         run: node scripts/toolbox_media_browser_smoke.mjs
+
+      - name: Data Studio persistent workspace smoke
+        run: node scripts/toolbox_data_browser_smoke.mjs
