@@ -16,6 +16,7 @@ on:
       - 'scripts/toolbox_text_developer_browser_smoke.mjs'
       - 'scripts/toolbox_time_money_browser_smoke.mjs'
       - 'scripts/toolbox_math_browser_smoke.mjs'
+      - 'scripts/toolbox_general_browser_smoke.mjs'
       - 'index.html'
       - '.github/workflows/toolbox-ci.yml'
   workflow_dispatch:
@@ -107,3 +108,6 @@ jobs:
 
       - name: Math Science Lab browser smoke
         run: node scripts/toolbox_math_browser_smoke.mjs
+
+      - name: Random Codes Network browser smoke
+        run: node scripts/toolbox_general_browser_smoke.mjs
