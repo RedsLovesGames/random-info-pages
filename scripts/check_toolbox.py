@@ -43,6 +43,7 @@ REQUIRED = [
     'tools/media/media.css',
     'tools/media/media-quick.js',
     'tools/media/media-quick.css',
+    'tools/media/mediabunny-loader.js',
     'tools/OPEN_SOURCE.md',
 ]
 
@@ -85,7 +86,7 @@ for asset in ('files.css', 'files-app.js'):
         fail(f'File Lab does not load {asset}')
 
 media = (ROOT / 'tools/media/index.html').read_text(encoding='utf-8')
-for asset in ('media.css', 'media-quick.css', 'media-app.js', 'media-quick.js'):
+for asset in ('media.css', 'media-quick.css', 'mediabunny-loader.js', 'media-app.js', 'media-quick.js'):
     if asset not in media:
         fail(f'Media Studio does not load {asset}')
 
