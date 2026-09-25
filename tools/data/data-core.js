@@ -240,8 +240,8 @@ export function frequencyTable(rows, column) {
 
 export function sortRows(rows, column, direction = 'asc') {
   const factor = direction === 'desc' ? -1 : 1;
-  return normalizeRows(rows).slice().sort((a, b) => {
-    const av = a[column], bv = b[column];
+  return [...(rows || [])].sort((a, b) => {
+    const av = a?.[column], bv = b?.[column];
     if (isMissing(av) && isMissing(bv)) return 0;
     if (isMissing(av)) return 1;
     if (isMissing(bv)) return -1;
@@ -269,9 +269,10 @@ export function filterRows(rows, column, operator, needle) {
 }
 
 export function searchRows(rows, query) {
+  const list = Array.isArray(rows) ? rows : [];
   const q = String(query || '').trim().toLowerCase();
-  if (!q) return normalizeRows(rows);
-  return normalizeRows(rows).filter(row => Object.values(row).some(value => String(value ?? '').toLowerCase().includes(q)));
+  if (!q) return [...list];
+  return list.filter(row => Object.values(row || {}).some(value => String(value ?? '').toLowerCase().includes(q)));
 }
 
 export function coerceColumn(rows, column, type) {
