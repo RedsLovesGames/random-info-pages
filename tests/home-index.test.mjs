@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
 const routes = [
-  './wheel/', './whenwemeet/', './school-schedule/', './friends/',
+  './tools/', './wheel/', './whenwemeet/', './school-schedule/', './friends/',
   './tideborne/', './tide2/', './vct-scout/', './oldasspolitic/',
   './heatmap/', './wanuiv2/', './nerdcore-prompts/'
 ];
@@ -21,4 +21,10 @@ test('homepage uses the archive folder interface', () => {
 
 test('every public project route remains linked', () => {
   for (const route of routes) assert.match(html, new RegExp(`href="${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
+});
+
+test('toolbox appears in the Tools folder and search index', () => {
+  assert.match(html, /href="\.\/tools\/"/);
+  assert.match(html, /<span class="folder-count">03 files<\/span>/);
+  assert.match(html, /\{n:'Toolbox',p:'\.\/tools\/'/);
 });
