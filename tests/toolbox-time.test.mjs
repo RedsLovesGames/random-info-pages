@@ -30,3 +30,13 @@ test('time board exposes overlap summary and reorder semantics', () => {
   assert.match(app, /data-move=/);
   assert.match(app, /moveClock\(/);
 });
+
+test('time board has a public view mode with a Tommy-only edit login', () => {
+  assert.match(html, /id="editAccess"/);
+  assert.match(html, /id="loginDialog"/);
+  assert.match(html, /id="loginUsername"/);
+  assert.match(html, /id="loginPassword"/);
+  assert.match(html, /id="logoutEdit"/);
+  assert.match(app, /time-auth\.js/);
+  assert.match(app, /data-edit-only/);
+});
