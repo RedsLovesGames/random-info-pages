@@ -6,9 +6,9 @@ This file records third-party projects evaluated or incorporated by the Random I
 
 ### Web Platform APIs
 - Source: browser standards implemented by the user's browser.
-- Use: `Intl.DateTimeFormat`, Canvas 2D, `createImageBitmap`, `HTMLCanvasElement.toBlob`, `OffscreenCanvas`, `localStorage`, Clipboard API, File/Blob/Object URL APIs, `<video>` frame sampling.
+- Use: `Intl.DateTimeFormat`, Canvas 2D, `createImageBitmap`, `HTMLCanvasElement.toBlob`, `OffscreenCanvas`, `localStorage`, Cache Storage, Clipboard API, File/Blob/Object URL APIs, `<video>` frame sampling.
 - Status: **Primary implementation path.**
-- User image bytes stay on-device. Runtime library downloads described below do not upload the selected images.
+- User image/video bytes stay on-device. Runtime/model downloads described below do not upload the selected media.
 
 ## Image Studio incorporated sources
 
@@ -60,27 +60,46 @@ This file records third-party projects evaluated or incorporated by the Random I
 - Upstream APIs used: `new Cropper`, `getCropperSelection`, selection `$toCanvas`, `getCropperImage`, `$rotate`, `$scale`, and `destroy`.
 - Modification: the crop result becomes a local PNG working source inside Image Studio; the original selected file remains available through Reset edit.
 
-## Image Studio selected but not yet incorporated
-
 ### mattdesl/gifenc
 - Repository: https://github.com/mattdesl/gifenc
 - Revision reviewed: `27db5b982dba701ca440b55ea36fad3999040973`
-- Package version reviewed: `1.0.3`
+- Package/version: `gifenc@1.0.3`
 - License: MIT, copyright Matt DesLauriers.
-- Planned use: still-image GIF encoding and Canvas-sampled frames from browser-decodable video.
+- Status: **Incorporated as a lazy runtime dependency.**
+- Local integration: `tools/image/gif-maker.js`, `tools/image/gif.css`, `tools/image/index.html`.
+- Delivery: pinned jsDelivr ESM build, requested only when a GIF is actually encoded.
+- Upstream APIs used: `GIFEncoder`, `quantize`, `applyPalette`.
+- Modification: Toolbox supplies its own still-frame ordering, contain-fit drawing, loop/FPS controls, cancellation between frames, and browser-native `<video>` seek/canvas sampling. Video conversion is capped at 300 sampled frames across the selected clip, so FFmpeg is not required for the normal path.
 
 ### Suemura/client-side-image-converter
 - Repository: https://github.com/Suemura/client-side-image-converter
-- Revision reviewed: `4bde3a9b07af41585df18ce61dd493d58bfc7cf9`
+- Revision reviewed/adapted: `4bde3a9b07af41585df18ce61dd493d58bfc7cf9`
 - Project license: MIT, copyright Masato Suemura.
-- Planned use: primary v1 browser-local background-removal implementation.
-- Candidate adapted areas: `removeBgCore.ts`, `imageBackgroundRemover.ts`, `onnxSession.ts`, and model-loading/cache/progress patterns.
-- Model: `u2netp.onnx`; upstream documents U²-Net small architecture/weights under Apache-2.0 and the ONNX export through the `danielgatis/rembg` release.
+- Status: **Incorporated by adaptation for v1 background removal.**
+- Local integration: `tools/image/bg-remove-core.js`, `tools/image/bg-remove.js`, `tools/image/bg-remove.css`, `tools/image/index.html`.
+- Upstream areas adapted: `src/utils/removeBgCore.ts`, `src/utils/imageBackgroundRemover.ts`, `src/utils/onnxSession.ts`, `src/utils/modelLoader.ts`.
+- Adapted behavior: 320×320 U²-Net preprocessing, ImageNet normalization, saliency min/max normalization, bilinear mask upscale, alpha composition, runtime/model lazy loading, cache-first model fetch, WebGPU warmup with WASM fallback, and progress staging.
+- Modification: rewritten as plain browser JavaScript, integrated with Image Studio working-file state, and sized for static GitHub Pages delivery.
 
 ### microsoft/onnxruntime / onnxruntime-web
 - Repository: https://github.com/microsoft/onnxruntime
+- Runtime/version: `onnxruntime-web@1.30.0`
 - License: MIT, copyright Microsoft Corporation.
-- Planned use: browser-local U²-Net inference with WebGPU when workable and WASM fallback.
+- Status: **Incorporated as a lazy runtime dependency for background removal.**
+- Local integration: `tools/image/bg-remove.js`.
+- Delivery: pinned jsDelivr `ort.webgpu.min.js` with WASM-capable fallback; runtime assets are fetched only when background removal is used.
+- Runtime policy: WebGPU is attempted on compatible non-iOS clients and verified with a warmup inference. U²-Net operator incompatibility or GPU failure falls back to single-threaded WASM, which does not require COOP/COEP on GitHub Pages.
+
+### U²-Net small / `u2netp.onnx`
+- Architecture source: https://github.com/xuebinqin/U-2-Net
+- ONNX distribution: https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx
+- Architecture/weights license: Apache-2.0.
+- Upstream documented SHA-256: `309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8`.
+- Status: **Incorporated as the v1 background-removal model.**
+- Delivery used by Toolbox: pinned jsDelivr mirror of `Suemura/client-side-image-converter@4bde3a9b.../public/models/u2netp.onnx`, approximately 4.6 MB.
+- The model is downloaded only when the user invokes background removal and is placed in Cache Storage when available. Selected image bytes are never sent with that request.
+
+## Image Studio selected but not yet incorporated
 
 ### jamsinclair/jSquash
 - Repository: https://github.com/jamsinclair/jSquash
@@ -123,10 +142,10 @@ This file records third-party projects evaluated or incorporated by the Random I
 ### ffmpeg.wasm
 - Repository: https://github.com/ffmpegwasm/ffmpeg.wasm
 - Wrapper license: MIT; distributed FFmpeg core builds can have LGPL/GPL obligations depending on the exact build.
-- Status: **Deferred.** Normal GIF creation should use `gifenc` and browser-native video decoding first.
+- Status: **Deferred.** Normal GIF creation uses `gifenc` and browser-native video decoding first.
 
 ## Runtime dependency note
 
-The current static deployment lazy-loads Pica, fflate, and Cropper.js from pinned jsDelivr package URLs. Only the library code is requested from the CDN; selected image bytes remain local. A later packaging pass may vendor these permissively licensed builds to eliminate runtime CDN dependence.
+The current static deployment lazy-loads Pica, fflate, Cropper.js, gifenc, and ONNX Runtime from pinned jsDelivr package URLs. Background removal additionally downloads the pinned U²-Net-small model on first use. Only library/model assets are requested from those hosts; selected image/video bytes remain local. The model is cached with Cache Storage when available. A later packaging pass may vendor permissively licensed builds to eliminate runtime CDN dependence.
 
 See `tools/IMAGE_UPSTREAM_REVIEW.md` for the technical comparison and implementation rationale.
