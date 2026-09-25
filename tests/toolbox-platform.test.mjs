@@ -20,8 +20,8 @@ test('registry defines 13 in-scope workspaces and excludes web/design', () => {
   }
 });
 
-test('step 4 publishes existing workspaces plus PDF, File Lab, and Media Studio', () => {
-  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media']);
+test('step 5 publishes Data Studio after the existing seven workspaces', () => {
+  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data']);
 });
 
 test('search ranks exact action aliases and returns deep-linkable actions', () => {
@@ -40,6 +40,17 @@ test('search ranks exact action aliases and returns deep-linkable actions', () =
   assert.equal(recorder[0].workspaceId, 'media');
   assert.equal(recorder[0].actionId, 'record');
   assert.equal(recorder[0].available, true);
+
+  const dedupe = findToolboxMatches('remove duplicate rows');
+  assert.equal(dedupe[0].workspaceId, 'data');
+  assert.equal(dedupe[0].actionId, 'dedupe');
+  assert.equal(dedupe[0].route, './data/?action=dedupe');
+  assert.equal(dedupe[0].available, true);
+
+  const sql = findToolboxMatches('query csv');
+  assert.equal(sql[0].workspaceId, 'data');
+  assert.equal(sql[0].actionId, 'sql');
+  assert.equal(sql[0].available, true);
 
   const base64 = findToolboxMatches('base64');
   assert.equal(base64[0].workspaceId, 'developer');
