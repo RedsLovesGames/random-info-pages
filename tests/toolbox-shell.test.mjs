@@ -5,8 +5,8 @@ import { readFileSync } from 'node:fs';
 const html = readFileSync(new URL('../tools/index.html', import.meta.url), 'utf8');
 const js = readFileSync(new URL('../tools/shared/toolbox.js', import.meta.url), 'utf8');
 
-test('toolbox index links all primary tools', () => {
-  for (const route of ['./time/', './image/', './money/', './text/']) assert.match(html, new RegExp(`href="${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
+test('toolbox index links all shipped primary tools', () => {
+  for (const route of ['./time/', './image/', './money/', './text/', './pdf/']) assert.match(html, new RegExp(`href="${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
 });
 
 test('toolbox exposes favorites and recent tools', () => {
