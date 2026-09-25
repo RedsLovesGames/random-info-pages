@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-24T23:53:47+00:00",
+  "generated_at": "2026-09-25T14:36:46+00:00",
   "window_start": "2026-07-01",
-  "window_end": "2026-09-24",
+  "window_end": "2026-09-25",
   "status": "live",
   "source_note": "Public VLR match data, filtered to 2026 top-level VCT events. Team-side map observations are used for composition and agent rates.",
   "map_pool": [
@@ -4579,14 +4579,14 @@
           ]
         },
         "Lotus": {
-          "games": 4,
-          "wins": 3,
+          "games": 5,
+          "wins": 4,
           "losses": 1,
-          "win_rate": 75.0,
-          "attack_round_win_rate": 51.6,
+          "win_rate": 80.0,
+          "attack_round_win_rate": 60.5,
           "defense_round_win_rate": 50.0,
           "latest": {
-            "date": "2026-08-23",
+            "date": "2026-09-24",
             "agents": [
               "Omen",
               "Raze",
@@ -4594,19 +4594,19 @@
               "Viper",
               "Vyse"
             ],
-            "series_id": 729758,
-            "opponent": "ENVY",
-            "opponent_tag": "ENVY",
+            "series_id": 753454,
+            "opponent": "TYLOO",
+            "opponent_tag": "G2",
             "result": "W",
             "team_score": 13,
             "opponent_score": 6,
-            "event": "VCT 2026: Americas Stage 2",
-            "stage": "Play-Ins",
-            "patch": "13.02",
-            "attack_rounds_won": 6,
-            "attack_rounds_lost": 1,
-            "defense_rounds_won": 7,
-            "defense_rounds_lost": 5
+            "event": "Valorant Champions 2026",
+            "stage": "Group Stage",
+            "patch": "13.05",
+            "attack_rounds_won": 7,
+            "attack_rounds_lost": 0,
+            "defense_rounds_won": 6,
+            "defense_rounds_lost": 6
           },
           "common": {
             "agents": [
@@ -4616,12 +4616,28 @@
               "Viper",
               "Vyse"
             ],
-            "games": 4,
-            "wins": 3,
+            "games": 5,
+            "wins": 4,
             "losses": 1,
-            "win_rate": 75.0,
-            "last_used": "2026-08-23",
+            "win_rate": 80.0,
+            "last_used": "2026-09-24",
             "matches": [
+              {
+                "date": "2026-09-24",
+                "series_id": 753454,
+                "opponent": "TYLOO",
+                "opponent_tag": "G2",
+                "result": "W",
+                "team_score": 13,
+                "opponent_score": 6,
+                "event": "Valorant Champions 2026",
+                "stage": "Group Stage",
+                "patch": "13.05",
+                "attack_rounds_won": 7,
+                "attack_rounds_lost": 0,
+                "defense_rounds_won": 6,
+                "defense_rounds_lost": 6
+              },
               {
                 "date": "2026-08-23",
                 "series_id": 729758,
@@ -4697,12 +4713,28 @@
                 "Viper",
                 "Vyse"
               ],
-              "games": 4,
-              "wins": 3,
+              "games": 5,
+              "wins": 4,
               "losses": 1,
-              "win_rate": 75.0,
-              "last_used": "2026-08-23",
+              "win_rate": 80.0,
+              "last_used": "2026-09-24",
               "matches": [
+                {
+                  "date": "2026-09-24",
+                  "series_id": 753454,
+                  "opponent": "TYLOO",
+                  "opponent_tag": "G2",
+                  "result": "W",
+                  "team_score": 13,
+                  "opponent_score": 6,
+                  "event": "Valorant Champions 2026",
+                  "stage": "Group Stage",
+                  "patch": "13.05",
+                  "attack_rounds_won": 7,
+                  "attack_rounds_lost": 0,
+                  "defense_rounds_won": 6,
+                  "defense_rounds_lost": 6
+                },
                 {
                   "date": "2026-08-23",
                   "series_id": 729758,
@@ -4773,40 +4805,40 @@
           "agent_pick_rates": [
             {
               "agent": "Omen",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             },
             {
               "agent": "Raze",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             },
             {
               "agent": "Skye",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             },
             {
               "agent": "Viper",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             },
             {
               "agent": "Vyse",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             }
           ]
         },
         "Sunset": {
-          "games": 5,
-          "wins": 4,
+          "games": 6,
+          "wins": 5,
           "losses": 1,
-          "win_rate": 80.0,
-          "attack_round_win_rate": 50.0,
-          "defense_round_win_rate": 66.0,
+          "win_rate": 83.3,
+          "attack_round_win_rate": 51.6,
+          "defense_round_win_rate": 69.4,
           "latest": {
-            "date": "2026-08-29",
+            "date": "2026-09-24",
             "agents": [
               "Chamber",
               "Neon",
@@ -4814,19 +4846,19 @@
               "Sage",
               "Skye"
             ],
-            "series_id": 734309,
-            "opponent": "FURIA",
-            "opponent_tag": "FUR",
+            "series_id": 753454,
+            "opponent": "TYLOO",
+            "opponent_tag": "G2",
             "result": "W",
             "team_score": 13,
-            "opponent_score": 10,
-            "event": "VCT 2026: Americas Stage 2",
-            "stage": "Playoffs",
-            "patch": "13.04",
+            "opponent_score": 3,
+            "event": "Valorant Champions 2026",
+            "stage": "Group Stage",
+            "patch": "13.05",
             "attack_rounds_won": 3,
-            "attack_rounds_lost": 9,
+            "attack_rounds_lost": 1,
             "defense_rounds_won": 10,
-            "defense_rounds_lost": 1
+            "defense_rounds_lost": 2
           },
           "common": {
             "agents": [
@@ -4836,12 +4868,28 @@
               "Sage",
               "Skye"
             ],
-            "games": 5,
-            "wins": 4,
+            "games": 6,
+            "wins": 5,
             "losses": 1,
-            "win_rate": 80.0,
-            "last_used": "2026-08-29",
+            "win_rate": 83.3,
+            "last_used": "2026-09-24",
             "matches": [
+              {
+                "date": "2026-09-24",
+                "series_id": 753454,
+                "opponent": "TYLOO",
+                "opponent_tag": "G2",
+                "result": "W",
+                "team_score": 13,
+                "opponent_score": 3,
+                "event": "Valorant Champions 2026",
+                "stage": "Group Stage",
+                "patch": "13.05",
+                "attack_rounds_won": 3,
+                "attack_rounds_lost": 1,
+                "defense_rounds_won": 10,
+                "defense_rounds_lost": 2
+              },
               {
                 "date": "2026-08-29",
                 "series_id": 734309,
@@ -4933,12 +4981,28 @@
                 "Sage",
                 "Skye"
               ],
-              "games": 5,
-              "wins": 4,
+              "games": 6,
+              "wins": 5,
               "losses": 1,
-              "win_rate": 80.0,
-              "last_used": "2026-08-29",
+              "win_rate": 83.3,
+              "last_used": "2026-09-24",
               "matches": [
+                {
+                  "date": "2026-09-24",
+                  "series_id": 753454,
+                  "opponent": "TYLOO",
+                  "opponent_tag": "G2",
+                  "result": "W",
+                  "team_score": 13,
+                  "opponent_score": 3,
+                  "event": "Valorant Champions 2026",
+                  "stage": "Group Stage",
+                  "patch": "13.05",
+                  "attack_rounds_won": 3,
+                  "attack_rounds_lost": 1,
+                  "defense_rounds_won": 10,
+                  "defense_rounds_lost": 2
+                },
                 {
                   "date": "2026-08-29",
                   "series_id": 734309,
@@ -5025,27 +5089,27 @@
           "agent_pick_rates": [
             {
               "agent": "Chamber",
-              "picks": 5,
+              "picks": 6,
               "rate": 100.0
             },
             {
               "agent": "Neon",
-              "picks": 5,
+              "picks": 6,
               "rate": 100.0
             },
             {
               "agent": "Omen",
-              "picks": 5,
+              "picks": 6,
               "rate": 100.0
             },
             {
               "agent": "Sage",
-              "picks": 5,
+              "picks": 6,
               "rate": 100.0
             },
             {
               "agent": "Skye",
-              "picks": 5,
+              "picks": 6,
               "rate": 100.0
             }
           ]
@@ -6024,34 +6088,34 @@
           ]
         },
         "Lotus": {
-          "games": 4,
+          "games": 5,
           "wins": 2,
-          "losses": 2,
-          "win_rate": 50.0,
-          "attack_round_win_rate": 47.5,
-          "defense_round_win_rate": 58.1,
+          "losses": 3,
+          "win_rate": 40.0,
+          "attack_round_win_rate": 48.1,
+          "defense_round_win_rate": 50.0,
           "latest": {
-            "date": "2026-08-23",
+            "date": "2026-09-24",
             "agents": [
-              "Cypher",
+              "Chamber",
               "Fade",
+              "Neon",
               "Omen",
-              "Raze",
-              "Waylay"
+              "Viper"
             ],
-            "series_id": 724645,
-            "opponent": "JD Gaming",
-            "opponent_tag": "JDG",
+            "series_id": 753454,
+            "opponent": "G2 Esports",
+            "opponent_tag": "TYL",
             "result": "L",
             "team_score": 6,
             "opponent_score": 13,
-            "event": "VCT 2026: China Stage 2",
-            "stage": "Playoffs",
-            "patch": "",
-            "attack_rounds_won": 4,
-            "attack_rounds_lost": 8,
-            "defense_rounds_won": 2,
-            "defense_rounds_lost": 5
+            "event": "Valorant Champions 2026",
+            "stage": "Group Stage",
+            "patch": "13.05",
+            "attack_rounds_won": 6,
+            "attack_rounds_lost": 6,
+            "defense_rounds_won": 0,
+            "defense_rounds_lost": 7
           },
           "common": {
             "agents": [
@@ -6213,45 +6277,92 @@
                   "defense_rounds_lost": 3
                 }
               ]
+            },
+            {
+              "agents": [
+                "Chamber",
+                "Fade",
+                "Neon",
+                "Omen",
+                "Viper"
+              ],
+              "games": 1,
+              "wins": 0,
+              "losses": 1,
+              "win_rate": 0.0,
+              "last_used": "2026-09-24",
+              "matches": [
+                {
+                  "date": "2026-09-24",
+                  "series_id": 753454,
+                  "opponent": "G2 Esports",
+                  "opponent_tag": "TYL",
+                  "result": "L",
+                  "team_score": 6,
+                  "opponent_score": 13,
+                  "event": "Valorant Champions 2026",
+                  "stage": "Group Stage",
+                  "patch": "13.05",
+                  "attack_rounds_won": 6,
+                  "attack_rounds_lost": 6,
+                  "defense_rounds_won": 0,
+                  "defense_rounds_lost": 7
+                }
+              ]
             }
           ],
           "agent_pick_rates": [
             {
-              "agent": "Cypher",
-              "picks": 4,
-              "rate": 100.0
-            },
-            {
               "agent": "Fade",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             },
             {
               "agent": "Omen",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
+            },
+            {
+              "agent": "Cypher",
+              "picks": 4,
+              "rate": 80.0
             },
             {
               "agent": "Raze",
               "picks": 4,
-              "rate": 100.0
+              "rate": 80.0
             },
             {
               "agent": "Waylay",
               "picks": 4,
-              "rate": 100.0
+              "rate": 80.0
+            },
+            {
+              "agent": "Chamber",
+              "picks": 1,
+              "rate": 20.0
+            },
+            {
+              "agent": "Neon",
+              "picks": 1,
+              "rate": 20.0
+            },
+            {
+              "agent": "Viper",
+              "picks": 1,
+              "rate": 20.0
             }
           ]
         },
         "Sunset": {
-          "games": 6,
+          "games": 7,
           "wins": 6,
-          "losses": 0,
-          "win_rate": 100.0,
-          "attack_round_win_rate": 60.7,
-          "defense_round_win_rate": 64.2,
+          "losses": 1,
+          "win_rate": 85.7,
+          "attack_round_win_rate": 52.9,
+          "defense_round_win_rate": 62.0,
           "latest": {
-            "date": "2026-08-22",
+            "date": "2026-09-24",
             "agents": [
               "Chamber",
               "Fade",
@@ -6259,19 +6370,19 @@
               "Omen",
               "Sage"
             ],
-            "series_id": 724651,
-            "opponent": "Bilibili Gaming",
-            "opponent_tag": "",
-            "result": "W",
-            "team_score": 14,
-            "opponent_score": 12,
-            "event": "VCT 2026: China Stage 2",
-            "stage": "Playoffs",
-            "patch": "",
-            "attack_rounds_won": 7,
-            "attack_rounds_lost": 5,
-            "defense_rounds_won": 5,
-            "defense_rounds_lost": 7
+            "series_id": 753454,
+            "opponent": "G2 Esports",
+            "opponent_tag": "TYL",
+            "result": "L",
+            "team_score": 3,
+            "opponent_score": 13,
+            "event": "Valorant Champions 2026",
+            "stage": "Group Stage",
+            "patch": "13.05",
+            "attack_rounds_won": 2,
+            "attack_rounds_lost": 10,
+            "defense_rounds_won": 1,
+            "defense_rounds_lost": 3
           },
           "common": {
             "agents": [
@@ -6281,12 +6392,28 @@
               "Omen",
               "Sage"
             ],
-            "games": 6,
+            "games": 7,
             "wins": 6,
-            "losses": 0,
-            "win_rate": 100.0,
-            "last_used": "2026-08-22",
+            "losses": 1,
+            "win_rate": 85.7,
+            "last_used": "2026-09-24",
             "matches": [
+              {
+                "date": "2026-09-24",
+                "series_id": 753454,
+                "opponent": "G2 Esports",
+                "opponent_tag": "TYL",
+                "result": "L",
+                "team_score": 3,
+                "opponent_score": 13,
+                "event": "Valorant Champions 2026",
+                "stage": "Group Stage",
+                "patch": "13.05",
+                "attack_rounds_won": 2,
+                "attack_rounds_lost": 10,
+                "defense_rounds_won": 1,
+                "defense_rounds_lost": 3
+              },
               {
                 "date": "2026-08-22",
                 "series_id": 724651,
@@ -6394,12 +6521,28 @@
                 "Omen",
                 "Sage"
               ],
-              "games": 6,
+              "games": 7,
               "wins": 6,
-              "losses": 0,
-              "win_rate": 100.0,
-              "last_used": "2026-08-22",
+              "losses": 1,
+              "win_rate": 85.7,
+              "last_used": "2026-09-24",
               "matches": [
+                {
+                  "date": "2026-09-24",
+                  "series_id": 753454,
+                  "opponent": "G2 Esports",
+                  "opponent_tag": "TYL",
+                  "result": "L",
+                  "team_score": 3,
+                  "opponent_score": 13,
+                  "event": "Valorant Champions 2026",
+                  "stage": "Group Stage",
+                  "patch": "13.05",
+                  "attack_rounds_won": 2,
+                  "attack_rounds_lost": 10,
+                  "defense_rounds_won": 1,
+                  "defense_rounds_lost": 3
+                },
                 {
                   "date": "2026-08-22",
                   "series_id": 724651,
@@ -6502,27 +6645,27 @@
           "agent_pick_rates": [
             {
               "agent": "Chamber",
-              "picks": 6,
+              "picks": 7,
               "rate": 100.0
             },
             {
               "agent": "Fade",
-              "picks": 6,
+              "picks": 7,
               "rate": 100.0
             },
             {
               "agent": "Neon",
-              "picks": 6,
+              "picks": 7,
               "rate": 100.0
             },
             {
               "agent": "Omen",
-              "picks": 6,
+              "picks": 7,
               "rate": 100.0
             },
             {
               "agent": "Sage",
-              "picks": 6,
+              "picks": 7,
               "rate": 100.0
             }
           ]
@@ -11913,34 +12056,34 @@
       "region": "EMEA",
       "maps": {
         "Haven": {
-          "games": 3,
-          "wins": 1,
+          "games": 4,
+          "wins": 2,
           "losses": 2,
-          "win_rate": 33.3,
-          "attack_round_win_rate": 31.4,
-          "defense_round_win_rate": 66.7,
+          "win_rate": 50.0,
+          "attack_round_win_rate": 39.5,
+          "defense_round_win_rate": 64.6,
           "latest": {
-            "date": "2026-08-28",
+            "date": "2026-09-24",
             "agents": [
-              "Cypher",
-              "Jett",
-              "Omen",
-              "Phoenix",
-              "Sova"
+              "Fade",
+              "Harbor",
+              "Killjoy",
+              "Raze",
+              "Yoru"
             ],
-            "series_id": 731407,
-            "opponent": "Fire Flux Esports",
+            "series_id": 753455,
+            "opponent": "Paper Rex",
             "opponent_tag": "TL",
             "result": "W",
             "team_score": 13,
-            "opponent_score": 10,
-            "event": "VCT 2026: EMEA Stage 2",
-            "stage": "Playoffs",
-            "patch": "13.04",
-            "attack_rounds_won": 3,
-            "attack_rounds_lost": 8,
-            "defense_rounds_won": 10,
-            "defense_rounds_lost": 2
+            "opponent_score": 7,
+            "event": "Valorant Champions 2026",
+            "stage": "Group Stage",
+            "patch": "13.05",
+            "attack_rounds_won": 6,
+            "attack_rounds_lost": 2,
+            "defense_rounds_won": 7,
+            "defense_rounds_lost": 5
           },
           "common": {
             "agents": [
@@ -12070,33 +12213,90 @@
                   "defense_rounds_lost": 7
                 }
               ]
+            },
+            {
+              "agents": [
+                "Fade",
+                "Harbor",
+                "Killjoy",
+                "Raze",
+                "Yoru"
+              ],
+              "games": 1,
+              "wins": 1,
+              "losses": 0,
+              "win_rate": 100.0,
+              "last_used": "2026-09-24",
+              "matches": [
+                {
+                  "date": "2026-09-24",
+                  "series_id": 753455,
+                  "opponent": "Paper Rex",
+                  "opponent_tag": "TL",
+                  "result": "W",
+                  "team_score": 13,
+                  "opponent_score": 7,
+                  "event": "Valorant Champions 2026",
+                  "stage": "Group Stage",
+                  "patch": "13.05",
+                  "attack_rounds_won": 6,
+                  "attack_rounds_lost": 2,
+                  "defense_rounds_won": 7,
+                  "defense_rounds_lost": 5
+                }
+              ]
             }
           ],
           "agent_pick_rates": [
             {
               "agent": "Cypher",
               "picks": 3,
-              "rate": 100.0
+              "rate": 75.0
             },
             {
               "agent": "Jett",
               "picks": 3,
-              "rate": 100.0
+              "rate": 75.0
             },
             {
               "agent": "Omen",
               "picks": 3,
-              "rate": 100.0
+              "rate": 75.0
             },
             {
               "agent": "Phoenix",
               "picks": 3,
-              "rate": 100.0
+              "rate": 75.0
             },
             {
               "agent": "Sova",
               "picks": 3,
-              "rate": 100.0
+              "rate": 75.0
+            },
+            {
+              "agent": "Fade",
+              "picks": 1,
+              "rate": 25.0
+            },
+            {
+              "agent": "Harbor",
+              "picks": 1,
+              "rate": 25.0
+            },
+            {
+              "agent": "Killjoy",
+              "picks": 1,
+              "rate": 25.0
+            },
+            {
+              "agent": "Raze",
+              "picks": 1,
+              "rate": 25.0
+            },
+            {
+              "agent": "Yoru",
+              "picks": 1,
+              "rate": 25.0
             }
           ]
         },
@@ -12331,14 +12531,14 @@
           ]
         },
         "Ascent": {
-          "games": 4,
+          "games": 5,
           "wins": 3,
-          "losses": 1,
-          "win_rate": 75.0,
-          "attack_round_win_rate": 54.5,
-          "defense_round_win_rate": 63.6,
+          "losses": 2,
+          "win_rate": 60.0,
+          "attack_round_win_rate": 49.0,
+          "defense_round_win_rate": 55.6,
           "latest": {
-            "date": "2026-08-30",
+            "date": "2026-09-24",
             "agents": [
               "Cypher",
               "Jett",
@@ -12346,19 +12546,19 @@
               "Phoenix",
               "Sova"
             ],
-            "series_id": 731401,
-            "opponent": "Karmine Corp",
-            "opponent_tag": "KC",
+            "series_id": 753455,
+            "opponent": "Paper Rex",
+            "opponent_tag": "TL",
             "result": "L",
-            "team_score": 6,
+            "team_score": 4,
             "opponent_score": 13,
-            "event": "VCT 2026: EMEA Stage 2",
-            "stage": "Playoffs",
-            "patch": "13.04",
-            "attack_rounds_won": 4,
-            "attack_rounds_lost": 8,
-            "defense_rounds_won": 2,
-            "defense_rounds_lost": 5
+            "event": "Valorant Champions 2026",
+            "stage": "Group Stage",
+            "patch": "13.05",
+            "attack_rounds_won": 0,
+            "attack_rounds_lost": 5,
+            "defense_rounds_won": 4,
+            "defense_rounds_lost": 8
           },
           "common": {
             "agents": [
@@ -12368,12 +12568,28 @@
               "Phoenix",
               "Sova"
             ],
-            "games": 4,
+            "games": 5,
             "wins": 3,
-            "losses": 1,
-            "win_rate": 75.0,
-            "last_used": "2026-08-30",
+            "losses": 2,
+            "win_rate": 60.0,
+            "last_used": "2026-09-24",
             "matches": [
+              {
+                "date": "2026-09-24",
+                "series_id": 753455,
+                "opponent": "Paper Rex",
+                "opponent_tag": "TL",
+                "result": "L",
+                "team_score": 4,
+                "opponent_score": 13,
+                "event": "Valorant Champions 2026",
+                "stage": "Group Stage",
+                "patch": "13.05",
+                "attack_rounds_won": 0,
+                "attack_rounds_lost": 5,
+                "defense_rounds_won": 4,
+                "defense_rounds_lost": 8
+              },
               {
                 "date": "2026-08-30",
                 "series_id": 731401,
@@ -12449,12 +12665,28 @@
                 "Phoenix",
                 "Sova"
               ],
-              "games": 4,
+              "games": 5,
               "wins": 3,
-              "losses": 1,
-              "win_rate": 75.0,
-              "last_used": "2026-08-30",
+              "losses": 2,
+              "win_rate": 60.0,
+              "last_used": "2026-09-24",
               "matches": [
+                {
+                  "date": "2026-09-24",
+                  "series_id": 753455,
+                  "opponent": "Paper Rex",
+                  "opponent_tag": "TL",
+                  "result": "L",
+                  "team_score": 4,
+                  "opponent_score": 13,
+                  "event": "Valorant Champions 2026",
+                  "stage": "Group Stage",
+                  "patch": "13.05",
+                  "attack_rounds_won": 0,
+                  "attack_rounds_lost": 5,
+                  "defense_rounds_won": 4,
+                  "defense_rounds_lost": 8
+                },
                 {
                   "date": "2026-08-30",
                   "series_id": 731401,
@@ -12525,60 +12757,60 @@
           "agent_pick_rates": [
             {
               "agent": "Cypher",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             },
             {
               "agent": "Jett",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             },
             {
               "agent": "Omen",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             },
             {
               "agent": "Phoenix",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             },
             {
               "agent": "Sova",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             }
           ]
         },
         "Lotus": {
-          "games": 8,
+          "games": 9,
           "wins": 5,
-          "losses": 3,
-          "win_rate": 62.5,
-          "attack_round_win_rate": 42.9,
-          "defense_round_win_rate": 62.2,
+          "losses": 4,
+          "win_rate": 55.6,
+          "attack_round_win_rate": 40.4,
+          "defense_round_win_rate": 62.4,
           "latest": {
-            "date": "2026-08-30",
+            "date": "2026-09-24",
             "agents": [
               "Cypher",
               "Fade",
-              "Jett",
               "Omen",
-              "Raze"
+              "Raze",
+              "Yoru"
             ],
-            "series_id": 731401,
-            "opponent": "Karmine Corp",
-            "opponent_tag": "KC",
-            "result": "W",
-            "team_score": 13,
-            "opponent_score": 7,
-            "event": "VCT 2026: EMEA Stage 2",
-            "stage": "Playoffs",
-            "patch": "13.04",
-            "attack_rounds_won": 6,
-            "attack_rounds_lost": 2,
+            "series_id": 753455,
+            "opponent": "Paper Rex",
+            "opponent_tag": "TL",
+            "result": "L",
+            "team_score": 10,
+            "opponent_score": 13,
+            "event": "Valorant Champions 2026",
+            "stage": "Group Stage",
+            "patch": "13.05",
+            "attack_rounds_won": 3,
+            "attack_rounds_lost": 9,
             "defense_rounds_won": 7,
-            "defense_rounds_lost": 5
+            "defense_rounds_lost": 4
           },
           "common": {
             "agents": [
@@ -12839,6 +13071,38 @@
             },
             {
               "agents": [
+                "Cypher",
+                "Fade",
+                "Omen",
+                "Raze",
+                "Yoru"
+              ],
+              "games": 1,
+              "wins": 0,
+              "losses": 1,
+              "win_rate": 0.0,
+              "last_used": "2026-09-24",
+              "matches": [
+                {
+                  "date": "2026-09-24",
+                  "series_id": 753455,
+                  "opponent": "Paper Rex",
+                  "opponent_tag": "TL",
+                  "result": "L",
+                  "team_score": 10,
+                  "opponent_score": 13,
+                  "event": "Valorant Champions 2026",
+                  "stage": "Group Stage",
+                  "patch": "13.05",
+                  "attack_rounds_won": 3,
+                  "attack_rounds_lost": 9,
+                  "defense_rounds_won": 7,
+                  "defense_rounds_lost": 4
+                }
+              ]
+            },
+            {
+              "agents": [
                 "Chamber",
                 "Omen",
                 "Raze",
@@ -12873,43 +13137,48 @@
           "agent_pick_rates": [
             {
               "agent": "Omen",
-              "picks": 8,
+              "picks": 9,
               "rate": 100.0
             },
             {
               "agent": "Raze",
-              "picks": 8,
+              "picks": 9,
               "rate": 100.0
             },
             {
               "agent": "Cypher",
-              "picks": 7,
-              "rate": 87.5
+              "picks": 8,
+              "rate": 88.9
             },
             {
               "agent": "Fade",
-              "picks": 7,
-              "rate": 87.5
+              "picks": 8,
+              "rate": 88.9
             },
             {
               "agent": "Jett",
               "picks": 7,
-              "rate": 87.5
+              "rate": 77.8
+            },
+            {
+              "agent": "Yoru",
+              "picks": 1,
+              "rate": 11.1
             },
             {
               "agent": "Chamber",
               "picks": 1,
-              "rate": 12.5
+              "rate": 11.1
             },
             {
               "agent": "Skye",
               "picks": 1,
-              "rate": 12.5
+              "rate": 11.1
             },
             {
               "agent": "Viper",
               "picks": 1,
-              "rate": 12.5
+              "rate": 11.1
             }
           ]
         },
@@ -19074,6 +19343,130 @@
       "tag": "PRX",
       "region": "Pacific",
       "maps": {
+        "Haven": {
+          "games": 1,
+          "wins": 0,
+          "losses": 1,
+          "win_rate": 0.0,
+          "attack_round_win_rate": 41.7,
+          "defense_round_win_rate": 25.0,
+          "latest": {
+            "date": "2026-09-24",
+            "agents": [
+              "Astra",
+              "Chamber",
+              "Fade",
+              "Phoenix",
+              "Yoru"
+            ],
+            "series_id": 753455,
+            "opponent": "Team Liquid",
+            "opponent_tag": "PRX",
+            "result": "L",
+            "team_score": 7,
+            "opponent_score": 13,
+            "event": "Valorant Champions 2026",
+            "stage": "Group Stage",
+            "patch": "13.05",
+            "attack_rounds_won": 5,
+            "attack_rounds_lost": 7,
+            "defense_rounds_won": 2,
+            "defense_rounds_lost": 6
+          },
+          "common": {
+            "agents": [
+              "Astra",
+              "Chamber",
+              "Fade",
+              "Phoenix",
+              "Yoru"
+            ],
+            "games": 1,
+            "wins": 0,
+            "losses": 1,
+            "win_rate": 0.0,
+            "last_used": "2026-09-24",
+            "matches": [
+              {
+                "date": "2026-09-24",
+                "series_id": 753455,
+                "opponent": "Team Liquid",
+                "opponent_tag": "PRX",
+                "result": "L",
+                "team_score": 7,
+                "opponent_score": 13,
+                "event": "Valorant Champions 2026",
+                "stage": "Group Stage",
+                "patch": "13.05",
+                "attack_rounds_won": 5,
+                "attack_rounds_lost": 7,
+                "defense_rounds_won": 2,
+                "defense_rounds_lost": 6
+              }
+            ]
+          },
+          "compositions": [
+            {
+              "agents": [
+                "Astra",
+                "Chamber",
+                "Fade",
+                "Phoenix",
+                "Yoru"
+              ],
+              "games": 1,
+              "wins": 0,
+              "losses": 1,
+              "win_rate": 0.0,
+              "last_used": "2026-09-24",
+              "matches": [
+                {
+                  "date": "2026-09-24",
+                  "series_id": 753455,
+                  "opponent": "Team Liquid",
+                  "opponent_tag": "PRX",
+                  "result": "L",
+                  "team_score": 7,
+                  "opponent_score": 13,
+                  "event": "Valorant Champions 2026",
+                  "stage": "Group Stage",
+                  "patch": "13.05",
+                  "attack_rounds_won": 5,
+                  "attack_rounds_lost": 7,
+                  "defense_rounds_won": 2,
+                  "defense_rounds_lost": 6
+                }
+              ]
+            }
+          ],
+          "agent_pick_rates": [
+            {
+              "agent": "Astra",
+              "picks": 1,
+              "rate": 100.0
+            },
+            {
+              "agent": "Chamber",
+              "picks": 1,
+              "rate": 100.0
+            },
+            {
+              "agent": "Fade",
+              "picks": 1,
+              "rate": 100.0
+            },
+            {
+              "agent": "Phoenix",
+              "picks": 1,
+              "rate": 100.0
+            },
+            {
+              "agent": "Yoru",
+              "picks": 1,
+              "rate": 100.0
+            }
+          ]
+        },
         "Split": {
           "games": 3,
           "wins": 1,
@@ -19273,14 +19666,14 @@
           ]
         },
         "Ascent": {
-          "games": 4,
-          "wins": 4,
+          "games": 5,
+          "wins": 5,
           "losses": 0,
           "win_rate": 100.0,
-          "attack_round_win_rate": 62.2,
-          "defense_round_win_rate": 54.8,
+          "attack_round_win_rate": 63.2,
+          "defense_round_win_rate": 59.6,
           "latest": {
-            "date": "2026-08-28",
+            "date": "2026-09-24",
             "agents": [
               "Chamber",
               "Omen",
@@ -19288,25 +19681,25 @@
               "Sova",
               "Yoru"
             ],
-            "series_id": 742482,
-            "opponent": "ONSIDE GAMING",
+            "series_id": 753455,
+            "opponent": "Team Liquid",
             "opponent_tag": "PRX",
             "result": "W",
             "team_score": 13,
-            "opponent_score": 5,
-            "event": "VCT 2026: Pacific Stage 2",
-            "stage": "Playoffs",
-            "patch": "13.04",
-            "attack_rounds_won": 10,
-            "attack_rounds_lost": 2,
-            "defense_rounds_won": 3,
-            "defense_rounds_lost": 3
+            "opponent_score": 4,
+            "event": "Valorant Champions 2026",
+            "stage": "Group Stage",
+            "patch": "13.05",
+            "attack_rounds_won": 8,
+            "attack_rounds_lost": 4,
+            "defense_rounds_won": 5,
+            "defense_rounds_lost": 0
           },
           "common": {
             "agents": [
               "Chamber",
-              "Harbor",
               "Omen",
+              "Sage",
               "Sova",
               "Yoru"
             ],
@@ -19314,43 +19707,91 @@
             "wins": 2,
             "losses": 0,
             "win_rate": 100.0,
-            "last_used": "2026-07-31",
+            "last_used": "2026-09-24",
             "matches": [
               {
-                "date": "2026-07-31",
-                "series_id": 698904,
-                "opponent": "Team Secret",
+                "date": "2026-09-24",
+                "series_id": 753455,
+                "opponent": "Team Liquid",
                 "opponent_tag": "PRX",
                 "result": "W",
                 "team_score": 13,
-                "opponent_score": 8,
-                "event": "VCT 2026: Pacific Stage 2",
+                "opponent_score": 4,
+                "event": "Valorant Champions 2026",
                 "stage": "Group Stage",
-                "patch": "13.01",
+                "patch": "13.05",
                 "attack_rounds_won": 8,
-                "attack_rounds_lost": 1,
+                "attack_rounds_lost": 4,
                 "defense_rounds_won": 5,
-                "defense_rounds_lost": 7
+                "defense_rounds_lost": 0
               },
               {
-                "date": "2026-07-24",
-                "series_id": 698895,
-                "opponent": "DetonatioN FocusMe",
+                "date": "2026-08-28",
+                "series_id": 742482,
+                "opponent": "ONSIDE GAMING",
                 "opponent_tag": "PRX",
                 "result": "W",
-                "team_score": 17,
-                "opponent_score": 15,
+                "team_score": 13,
+                "opponent_score": 5,
                 "event": "VCT 2026: Pacific Stage 2",
-                "stage": "Group Stage",
-                "patch": "13.01",
-                "attack_rounds_won": 4,
-                "attack_rounds_lost": 8,
-                "defense_rounds_won": 8,
-                "defense_rounds_lost": 4
+                "stage": "Playoffs",
+                "patch": "13.04",
+                "attack_rounds_won": 10,
+                "attack_rounds_lost": 2,
+                "defense_rounds_won": 3,
+                "defense_rounds_lost": 3
               }
             ]
           },
           "compositions": [
+            {
+              "agents": [
+                "Chamber",
+                "Omen",
+                "Sage",
+                "Sova",
+                "Yoru"
+              ],
+              "games": 2,
+              "wins": 2,
+              "losses": 0,
+              "win_rate": 100.0,
+              "last_used": "2026-09-24",
+              "matches": [
+                {
+                  "date": "2026-09-24",
+                  "series_id": 753455,
+                  "opponent": "Team Liquid",
+                  "opponent_tag": "PRX",
+                  "result": "W",
+                  "team_score": 13,
+                  "opponent_score": 4,
+                  "event": "Valorant Champions 2026",
+                  "stage": "Group Stage",
+                  "patch": "13.05",
+                  "attack_rounds_won": 8,
+                  "attack_rounds_lost": 4,
+                  "defense_rounds_won": 5,
+                  "defense_rounds_lost": 0
+                },
+                {
+                  "date": "2026-08-28",
+                  "series_id": 742482,
+                  "opponent": "ONSIDE GAMING",
+                  "opponent_tag": "PRX",
+                  "result": "W",
+                  "team_score": 13,
+                  "opponent_score": 5,
+                  "event": "VCT 2026: Pacific Stage 2",
+                  "stage": "Playoffs",
+                  "patch": "13.04",
+                  "attack_rounds_won": 10,
+                  "attack_rounds_lost": 2,
+                  "defense_rounds_won": 3,
+                  "defense_rounds_lost": 3
+                }
+              ]
+            },
             {
               "agents": [
                 "Chamber",
@@ -19401,38 +19842,6 @@
             },
             {
               "agents": [
-                "Chamber",
-                "Omen",
-                "Sage",
-                "Sova",
-                "Yoru"
-              ],
-              "games": 1,
-              "wins": 1,
-              "losses": 0,
-              "win_rate": 100.0,
-              "last_used": "2026-08-28",
-              "matches": [
-                {
-                  "date": "2026-08-28",
-                  "series_id": 742482,
-                  "opponent": "ONSIDE GAMING",
-                  "opponent_tag": "PRX",
-                  "result": "W",
-                  "team_score": 13,
-                  "opponent_score": 5,
-                  "event": "VCT 2026: Pacific Stage 2",
-                  "stage": "Playoffs",
-                  "patch": "13.04",
-                  "attack_rounds_won": 10,
-                  "attack_rounds_lost": 2,
-                  "defense_rounds_won": 3,
-                  "defense_rounds_lost": 3
-                }
-              ]
-            },
-            {
-              "agents": [
                 "Harbor",
                 "Killjoy",
                 "Miks",
@@ -19467,109 +19876,141 @@
           "agent_pick_rates": [
             {
               "agent": "Sova",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             },
             {
               "agent": "Yoru",
-              "picks": 4,
+              "picks": 5,
               "rate": 100.0
             },
             {
               "agent": "Chamber",
-              "picks": 3,
-              "rate": 75.0
+              "picks": 4,
+              "rate": 80.0
+            },
+            {
+              "agent": "Omen",
+              "picks": 4,
+              "rate": 80.0
             },
             {
               "agent": "Harbor",
               "picks": 3,
-              "rate": 75.0
-            },
-            {
-              "agent": "Omen",
-              "picks": 3,
-              "rate": 75.0
+              "rate": 60.0
             },
             {
               "agent": "Sage",
-              "picks": 1,
-              "rate": 25.0
+              "picks": 2,
+              "rate": 40.0
             },
             {
               "agent": "Killjoy",
               "picks": 1,
-              "rate": 25.0
+              "rate": 20.0
             },
             {
               "agent": "Miks",
               "picks": 1,
-              "rate": 25.0
+              "rate": 20.0
             }
           ]
         },
         "Lotus": {
-          "games": 1,
-          "wins": 0,
+          "games": 2,
+          "wins": 1,
           "losses": 1,
-          "win_rate": 0.0,
-          "attack_round_win_rate": 14.3,
-          "defense_round_win_rate": 41.7,
+          "win_rate": 50.0,
+          "attack_round_win_rate": 27.8,
+          "defense_round_win_rate": 58.3,
           "latest": {
-            "date": "2026-08-29",
+            "date": "2026-09-24",
             "agents": [
               "Fade",
               "Omen",
               "Raze",
-              "Viper",
+              "Vyse",
               "Yoru"
             ],
-            "series_id": 742484,
-            "opponent": "VARREL",
+            "series_id": 753455,
+            "opponent": "Team Liquid",
             "opponent_tag": "PRX",
-            "result": "L",
-            "team_score": 6,
-            "opponent_score": 13,
-            "event": "VCT 2026: Pacific Stage 2",
-            "stage": "Playoffs",
-            "patch": "13.04",
-            "attack_rounds_won": 1,
-            "attack_rounds_lost": 6,
-            "defense_rounds_won": 5,
-            "defense_rounds_lost": 7
+            "result": "W",
+            "team_score": 13,
+            "opponent_score": 10,
+            "event": "Valorant Champions 2026",
+            "stage": "Group Stage",
+            "patch": "13.05",
+            "attack_rounds_won": 4,
+            "attack_rounds_lost": 7,
+            "defense_rounds_won": 9,
+            "defense_rounds_lost": 3
           },
           "common": {
             "agents": [
               "Fade",
               "Omen",
               "Raze",
-              "Viper",
+              "Vyse",
               "Yoru"
             ],
             "games": 1,
-            "wins": 0,
-            "losses": 1,
-            "win_rate": 0.0,
-            "last_used": "2026-08-29",
+            "wins": 1,
+            "losses": 0,
+            "win_rate": 100.0,
+            "last_used": "2026-09-24",
             "matches": [
               {
-                "date": "2026-08-29",
-                "series_id": 742484,
-                "opponent": "VARREL",
+                "date": "2026-09-24",
+                "series_id": 753455,
+                "opponent": "Team Liquid",
                 "opponent_tag": "PRX",
-                "result": "L",
-                "team_score": 6,
-                "opponent_score": 13,
-                "event": "VCT 2026: Pacific Stage 2",
-                "stage": "Playoffs",
-                "patch": "13.04",
-                "attack_rounds_won": 1,
-                "attack_rounds_lost": 6,
-                "defense_rounds_won": 5,
-                "defense_rounds_lost": 7
+                "result": "W",
+                "team_score": 13,
+                "opponent_score": 10,
+                "event": "Valorant Champions 2026",
+                "stage": "Group Stage",
+                "patch": "13.05",
+                "attack_rounds_won": 4,
+                "attack_rounds_lost": 7,
+                "defense_rounds_won": 9,
+                "defense_rounds_lost": 3
               }
             ]
           },
           "compositions": [
+            {
+              "agents": [
+                "Fade",
+                "Omen",
+                "Raze",
+                "Vyse",
+                "Yoru"
+              ],
+              "games": 1,
+              "wins": 1,
+              "losses": 0,
+              "win_rate": 100.0,
+              "last_used": "2026-09-24",
+              "matches": [
+                {
+                  "date": "2026-09-24",
+                  "series_id": 753455,
+                  "opponent": "Team Liquid",
+                  "opponent_tag": "PRX",
+                  "result": "W",
+                  "team_score": 13,
+                  "opponent_score": 10,
+                  "event": "Valorant Champions 2026",
+                  "stage": "Group Stage",
+                  "patch": "13.05",
+                  "attack_rounds_won": 4,
+                  "attack_rounds_lost": 7,
+                  "defense_rounds_won": 9,
+                  "defense_rounds_lost": 3
+                }
+              ]
+            },
             {
               "agents": [
                 "Fade",
@@ -19606,28 +20047,33 @@
           "agent_pick_rates": [
             {
               "agent": "Fade",
-              "picks": 1,
+              "picks": 2,
               "rate": 100.0
             },
             {
               "agent": "Omen",
-              "picks": 1,
+              "picks": 2,
               "rate": 100.0
             },
             {
               "agent": "Raze",
-              "picks": 1,
-              "rate": 100.0
-            },
-            {
-              "agent": "Viper",
-              "picks": 1,
+              "picks": 2,
               "rate": 100.0
             },
             {
               "agent": "Yoru",
-              "picks": 1,
+              "picks": 2,
               "rate": 100.0
+            },
+            {
+              "agent": "Vyse",
+              "picks": 1,
+              "rate": 50.0
+            },
+            {
+              "agent": "Viper",
+              "picks": 1,
+              "rate": 50.0
             }
           ]
         },
@@ -21731,73 +22177,73 @@
       ]
     },
     "Ascent": {
-      "team_side_maps": 55,
-      "latest_date": "2026-09-06",
+      "team_side_maps": 57,
+      "latest_date": "2026-09-24",
       "agent_pick_rates": [
         {
           "agent": "Sova",
-          "picks": 55,
+          "picks": 57,
           "rate": 100.0
         },
         {
           "agent": "Omen",
-          "picks": 54,
+          "picks": 56,
           "rate": 98.2
         },
         {
           "agent": "Jett",
-          "picks": 36,
-          "rate": 65.5
+          "picks": 37,
+          "rate": 64.9
         },
         {
           "agent": "Cypher",
-          "picks": 35,
-          "rate": 63.6
+          "picks": 36,
+          "rate": 63.2
         },
         {
           "agent": "Phoenix",
-          "picks": 28,
+          "picks": 29,
           "rate": 50.9
         },
         {
           "agent": "Yoru",
-          "picks": 16,
-          "rate": 29.1
+          "picks": 17,
+          "rate": 29.8
         },
         {
           "agent": "Neon",
           "picks": 14,
-          "rate": 25.5
+          "rate": 24.6
         },
         {
           "agent": "Chamber",
-          "picks": 10,
-          "rate": 18.2
+          "picks": 11,
+          "rate": 19.3
         },
         {
           "agent": "Vyse",
           "picks": 7,
-          "rate": 12.7
+          "rate": 12.3
         },
         {
           "agent": "Kayo",
           "picks": 7,
-          "rate": 12.7
+          "rate": 12.3
         },
         {
           "agent": "Killjoy",
           "picks": 5,
-          "rate": 9.1
+          "rate": 8.8
         },
         {
           "agent": "Sage",
-          "picks": 3,
-          "rate": 5.5
+          "picks": 4,
+          "rate": 7.0
         },
         {
           "agent": "Harbor",
           "picks": 3,
-          "rate": 5.5
+          "rate": 5.3
         },
         {
           "agent": "Deadlock",
@@ -21819,10 +22265,10 @@
             "Phoenix",
             "Sova"
           ],
-          "games": 18,
+          "games": 19,
           "wins": 11,
-          "losses": 7,
-          "win_rate": 61.1
+          "losses": 8,
+          "win_rate": 57.9
         },
         {
           "agents": [
@@ -21944,78 +22390,88 @@
       ]
     },
     "Haven": {
-      "team_side_maps": 55,
-      "latest_date": "2026-09-06",
+      "team_side_maps": 57,
+      "latest_date": "2026-09-24",
       "agent_pick_rates": [
         {
           "agent": "Sova",
           "picks": 52,
-          "rate": 94.5
+          "rate": 91.2
         },
         {
           "agent": "Omen",
           "picks": 50,
-          "rate": 90.9
+          "rate": 87.7
         },
         {
           "agent": "Neon",
           "picks": 44,
-          "rate": 80.0
+          "rate": 77.2
         },
         {
           "agent": "Phoenix",
-          "picks": 31,
-          "rate": 56.4
+          "picks": 32,
+          "rate": 56.1
         },
         {
           "agent": "Cypher",
           "picks": 26,
-          "rate": 47.3
+          "rate": 45.6
         },
         {
           "agent": "Chamber",
-          "picks": 20,
-          "rate": 36.4
+          "picks": 21,
+          "rate": 36.8
         },
         {
           "agent": "Yoru",
-          "picks": 12,
-          "rate": 21.8
+          "picks": 14,
+          "rate": 24.6
         },
         {
           "agent": "Waylay",
           "picks": 10,
-          "rate": 18.2
+          "rate": 17.5
         },
         {
           "agent": "Killjoy",
-          "picks": 9,
-          "rate": 16.4
+          "picks": 10,
+          "rate": 17.5
         },
         {
           "agent": "Jett",
           "picks": 9,
-          "rate": 16.4
+          "rate": 15.8
         },
         {
           "agent": "Astra",
-          "picks": 5,
-          "rate": 9.1
+          "picks": 6,
+          "rate": 10.5
         },
         {
           "agent": "Fade",
-          "picks": 3,
-          "rate": 5.5
+          "picks": 5,
+          "rate": 8.8
         },
         {
           "agent": "Sage",
           "picks": 2,
-          "rate": 3.6
+          "rate": 3.5
         },
         {
           "agent": "Viper",
           "picks": 2,
-          "rate": 3.6
+          "rate": 3.5
+        },
+        {
+          "agent": "Harbor",
+          "picks": 1,
+          "rate": 1.8
+        },
+        {
+          "agent": "Raze",
+          "picks": 1,
+          "rate": 1.8
         }
       ],
       "top_compositions": [
@@ -22152,83 +22608,83 @@
       ]
     },
     "Lotus": {
-      "team_side_maps": 64,
-      "latest_date": "2026-09-06",
+      "team_side_maps": 68,
+      "latest_date": "2026-09-24",
       "agent_pick_rates": [
         {
           "agent": "Omen",
-          "picks": 61,
-          "rate": 95.3
+          "picks": 65,
+          "rate": 95.6
         },
         {
           "agent": "Fade",
-          "picks": 47,
-          "rate": 73.4
+          "picks": 50,
+          "rate": 73.5
         },
         {
           "agent": "Raze",
-          "picks": 38,
-          "rate": 59.4
+          "picks": 41,
+          "rate": 60.3
         },
         {
           "agent": "Viper",
-          "picks": 33,
-          "rate": 51.6
+          "picks": 35,
+          "rate": 51.5
         },
         {
           "agent": "Neon",
-          "picks": 29,
-          "rate": 45.3
-        },
-        {
-          "agent": "Chamber",
-          "picks": 23,
-          "rate": 35.9
+          "picks": 30,
+          "rate": 44.1
         },
         {
           "agent": "Vyse",
-          "picks": 23,
-          "rate": 35.9
+          "picks": 25,
+          "rate": 36.8
+        },
+        {
+          "agent": "Chamber",
+          "picks": 24,
+          "rate": 35.3
         },
         {
           "agent": "Skye",
-          "picks": 17,
-          "rate": 26.6
+          "picks": 18,
+          "rate": 26.5
         },
         {
           "agent": "Cypher",
-          "picks": 15,
-          "rate": 23.4
+          "picks": 16,
+          "rate": 23.5
         },
         {
           "agent": "Waylay",
           "picks": 15,
-          "rate": 23.4
+          "rate": 22.1
         },
         {
           "agent": "Jett",
           "picks": 10,
-          "rate": 15.6
+          "rate": 14.7
+        },
+        {
+          "agent": "Yoru",
+          "picks": 3,
+          "rate": 4.4
         },
         {
           "agent": "Astra",
           "picks": 3,
-          "rate": 4.7
+          "rate": 4.4
         },
         {
           "agent": "Tejo",
           "picks": 3,
-          "rate": 4.7
+          "rate": 4.4
         },
         {
           "agent": "Veto",
           "picks": 2,
-          "rate": 3.1
-        },
-        {
-          "agent": "Yoru",
-          "picks": 1,
-          "rate": 1.6
+          "rate": 2.9
         }
       ],
       "top_compositions": [
@@ -22240,10 +22696,10 @@
             "Omen",
             "Viper"
           ],
-          "games": 15,
+          "games": 16,
           "wins": 13,
-          "losses": 2,
-          "win_rate": 86.7
+          "losses": 3,
+          "win_rate": 81.2
         },
         {
           "agents": [
@@ -22279,10 +22735,10 @@
             "Viper",
             "Vyse"
           ],
-          "games": 4,
-          "wins": 3,
+          "games": 5,
+          "wins": 4,
           "losses": 1,
-          "win_rate": 75.0
+          "win_rate": 80.0
         },
         {
           "agents": [
@@ -22821,83 +23277,83 @@
       ]
     },
     "Sunset": {
-      "team_side_maps": 58,
-      "latest_date": "2026-09-06",
+      "team_side_maps": 60,
+      "latest_date": "2026-09-24",
       "agent_pick_rates": [
         {
           "agent": "Omen",
-          "picks": 56,
-          "rate": 96.6
+          "picks": 58,
+          "rate": 96.7
         },
         {
           "agent": "Neon",
-          "picks": 46,
-          "rate": 79.3
+          "picks": 48,
+          "rate": 80.0
         },
         {
           "agent": "Sova",
           "picks": 33,
-          "rate": 56.9
+          "rate": 55.0
+        },
+        {
+          "agent": "Chamber",
+          "picks": 29,
+          "rate": 48.3
         },
         {
           "agent": "Cypher",
           "picks": 28,
-          "rate": 48.3
-        },
-        {
-          "agent": "Chamber",
-          "picks": 27,
-          "rate": 46.6
-        },
-        {
-          "agent": "Fade",
-          "picks": 20,
-          "rate": 34.5
+          "rate": 46.7
         },
         {
           "agent": "Sage",
-          "picks": 20,
-          "rate": 34.5
+          "picks": 22,
+          "rate": 36.7
+        },
+        {
+          "agent": "Fade",
+          "picks": 21,
+          "rate": 35.0
         },
         {
           "agent": "Phoenix",
           "picks": 15,
-          "rate": 25.9
+          "rate": 25.0
         },
         {
           "agent": "Waylay",
           "picks": 9,
-          "rate": 15.5
+          "rate": 15.0
         },
         {
           "agent": "Yoru",
           "picks": 9,
-          "rate": 15.5
+          "rate": 15.0
         },
         {
           "agent": "Kayo",
           "picks": 8,
-          "rate": 13.8
+          "rate": 13.3
+        },
+        {
+          "agent": "Skye",
+          "picks": 6,
+          "rate": 10.0
         },
         {
           "agent": "Viper",
           "picks": 6,
-          "rate": 10.3
-        },
-        {
-          "agent": "Skye",
-          "picks": 5,
-          "rate": 8.6
+          "rate": 10.0
         },
         {
           "agent": "Raze",
           "picks": 5,
-          "rate": 8.6
+          "rate": 8.3
         },
         {
           "agent": "Astra",
           "picks": 2,
-          "rate": 3.4
+          "rate": 3.3
         },
         {
           "agent": "Gekko",
@@ -22918,6 +23374,19 @@
           "wins": 1,
           "losses": 6,
           "win_rate": 14.3
+        },
+        {
+          "agents": [
+            "Chamber",
+            "Fade",
+            "Neon",
+            "Omen",
+            "Sage"
+          ],
+          "games": 7,
+          "wins": 6,
+          "losses": 1,
+          "win_rate": 85.7
         },
         {
           "agents": [
@@ -22948,28 +23417,15 @@
         {
           "agents": [
             "Chamber",
-            "Fade",
-            "Neon",
-            "Omen",
-            "Sage"
-          ],
-          "games": 6,
-          "wins": 6,
-          "losses": 0,
-          "win_rate": 100.0
-        },
-        {
-          "agents": [
-            "Chamber",
             "Neon",
             "Omen",
             "Sage",
             "Skye"
           ],
-          "games": 5,
-          "wins": 4,
+          "games": 6,
+          "wins": 5,
           "losses": 1,
-          "win_rate": 80.0
+          "win_rate": 83.3
         },
         {
           "agents": [
