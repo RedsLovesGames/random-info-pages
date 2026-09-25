@@ -5,33 +5,7 @@ import { readFileSync } from 'node:fs';
 const html = readFileSync(new URL('../tools/time/index.html', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../tools/time/time-app.js', import.meta.url), 'utf8');
 
-test('time board exposes slider and persistent clock controls', () => {
-  assert.match(html, /id="slider"/);
-  assert.match(html, /id="now"/);
-  assert.match(html, /id="format"/);
-  assert.match(html, /id="clocks"/);
-  assert.match(html, /time\.js/);
-  assert.match(html, /time-app\.js/);
-});
-
-test('time board exposes edit and optional availability hours', () => {
-  assert.match(html, /id="clockDialog"/);
-  assert.match(html, /id="editName"/);
-  assert.match(html, /id="editZone"/);
-  assert.match(html, /id="availableStart"/);
-  assert.match(html, /id="availableEnd"/);
-  assert.match(html, /id="clearHours"/);
-});
-
-test('time board exposes overlap summary and reorder semantics', () => {
-  assert.match(html, /id="overlap"/);
-  assert.match(html, /id="overlapSummary"/);
-  assert.match(html, /id="overlapPeople"/);
-  assert.match(app, /data-move=/);
-  assert.match(app, /moveClock\(/);
-});
-
-test('the entire time tool is gated behind Tommy login', () => {
+test('the entire time tool remains gated behind Tommy login', () => {
   assert.match(html, /id="accessGate"/);
   assert.match(html, /id="loginForm"/);
   assert.match(html, /id="loginUsername"/);
@@ -41,4 +15,43 @@ test('the entire time tool is gated behind Tommy login', () => {
   assert.match(app, /time-auth\.js/);
   assert.match(app, /unlockTimeApp/);
   assert.match(app, /lockTimeApp/);
+});
+
+test('time workspace exposes Map, Planner, and Board views', () => {
+  assert.match(html, /class="[^"]*time-view-tab[^"]*"[^>]*data-view="map"/);
+  assert.match(html, /class="[^"]*time-view-tab[^"]*"[^>]*data-view="planner"/);
+  assert.match(html, /class="[^"]*time-view-tab[^"]*"[^>]*data-view="board"/);
+  assert.match(html, /id="mapView"/);
+  assert.match(html, /id="plannerView"/);
+  assert.match(html, /id="boardView"/);
+});
+
+test('map view exposes ZoneMap-style location rail, world map, markers, and shared timeline', () => {
+  assert.match(html, /id="locationCards"/);
+  assert.match(html, /id="worldMap"/);
+  assert.match(html, /id="mapMarkers"/);
+  assert.match(html, /id="timelineSlider"/);
+  assert.match(html, /id="timelineLabel"/);
+  assert.match(html, /id="liveTime"/);
+  assert.match(html, /id="format"/);
+  assert.match(html, /id="addPerson"/);
+});
+
+test('planner and board expose grouped-person interfaces', () => {
+  assert.match(html, /id="plannerGrid"/);
+  assert.match(html, /id="plannerSummary"/);
+  assert.match(html, /id="peopleBoard"/);
+  assert.match(html, /id="personDialog"/);
+  assert.match(html, /id="personForm"/);
+  assert.match(html, /id="personName"/);
+  assert.match(html, /id="personCity"/);
+  assert.match(html, /id="personAvailableStart"/);
+  assert.match(html, /id="personAvailableEnd"/);
+});
+
+test('time app renders locations once and groups their people', () => {
+  assert.match(app, /groupPeopleByLocation\(/);
+  assert.match(app, /peopleForLocation\(/);
+  assert.match(app, /data-location-id=/);
+  assert.match(app, /data-person-id=/);
 });
