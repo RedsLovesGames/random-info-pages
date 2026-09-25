@@ -18,6 +18,7 @@ REQUIRED = [
     'tools/image/image-core.js',
     'tools/image/image-engine.js',
     'tools/image/image-app.js',
+    'tools/image/image-workspace.js',
     'tools/image/gif-maker.js',
     'tools/image/bg-remove-core.js',
     'tools/image/bg-remove.js',
@@ -59,7 +60,7 @@ for path in ('tools/time/index.html', 'tools/image/index.html', 'tools/money/ind
         fail(f'{path} has no relative link back to toolbox')
 
 image = (ROOT / 'tools/image/index.html').read_text(encoding='utf-8')
-for asset in ('image-core.js', 'image-engine.js', 'image-app.js', 'crop-editor.js', 'gif-maker.js', 'bg-remove-core.js', 'bg-remove.js'):
+for asset in ('image-core.js', 'image-engine.js', 'image-app.js', 'image-workspace.js', 'crop-editor.js', 'gif-maker.js', 'bg-remove-core.js', 'bg-remove.js'):
     if asset not in image:
         fail(f'Image Studio does not load {asset}')
 
