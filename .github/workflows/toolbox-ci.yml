@@ -1,0 +1,43 @@
+name: Toolbox CI
+
+on:
+  push:
+    branches: [toolbox]
+    paths:
+      - 'tools/**'
+      - 'tests/**'
+      - 'scripts/check_toolbox.py'
+      - 'index.html'
+      - '.github/workflows/toolbox-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout toolbox
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Static route and data checks
+        run: python3 scripts/check_toolbox.py
+
+      - name: Repository toolbox interface tests
+        run: node --test tests/*.test.mjs
+
+      - name: Pure toolbox logic tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' testfile; do
+            echo "==> $testfile"
+            node "$testfile"
+          done < <(find tools -type f \( -name '*.node.test.js' -o -name '*.node.test.mjs' \) -print0 | sort -z)
