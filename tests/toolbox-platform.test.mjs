@@ -15,13 +15,29 @@ import { formatBytes, safeFilename } from '../tools/shared/files.js';
 test('registry defines 13 in-scope workspaces and excludes web/design', () => {
   assert.equal(TOOLBOX_REGISTRY.length, 13);
   assert.equal(TOOLBOX_REGISTRY.some(workspace => workspace.id === 'web-design'), false);
-  for (const id of ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer', 'math', 'random', 'codes', 'network']) {
-    assert.ok(getWorkspace(id), `missing workspace ${id}`);
-  }
+  for (const id of ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer', 'math', 'random', 'codes', 'network']) assert.ok(getWorkspace(id), `missing workspace ${id}`);
 });
 
 test('step 6 publishes Developer Lab after Data Studio', () => {
   assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer']);
+});
+
+test('Step 7 publishes all Time and Money subtools through global search', () => {
+  for (const [query, workspaceId, actionId] of [
+    ['business days', 'time', 'date-math'],
+    ['unix timestamp', 'time', 'timestamp'],
+    ['ics event', 'time', 'calendar'],
+    ['cron expression', 'time', 'cron'],
+    ['compound interest', 'money', 'growth'],
+    ['savings goal', 'money', 'savings'],
+    ['amortization', 'money', 'loans'],
+    ['salary hourly', 'money', 'income'],
+  ]) {
+    const match = findToolboxMatches(query)[0];
+    assert.equal(match.workspaceId, workspaceId, query);
+    assert.equal(match.actionId, actionId, query);
+    assert.equal(match.available, true, query);
+  }
 });
 
 test('search ranks exact action aliases and returns deep-linkable actions', () => {
@@ -92,7 +108,6 @@ test('workspace state keeps source, selection, current action, outputs, and hist
   workspace.setCurrentAction('rotate');
   workspace.addOutput({ type: 'pdf', name: 'edited.pdf' });
   workspace.commit('rotate pages', { source: { name: 'paper.pdf' }, workingState: { rotations: { p1: 90 } } });
-
   const snapshot = workspace.snapshot();
   assert.equal(snapshot.id, 'pdf');
   assert.deepEqual(snapshot.selection, ['p1', 'p3']);
@@ -112,7 +127,6 @@ test('contextual actions honor source type and selection requirements', () => {
   const noSelection = getContextualActions('pdf', { sourceType: 'pdf', selectionCount: 0 });
   assert.ok(noSelection.some(action => action.id === 'merge'));
   assert.equal(noSelection.some(action => action.id === 'delete'), false);
-
   const selected = getContextualActions('pdf', { sourceType: 'pdf', selectionCount: 2 });
   assert.ok(selected.some(action => action.id === 'delete'));
   assert.ok(selected.some(action => action.id === 'rotate'));
