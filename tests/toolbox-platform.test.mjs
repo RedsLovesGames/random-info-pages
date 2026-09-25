@@ -20,8 +20,8 @@ test('registry defines 13 in-scope workspaces and excludes web/design', () => {
   }
 });
 
-test('phase 2 publishes the four existing workspaces plus PDF', () => {
-  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf']);
+test('step 4 publishes existing workspaces plus PDF, File Lab, and Media Studio', () => {
+  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media']);
 });
 
 test('search ranks exact action aliases and returns deep-linkable actions', () => {
@@ -30,6 +30,16 @@ test('search ranks exact action aliases and returns deep-linkable actions', () =
   assert.equal(merge[0].actionId, 'merge');
   assert.equal(merge[0].route, './pdf/?action=merge');
   assert.equal(merge[0].available, true);
+
+  const checksum = findToolboxMatches('sha256 file');
+  assert.equal(checksum[0].workspaceId, 'files');
+  assert.equal(checksum[0].actionId, 'hash');
+  assert.equal(checksum[0].available, true);
+
+  const recorder = findToolboxMatches('screen recorder');
+  assert.equal(recorder[0].workspaceId, 'media');
+  assert.equal(recorder[0].actionId, 'record');
+  assert.equal(recorder[0].available, true);
 
   const base64 = findToolboxMatches('base64');
   assert.equal(base64[0].workspaceId, 'developer');
