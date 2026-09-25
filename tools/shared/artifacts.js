@@ -2,10 +2,10 @@ const DB_NAME = 'rip-toolbox';
 const STORE = 'artifacts';
 const VERSION = 1;
 const memory = new Map();
-const DEFAULT_TTL = 24 * 60 * 60 * 1000;
+export const DEFAULT_ARTIFACT_TTL = 24 * 60 * 60 * 1000;
 
 function makeId() {
-  if (globalThis.crypto?.randomUUID) return `tb_${crypto.randomUUID()}`;
+  if (globalThis.crypto?.randomUUID) return `tb_${globalThis.crypto.randomUUID()}`;
   return `tb_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
 }
 
@@ -22,8 +22,23 @@ function openDb() {
   });
 }
 
-export async function putArtifact({ data, type, name = '', sourceWorkspace = '', ttlMs = DEFAULT_TTL } = {}) {
-  const artifact = { id: makeId(), data, type: type || 'application/octet-stream', name, sourceWorkspace, createdAt: Date.now(), expiresAt: Date.now() + ttlMs };
+function normalizeTtl(ttlMs) {
+  const value = Number(ttlMs);
+  return Number.isFinite(value) ? value : DEFAULT_ARTIFACT_TTL;
+}
+
+export async function putArtifact({ data, type, name = '', sourceWorkspace = '', ttlMs = DEFAULT_ARTIFACT_TTL, metadata = {} } = {}) {
+  const now = Date.now();
+  const artifact = {
+    id: makeId(),
+    data,
+    type: type || 'application/octet-stream',
+    name: String(name || ''),
+    sourceWorkspace: String(sourceWorkspace || ''),
+    metadata: metadata && typeof metadata === 'object' ? { ...metadata } : {},
+    createdAt: now,
+    expiresAt: now + normalizeTtl(ttlMs),
+  };
   const db = await openDb().catch(() => null);
   if (!db) {
     memory.set(artifact.id, artifact);
@@ -60,6 +75,24 @@ export async function getArtifact(id) {
   return artifact;
 }
 
+export async function listArtifacts({ includeExpired = false } = {}) {
+  const now = Date.now();
+  const db = await openDb().catch(() => null);
+  let artifacts;
+  if (!db) artifacts = [...memory.values()];
+  else {
+    artifacts = await new Promise(resolve => {
+      const tx = db.transaction(STORE, 'readonly');
+      const request = tx.objectStore(STORE).getAll();
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => resolve([]);
+    });
+    db.close();
+  }
+  if (!includeExpired) artifacts = artifacts.filter(item => item.expiresAt > now);
+  return artifacts.sort((a, b) => b.createdAt - a.createdAt);
+}
+
 export async function deleteArtifact(id) {
   memory.delete(id);
   const db = await openDb().catch(() => null);
@@ -86,4 +119,40 @@ export async function clearExpiredArtifacts(now = Date.now()) {
   });
   db.close();
   await Promise.all(artifacts.filter(item => item.expiresAt <= now).map(item => deleteArtifact(item.id)));
+}
+
+export async function clearAllArtifacts() {
+  memory.clear();
+  const db = await openDb().catch(() => null);
+  if (!db) return true;
+  await new Promise(resolve => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).clear();
+    tx.oncomplete = resolve;
+    tx.onerror = resolve;
+  });
+  db.close();
+  return true;
+}
+
+export function artifactHref(route, id, { action = '' } = {}) {
+  const separator = String(route).includes('?') ? '&' : '?';
+  const params = new URLSearchParams({ artifact: String(id || '') });
+  if (action) params.set('action', action);
+  return `${route}${separator}${params.toString()}`;
+}
+
+export function artifactIdFromSearch(search = '') {
+  const value = new URLSearchParams(search).get('artifact');
+  return value ? value.trim() : null;
+}
+
+export async function artifactText(artifact) {
+  if (!artifact) return '';
+  if (typeof artifact.data === 'string') return artifact.data;
+  if (artifact.data instanceof Blob) return artifact.data.text();
+  if (artifact.data instanceof ArrayBuffer) return new TextDecoder().decode(artifact.data);
+  if (ArrayBuffer.isView(artifact.data)) return new TextDecoder().decode(artifact.data);
+  if (artifact.type?.includes('json') || typeof artifact.data === 'object') return JSON.stringify(artifact.data, null, 2);
+  return String(artifact.data ?? '');
 }
