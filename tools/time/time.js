@@ -20,10 +20,11 @@ function offsetFallback(date,zone){
 
 export function zoneParts(date,zone,format24=false){
   if(!validZone(zone))throw new Error(`Unsupported time zone: ${zone}`);
-  const options={timeZone:zone,year:'numeric',month:'short',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit'};
-  if(format24)options.hourCycle='h23';else options.hour12=true;
-  try{options.timeZoneName='shortOffset'}catch{}
-  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-US',options).formatToParts(date).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
+  const base={timeZone:zone,year:'numeric',month:'short',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit'};
+  if(format24)base.hourCycle='h23';else base.hour12=true;
+  let formatter;
+  try{formatter=new Intl.DateTimeFormat('en-US',{...base,timeZoneName:'shortOffset'});}catch{formatter=new Intl.DateTimeFormat('en-US',base);}
+  const parts=Object.fromEntries(formatter.formatToParts(date).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
   if(!parts.timeZoneName)parts.timeZoneName=offsetFallback(date,zone);
   return parts;
 }
