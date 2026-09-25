@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0a"><meta name="color-scheme" content="dark">
+<meta name="description" content="Local weighted picker, shuffle, teams, samples, dice, chance trials, and seeded randomness.">
+<title>Random & Decision Lab · Toolbox</title>
+<link rel="stylesheet" href="../shared/toolbox.css"><link rel="stylesheet" href="./random.css">
+</head>
+<body>
+<header class="tb-top"><nav class="tb-shell tb-nav"><a class="tb-brand" href="../">RIP/26 · TOOLBOX</a><a class="tb-back" href="../">← Toolbox</a></nav></header>
+<main class="random-page">
+<section class="random-head"><div><div class="tb-kicker">Local · reproducible when seeded</div><h1>Random &<br>Decision Lab</h1><p>Keep one list and optional seed loaded while you pick, shuffle, sample, split teams, roll dice, or run probability trials.</p></div><a class="random-wheel-link" href="../../wheel/">Open visual Wheel →</a></section>
+
+<section class="random-input-card">
+<label><span>Shared list · one item per line · optional weight as <code>Name | 3</code></span><textarea id="randomInput">Alex | 2\nRita\nNora\nTommy</textarea></label>
+<div class="random-grid three"><label><span>Seed · optional</span><input id="randomSeed" placeholder="same seed = same result"></label><label><span>Sample / team count</span><input id="randomCount" type="number" min="1" value="2"></label><label><span>Unique samples</span><select id="randomUnique"><option value="true">Yes</option><option value="false">No</option></select></label></div>
+</section>
+
+<nav id="randomModeNav" class="random-mode-nav" aria-label="Random tools">
+<button data-random-mode="pick">Pick</button><button data-random-mode="shuffle">Shuffle</button><button data-random-mode="teams">Teams</button><button data-random-mode="numbers">Numbers</button><button data-random-mode="chance">Chance</button><button data-random-mode="seed">Seed</button>
+</nav>
+
+<section class="random-panel" data-random-panel="pick"><div class="random-panel-head"><div><small>PICK</small><h2>Weighted random pick</h2></div><span>Weights default to 1</span></div><button id="runPick" class="random-primary">Pick one</button></section>
+<section class="random-panel" data-random-panel="shuffle" hidden><div class="random-panel-head"><div><small>ORDER</small><h2>Shuffle / sample</h2></div><span>Uses the shared list</span></div><div class="random-actions"><button id="runShuffle" class="random-primary">Shuffle all</button><button id="runSample" class="tb-toolbutton">Sample</button></div></section>
+<section class="random-panel" data-random-panel="teams" hidden><div class="random-panel-head"><div><small>GROUPS</small><h2>Make balanced teams</h2></div><span>Round-robin after shuffle</span></div><button id="runTeams" class="random-primary">Make teams</button></section>
+<section class="random-panel" data-random-panel="numbers" hidden><div class="random-panel-head"><div><small>NUMBERS</small><h2>Random integers & dice</h2></div><span>Secure browser randomness unless seeded</span></div><div class="random-grid four"><label><span>Min</span><input id="numberMin" type="number" value="1"></label><label><span>Max</span><input id="numberMax" type="number" value="100"></label><label><span>Count</span><input id="numberCount" type="number" min="1" value="5"></label><label><span>Unique</span><select id="numberUnique"><option value="false">No</option><option value="true">Yes</option></select></label></div><div class="random-actions"><button id="runNumbers" class="random-primary">Generate</button><label class="inline"><span>Dice</span><input id="diceCount" type="number" value="2" min="1"><span>d</span><input id="diceSides" type="number" value="6" min="2"><button id="runDice" class="tb-toolbutton">Roll</button></label></div></section>
+<section class="random-panel" data-random-panel="chance" hidden><div class="random-panel-head"><div><small>PROBABILITY</small><h2>Chance experiment</h2></div><span>Run repeated Bernoulli trials</span></div><div class="random-grid two"><label><span>Chance %</span><input id="chancePercent" type="number" min="0" max="100" step="any" value="50"></label><label><span>Trials</span><input id="chanceTrials" type="number" min="1" max="1000000" value="1000"></label></div><button id="runChance" class="random-primary">Run trials</button></section>
+<section class="random-panel" data-random-panel="seed" hidden><div class="random-panel-head"><div><small>REPRODUCIBLE RNG</small><h2>Seed preview</h2></div><span>Share a seed to reproduce a sequence</span></div><button id="runSeed" class="random-primary">Generate sequence</button></section>
+
+<section class="random-result"><div><small>RESULT</small><strong id="randomResultTitle">Ready</strong></div><pre id="randomResult">Choose a mode and run it.</pre><div class="random-actions"><button id="copyRandomResult" class="tb-toolbutton">Copy</button><button id="clearRandomResult" class="tb-toolbutton">Clear result</button></div></section>
+</main>
+<script type="module" src="./random-app.js"></script>
+</body></html>
