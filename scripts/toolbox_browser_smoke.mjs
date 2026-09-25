@@ -185,6 +185,32 @@ try {
     await page.close();
   }
 
+  {
+    const { page, pageErrors } = await newCheckedPage({ width: 390, height: 844 });
+    await page.goto(`${base}/tools/time/`, { waitUntil: 'domcontentloaded' });
+    await page.locator('#accessGate').waitFor({ state: 'visible' });
+    await page.locator('#loginUsername').fill('tommy');
+    await page.locator('#loginPassword').fill(String.fromCharCode(50, 51, 52, 53));
+    await page.locator('#loginForm button[type="submit"]').click();
+    await page.locator('#protectedTimeApp').waitFor({ state: 'visible' });
+    await page.locator('#mapView').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#locationCards .location-card').count(), 3, 'mobile map should render grouped locations');
+    assert.equal(await page.locator('#mapMarkers .map-marker').count(), 3, 'mobile map should render one marker per group');
+    await assertNoHorizontalOverflow(page, 'mobile authenticated Time map');
+
+    await page.locator('.time-view-tab[data-view="planner"]').click();
+    await page.locator('#plannerView').waitFor({ state: 'visible' });
+    assert.ok(await page.locator('#plannerGrid .planner-row').count() >= 3, 'mobile planner should render people');
+    await assertNoHorizontalOverflow(page, 'mobile authenticated Time planner');
+
+    await page.locator('.time-view-tab[data-view="board"]').click();
+    await page.locator('#boardView').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#peopleBoard .board-location').count(), 3, 'mobile board should remain grouped');
+    await assertNoHorizontalOverflow(page, 'mobile authenticated Time board');
+    await assertNoPageErrors(pageErrors, 'mobile authenticated Time workspace');
+    await page.close();
+  }
+
   for (const [route] of routes) {
     const { page, pageErrors } = await newCheckedPage({ width: 390, height: 844 });
     await page.goto(`${base}${route}`, { waitUntil: 'domcontentloaded' });
