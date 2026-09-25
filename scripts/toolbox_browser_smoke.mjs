@@ -5,7 +5,7 @@ const base = process.env.TOOLBOX_BASE || 'http://127.0.0.1:8000';
 const routes = [
   ['/', 'Random Info Pages'],
   ['/tools/', 'Toolbox'],
-  ['/tools/time/', 'Time Zone Board'],
+  ['/tools/time/', 'Time access'],
   ['/tools/image/', 'Image Studio'],
   ['/tools/money/', 'Money Through Time'],
   ['/tools/text/', 'Text Tools'],
@@ -95,8 +95,21 @@ try {
   {
     const { page, pageErrors } = await newCheckedPage({ width: 1280, height: 800 });
     await page.goto(`${base}/tools/time/`, { waitUntil: 'domcontentloaded' });
+    await page.locator('#accessGate').waitFor({ state: 'visible' });
+    assert.ok(await page.locator('#protectedTimeApp').isHidden(), 'time workspace should be hidden before login');
+    await page.locator('#loginUsername').fill('tommy');
+    await page.locator('#loginPassword').fill('wrong');
+    await page.locator('#loginForm button[type="submit"]').click();
+    await page.waitForFunction(() => /incorrect/i.test(document.querySelector('#loginMessage')?.textContent || ''));
+    assert.ok(await page.locator('#protectedTimeApp').isHidden(), 'wrong credentials must keep the workspace hidden');
+    await page.locator('#loginPassword').fill(String.fromCharCode(50, 51, 52, 53));
+    await page.locator('#loginForm button[type="submit"]').click();
+    await page.locator('#protectedTimeApp').waitFor({ state: 'visible' });
+    assert.ok(await page.locator('#accessGate').isHidden(), 'login gate should hide after valid credentials');
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.locator('#protectedTimeApp').waitFor({ state: 'visible' });
     await page.locator('.clock').first().waitFor({ state: 'visible' });
-    assert.ok(await page.locator('.clock').count() >= 3, 'time board should render default clocks');
+    assert.ok(await page.locator('.clock').count() >= 3, 'time board should render default clocks after login');
     await page.locator('#slider').evaluate(el => { el.value = '24'; el.dispatchEvent(new Event('input', { bubbles: true })); });
     assert.match(await page.locator('#offsetLabel').innerText(), /\+24 hours/i);
     await page.locator('[data-edit]').first().click();
@@ -105,7 +118,10 @@ try {
     await page.locator('#availableEnd').fill('17:00');
     await page.locator('#editForm button[type="submit"]').click();
     await page.locator('#overlap').waitFor({ state: 'visible' });
-    await assertNoPageErrors(pageErrors, 'time board interaction');
+    await page.locator('#logoutAccess').click();
+    await page.locator('#accessGate').waitFor({ state: 'visible' });
+    assert.ok(await page.locator('#protectedTimeApp').isHidden(), 'logout should hide the entire time workspace');
+    await assertNoPageErrors(pageErrors, 'time board authentication and interaction');
     await page.close();
   }
 

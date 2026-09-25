@@ -1,7 +1,9 @@
 import {loadState,saveState,zoneParts,dayDifference,shiftedNow,uid,validZone,validHm,commonZones,isAvailableAt,availabilitySummary,moveClock} from './time.js';
+import {validateTimeAccess,hasTimeAccess,rememberTimeAccess,clearTimeAccess} from './time-auth.js';
 
 let state=loadState();
 const $=(selector)=>document.querySelector(selector);
+const accessGate=$('#accessGate'),protectedTimeApp=$('#protectedTimeApp'),loginForm=$('#loginForm'),loginUsername=$('#loginUsername'),loginPassword=$('#loginPassword'),loginMessage=$('#loginMessage'),logoutAccess=$('#logoutAccess');
 const clocks=$('#clocks'),slider=$('#slider'),offsetLabel=$('#offsetLabel'),format=$('#format'),message=$('#message'),zones=$('#zones');
 const overlap=$('#overlap'),overlapSummary=$('#overlapSummary'),overlapPeople=$('#overlapPeople');
 const dialog=$('#clockDialog'),editForm=$('#editForm'),editId=$('#editId'),editName=$('#editName'),editZone=$('#editZone'),availableStart=$('#availableStart'),availableEnd=$('#availableEnd'),editMessage=$('#editMessage');
@@ -10,6 +12,25 @@ function esc(value){return String(value).replace(/[&<>"']/g,(c)=>({'&':'&amp;','
 function populateZones(){for(const z of commonZones){const o=document.createElement('option');o.value=z;zones.append(o);}const editList=$('#editZones');for(const z of commonZones){const o=document.createElement('option');o.value=z;editList.append(o);}}
 function dayLabel(value){return value===0?'Same day':value>0?`+${value} day${value===1?'':'s'}`:`${value} day${value===-1?'':'s'}`;}
 function availabilityLabel(clock,date){if(!clock.availableStart||!clock.availableEnd)return{className:'',text:'No availability hours set'};const on=isAvailableAt(date,clock.zone,clock.availableStart,clock.availableEnd);return{className:on?'on':'',text:`${on?'Available':'Outside hours'} · ${clock.availableStart}–${clock.availableEnd}`};}
+
+function unlockTimeApp({remember=true}={}){
+  if(remember)rememberTimeAccess();
+  accessGate.hidden=true;
+  protectedTimeApp.hidden=false;
+  loginMessage.classList.remove('error');
+  loginPassword.value='';
+}
+
+function lockTimeApp({forget=true}={}){
+  if(forget)clearTimeAccess();
+  if(dialog.open)dialog.close('locked');
+  protectedTimeApp.hidden=true;
+  accessGate.hidden=false;
+  loginPassword.value='';
+  loginMessage.textContent='Access is remembered on this browser.';
+  loginMessage.classList.remove('error');
+  requestAnimationFrame(()=>loginUsername.focus());
+}
 
 function renderOverlap(date){const summary=availabilitySummary(date,state.clocks);if(!summary.configured){overlap.hidden=true;return;}overlap.hidden=false;overlapSummary.textContent=summary.allAvailable?`All ${summary.configured} configured clocks overlap`:`${summary.available} of ${summary.configured} configured clocks available`;overlapPeople.innerHTML=summary.items.map(item=>`<span class="overlap-person ${item.available?'on':''}">${esc(item.name)} · ${item.available?'available':'outside hours'}</span>`).join('');}
 
@@ -73,4 +94,24 @@ editForm.addEventListener('submit',(event)=>{
 $('#clearHours').addEventListener('click',()=>{availableStart.value='';availableEnd.value='';editMessage.textContent='Availability hours cleared. Save to apply.';});
 $('#cancelEdit').addEventListener('click',()=>dialog.close('cancel'));
 
-render();setInterval(()=>{if(+state.offsetHours===0)render();},30000);
+loginForm.addEventListener('submit',async(event)=>{
+  event.preventDefault();
+  const submit=loginForm.querySelector('button[type="submit"]');
+  submit.disabled=true;
+  loginMessage.textContent='Checking access…';
+  loginMessage.classList.remove('error');
+  try{
+    if(await validateTimeAccess(loginUsername.value,loginPassword.value)){
+      unlockTimeApp();
+    }else{
+      loginMessage.textContent='Incorrect username or password.';
+      loginMessage.classList.add('error');
+      loginPassword.select();
+    }
+  }finally{submit.disabled=false;}
+});
+logoutAccess.addEventListener('click',()=>lockTimeApp());
+
+render();
+if(hasTimeAccess())unlockTimeApp({remember:false});else lockTimeApp({forget:false});
+setInterval(()=>{if(!protectedTimeApp.hidden&&+state.offsetHours===0)render();},30000);
