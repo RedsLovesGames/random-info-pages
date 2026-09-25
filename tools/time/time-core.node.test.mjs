@@ -12,6 +12,22 @@ test('New York DST transition derives offsets from the selected instant', () => 
   assert.match(after.timeZoneName, /-4|GMT-4|UTC-4/i);
 });
 
+test('zoneParts falls back when shortOffset is unsupported', () => {
+  const OriginalDateTimeFormat = Intl.DateTimeFormat;
+  function WithoutShortOffset(locale, options = {}) {
+    if (options.timeZoneName === 'shortOffset') throw new RangeError('unsupported timeZoneName');
+    return new OriginalDateTimeFormat(locale, options);
+  }
+  WithoutShortOffset.supportedLocalesOf = OriginalDateTimeFormat.supportedLocalesOf.bind(OriginalDateTimeFormat);
+  Intl.DateTimeFormat = WithoutShortOffset;
+  try {
+    const parts = mod.zoneParts(new Date('2026-01-01T12:00:00Z'), 'America/New_York', true);
+    assert.match(parts.timeZoneName, /GMT-05:00|GMT-5|UTC-5/i);
+  } finally {
+    Intl.DateTimeFormat = OriginalDateTimeFormat;
+  }
+});
+
 test('day difference detects date rollover across zones', () => {
   const instant = new Date('2026-01-01T01:00:00Z');
   assert.equal(mod.dayDifference(instant, 'America/Los_Angeles', 'Europe/London'), -1);
