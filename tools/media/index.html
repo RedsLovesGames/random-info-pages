@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#0b0b0a"><meta name="color-scheme" content="dark">
 <meta name="description" content="Trim, convert, transform, inspect and record audio/video locally in your browser.">
 <title>Media Studio · Toolbox</title>
-<link rel="stylesheet" href="../shared/toolbox.css"><link rel="stylesheet" href="./media.css">
+<link rel="stylesheet" href="../shared/toolbox.css"><link rel="stylesheet" href="./media.css"><link rel="stylesheet" href="./media-quick.css">
 </head>
 <body>
 <header class="tb-top"><nav class="tb-shell tb-nav"><a class="tb-brand" href="../">RIP/26 · TOOLBOX</a><a class="tb-back" href="../">← Toolbox</a></nav></header>
@@ -13,7 +13,6 @@
 <section class="media-hero"><div class="tb-kicker">07 / Media · Local processing</div><h1>Media<br>Studio</h1><p>Load audio or video once. Use the same timeline to trim, transform, convert, extract audio, inspect or export. Recording and tone tools work without a source.</p></section>
 <input id="mediaPicker" type="file" accept="audio/*,video/*,.mkv,.mov,.flac,.m4a,.aac,.opus" hidden>
 <section id="mediaDrop" class="tb-dropzone media-drop" tabindex="0" role="button" aria-label="Choose media"><div><strong>DROP AUDIO OR VIDEO</strong><span>or click to choose · browser-decodable preview when available</span></div></section>
-
 <section id="mediaWorkspace" class="tb-workspace" hidden>
   <div class="tb-sourcebar"><div><small>Working media</small><strong id="mediaSourceName">media</strong><span id="mediaSourceMeta">Local source</span></div><div><button id="replaceMedia" class="tb-toolbutton" type="button">Replace</button><button id="clearMedia" class="tb-toolbutton" type="button">Clear</button></div></div>
   <section class="media-preview-shell"><div id="mediaPreview" class="media-preview"></div></section>
@@ -22,7 +21,6 @@
     <input id="mediaSeek" type="range" min="0" max="1" value="0" step="0.001">
     <div class="media-range-grid"><label>Start<input id="trimStart" type="number" min="0" value="0" step="0.01"></label><label>End<input id="trimEnd" type="number" min="0" value="0" step="0.01"></label><button id="setStartHere" class="tb-toolbutton" type="button">Start = playhead</button><button id="setEndHere" class="tb-toolbutton" type="button">End = playhead</button></div>
   </section>
-
   <section class="media-tools" aria-label="Media tools"><h2>Tools</h2>
     <div class="tb-group-title">Edit & Output</div><div class="tb-toolgrid">
       <button id="trimMedia" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">✂</span><span class="tb-toolicon-label">Trim</span></button>
@@ -40,8 +38,7 @@
   <section id="mediaProgress" class="tb-progress" hidden><div><strong id="mediaProgressLabel">Working…</strong><span id="mediaProgressValue">0%</span></div><progress id="mediaProgressBar" max="1" value="0"></progress></section>
   <div class="tb-exportbar"><div><button id="mediaResetRange" class="tb-toolbutton" type="button">Reset range</button></div><button id="downloadMediaResult" class="media-primary" type="button" disabled>Download last result</button></div>
 </section>
-
 <section class="media-quick-create"><h2>No source needed</h2><div class="tb-toolgrid"><button class="tb-toolicon" data-media-quick="record" type="button"><span class="tb-toolicon-icon">●</span><span class="tb-toolicon-label">Recorder</span></button><button class="tb-toolicon" data-media-quick="tone" type="button"><span class="tb-toolicon-icon">Hz</span><span class="tb-toolicon-label">Tone generator</span></button></div></section>
 </main>
-<script type="module" src="./media-app.js"></script>
+<script type="module" src="./media-app.js"></script><script type="module" src="./media-quick.js"></script>
 </body></html>
