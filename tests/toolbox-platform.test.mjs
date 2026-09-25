@@ -18,8 +18,8 @@ test('registry defines 13 in-scope workspaces and excludes web/design', () => {
   for (const id of ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer', 'math', 'random', 'codes', 'network']) assert.ok(getWorkspace(id), `missing workspace ${id}`);
 });
 
-test('step 8 publishes Math & Science Lab after the existing nine workspaces', () => {
-  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer', 'math']);
+test('step 9 publishes all 13 in-scope workspaces', () => {
+  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer', 'math', 'random', 'codes', 'network']);
 });
 
 test('Step 7 publishes all Time and Money subtools through global search', () => {
