@@ -23,7 +23,7 @@ async function newCheckedPage(viewport) {
 async function assertNoHorizontalOverflow(page, label) {
   const dimensions = await page.evaluate(() => {
     const clientWidth = document.documentElement.clientWidth;
-    const offenders = [...document.querySelectorAll('body *')].map(element => {
+    const describe = (element) => {
       const rect = element.getBoundingClientRect();
       return {
         tag: element.tagName.toLowerCase(),
@@ -33,12 +33,36 @@ async function assertNoHorizontalOverflow(page, label) {
         left: Math.round(rect.left * 10) / 10,
         right: Math.round(rect.right * 10) / 10,
         width: Math.round(rect.width * 10) / 10,
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth,
       };
-    }).filter(item => item.right > clientWidth + 2 || item.left < -2).sort((a, b) => b.right - a.right).slice(0, 8);
-    return { scrollWidth: document.documentElement.scrollWidth, clientWidth, offenders };
+    };
+    const all = [...document.querySelectorAll('body *')];
+    const offenders = all.map(describe)
+      .filter(item => item.right > clientWidth + 2 || item.left < -2)
+      .sort((a, b) => b.right - a.right)
+      .slice(0, 8);
+    const intrinsic = all.map(describe)
+      .filter(item => item.scrollWidth > item.clientWidth + 2 && item.clientWidth > 0)
+      .sort((a, b) => (b.scrollWidth - b.clientWidth) - (a.scrollWidth - a.clientWidth))
+      .slice(0, 8);
+    return {
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth,
+      bodyScrollWidth: document.body.scrollWidth,
+      bodyClientWidth: document.body.clientWidth,
+      bodyRect: describe(document.body),
+      offenders,
+      intrinsic,
+    };
   });
-  const detail = dimensions.offenders.map(item => `${item.tag}${item.id ? `#${item.id}` : ''}${item.className ? `.${item.className.split(/\s+/).join('.')}` : ''} [${item.left}, ${item.right}] ${item.text}`).join('\n');
-  assert.ok(dimensions.scrollWidth <= dimensions.clientWidth + 2, `${label} overflows horizontally: ${dimensions.scrollWidth} > ${dimensions.clientWidth}${detail ? `\nOffenders:\n${detail}` : ''}`);
+  const fmt = item => `${item.tag}${item.id ? `#${item.id}` : ''}${item.className ? `.${item.className.split(/\s+/).join('.')}` : ''} rect=[${item.left},${item.right}] box=${item.clientWidth}/${item.scrollWidth} ${item.text}`;
+  const bounds = dimensions.offenders.map(fmt).join('\n');
+  const intrinsic = dimensions.intrinsic.map(fmt).join('\n');
+  const detail = `\nbody=${dimensions.bodyClientWidth}/${dimensions.bodyScrollWidth}`
+    + (bounds ? `\nBounds offenders:\n${bounds}` : '')
+    + (intrinsic ? `\nIntrinsic overflow:\n${intrinsic}` : '');
+  assert.ok(dimensions.scrollWidth <= dimensions.clientWidth + 2, `${label} overflows horizontally: ${dimensions.scrollWidth} > ${dimensions.clientWidth}${detail}`);
 }
 
 async function assertNoPageErrors(pageErrors, label) {
