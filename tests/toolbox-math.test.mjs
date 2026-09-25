@@ -18,6 +18,8 @@ const near = (actual, expected, tolerance = 1e-9) => assert.ok(Math.abs(actual -
 test('calculator evaluates arithmetic, powers, constants, and functions without eval', () => {
   near(evaluateExpression('2 + 3 * 4'), 14);
   near(evaluateExpression('2^3 + sqrt(16)'), 12);
+  near(evaluateExpression('-2^2'), -4);
+  near(evaluateExpression('2^-2'), 0.25);
   near(evaluateExpression('sin(pi / 2)'), 1, 1e-12);
   near(evaluateExpression('log(1000)'), 3, 1e-12);
   assert.throws(() => evaluateExpression('window.alert(1)'), /token|identifier|expression/i);
