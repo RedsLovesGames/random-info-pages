@@ -227,7 +227,8 @@ export function findToolboxMatches(query, { includeUnavailable = true, limit = 1
       matches.push({ kind: 'workspace', workspaceId: workspace.id, workspaceTitle: workspace.title, actionId: null, title: workspace.title, route: workspace.route, available: workspace.available, score: workspaceScore });
     }
     for (const item of workspace.actions || []) {
-      const aliasScores = [item.title, ...(item.aliases || [])].map(value => scoreText(q, normalize(value)));
+      const actionText = normalize([item.title, ...(item.aliases || [])].join(' '));
+      const aliasScores = [item.title, ...(item.aliases || []), actionText].map(value => scoreText(q, normalize(value)));
       const actionScore = Math.max(...aliasScores, 0);
       if (!actionScore) continue;
       matches.push({ kind: 'action', workspaceId: workspace.id, workspaceTitle: workspace.title, actionId: item.id, title: item.title, route: `${workspace.route}?action=${encodeURIComponent(item.id)}`, available: Boolean(workspace.available && item.available !== false), score: actionScore + 10 });
