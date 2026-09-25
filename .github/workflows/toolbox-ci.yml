@@ -14,6 +14,7 @@ on:
       - 'scripts/toolbox_media_browser_smoke.mjs'
       - 'scripts/toolbox_data_browser_smoke.mjs'
       - 'scripts/toolbox_text_developer_browser_smoke.mjs'
+      - 'scripts/toolbox_time_money_browser_smoke.mjs'
       - 'index.html'
       - '.github/workflows/toolbox-ci.yml'
   workflow_dispatch:
@@ -99,3 +100,6 @@ jobs:
 
       - name: Text Studio and Developer Lab workspace smoke
         run: node scripts/toolbox_text_developer_browser_smoke.mjs
+
+      - name: Time scheduling and Money finance scenario smoke
+        run: node scripts/toolbox_time_money_browser_smoke.mjs
