@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED = [
-    'tools/index.html','tools/shared/toolbox.css','tools/shared/toolbox.js',
+    'tools/index.html','tools/shared/toolbox.css','tools/shared/toolbox.js','tools/shared/artifacts.js','tools/shared/command-core.js','tools/shared/command.js','tools/shared/handoff-receiver.js','tools/shared/handoff-producers.js',
     'tools/time/index.html','tools/time/time.js','tools/time/time-app.js','tools/time/time-utils.js','tools/time/time-tools.js','tools/time/time-tools.css',
     'tools/image/index.html','tools/image/image-core.js','tools/image/image-engine.js','tools/image/image-app.js','tools/image/image-workspace.js','tools/image/gif-maker.js','tools/image/bg-remove-core.js','tools/image/bg-remove.js',
     'tools/money/index.html','tools/money/money-core.js','tools/money/fx-core.js','tools/money/finance-core.js','tools/money/money-scenario.js','tools/money/money-scenario.css','tools/money/data/us-cpi.json',
@@ -41,6 +41,7 @@ hub = (ROOT / 'tools/index.html').read_text(encoding='utf-8')
 for name in routes:
     route = f'./{name}/'
     if f'href="{route}"' not in hub: fail(f'toolbox hub missing route {route}')
+if './shared/command.js' not in hub: fail('toolbox hub does not load shared command search')
 
 for name in routes:
     path = ROOT / f'tools/{name}/index.html'
@@ -51,12 +52,12 @@ asset_guards = {
     'time': ('time.css','time-app.js','time-utils.js','time-tools.js','time-tools.css'),
     'money': ('money.css','money-scenario.css','money-core.js','fx-core.js','finance-core.js','money-app.js','money-scenario.js'),
     'image': ('image-core.js','image-engine.js','image-app.js','image-workspace.js','crop-editor.js','gif-maker.js','bg-remove-core.js','bg-remove.js'),
-    'pdf': ('pdf.css','pdf-app.js'),
-    'files': ('files.css','files-app.js'),
+    'pdf': ('pdf.css','pdf-app.js','handoff-producers.js'),
+    'files': ('files.css','files-app.js','handoff-producers.js'),
     'media': ('media.css','media-quick.css','mediabunny-loader.js','media-app.js','media-quick.js'),
-    'data': ('data.css','data-app.js','data-route.js'),
-    'text': ('text.css','text-core.js','text-app.js','text-workspace.js'),
-    'developer': ('developer.css','developer-app.js'),
+    'data': ('data.css','data-app.js','data-route.js','handoff-producers.js','handoff-receiver.js'),
+    'text': ('text.css','text-core.js','text-app.js','text-workspace.js','handoff-receiver.js'),
+    'developer': ('developer.css','developer-app.js','handoff-receiver.js'),
     'math': ('math.css','calc-core.js','units-core.js','science-core.js','grade-core.js','math-app.js'),
     'random': ('random.css','random-app.js'),
     'codes': ('codes.css','codes-app.js'),
@@ -95,4 +96,4 @@ for html_path in (ROOT / 'tools').rglob('*.html'):
     if re.search(r'(?:href|src)=["\']/tools/', text): absolute_tool_paths.append(str(html_path.relative_to(ROOT)))
 if absolute_tool_paths: fail(f'root-absolute /tools paths break project-site deployment: {absolute_tool_paths}')
 
-print('PASS toolbox static routes, assets, disclosures, CPI coverage, attribution, and relative paths')
+print('PASS toolbox static routes, assets, Step 10 integration, disclosures, CPI coverage, attribution, and relative paths')
