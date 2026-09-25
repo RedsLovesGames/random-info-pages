@@ -46,14 +46,18 @@ function numberToIpv4(value) {
   return [n >>> 24, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
 }
 
+function masked(n, mask) {
+  return (n & mask) >>> 0;
+}
+
 function classifyIpv4(n) {
-  if ((n & 0xff000000) === 0x0a000000) return 'Private';
-  if ((n & 0xfff00000) === 0xac100000) return 'Private';
-  if ((n & 0xffff0000) === 0xc0a80000) return 'Private';
-  if ((n & 0xff000000) === 0x7f000000) return 'Loopback';
-  if ((n & 0xffff0000) === 0xa9fe0000) return 'Link-local';
-  if ((n & 0xf0000000) === 0xe0000000) return 'Multicast';
-  if ((n & 0xff000000) === 0x00000000) return 'This network / unspecified';
+  if (masked(n, 0xff000000) === 0x0a000000) return 'Private';
+  if (masked(n, 0xfff00000) === 0xac100000) return 'Private';
+  if (masked(n, 0xffff0000) === 0xc0a80000) return 'Private';
+  if (masked(n, 0xff000000) === 0x7f000000) return 'Loopback';
+  if (masked(n, 0xffff0000) === 0xa9fe0000) return 'Link-local';
+  if (masked(n, 0xf0000000) === 0xe0000000) return 'Multicast';
+  if (masked(n, 0xff000000) === 0x00000000) return 'This network / unspecified';
   return 'Public';
 }
 
@@ -191,15 +195,15 @@ export function convertDataSize(value, fromUnit, toUnit) {
 
 export function transferSeconds({ size, sizeUnit = 'GB', speed, speedUnit = 'Mbps' } = {}) {
   const bytes = convertDataSize(size, sizeUnit, 'B');
-  const rate = assertFinite(speed, 'Speed') * RATE_UNITS[speedUnit];
   if (!RATE_UNITS[speedUnit]) throw new Error('Unsupported transfer-rate unit.');
+  const rate = assertFinite(speed, 'Speed') * RATE_UNITS[speedUnit];
   if (rate <= 0) throw new Error('Speed must be greater than zero.');
   return bytes * 8 / rate;
 }
 
 export function mediaBytes({ bitrate, bitrateUnit = 'Mbps', durationSeconds } = {}) {
-  const rate = assertFinite(bitrate, 'Bitrate') * RATE_UNITS[bitrateUnit];
   if (!RATE_UNITS[bitrateUnit]) throw new Error('Unsupported bitrate unit.');
+  const rate = assertFinite(bitrate, 'Bitrate') * RATE_UNITS[bitrateUnit];
   const duration = assertFinite(durationSeconds, 'Duration');
   if (rate < 0 || duration < 0) throw new Error('Bitrate and duration cannot be negative.');
   return rate * duration / 8;
