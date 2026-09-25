@@ -63,6 +63,13 @@ REQUIRED = [
     'tools/developer/developer-core.js',
     'tools/developer/developer-app.js',
     'tools/developer/developer.css',
+    'tools/math/index.html',
+    'tools/math/math.css',
+    'tools/math/math-app.js',
+    'tools/math/calc-core.js',
+    'tools/math/units-core.js',
+    'tools/math/science-core.js',
+    'tools/math/grade-core.js',
     'tools/OPEN_SOURCE.md',
     'tools/DATA_OPEN_SOURCE.md',
     'tools/DEVELOPER_OPEN_SOURCE.md',
@@ -82,11 +89,11 @@ if 'href="./tools/"' not in home:
     fail('homepage does not link ./tools/')
 
 hub = (ROOT / 'tools/index.html').read_text(encoding='utf-8')
-for route in ('./time/', './image/', './money/', './text/', './pdf/', './files/', './media/', './data/', './developer/'):
+for route in ('./time/', './image/', './money/', './text/', './pdf/', './files/', './media/', './data/', './developer/', './math/'):
     if f'href="{route}"' not in hub:
         fail(f'toolbox hub missing route {route}')
 
-for path in ('tools/time/index.html', 'tools/image/index.html', 'tools/money/index.html', 'tools/text/index.html', 'tools/pdf/index.html', 'tools/files/index.html', 'tools/media/index.html', 'tools/data/index.html', 'tools/developer/index.html'):
+for path in ('tools/time/index.html', 'tools/image/index.html', 'tools/money/index.html', 'tools/text/index.html', 'tools/pdf/index.html', 'tools/files/index.html', 'tools/media/index.html', 'tools/data/index.html', 'tools/developer/index.html', 'tools/math/index.html'):
     text = (ROOT / path).read_text(encoding='utf-8')
     if 'href="../"' not in text:
         fail(f'{path} has no relative link back to toolbox')
@@ -135,6 +142,11 @@ developer = (ROOT / 'tools/developer/index.html').read_text(encoding='utf-8')
 for asset in ('developer.css', 'developer-app.js'):
     if asset not in developer:
         fail(f'Developer Lab does not load {asset}')
+
+math_page = (ROOT / 'tools/math/index.html').read_text(encoding='utf-8')
+for asset in ('math.css', 'calc-core.js', 'units-core.js', 'science-core.js', 'grade-core.js', 'math-app.js'):
+    if asset not in math_page:
+        fail(f'Math & Science Lab does not load {asset}')
 
 with (ROOT / 'tools/money/data/us-cpi.json').open(encoding='utf-8') as handle:
     cpi = json.load(handle)
