@@ -1,9 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
-const filesHtml = readFileSync(new URL('../tools/files/index.html', import.meta.url), 'utf8');
-const mediaHtml = readFileSync(new URL('../tools/media/index.html', import.meta.url), 'utf8');
+const filesUrl = new URL('../tools/files/index.html', import.meta.url);
+const mediaUrl = new URL('../tools/media/index.html', import.meta.url);
+
+test('File & Archive Lab page exists', () => assert.equal(existsSync(filesUrl), true));
+test('Media Studio page exists', () => assert.equal(existsSync(mediaUrl), true));
+
+const filesHtml = existsSync(filesUrl) ? readFileSync(filesUrl, 'utf8') : '';
+const mediaHtml = existsSync(mediaUrl) ? readFileSync(mediaUrl, 'utf8') : '';
 
 for (const token of ['filesDrop','filesPicker','fileList','renameFiles','hashFiles','findDuplicates','archiveFiles','inspectFile','downloadFiles','files-app.js']) {
   test(`File Lab exposes ${token}`, () => assert.match(filesHtml, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))));
