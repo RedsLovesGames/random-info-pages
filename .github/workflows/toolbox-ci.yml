@@ -7,6 +7,7 @@ on:
       - 'tools/**'
       - 'tests/**'
       - 'scripts/check_toolbox.py'
+      - 'scripts/toolbox_browser_smoke.mjs'
       - 'index.html'
       - '.github/workflows/toolbox-ci.yml'
   workflow_dispatch:
@@ -20,10 +21,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout toolbox
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
 
@@ -41,3 +42,36 @@ jobs:
             echo "==> $testfile"
             node "$testfile"
           done < <(find tools -type f \( -name '*.node.test.js' -o -name '*.node.test.mjs' \) -print0 | sort -z)
+
+  browser-smoke:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout toolbox
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.59.1
+          npx playwright install --with-deps chromium
+
+      - name: Serve repository
+        shell: bash
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/toolbox-http.log 2>&1 &
+          echo $! > /tmp/toolbox-http.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8000/tools/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/toolbox-http.log
+          exit 1
+
+      - name: Chromium desktop and mobile smoke
+        run: node scripts/toolbox_browser_smoke.mjs
