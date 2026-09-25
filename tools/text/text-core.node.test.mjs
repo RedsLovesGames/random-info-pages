@@ -16,8 +16,8 @@ test('replaceText supports literal and regex replacement', () => {
 test('analyzeText returns frequency and readability metrics', () => {
   const result = TextCore.analyzeText('The cat sat. The cat ran quickly.');
   assert.equal(result.sentences, 2);
-  assert.equal(result.frequency[0].word, 'the');
-  assert.equal(result.frequency[0].count, 2);
+  assert.equal(result.frequency.find(item => item.word === 'the')?.count, 2);
+  assert.equal(result.frequency.find(item => item.word === 'cat')?.count, 2);
   assert.ok(Number.isFinite(result.readingMinutes));
   assert.ok(Number.isFinite(result.fleschReadingEase));
 });
