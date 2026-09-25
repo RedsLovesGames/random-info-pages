@@ -18,8 +18,8 @@ test('registry defines 13 in-scope workspaces and excludes web/design', () => {
   for (const id of ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer', 'math', 'random', 'codes', 'network']) assert.ok(getWorkspace(id), `missing workspace ${id}`);
 });
 
-test('step 6 publishes Developer Lab after Data Studio', () => {
-  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer']);
+test('step 8 publishes Math & Science Lab after the existing nine workspaces', () => {
+  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer', 'math']);
 });
 
 test('Step 7 publishes all Time and Money subtools through global search', () => {
@@ -37,6 +37,26 @@ test('Step 7 publishes all Time and Money subtools through global search', () =>
     assert.equal(match.workspaceId, workspaceId, query);
     assert.equal(match.actionId, actionId, query);
     assert.equal(match.available, true, query);
+  }
+});
+
+test('Step 8 publishes Math & Science actions through natural search', () => {
+  for (const [query, actionId] of [
+    ['scientific calculator', 'calculator'],
+    ['unit converter', 'units'],
+    ['quadratic equation', 'algebra'],
+    ['graph equation', 'graph'],
+    ['circle area', 'geometry'],
+    ['kinematics', 'physics'],
+    ['molar mass', 'chemistry'],
+    ['ohms law', 'electronics'],
+    ['required final grade', 'grades'],
+  ]) {
+    const match = findToolboxMatches(query)[0];
+    assert.equal(match.workspaceId, 'math', query);
+    assert.equal(match.actionId, actionId, query);
+    assert.equal(match.available, true, query);
+    assert.equal(match.route, `./math/?action=${actionId}`, query);
   }
 });
 
