@@ -59,8 +59,9 @@ export async function getDuckDB(onProgress = () => {}) {
         URL.revokeObjectURL(workerUrl);
         throw error;
       }
+      URL.revokeObjectURL(workerUrl);
       const connection = await db.connect();
-      duckState = { duckdb, db, connection, worker, workerUrl };
+      duckState = { duckdb, db, connection, worker };
       onProgress('DuckDB ready', 1);
       return duckState;
     })().catch(error => {
@@ -95,12 +96,16 @@ export function arrowTableToRows(table) {
 
 export async function registerRowsAsDuckTable(rows, tableName = 'data', onProgress = () => {}) {
   const state = await getDuckDB(onProgress);
-  const filename = `toolbox-${Date.now()}-${Math.random().toString(36).slice(2)}.jsonl`;
-  const text = (rows || []).map(row => JSON.stringify(row, (_, value) => typeof value === 'bigint' ? value.toString() : value)).join('\n');
-  await state.db.registerFileText(filename, text || '{}');
   const identifier = tableName.replace(/[^A-Za-z0-9_]/g, '_') || 'data';
-  await state.connection.query(`CREATE OR REPLACE TABLE ${identifier} AS SELECT * FROM read_json_auto('${filename.replaceAll("'", "''")}', format='newline_delimited')`);
-  try { await state.db.dropFile(filename); } catch {}
+  const filename = `toolbox-${Date.now()}-${Math.random().toString(36).slice(2)}.json`;
+  const payload = JSON.stringify(rows?.length ? rows : [{}], (_, value) => typeof value === 'bigint' ? value.toString() : value);
+  await state.db.registerFileText(filename, payload);
+  try {
+    await state.connection.query(`DROP TABLE IF EXISTS ${identifier}`);
+    await state.connection.insertJSONFromPath(filename, { schema: 'main', name: identifier });
+  } finally {
+    try { await state.db.dropFile(filename); } catch {}
+  }
   return { ...state, tableName: identifier };
 }
 
