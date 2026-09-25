@@ -10,6 +10,8 @@ on:
       - 'scripts/toolbox_browser_smoke.mjs'
       - 'scripts/toolbox_pdf_browser_smoke.mjs'
       - 'scripts/toolbox_image_workspace_smoke.mjs'
+      - 'scripts/toolbox_files_browser_smoke.mjs'
+      - 'scripts/toolbox_media_browser_smoke.mjs'
       - 'index.html'
       - '.github/workflows/toolbox-ci.yml'
   workflow_dispatch:
@@ -48,7 +50,7 @@ jobs:
   browser-smoke:
     needs: test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout toolbox
         uses: actions/checkout@v5
@@ -83,3 +85,9 @@ jobs:
 
       - name: Image persistent workspace smoke
         run: node scripts/toolbox_image_workspace_smoke.mjs
+
+      - name: File Lab persistent workspace smoke
+        run: node scripts/toolbox_files_browser_smoke.mjs
+
+      - name: Media Studio persistent workspace smoke
+        run: node scripts/toolbox_media_browser_smoke.mjs
