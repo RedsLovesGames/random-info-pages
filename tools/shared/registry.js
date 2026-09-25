@@ -75,25 +75,26 @@ export const TOOLBOX_REGISTRY = [
   },
   {
     id: 'files', title: 'File & Archive Lab', route: './files/', description: 'Rename, inspect, verify, archive, and find files.',
-    type: 'asset', privacy: 'On device', available: false, keywords: ['files', 'archive', 'zip', 'hash', 'rename'],
+    type: 'asset', privacy: 'On device', available: true, keywords: ['files', 'archive', 'zip', 'hash', 'rename'],
     actions: [
-      action('rename', 'Bulk Rename', 'names', ['rename files', 'batch rename']),
-      action('hash', 'Checksums', 'verify', ['sha256 file', 'sha-256', 'checksum']),
-      action('duplicates', 'Find Duplicates', 'find', ['duplicate files']),
-      action('archive', 'Archive', 'archive', ['zip', '7z', 'tar', 'extract archive']),
-      action('inspect', 'Inspect File', 'inspect', ['mime', 'magic bytes', 'file info']),
+      action('rename', 'Bulk Rename', 'names', ['rename files', 'batch rename'], { accepts: ['file'] }),
+      action('hash', 'Checksums', 'verify', ['sha256 file', 'sha-256', 'checksum'], { accepts: ['file'] }),
+      action('duplicates', 'Find Duplicates', 'find', ['duplicate files'], { accepts: ['file'] }),
+      action('archive', 'Archive', 'archive', ['zip', 'extract zip', 'create zip'], { accepts: ['file'] }),
+      action('inspect', 'Inspect File', 'inspect', ['mime', 'magic bytes', 'hex', 'file info'], { accepts: ['file'] }),
     ],
   },
   {
     id: 'media', title: 'Media Studio', route: './media/', description: 'Edit audio/video, record, generate audio, and inspect media.',
-    type: 'asset', privacy: 'On device', available: false, keywords: ['audio', 'video', 'record', 'media'],
+    type: 'asset', privacy: 'On device', available: true, keywords: ['audio', 'video', 'record', 'media'],
     actions: [
-      action('trim', 'Trim', 'edit', ['trim audio', 'trim video']),
-      action('convert', 'Convert Media', 'output', ['audio converter', 'video converter']),
-      action('extract-audio', 'Extract Audio', 'video', ['video to audio']),
+      action('trim', 'Trim', 'edit', ['trim audio', 'trim video'], { accepts: ['audio', 'video'] }),
+      action('convert', 'Convert / Transform Media', 'output', ['audio converter', 'video converter', 'resize video', 'crop video', 'rotate video'], { accepts: ['audio', 'video'] }),
+      action('audio-edit', 'Audio Edit', 'edit', ['normalize audio', 'reverse audio', 'volume', 'speed', 'fade'], { accepts: ['audio'] }),
+      action('extract-audio', 'Extract Audio', 'video', ['video to audio'], { accepts: ['video'] }),
       action('record', 'Record', 'record', ['screen recorder', 'microphone recorder', 'webcam recorder']),
-      action('tone', 'Tone Generator', 'generate', ['frequency generator', 'metronome']),
-      action('inspect', 'Media Info', 'inspect', ['codec', 'bitrate', 'fps']),
+      action('tone', 'Tone Generator', 'generate', ['frequency generator', 'metronome', 'note frequency']),
+      action('inspect', 'Media Info', 'inspect', ['codec', 'bitrate', 'fps'], { accepts: ['audio', 'video'] }),
     ],
   },
   {
@@ -198,29 +199,19 @@ export function findToolboxMatches(query, { includeUnavailable = true, limit = 1
   const q = normalize(query);
   if (!q) return [];
   const matches = [];
-
   for (const workspace of TOOLBOX_REGISTRY) {
     if (!includeUnavailable && !workspace.available) continue;
     const workspaceText = normalize([workspace.title, workspace.description, ...(workspace.keywords || [])].join(' '));
     const workspaceScore = Math.max(scoreText(q, normalize(workspace.title)), scoreText(q, workspaceText));
     if (workspaceScore) {
-      matches.push({
-        kind: 'workspace', workspaceId: workspace.id, workspaceTitle: workspace.title, actionId: null,
-        title: workspace.title, route: workspace.route, available: workspace.available, score: workspaceScore,
-      });
+      matches.push({ kind: 'workspace', workspaceId: workspace.id, workspaceTitle: workspace.title, actionId: null, title: workspace.title, route: workspace.route, available: workspace.available, score: workspaceScore });
     }
-
     for (const item of workspace.actions || []) {
       const aliasScores = [item.title, ...(item.aliases || [])].map(value => scoreText(q, normalize(value)));
       const actionScore = Math.max(...aliasScores, 0);
       if (!actionScore) continue;
-      matches.push({
-        kind: 'action', workspaceId: workspace.id, workspaceTitle: workspace.title, actionId: item.id,
-        title: item.title, route: `${workspace.route}?action=${encodeURIComponent(item.id)}`,
-        available: Boolean(workspace.available && item.available !== false), score: actionScore + 10,
-      });
+      matches.push({ kind: 'action', workspaceId: workspace.id, workspaceTitle: workspace.title, actionId: item.id, title: item.title, route: `${workspace.route}?action=${encodeURIComponent(item.id)}`, available: Boolean(workspace.available && item.available !== false), score: actionScore + 10 });
     }
   }
-
   return matches.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title)).slice(0, limit);
 }
