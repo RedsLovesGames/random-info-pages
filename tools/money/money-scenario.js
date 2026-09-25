@@ -23,6 +23,31 @@
     $('#scenarioYears').value = scenario.years;
     $('#scenarioRate').value = scenario.annualRatePercent;
   }
+
+  function syncAmountMirrors(sourceId = '') {
+    for (const id of ['growthPrincipal','savingsCurrent','loanPrincipal']) {
+      const element = document.getElementById(id);
+      if (element && id !== sourceId) element.value = scenario.amount;
+    }
+    const inflationAmount = $('#inflationAmount');
+    if (inflationAmount && sourceId !== 'inflationAmount') {
+      inflationAmount.value = scenario.amount;
+      inflationAmount.dispatchEvent(new Event('input',{bubbles:true}));
+    }
+    const fxAmount = $('#fxAmount');
+    if (fxAmount && sourceId !== 'fxAmount') {
+      fxAmount.value = scenario.amount;
+      fxAmount.dispatchEvent(new Event('input',{bubbles:true}));
+    }
+  }
+
+  function setSharedAmount(value, sourceId = '') {
+    scenario.amount = Math.max(0, Number(value) || 0);
+    $('#scenarioAmount').value = scenario.amount;
+    saveScenario();
+    syncAmountMirrors(sourceId);
+  }
+
   function commitScenario() {
     scenario = FinanceCore.normalizeScenario({
       amount: $('#scenarioAmount').value,
@@ -31,12 +56,12 @@
       annualRatePercent: $('#scenarioRate').value,
     });
     saveScenario();
-    const inflationAmount = $('#inflationAmount'); if (inflationAmount) { inflationAmount.value = scenario.amount; inflationAmount.dispatchEvent(new Event('input',{bubbles:true})); }
-    const fxAmount = $('#fxAmount'); if (fxAmount) { fxAmount.value = scenario.amount; fxAmount.dispatchEvent(new Event('input',{bubbles:true})); }
-    const fxBase = $('#fxBase'); if (fxBase && [...fxBase.options].some(o=>o.value===scenario.currency) && fxBase.value !== scenario.currency) { fxBase.value=scenario.currency; fxBase.dispatchEvent(new Event('change',{bubbles:true})); }
-    $('#growthPrincipal').value = scenario.amount;
-    $('#savingsCurrent').value = scenario.amount;
-    $('#loanPrincipal').value = scenario.amount;
+    syncAmountMirrors('scenarioAmount');
+    const fxBase = $('#fxBase');
+    if (fxBase && [...fxBase.options].some(o=>o.value===scenario.currency) && fxBase.value !== scenario.currency) {
+      fxBase.value=scenario.currency;
+      fxBase.dispatchEvent(new Event('change',{bubbles:true}));
+    }
     renderActiveFinance();
   }
 
@@ -105,9 +130,13 @@
   $('#scenarioYears').addEventListener('input',commitScenario);
   $('#scenarioRate').addEventListener('input',commitScenario);
   $$('[data-money-mode]').forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.moneyMode)));
-  for (const selector of ['#growthPrincipal','#growthContribution','#growthInflation']) $(selector).addEventListener('input',renderGrowth);
-  for (const selector of ['#savingsTarget','#savingsCurrent']) $(selector).addEventListener('input',renderSavings);
-  for (const selector of ['#loanPrincipal','#loanExtra']) $(selector).addEventListener('input',renderLoan);
+
+  $('#growthPrincipal').addEventListener('input', () => { setSharedAmount($('#growthPrincipal').value, 'growthPrincipal'); renderGrowth(); });
+  $('#savingsCurrent').addEventListener('input', () => { setSharedAmount($('#savingsCurrent').value, 'savingsCurrent'); renderSavings(); });
+  $('#loanPrincipal').addEventListener('input', () => { setSharedAmount($('#loanPrincipal').value, 'loanPrincipal'); renderLoan(); });
+  for (const selector of ['#growthContribution','#growthInflation']) $(selector).addEventListener('input',renderGrowth);
+  $('#savingsTarget').addEventListener('input',renderSavings);
+  $('#loanExtra').addEventListener('input',renderLoan);
   for (const selector of ['#incomeHourly','#incomeWeeklyHours','#incomeWeeks','#incomeRegularHours','#incomeOvertimeHours','#incomeOvertimeMultiplier','#incomeRaise']) $(selector).addEventListener('input',()=>renderIncome('hourly'));
   $('#incomeSalary').addEventListener('input',()=>renderIncome('salary'));
 
