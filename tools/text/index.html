@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0a">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Clean text, normalize lists and preview sanitized Markdown locally.">
+<title>Text Tools · Toolbox</title>
+<link rel="stylesheet" href="../shared/toolbox.css">
+<link rel="stylesheet" href="./text.css">
+</head>
+<body>
+<main class="text-shell">
+  <header class="text-head">
+    <div>
+      <a class="tb-back" href="../">← Toolbox</a>
+      <h1>Text Tools</h1>
+      <p>Clean prose, normalize lists, count text, and preview Markdown without sending the content anywhere.</p>
+    </div>
+    <span class="text-badge">LOCAL ONLY</span>
+  </header>
+
+  <nav class="text-tabs" aria-label="Text tool mode">
+    <button class="text-tab active" type="button" data-mode="cleaner" aria-selected="true">Text Cleaner</button>
+    <button id="listMode" class="text-tab" type="button" data-mode="list" aria-selected="false">List Cleaner</button>
+    <button id="markdownMode" class="text-tab" type="button" data-mode="markdown" aria-selected="false">Markdown</button>
+  </nav>
+
+  <section id="cleanerPanel" class="text-panel">
+    <div class="text-stats" aria-live="polite">
+      <div class="text-stat"><strong id="wordCount">0</strong><span>Words</span></div>
+      <div class="text-stat"><strong id="characterCount">0</strong><span>Characters</span></div>
+      <div class="text-stat"><strong id="characterNoSpaceCount">0</strong><span>No spaces</span></div>
+      <div class="text-stat"><strong id="lineCount">0</strong><span>Lines</span></div>
+    </div>
+
+    <div id="cleanerTools" class="tool-strip">
+      <button class="text-button" type="button" data-action="upper">UPPERCASE</button>
+      <button class="text-button" type="button" data-action="lower">lowercase</button>
+      <button class="text-button" type="button" data-action="title">Title Case</button>
+      <button class="text-button" type="button" data-action="sentence">Sentence case</button>
+      <button class="text-button" type="button" data-action="trim-lines">Trim lines</button>
+      <button class="text-button" type="button" data-action="collapse">Collapse spaces</button>
+      <button class="text-button" type="button" data-action="remove-blanks">Remove blank lines</button>
+    </div>
+
+    <div id="listTools" class="tool-strip" hidden>
+      <button class="text-button" type="button" data-action="dedupe">Deduplicate</button>
+      <button class="text-button" type="button" data-action="sort-asc">Sort A → Z</button>
+      <button class="text-button" type="button" data-action="sort-desc">Sort Z → A</button>
+      <button class="text-button" type="button" data-action="reverse">Reverse</button>
+      <button class="text-button" type="button" data-action="strip-markers">Remove bullets/numbers</button>
+      <button class="text-button" type="button" data-action="bullet">Add bullets</button>
+      <button class="text-button" type="button" data-action="number">Add numbers</button>
+    </div>
+
+    <div id="listOptions" class="list-options" hidden>
+      <label class="small-field"><span>Separator</span><input id="separatorInput" value=", " aria-label="List separator"></label>
+      <button class="text-button" type="button" data-action="separator-to-lines">Separator → lines</button>
+      <button class="text-button" type="button" data-action="lines-to-separator">Lines → separator</button>
+    </div>
+
+    <div class="text-workspace">
+      <div class="text-side">
+        <div class="text-side-head"><strong>Input</strong><span>Live counts above</span></div>
+        <textarea id="textInput" class="text-area" spellcheck="false" placeholder="Paste or type text…"></textarea>
+      </div>
+      <div class="text-side">
+        <div class="text-side-head"><strong>Output</strong><span>Original input is preserved</span></div>
+        <textarea id="textOutput" class="text-area output" spellcheck="false" placeholder="Choose a transform…"></textarea>
+      </div>
+    </div>
+    <div class="text-actions">
+      <button id="copyOutput" class="text-button primary" type="button">Copy output</button>
+      <button id="useOutput" class="text-button" type="button">Use output as input</button>
+      <button id="swapText" class="text-button" type="button">Swap</button>
+      <span id="textStatus" class="text-status" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <section id="markdownPanel" class="text-panel" hidden>
+    <div class="markdown-panel">
+      <div class="markdown-editor">
+        <div class="text-side-head"><strong>Markdown</strong><span>Source stays editable</span></div>
+        <textarea id="markdownInput" class="text-area" spellcheck="false"></textarea>
+        <div class="text-actions"><button id="copyMarkdownSource" class="text-button" type="button">Copy Markdown</button></div>
+      </div>
+      <div class="markdown-preview-shell">
+        <div class="text-side-head"><strong>Preview</strong><span>Sanitized HTML</span></div>
+        <article id="markdownPreview" class="markdown-preview"></article>
+        <div class="text-actions"><button id="copyMarkdownHtml" class="text-button primary" type="button">Copy HTML</button></div>
+      </div>
+    </div>
+    <div id="markdownStatus" class="markdown-loading" aria-live="polite">Marked and DOMPurify load only when this mode is opened.</div>
+  </section>
+</main>
+<script src="./text-core.js"></script>
+<script src="./text-app.js"></script>
+<!-- Markdown mode lazy-loads pinned Marked and DOMPurify builds only when opened. -->
+</body>
+</html>
