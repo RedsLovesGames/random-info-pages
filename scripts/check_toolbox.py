@@ -28,6 +28,7 @@ REQUIRED = [
     'tools/money/data/us-cpi.json',
     'tools/text/index.html',
     'tools/text/text-core.js',
+    'tools/text/text-workspace.js',
     'tools/pdf/index.html',
     'tools/pdf/pdf-core.js',
     'tools/pdf/pdf-engine.js',
@@ -52,8 +53,13 @@ REQUIRED = [
     'tools/data/data-app.js',
     'tools/data/data-route.js',
     'tools/data/data.css',
+    'tools/developer/index.html',
+    'tools/developer/developer-core.js',
+    'tools/developer/developer-app.js',
+    'tools/developer/developer.css',
     'tools/OPEN_SOURCE.md',
     'tools/DATA_OPEN_SOURCE.md',
+    'tools/DEVELOPER_OPEN_SOURCE.md',
 ]
 
 
@@ -70,11 +76,11 @@ if 'href="./tools/"' not in home:
     fail('homepage does not link ./tools/')
 
 hub = (ROOT / 'tools/index.html').read_text(encoding='utf-8')
-for route in ('./time/', './image/', './money/', './text/', './pdf/', './files/', './media/', './data/'):
+for route in ('./time/', './image/', './money/', './text/', './pdf/', './files/', './media/', './data/', './developer/'):
     if f'href="{route}"' not in hub:
         fail(f'toolbox hub missing route {route}')
 
-for path in ('tools/time/index.html', 'tools/image/index.html', 'tools/money/index.html', 'tools/text/index.html', 'tools/pdf/index.html', 'tools/files/index.html', 'tools/media/index.html', 'tools/data/index.html'):
+for path in ('tools/time/index.html', 'tools/image/index.html', 'tools/money/index.html', 'tools/text/index.html', 'tools/pdf/index.html', 'tools/files/index.html', 'tools/media/index.html', 'tools/data/index.html', 'tools/developer/index.html'):
     text = (ROOT / path).read_text(encoding='utf-8')
     if 'href="../"' not in text:
         fail(f'{path} has no relative link back to toolbox')
@@ -104,6 +110,16 @@ for asset in ('data.css', 'data-app.js', 'data-route.js'):
     if asset not in data:
         fail(f'Data Studio does not load {asset}')
 
+text_page = (ROOT / 'tools/text/index.html').read_text(encoding='utf-8')
+for asset in ('text.css', 'text-core.js', 'text-app.js', 'text-workspace.js'):
+    if asset not in text_page:
+        fail(f'Text Studio does not load {asset}')
+
+developer = (ROOT / 'tools/developer/index.html').read_text(encoding='utf-8')
+for asset in ('developer.css', 'developer-app.js'):
+    if asset not in developer:
+        fail(f'Developer Lab does not load {asset}')
+
 with (ROOT / 'tools/money/data/us-cpi.json').open(encoding='utf-8') as handle:
     cpi = json.load(handle)
 values = cpi.get('values', {})
@@ -129,6 +145,11 @@ for token in ('papaparse@5.7.0', 'SheetJS CE 0.20.3', '@duckdb/duckdb-wasm@1.33.
     if token not in data_open_source:
         fail(f'DATA_OPEN_SOURCE.md missing incorporated source: {token}')
 
+developer_open_source = (ROOT / 'tools/DEVELOPER_OPEN_SOURCE.md').read_text(encoding='utf-8')
+for token in ('js-yaml@5.4.2', 'ajv@8.17.1', 'marked@18.0.14', 'dompurify@3.4.16'):
+    if token not in developer_open_source:
+        fail(f'DEVELOPER_OPEN_SOURCE.md missing incorporated source: {token}')
+
 absolute_tool_paths = []
 for html_path in (ROOT / 'tools').rglob('*.html'):
     text = html_path.read_text(encoding='utf-8')
@@ -137,4 +158,4 @@ for html_path in (ROOT / 'tools').rglob('*.html'):
 if absolute_tool_paths:
     fail(f'root-absolute /tools paths break project-site deployment: {absolute_tool_paths}')
 
-print('PASS toolbox static routes, assets, data disclosures, CPI coverage, attribution, and relative paths')
+print('PASS toolbox static routes, assets, disclosures, CPI coverage, attribution, and relative paths')
