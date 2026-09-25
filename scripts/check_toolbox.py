@@ -125,7 +125,7 @@ for token in ('pica@10.0.3', 'fflate@0.8.3', 'cropperjs@2.2.0', 'gifenc@1.0.3', 
         fail(f'OPEN_SOURCE.md missing incorporated source: {token}')
 
 data_open_source = (ROOT / 'tools/DATA_OPEN_SOURCE.md').read_text(encoding='utf-8')
-for token in ('papaparse@5.7.0', 'SheetJS CE 0.20.3', '@duckdb/duckdb-wasm@1.33.0', '@observablehq/plot@0.6.17'):
+for token in ('papaparse@5.7.0', 'SheetJS CE 0.20.3', '@duckdb/duckdb-wasm@1.33.1-dev57.0', '@observablehq/plot@0.6.17'):
     if token not in data_open_source:
         fail(f'DATA_OPEN_SOURCE.md missing incorporated source: {token}')
 
