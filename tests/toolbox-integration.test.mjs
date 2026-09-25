@@ -57,23 +57,23 @@ test('Step 10 hub and handoff producers/receivers are wired', () => {
   const hub = read('../tools/index.html');
   assert.match(hub, /shared\/command\.js/);
 
-  const pdf = read('../tools/pdf/pdf-app.js');
-  assert.match(pdf, /Open in Text Studio/);
-  assert.match(pdf, /putArtifact/);
+  const producer = read('../tools/shared/handoff-producers.js');
+  assert.match(producer, /Open in Text Studio/);
+  assert.match(producer, /Open JSON in Developer Lab/);
+  assert.match(producer, /Open metadata in Data Studio/);
+  assert.match(producer, /putArtifact/);
 
-  const data = read('../tools/data/data-app.js');
-  assert.match(data, /Open JSON in Developer Lab/);
-  assert.match(data, /artifactIdFromSearch|putArtifact/);
+  const receiver = read('../tools/shared/handoff-receiver.js');
+  assert.match(receiver, /artifactIdFromSearch/);
+  assert.match(receiver, /getArtifact/);
+  assert.match(receiver, /#textInput/);
+  assert.match(receiver, /#developerInput/);
+  assert.match(receiver, /#dataPicker/);
 
-  const files = read('../tools/files/files-app.js');
-  assert.match(files, /Open metadata in Data Studio/);
-  assert.match(files, /putArtifact/);
-
-  const text = read('../tools/text/text-workspace.js');
-  assert.match(text, /artifactIdFromSearch/);
-  assert.match(text, /getArtifact/);
-
-  const developer = read('../tools/developer/developer-app.js');
-  assert.match(developer, /artifactIdFromSearch/);
-  assert.match(developer, /getArtifact/);
+  assert.match(read('../tools/pdf/index.html'), /handoff-producers\.js/);
+  assert.match(read('../tools/files/index.html'), /handoff-producers\.js/);
+  assert.match(read('../tools/data/index.html'), /handoff-producers\.js/);
+  assert.match(read('../tools/data/index.html'), /handoff-receiver\.js/);
+  assert.match(read('../tools/text/index.html'), /handoff-receiver\.js/);
+  assert.match(read('../tools/developer/index.html'), /handoff-receiver\.js/);
 });
