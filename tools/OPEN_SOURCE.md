@@ -10,6 +10,26 @@ This file records third-party projects evaluated or incorporated by the Random I
 - Status: **Primary implementation path.**
 - User image/video/text bytes stay on-device. Runtime/model downloads described below do not upload selected media or text.
 
+## Time Workspace incorporated references
+
+### zzjoey/ZoneMap
+- Repository: https://github.com/zzjoey/ZoneMap
+- Revision reviewed: `9ea97e6cd45ee47d100aed5af7bdf3421ac3e85e`
+- License: MIT, copyright 2026 ZoneMap.live.
+- Status: **Incorporated by visual/interaction adaptation; no React/Vite/Hono source was transplanted.**
+- Local integration: `tools/time/index.html`, `tools/time/time.css`, `tools/time/time-app.js`.
+- Upstream concepts studied: map-first layout, location rail/cards, world-map marker hierarchy, shared time scrubber, base/reference location emphasis, and day/night presentation.
+- Modification: rewritten as framework-free static HTML/CSS/JavaScript for GitHub Pages. Toolbox uses its own SVG map, grouping model, persistence, and person editing.
+
+### Manaiakalani/world-clock
+- Repository: https://github.com/Manaiakalani/world-clock
+- Revision reviewed: `3f35ed8c09e0b80cac42b86a3ddbb42708118b85`
+- License: MIT, copyright 2026 World Clock Contributors.
+- Status: **Incorporated by feature/interaction adaptation; no Next.js/React source was transplanted.**
+- Local integration: `tools/time/index.html`, `tools/time/time.css`, `tools/time/time-app.js`, `tools/time/time.js`.
+- Upstream concepts studied: multi-location time travel, day/night context, working-hour overlap planning, person/location organization, and responsive time-comparison UX.
+- Modification: Toolbox implements a local v3 person/location data model, automatic same-time-zone grouping, a 24-hour availability planner, map markers, and a separate detailed Board view using native browser APIs.
+
 ## Image Studio incorporated sources
 
 ### wendyliga/converter
