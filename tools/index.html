@@ -16,7 +16,7 @@
   <div class="tb-kicker">Local-first utility collection</div>
   <h1 class="tb-title">Toolbox</h1>
   <p class="tb-lede">The useful parts of single-purpose utility sites, without the ads, accounts, or clutter. Most work happens entirely on your device.</p>
-  <label><span style="position:absolute;clip:rect(0 0 0 0)">Filter tools</span><input id="toolSearch" class="tb-search" type="search" placeholder="Find a tool…" autocomplete="off"></label>
+  <label><span style="position:absolute;clip:rect(0 0 0 0)">Filter tools</span><input id="toolSearch" class="tb-search" type="search" placeholder="Find a tool or action…" autocomplete="off"></label>
   <div class="tb-toolbar"><button id="favoritesOnly" class="tb-toolbutton" type="button" aria-pressed="false">☆ Favorites</button><div id="recentTools" class="tb-recent" aria-label="Recently used tools"></div></div>
 </section>
 <section id="toolGrid" class="tb-grid" aria-label="Tools">
@@ -46,5 +46,6 @@ function filter(){const q=input.value.trim().toLowerCase();let shown=0;shells.fo
 input.addEventListener('input',filter);favoritesOnly.addEventListener('click',()=>{favoriteFilter=!favoriteFilter;favoritesOnly.classList.toggle('active',favoriteFilter);favoritesOnly.setAttribute('aria-pressed',String(favoriteFilter));favoritesOnly.textContent=favoriteFilter?'★ Favorites':'☆ Favorites';filter()});
 document.querySelectorAll('[data-favorite]').forEach(button=>button.addEventListener('click',()=>{window.Toolbox?.toggleFavorite(button.dataset.favorite);renderFavorites();filter()}));document.querySelectorAll('.tb-card').forEach(card=>card.addEventListener('click',()=>window.Toolbox?.recordRecent(card.getAttribute('href'))));renderFavorites();renderRecent();filter();
 </script>
+<script type="module" src="./shared/command.js"></script>
 </body>
 </html>
