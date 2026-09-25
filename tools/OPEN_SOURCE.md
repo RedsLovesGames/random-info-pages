@@ -6,7 +6,7 @@ This file records third-party projects evaluated or incorporated by the Random I
 
 ### Web Platform APIs
 - Source: browser standards implemented by the user's browser.
-- Use: `Intl.DateTimeFormat`, Canvas 2D, `createImageBitmap`, `HTMLCanvasElement.toBlob`, `OffscreenCanvas`, Web Crypto, Web Audio, AudioContext, MediaRecorder, `getUserMedia`, `getDisplayMedia`, localStorage, IndexedDB, Cache Storage, Clipboard, File/Blob/Object URL APIs, streams, `<audio>` and `<video>`.
+- Use: `Intl.DateTimeFormat`, Canvas 2D, `createImageBitmap`, `HTMLCanvasElement.toBlob`, `OffscreenCanvas`, Web Crypto, Web Audio, AudioContext, MediaRecorder, `getUserMedia`, `getDisplayMedia`, BarcodeDetector when available, localStorage, IndexedDB, Cache Storage, Clipboard, File/Blob/Object URL APIs, streams, `<audio>` and `<video>`.
 - Status: **Primary implementation path.**
 - User files/media/text stay on-device. Runtime/model/library downloads described below do not upload selected content.
 
@@ -171,6 +171,18 @@ This file records third-party projects evaluated or incorporated by the Random I
 - Status: **Incorporated as a lazy runtime dependency for local PDF OCR.**
 - Local integration: `tools/pdf/pdf-app.js`.
 
+## Codes & Generator Lab incorporated sources
+
+### metafloor/bwip-js
+- Repository: https://github.com/metafloor/bwip-js
+- Package/version: `bwip-js@4.11.4`
+- License: MIT.
+- Status: **Incorporated unmodified as a lazy runtime dependency.**
+- Local integration: `tools/codes/codes-app.js`.
+- Delivery: pinned jsDelivr browser build, loaded only when a QR or barcode is actually rendered.
+- Use: local Canvas rendering for QR Code, Data Matrix, Code 128, EAN-13, and UPC-A. User payload text remains in-browser; the CDN request fetches library code only.
+- Scanning uses the browser-native `BarcodeDetector` API when available and does not upload selected images.
+
 ## Money Through Time data/API sources
 
 ### Federal Reserve Bank of Minneapolis annual CPI series
@@ -239,6 +251,6 @@ This file records third-party projects evaluated or incorporated by the Random I
 
 ## Runtime dependency note
 
-The static deployment lazy-loads focused dependencies only when their feature is invoked. Current pinned runtime dependencies include Pica, fflate, Cropper.js, gifenc, ONNX Runtime, Marked, DOMPurify, hash-wasm, Mediabunny, pdf-lib, PDF.js, and Tesseract.js. Background removal additionally downloads the pinned U²-Net-small model on first use. User-selected files are not uploaded to those package/model hosts; requests are for library/model assets only.
+The static deployment lazy-loads focused dependencies only when their feature is invoked. Current pinned runtime dependencies include Pica, fflate, Cropper.js, gifenc, ONNX Runtime, Marked, DOMPurify, hash-wasm, Mediabunny, bwip-js, pdf-lib, PDF.js, and Tesseract.js. Background removal additionally downloads the pinned U²-Net-small model on first use. User-selected files are not uploaded to those package/model hosts; requests are for library/model assets only.
 
 See `tools/IMAGE_UPSTREAM_REVIEW.md` for the earlier Image Studio technical comparison and rationale.
