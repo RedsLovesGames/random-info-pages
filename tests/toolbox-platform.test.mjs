@@ -20,8 +20,8 @@ test('registry defines 13 in-scope workspaces and excludes web/design', () => {
   }
 });
 
-test('step 5 publishes Data Studio after the existing seven workspaces', () => {
-  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data']);
+test('step 6 publishes Developer Lab after Data Studio', () => {
+  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer']);
 });
 
 test('search ranks exact action aliases and returns deep-linkable actions', () => {
@@ -55,6 +55,18 @@ test('search ranks exact action aliases and returns deep-linkable actions', () =
   const base64 = findToolboxMatches('base64');
   assert.equal(base64[0].workspaceId, 'developer');
   assert.equal(base64[0].actionId, 'base64');
+  assert.equal(base64[0].available, true);
+
+  const schema = findToolboxMatches('json schema');
+  assert.equal(schema[0].workspaceId, 'developer');
+  assert.equal(schema[0].actionId, 'schema');
+  assert.equal(schema[0].route, './developer/?action=schema');
+  assert.equal(schema[0].available, true);
+
+  const playground = findToolboxMatches('html css js playground');
+  assert.equal(playground[0].workspaceId, 'developer');
+  assert.equal(playground[0].actionId, 'playground');
+  assert.equal(playground[0].available, true);
 
   const subnet = findToolboxMatches('cidr');
   assert.equal(subnet[0].workspaceId, 'network');
