@@ -13,69 +13,22 @@
 <body>
 <header class="tb-top"><nav class="tb-shell tb-nav"><a class="tb-brand" href="../">RIP/26 · TOOLBOX</a><a class="tb-back" href="../">← Toolbox</a></nav></header>
 <main class="tb-shell data-page">
-  <section class="data-hero">
-    <div class="tb-kicker">08 / Data · Local analysis</div>
-    <h1>Data<br>Studio</h1>
-    <p>Load one dataset, keep it in a transformation pipeline, then inspect, clean, reshape, analyze, query, chart, and export without sending the file to a server.</p>
-  </section>
-
+  <section class="data-hero"><div class="tb-kicker">08 / Data · Local analysis</div><h1>Data<br>Studio</h1><p>Load one dataset, keep it in a transformation pipeline, then inspect, clean, reshape, analyze, query, chart, and export without sending the file to a server.</p></section>
   <input id="dataPicker" type="file" accept=".csv,.tsv,.json,.jsonl,.ndjson,.xlsx,.xls,.ods,.parquet,.sqlite,.sqlite3,.db" hidden>
-  <section id="dataDrop" class="tb-dropzone data-drop" tabindex="0" role="button" aria-label="Choose a data file">
-    <div><strong>DROP A DATASET</strong><span>CSV · TSV · JSON · JSONL · XLSX · Parquet · SQLite</span></div>
-  </section>
-
+  <section id="dataDrop" class="tb-dropzone data-drop" tabindex="0" role="button" aria-label="Choose a data file"><div><strong>DROP A DATASET</strong><span>CSV · TSV · JSON · JSONL · XLSX · Parquet · SQLite</span></div></section>
   <section id="dataWorkspace" class="tb-workspace" hidden>
-    <div class="tb-sourcebar">
-      <div><small>Working dataset</small><strong id="dataSourceName">data</strong><span id="dataSourceMeta">0 rows</span></div>
-      <div class="data-source-actions"><button id="replaceData" class="tb-toolbutton" type="button">Replace</button><button id="clearData" class="tb-toolbutton" type="button">Clear</button></div>
-    </div>
-
-    <section id="dataSummary" class="data-summary" aria-label="Dataset summary">
-      <div><small>Rows</small><strong id="dataRows">0</strong></div>
-      <div><small>Columns</small><strong id="dataColumns">0</strong></div>
-      <div><small>Missing cells</small><strong id="dataMissing">0</strong></div>
-      <div><small>Pipeline steps</small><strong id="dataSteps">0</strong></div>
-    </section>
-
-    <div class="data-table-toolbar">
-      <label class="data-search"><span>Search table</span><input id="dataSearch" type="search" placeholder="Filter visible rows…" autocomplete="off"></label>
-      <div><button id="resetDataView" class="tb-toolbutton" type="button">Reset view</button><button id="downloadQuickCsv" class="tb-toolbutton" type="button">Quick CSV</button></div>
-    </div>
-
-    <section class="data-table-shell" aria-label="Dataset preview">
-      <div id="dataTable" class="data-table"></div>
-      <div id="dataTableFooter" class="data-table-footer">Showing 0 rows</div>
-    </section>
-
-    <section class="data-tools" aria-label="Data tools">
-      <h2>Tools</h2>
-      <div class="tb-group-title">Work with table</div>
-      <div class="tb-toolgrid">
-        <button id="tableData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">▦</span><span class="tb-toolicon-label">Table</span></button>
-        <button id="cleanData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">⌁</span><span class="tb-toolicon-label">Clean</span></button>
-        <button id="transformData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">⇆</span><span class="tb-toolicon-label">Transform</span></button>
-      </div>
-      <div class="tb-group-title">Analyze</div>
-      <div class="tb-toolgrid">
-        <button id="statisticsData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">Σ</span><span class="tb-toolicon-label">Statistics</span></button>
-        <button id="sqlData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">SQL</span><span class="tb-toolicon-label">SQL</span></button>
-        <button id="chartData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">▥</span><span class="tb-toolicon-label">Charts</span></button>
-      </div>
-      <div class="tb-group-title">Output</div>
-      <div class="tb-toolgrid"><button id="exportData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">↓</span><span class="tb-toolicon-label">Convert / export</span></button></div>
-    </section>
-
-    <section id="dataActionPanel" class="tb-action-panel data-action-panel" hidden aria-live="polite"></section>
-    <section id="dataProgress" class="tb-progress" hidden><div><strong id="dataProgressLabel">Working…</strong><span id="dataProgressValue">0%</span></div><progress id="dataProgressBar" max="1" value="0"></progress></section>
-    <section id="dataHistory" class="tb-history" hidden><div class="data-panel-head"><strong>Transformation pipeline</strong><button id="closeDataHistory" class="tb-toolbutton" type="button">Close</button></div><ol id="dataHistoryList"></ol></section>
-
-    <div class="tb-exportbar">
-      <div><button id="undoData" class="tb-toolbutton" type="button">↶ Undo</button><button id="redoData" class="tb-toolbutton" type="button">↷ Redo</button><button id="showDataHistory" class="tb-toolbutton" type="button">Pipeline</button></div>
-      <button id="downloadData" class="data-primary" type="button">Export…</button>
-    </div>
+    <div class="tb-sourcebar"><div><small>Working dataset</small><strong id="dataSourceName">data</strong><span id="dataSourceMeta">0 rows</span></div><div class="data-source-actions"><button id="replaceData" class="tb-toolbutton" type="button">Replace</button><button id="clearData" class="tb-toolbutton" type="button">Clear</button></div></div>
+    <section id="dataSummary" class="data-summary" aria-label="Dataset summary"><div><small>Rows</small><strong id="dataRows">0</strong></div><div><small>Columns</small><strong id="dataColumns">0</strong></div><div><small>Missing cells</small><strong id="dataMissing">0</strong></div><div><small>Pipeline steps</small><strong id="dataSteps">0</strong></div></section>
+    <div class="data-table-toolbar"><label class="data-search"><span>Search table</span><input id="dataSearch" type="search" placeholder="Filter visible rows…" autocomplete="off"></label><div><button id="resetDataView" class="tb-toolbutton" type="button">Reset view</button><button id="downloadQuickCsv" class="tb-toolbutton" type="button">Quick CSV</button></div></div>
+    <section class="data-table-shell" aria-label="Dataset preview"><div id="dataTable" class="data-table"></div><div id="dataTableFooter" class="data-table-footer">Showing 0 rows</div></section>
+    <section class="data-tools" aria-label="Data tools"><h2>Tools</h2><div class="tb-group-title">Work with table</div><div class="tb-toolgrid"><button id="tableData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">▦</span><span class="tb-toolicon-label">Table</span></button><button id="cleanData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">⌁</span><span class="tb-toolicon-label">Clean</span></button><button id="transformData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">⇆</span><span class="tb-toolicon-label">Transform</span></button></div><div class="tb-group-title">Analyze</div><div class="tb-toolgrid"><button id="statisticsData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">Σ</span><span class="tb-toolicon-label">Statistics</span></button><button id="sqlData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">SQL</span><span class="tb-toolicon-label">SQL</span></button><button id="chartData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">▥</span><span class="tb-toolicon-label">Charts</span></button></div><div class="tb-group-title">Output</div><div class="tb-toolgrid"><button id="exportData" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">↓</span><span class="tb-toolicon-label">Convert / export</span></button></div></section>
+    <section id="dataActionPanel" class="tb-action-panel data-action-panel" hidden aria-live="polite"></section><section id="dataProgress" class="tb-progress" hidden><div><strong id="dataProgressLabel">Working…</strong><span id="dataProgressValue">0%</span></div><progress id="dataProgressBar" max="1" value="0"></progress></section><section id="dataHistory" class="tb-history" hidden><div class="data-panel-head"><strong>Transformation pipeline</strong><button id="closeDataHistory" class="tb-toolbutton" type="button">Close</button></div><ol id="dataHistoryList"></ol></section>
+    <div class="tb-exportbar"><div><button id="undoData" class="tb-toolbutton" type="button">↶ Undo</button><button id="redoData" class="tb-toolbutton" type="button">↷ Redo</button><button id="showDataHistory" class="tb-toolbutton" type="button">Pipeline</button></div><button id="downloadData" class="data-primary" type="button">Export…</button></div>
   </section>
 </main>
 <script type="module" src="./data-app.js"></script>
 <script type="module" src="./data-route.js"></script>
+<script type="module" src="../shared/handoff-producers.js"></script>
+<script type="module" src="../shared/handoff-receiver.js"></script>
 </body>
 </html>
