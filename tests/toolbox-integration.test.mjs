@@ -70,6 +70,10 @@ test('Step 10 hub and handoff producers/receivers are wired', () => {
   assert.match(receiver, /#developerInput/);
   assert.match(receiver, /#dataPicker/);
 
+  const pdfApp = read('../tools/pdf/pdf-app.js');
+  assert.match(pdfApp, /id=\\?"textResult\\?"/);
+  assert.match(pdfApp, /class=\\?"pdf-actions-row\\?"/);
+
   assert.match(read('../tools/pdf/index.html'), /handoff-producers\.js/);
   assert.match(read('../tools/files/index.html'), /handoff-producers\.js/);
   assert.match(read('../tools/data/index.html'), /handoff-producers\.js/);
