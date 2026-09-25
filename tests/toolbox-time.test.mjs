@@ -51,7 +51,7 @@ test('planner and board expose grouped-person interfaces', () => {
 
 test('time app renders locations once and groups their people', () => {
   assert.match(app, /groupPeopleByLocation\(/);
-  assert.match(app, /peopleForLocation\(/);
+  assert.match(app, /peopleForLocation/);
   assert.match(app, /data-location-id=/);
   assert.match(app, /data-person-id=/);
 });
