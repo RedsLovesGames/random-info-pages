@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0a">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Compare U.S. purchasing power across time and convert one amount into many current currencies.">
+<title>Money Through Time · Toolbox</title>
+<link rel="stylesheet" href="../shared/toolbox.css">
+<link rel="stylesheet" href="./money.css">
+</head>
+<body>
+<main class="money-shell">
+  <header class="money-head">
+    <div>
+      <a class="tb-back" href="../">← Toolbox</a>
+      <h1>Money Through Time</h1>
+      <p>Compare U.S. purchasing power from 1800 through 2025, then convert a current amount into several currencies at once.</p>
+    </div>
+    <span class="money-badge">SOURCED DATA</span>
+  </header>
+
+  <div class="money-grid">
+    <section class="money-panel" aria-labelledby="inflationTitle">
+      <div class="money-panel-head">
+        <h2 id="inflationTitle">U.S. inflation</h2>
+        <p>Annual price-index comparison. Pre-1913 values are historical estimates; the modern comparable CPI series begins in 1913.</p>
+      </div>
+      <div class="money-body">
+        <div class="money-fields">
+          <label class="money-field"><span>Amount</span><input id="inflationAmount" type="number" step="0.01" value="100" inputmode="decimal"></label>
+          <label class="money-field"><span>From year</span><select id="inflationFrom"></select></label>
+          <label class="money-field"><span>To year</span><select id="inflationTo"></select></label>
+        </div>
+
+        <div class="money-result">
+          <span class="money-label">Equivalent purchasing power</span>
+          <div id="inflationEquivalent" class="money-equivalent">—</div>
+          <div class="money-result-meta">
+            <span id="inflationMultiplier" class="money-stat">—</span>
+            <span id="inflationChange" class="money-stat">—</span>
+          </div>
+          <div id="inflationMethod" class="money-method"></div>
+          <div id="inflationStatus" class="fx-status" aria-live="polite">Loading annual CPI data…</div>
+        </div>
+
+        <div class="money-chart-wrap">
+          <svg id="inflationChart" class="money-chart" role="img" aria-label="Annual U.S. price index"></svg>
+        </div>
+
+        <div class="money-source">
+          Source: <a href="https://www.minneapolisfed.org/about-us/monetary-policy/inflation-calculator/consumer-price-index-1800-" target="_blank" rel="noopener noreferrer">Federal Reserve Bank of Minneapolis, Consumer Price Index 1800–</a>. Frozen through the latest completed annual average in the source, 2025. The source's 2026 estimate is intentionally excluded from this static annual series.
+        </div>
+      </div>
+    </section>
+
+    <section class="money-panel" aria-labelledby="fxTitle">
+      <div class="money-panel-head">
+        <h2 id="fxTitle">Current currency board</h2>
+        <p>One amount, many currencies. Rates are fetched at runtime and kept separate from the historical inflation calculation.</p>
+      </div>
+      <div class="money-body">
+        <div class="fx-top">
+          <label class="money-field"><span>Amount</span><input id="fxAmount" type="number" min="0" step="0.01" value="100" inputmode="decimal"></label>
+          <label class="money-field"><span>Base currency</span><select id="fxBase"></select></label>
+        </div>
+
+        <div class="fx-add">
+          <select id="fxAddCurrency" aria-label="Currency to add"></select>
+          <button id="fxAdd" class="money-btn" type="button">Add</button>
+        </div>
+
+        <div id="fxResults" class="fx-results" aria-live="polite"></div>
+
+        <div>
+          <button id="fxRefresh" class="money-btn" type="button">Refresh rates</button>
+        </div>
+        <div id="fxStatus" class="fx-status" aria-live="polite">Loading exchange rates…</div>
+
+        <div class="money-note">
+          Live FX source: <a href="https://frankfurter.dev/" target="_blank" rel="noopener noreferrer">Frankfurter</a>, which publishes rates from central banks and official sources. The effective rate date is shown above. If the network is unavailable, a dated cached response may be shown and explicitly labeled stale.
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+<script src="./money-core.js"></script>
+<script src="./fx-core.js"></script>
+<script src="./money-app.js"></script>
+<!-- Static annual CPI data is loaded by money-app.js from ./data/us-cpi.json -->
+</body>
+</html>

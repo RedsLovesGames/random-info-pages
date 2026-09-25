@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0a">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Compare named clocks, slide one shared instant, and see local availability overlap.">
+<title>Time Zone Board · Toolbox</title>
+<link rel="stylesheet" href="../shared/toolbox.css">
+<link rel="stylesheet" href="./time.css">
+</head>
+<body>
+<header class="tb-top"><nav class="tb-shell tb-nav" aria-label="Time Zone Board"><a class="tb-brand" href="../">RIP/26 · TOOLBOX</a><a class="tb-back" href="../">← All tools</a></nav></header>
+<main class="time-shell">
+  <section class="time-head">
+    <div class="tb-kicker">01 / Time · stored on this device</div>
+    <h1>Time Zone Board</h1>
+    <p>Name the people or places you care about, then move one shared instant and every clock follows. DST comes from each IANA time zone at the selected instant. Optional availability hours make overlap visible.</p>
+  </section>
+
+  <section class="control">
+    <div class="control-row">
+      <input id="slider" class="range" type="range" min="-168" max="168" step="1" value="0" aria-label="Hours from now">
+      <button id="now" class="button primary" type="button">Now</button>
+      <button id="format" class="button" type="button">12 hour</button>
+    </div>
+    <div class="slider-meta"><span id="offsetLabel">Now</span><span>± 7 days</span></div>
+  </section>
+
+  <section id="overlap" class="overlap" hidden aria-live="polite">
+    <div class="overlap-top"><strong id="overlapSummary"></strong><span>Availability at selected instant</span></div>
+    <div id="overlapPeople" class="overlap-people"></div>
+  </section>
+
+  <section id="clocks" class="clocks" aria-live="polite"></section>
+
+  <section class="add">
+    <form id="addForm" class="add-grid">
+      <input id="name" class="input" maxlength="28" placeholder="Name, e.g. Alex" required aria-label="Clock name">
+      <input id="zone" class="input" list="zones" placeholder="IANA zone, e.g. America/New_York" required aria-label="Time zone">
+      <datalist id="zones"></datalist>
+      <button class="button primary" type="submit">Add clock</button>
+    </form>
+    <p id="message" class="notice">Up to 16 clocks. Edit a clock to add optional available hours. Your board never leaves this browser.</p>
+  </section>
+</main>
+
+<dialog id="clockDialog" class="clock-dialog">
+  <form id="editForm" class="dialog-form">
+    <div class="dialog-head"><h2>Edit clock</h2><button id="cancelEdit" class="button" type="button">Close</button></div>
+    <input id="editId" type="hidden">
+    <label class="field"><span>Name</span><input id="editName" class="input" maxlength="28" required></label>
+    <label class="field"><span>IANA time zone</span><input id="editZone" class="input" list="editZones" required></label>
+    <datalist id="editZones"></datalist>
+    <div class="hours-grid">
+      <label class="field"><span>Available from</span><input id="availableStart" class="input" type="time"></label>
+      <label class="field"><span>Available until</span><input id="availableEnd" class="input" type="time"></label>
+    </div>
+    <p id="editMessage" class="dialog-note">Availability is optional.</p>
+    <div class="dialog-actions">
+      <button id="clearHours" class="button" type="button">Clear hours</button>
+      <button class="button primary" type="submit">Save changes</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module" src="./time-app.js"></script>
+<!-- time-app.js imports ./time.js for DST-aware IANA calculations and persisted state. -->
+</body>
+</html>
