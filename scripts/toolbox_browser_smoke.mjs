@@ -21,11 +21,24 @@ async function newCheckedPage(viewport) {
 }
 
 async function assertNoHorizontalOverflow(page, label) {
-  const dimensions = await page.evaluate(() => ({
-    scrollWidth: document.documentElement.scrollWidth,
-    clientWidth: document.documentElement.clientWidth,
-  }));
-  assert.ok(dimensions.scrollWidth <= dimensions.clientWidth + 2, `${label} overflows horizontally: ${dimensions.scrollWidth} > ${dimensions.clientWidth}`);
+  const dimensions = await page.evaluate(() => {
+    const clientWidth = document.documentElement.clientWidth;
+    const offenders = [...document.querySelectorAll('body *')].map(element => {
+      const rect = element.getBoundingClientRect();
+      return {
+        tag: element.tagName.toLowerCase(),
+        id: element.id || '',
+        className: typeof element.className === 'string' ? element.className : '',
+        text: (element.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 90),
+        left: Math.round(rect.left * 10) / 10,
+        right: Math.round(rect.right * 10) / 10,
+        width: Math.round(rect.width * 10) / 10,
+      };
+    }).filter(item => item.right > clientWidth + 2 || item.left < -2).sort((a, b) => b.right - a.right).slice(0, 8);
+    return { scrollWidth: document.documentElement.scrollWidth, clientWidth, offenders };
+  });
+  const detail = dimensions.offenders.map(item => `${item.tag}${item.id ? `#${item.id}` : ''}${item.className ? `.${item.className.split(/\s+/).join('.')}` : ''} [${item.left}, ${item.right}] ${item.text}`).join('\n');
+  assert.ok(dimensions.scrollWidth <= dimensions.clientWidth + 2, `${label} overflows horizontally: ${dimensions.scrollWidth} > ${dimensions.clientWidth}${detail ? `\nOffenders:\n${detail}` : ''}`);
 }
 
 async function assertNoPageErrors(pageErrors, label) {
