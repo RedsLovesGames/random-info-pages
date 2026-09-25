@@ -26,6 +26,12 @@ function isMissing(value) {
   return value === null || value === undefined || value === '';
 }
 
+function toFiniteNumber(value) {
+  if (isMissing(value)) return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
 function looksDate(value) {
   if (value instanceof Date && !Number.isNaN(value.valueOf())) return true;
   if (typeof value !== 'string') return false;
@@ -130,7 +136,7 @@ export function groupRows(rows, groupColumn, valueColumn = null) {
     groups.get(fingerprint).rows.push(row);
   }
   return [...groups.values()].map(group => {
-    const values = valueColumn ? group.rows.map(row => Number(row[valueColumn])).filter(Number.isFinite) : [];
+    const values = valueColumn ? group.rows.map(row => toFiniteNumber(row[valueColumn])).filter(value => value !== null) : [];
     const sum = values.reduce((total, value) => total + value, 0);
     return {
       [groupColumn]: group.key,
@@ -154,9 +160,9 @@ export function pivotRows(rows, rowColumn, columnColumn, valueColumn) {
     const rowKey = stableValue(row[rowColumn]);
     if (!grouped.has(rowKey)) grouped.set(rowKey, { [rowColumn]: row[rowColumn], values: new Map() });
     const entry = grouped.get(rowKey);
-    const numeric = Number(row[valueColumn]);
+    const numeric = toFiniteNumber(row[valueColumn]);
     const current = entry.values.get(columnKey);
-    entry.values.set(columnKey, Number.isFinite(numeric) ? (Number.isFinite(current) ? current + numeric : numeric) : row[valueColumn]);
+    entry.values.set(columnKey, numeric !== null ? (Number.isFinite(current) ? current + numeric : numeric) : row[valueColumn]);
   }
   return [...grouped.values()].map(entry => {
     const result = { [rowColumn]: entry[rowColumn] };
@@ -166,7 +172,7 @@ export function pivotRows(rows, rowColumn, columnColumn, valueColumn) {
 }
 
 function numericValues(rows, column) {
-  return normalizeRows(rows).map(row => Number(row[column])).filter(Number.isFinite);
+  return normalizeRows(rows).map(row => toFiniteNumber(row[column])).filter(value => value !== null);
 }
 
 function quantile(sorted, q) {
@@ -200,7 +206,7 @@ export function summarizeColumn(rows, column) {
 }
 
 export function pearsonCorrelation(rows, xColumn, yColumn) {
-  const pairs = normalizeRows(rows).map(row => [Number(row[xColumn]), Number(row[yColumn])]).filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
+  const pairs = normalizeRows(rows).map(row => [toFiniteNumber(row[xColumn]), toFiniteNumber(row[yColumn])]).filter(([x, y]) => x !== null && y !== null);
   if (pairs.length < 2) return null;
   const meanX = pairs.reduce((sum, [x]) => sum + x, 0) / pairs.length;
   const meanY = pairs.reduce((sum, [, y]) => sum + y, 0) / pairs.length;
@@ -251,13 +257,13 @@ export function filterRows(rows, column, operator, needle) {
     if (operator === 'missing') return isMissing(value);
     if (operator === 'not-missing') return !isMissing(value);
     const text = String(value ?? '').toLowerCase();
-    const numericValue = Number(value);
-    const numericNeedle = Number(needle);
+    const numericValue = toFiniteNumber(value);
+    const numericNeedle = toFiniteNumber(needle);
     if (operator === 'equals') return text === normalizedNeedle;
     if (operator === 'not-equals') return text !== normalizedNeedle;
     if (operator === 'starts') return text.startsWith(normalizedNeedle);
-    if (operator === 'gt') return Number.isFinite(numericValue) && Number.isFinite(numericNeedle) && numericValue > numericNeedle;
-    if (operator === 'lt') return Number.isFinite(numericValue) && Number.isFinite(numericNeedle) && numericValue < numericNeedle;
+    if (operator === 'gt') return numericValue !== null && numericNeedle !== null && numericValue > numericNeedle;
+    if (operator === 'lt') return numericValue !== null && numericNeedle !== null && numericValue < numericNeedle;
     return text.includes(normalizedNeedle);
   });
 }
@@ -274,8 +280,7 @@ export function coerceColumn(rows, column, type) {
     const value = row[column];
     if (isMissing(value)) return next;
     if (type === 'number') {
-      const numeric = Number(value);
-      next[column] = Number.isFinite(numeric) ? numeric : null;
+      next[column] = toFiniteNumber(value);
     } else if (type === 'boolean') {
       const text = String(value).trim().toLowerCase();
       next[column] = ['true', '1', 'yes', 'y'].includes(text) ? true : ['false', '0', 'no', 'n'].includes(text) ? false : null;
