@@ -8,6 +8,7 @@ on:
       - 'tests/**'
       - 'scripts/check_toolbox.py'
       - 'scripts/toolbox_browser_smoke.mjs'
+      - 'scripts/toolbox_pdf_browser_smoke.mjs'
       - 'index.html'
       - '.github/workflows/toolbox-ci.yml'
   workflow_dispatch:
@@ -75,3 +76,6 @@ jobs:
 
       - name: Chromium desktop and mobile smoke
         run: node scripts/toolbox_browser_smoke.mjs
+
+      - name: PDF upload-once workspace smoke
+        run: node scripts/toolbox_pdf_browser_smoke.mjs
