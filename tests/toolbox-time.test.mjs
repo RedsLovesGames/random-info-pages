@@ -31,12 +31,14 @@ test('time board exposes overlap summary and reorder semantics', () => {
   assert.match(app, /moveClock\(/);
 });
 
-test('time board has a public view mode with a Tommy-only edit login', () => {
-  assert.match(html, /id="editAccess"/);
-  assert.match(html, /id="loginDialog"/);
+test('the entire time tool is gated behind Tommy login', () => {
+  assert.match(html, /id="accessGate"/);
+  assert.match(html, /id="loginForm"/);
   assert.match(html, /id="loginUsername"/);
   assert.match(html, /id="loginPassword"/);
-  assert.match(html, /id="logoutEdit"/);
+  assert.match(html, /id="protectedTimeApp"[^>]*hidden/);
+  assert.match(html, /id="logoutAccess"/);
   assert.match(app, /time-auth\.js/);
-  assert.match(app, /data-edit-only/);
+  assert.match(app, /unlockTimeApp/);
+  assert.match(app, /lockTimeApp/);
 });
