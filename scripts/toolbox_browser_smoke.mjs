@@ -106,22 +106,42 @@ try {
     await page.locator('#loginForm button[type="submit"]').click();
     await page.locator('#protectedTimeApp').waitFor({ state: 'visible' });
     assert.ok(await page.locator('#accessGate').isHidden(), 'login gate should hide after valid credentials');
+
+    await page.locator('#mapView').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#locationCards .location-card').count(), 3, 'default map should group into three locations');
+    assert.equal(await page.locator('#mapMarkers .map-marker').count(), 3, 'map should show one marker per grouped location');
+
+    await page.locator('#addPerson').click();
+    await page.locator('#personDialog').waitFor({ state: 'visible' });
+    await page.locator('#personName').fill('Alex');
+    await page.locator('#personCity').selectOption('philadelphia');
+    await page.locator('#personAvailableStart').fill('09:00');
+    await page.locator('#personAvailableEnd').fill('17:00');
+    await page.locator('#personForm button[type="submit"]').click();
+    await page.locator('#personDialog').waitFor({ state: 'hidden' });
+    assert.equal(await page.locator('#locationCards .location-card').count(), 3, 'same-zone person should reuse an existing location group');
+    assert.equal(await page.locator('#mapMarkers .map-marker').count(), 3, 'same-zone person should not create a duplicate marker');
+    assert.match(await page.locator('#locationCards .location-card').first().innerText(), /Tommy[\s\S]*Alex|Alex[\s\S]*Tommy/i);
+
+    await page.locator('#timelineSlider').evaluate(el => { el.value = '1440'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+    assert.match(await page.locator('#timelineLabel').innerText(), /\+1d/i);
+
+    await page.locator('.time-view-tab[data-view="planner"]').click();
+    await page.locator('#plannerView').waitFor({ state: 'visible' });
+    assert.ok(await page.locator('#plannerGrid .planner-row').count() >= 4, 'planner should show every person');
+
+    await page.locator('.time-view-tab[data-view="board"]').click();
+    await page.locator('#boardView').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#peopleBoard .board-location').count(), 3, 'board should remain grouped by location');
+    assert.ok(await page.locator('#peopleBoard [data-person-id]').count() >= 4, 'board should expose people inside groups');
+
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.locator('#protectedTimeApp').waitFor({ state: 'visible' });
-    await page.locator('.clock').first().waitFor({ state: 'visible' });
-    assert.ok(await page.locator('.clock').count() >= 3, 'time board should render default clocks after login');
-    await page.locator('#slider').evaluate(el => { el.value = '24'; el.dispatchEvent(new Event('input', { bubbles: true })); });
-    assert.match(await page.locator('#offsetLabel').innerText(), /\+24 hours/i);
-    await page.locator('[data-edit]').first().click();
-    await page.locator('#clockDialog').waitFor({ state: 'visible' });
-    await page.locator('#availableStart').fill('09:00');
-    await page.locator('#availableEnd').fill('17:00');
-    await page.locator('#editForm button[type="submit"]').click();
-    await page.locator('#overlap').waitFor({ state: 'visible' });
+    assert.match(await page.locator('#peopleBoard').innerText(), /Alex/i, 'grouped people should persist after reload');
     await page.locator('#logoutAccess').click();
     await page.locator('#accessGate').waitFor({ state: 'visible' });
     assert.ok(await page.locator('#protectedTimeApp').isHidden(), 'logout should hide the entire time workspace');
-    await assertNoPageErrors(pageErrors, 'time board authentication and interaction');
+    await assertNoPageErrors(pageErrors, 'time map, grouping, planner, board, and authentication');
     await page.close();
   }
 
