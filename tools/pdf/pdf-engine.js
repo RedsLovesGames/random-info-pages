@@ -103,6 +103,11 @@ function drawOverlays(page, state, pageIndex, font, rgb, degrees) {
 export async function buildWorkingPdf(sources, state) {
   const { PDFDocument, StandardFonts, rgb, degrees } = await loadPdfLib();
   const sourceDocs = await loadSourceDocs(sources);
+  if (state.flattenForms) {
+    for (const sourceDoc of sourceDocs) {
+      try { sourceDoc.getForm().flatten(); } catch { /* documents without usable forms remain unchanged */ }
+    }
+  }
   const output = await PDFDocument.create();
   const font = await output.embedFont(StandardFonts.Helvetica);
   for (let i = 0; i < state.pages.length; i++) {
