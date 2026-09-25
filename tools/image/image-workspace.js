@@ -5,6 +5,8 @@ const app = window.ImageStudioApp;
 if (!app) throw new Error('Image Studio core did not initialize.');
 
 const $ = selector => document.querySelector(selector);
+const heading = document.querySelector('.image-head h1');
+if (heading) heading.textContent = 'Image Studio';
 const sourceHeader = $('#imageSourceHeader');
 const sourceName = $('#imageSourceName');
 const sourceMeta = $('#imageSourceMeta');
