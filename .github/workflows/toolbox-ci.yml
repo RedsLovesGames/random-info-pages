@@ -9,6 +9,7 @@ on:
       - 'scripts/check_toolbox.py'
       - 'scripts/toolbox_browser_smoke.mjs'
       - 'scripts/toolbox_pdf_browser_smoke.mjs'
+      - 'scripts/toolbox_image_workspace_smoke.mjs'
       - 'index.html'
       - '.github/workflows/toolbox-ci.yml'
   workflow_dispatch:
@@ -79,3 +80,6 @@ jobs:
 
       - name: PDF upload-once workspace smoke
         run: node scripts/toolbox_pdf_browser_smoke.mjs
+
+      - name: Image persistent workspace smoke
+        run: node scripts/toolbox_image_workspace_smoke.mjs
