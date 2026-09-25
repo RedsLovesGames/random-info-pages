@@ -56,21 +56,21 @@ export function evaluateExpression(source, variables = {}) {
     }
     throw new Error('Invalid expression.');
   }
+  function power() {
+    const left = primary();
+    if (peek().type === '^') { at += 1; return Math.pow(left, unary()); }
+    return left;
+  }
   function unary() {
     if (peek().type === '+') { at += 1; return unary(); }
     if (peek().type === '-') { at += 1; return -unary(); }
-    return primary();
-  }
-  function power() {
-    const left = unary();
-    if (peek().type === '^') { at += 1; return Math.pow(left, power()); }
-    return left;
+    return power();
   }
   function mulDiv() {
-    let value = power();
+    let value = unary();
     while (peek().type === '*' || peek().type === '/') {
       const op = tokens[at++].type;
-      const right = power();
+      const right = unary();
       value = op === '*' ? value * right : value / right;
     }
     return value;
