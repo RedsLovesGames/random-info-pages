@@ -5,7 +5,8 @@
 
   function readState() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      return parsed && typeof parsed === 'object' ? parsed : {};
     } catch {
       return {};
     }
@@ -14,16 +15,33 @@
   function writeState(next) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return true;
     } catch {
-      // Storage is optional. The toolbox must remain usable without it.
+      return false;
     }
   }
 
   function recordRecent(route) {
+    if (!route) return readState();
     const state = readState();
     const recent = [route, ...(state.recent || []).filter(item => item !== route)].slice(0, 4);
-    writeState({ ...state, recent });
+    const next = { ...state, recent };
+    writeState(next);
+    return next;
   }
 
-  window.Toolbox = { readState, writeState, recordRecent };
+  function isFavorite(route) {
+    return (readState().favorites || []).includes(route);
+  }
+
+  function toggleFavorite(route) {
+    const state = readState();
+    const favorites = new Set(Array.isArray(state.favorites) ? state.favorites : []);
+    if (favorites.has(route)) favorites.delete(route); else favorites.add(route);
+    const next = { ...state, favorites: [...favorites].slice(0, 20) };
+    writeState(next);
+    return favorites.has(route);
+  }
+
+  window.Toolbox = { readState, writeState, recordRecent, isFavorite, toggleFavorite };
 })();
