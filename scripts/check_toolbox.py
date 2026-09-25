@@ -27,6 +27,11 @@ REQUIRED = [
     'tools/money/data/us-cpi.json',
     'tools/text/index.html',
     'tools/text/text-core.js',
+    'tools/pdf/index.html',
+    'tools/pdf/pdf-core.js',
+    'tools/pdf/pdf-engine.js',
+    'tools/pdf/pdf-app.js',
+    'tools/pdf/pdf.css',
     'tools/OPEN_SOURCE.md',
 ]
 
@@ -44,11 +49,11 @@ if 'href="./tools/"' not in home:
     fail('homepage does not link ./tools/')
 
 hub = (ROOT / 'tools/index.html').read_text(encoding='utf-8')
-for route in ('./time/', './image/', './money/', './text/'):
+for route in ('./time/', './image/', './money/', './text/', './pdf/'):
     if f'href="{route}"' not in hub:
         fail(f'toolbox hub missing route {route}')
 
-for path in ('tools/time/index.html', 'tools/image/index.html', 'tools/money/index.html', 'tools/text/index.html'):
+for path in ('tools/time/index.html', 'tools/image/index.html', 'tools/money/index.html', 'tools/text/index.html', 'tools/pdf/index.html'):
     text = (ROOT / path).read_text(encoding='utf-8')
     if 'href="../"' not in text:
         fail(f'{path} has no relative link back to toolbox')
@@ -57,6 +62,11 @@ image = (ROOT / 'tools/image/index.html').read_text(encoding='utf-8')
 for asset in ('image-core.js', 'image-engine.js', 'image-app.js', 'crop-editor.js', 'gif-maker.js', 'bg-remove-core.js', 'bg-remove.js'):
     if asset not in image:
         fail(f'Image Studio does not load {asset}')
+
+pdf = (ROOT / 'tools/pdf/index.html').read_text(encoding='utf-8')
+for asset in ('pdf.css', 'pdf-app.js'):
+    if asset not in pdf:
+        fail(f'PDF workspace does not load {asset}')
 
 with (ROOT / 'tools/money/data/us-cpi.json').open(encoding='utf-8') as handle:
     cpi = json.load(handle)
