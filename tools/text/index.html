@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0b0a">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Clean text, normalize lists and preview sanitized Markdown locally.">
-<title>Text Tools · Toolbox</title>
+<meta name="description" content="Clean, transform, analyze, compare and preview text locally.">
+<title>Text Studio · Toolbox</title>
 <link rel="stylesheet" href="../shared/toolbox.css">
 <link rel="stylesheet" href="./text.css">
 </head>
@@ -15,17 +15,21 @@
   <header class="text-head">
     <div>
       <a class="tb-back" href="../">← Toolbox</a>
-      <h1>Text Tools</h1>
-      <p>Clean prose, normalize lists, count text, and preview Markdown without sending the content anywhere.</p>
+      <div class="tb-kicker">04 / Text · Local input workspace</div>
+      <h1>Text Studio</h1>
+      <p><strong>Text Tools</strong> for cleanup, lists, find/replace, analysis, comparison and Markdown. One persistent input stays local while outputs and history remain available.</p>
     </div>
     <span class="text-badge">LOCAL ONLY</span>
   </header>
 
-  <nav class="text-tabs" aria-label="Text tool mode">
-    <button class="text-tab active" type="button" data-mode="cleaner" aria-selected="true">Text Cleaner</button>
-    <button id="listMode" class="text-tab" type="button" data-mode="list" aria-selected="false">List Cleaner</button>
-    <button id="markdownMode" class="text-tab" type="button" data-mode="markdown" aria-selected="false">Markdown</button>
-  </nav>
+  <section class="text-launcher" aria-label="Text tools">
+    <button class="tb-toolicon text-launch active" type="button" data-mode="cleaner"><span class="tb-toolicon-icon">Aa</span><span class="tb-toolicon-label">Clean & Case</span></button>
+    <button id="listMode" class="tb-toolicon text-launch" type="button" data-mode="list"><span class="tb-toolicon-icon">≡</span><span class="tb-toolicon-label">Lists</span></button>
+    <button id="findReplaceTool" class="tb-toolicon text-launch" type="button" data-text-tool="find"><span class="tb-toolicon-icon">↔</span><span class="tb-toolicon-label">Find / Replace</span></button>
+    <button id="analyzeTool" class="tb-toolicon text-launch" type="button" data-text-tool="analyze"><span class="tb-toolicon-icon">Σ</span><span class="tb-toolicon-label">Analyze</span></button>
+    <button id="compareTool" class="tb-toolicon text-launch" type="button" data-text-tool="compare"><span class="tb-toolicon-icon">±</span><span class="tb-toolicon-label">Compare</span></button>
+    <button id="markdownMode" class="tb-toolicon text-launch" type="button" data-mode="markdown"><span class="tb-toolicon-icon">MD</span><span class="tb-toolicon-label">Markdown</span></button>
+  </section>
 
   <section id="cleanerPanel" class="text-panel">
     <div class="text-stats" aria-live="polite">
@@ -43,6 +47,7 @@
       <button class="text-button" type="button" data-action="trim-lines">Trim lines</button>
       <button class="text-button" type="button" data-action="collapse">Collapse spaces</button>
       <button class="text-button" type="button" data-action="remove-blanks">Remove blank lines</button>
+      <button id="unicodeTool" class="text-button" type="button">Unicode cleanup</button>
     </div>
 
     <div id="listTools" class="tool-strip" hidden>
@@ -53,6 +58,7 @@
       <button class="text-button" type="button" data-action="strip-markers">Remove bullets/numbers</button>
       <button class="text-button" type="button" data-action="bullet">Add bullets</button>
       <button class="text-button" type="button" data-action="number">Add numbers</button>
+      <button id="shuffleLines" class="text-button" type="button">Shuffle</button>
     </div>
 
     <div id="listOptions" class="list-options" hidden>
@@ -61,13 +67,15 @@
       <button class="text-button" type="button" data-action="lines-to-separator">Lines → separator</button>
     </div>
 
+    <div id="textToolPanel" class="text-tool-panel" hidden></div>
+
     <div class="text-workspace">
       <div class="text-side">
-        <div class="text-side-head"><strong>Input</strong><span>Live counts above</span></div>
+        <div class="text-side-head"><strong>Persistent input</strong><span>Live counts above</span></div>
         <textarea id="textInput" class="text-area" spellcheck="false" placeholder="Paste or type text…"></textarea>
       </div>
       <div class="text-side">
-        <div class="text-side-head"><strong>Output</strong><span>Original input is preserved</span></div>
+        <div class="text-side-head"><strong>Output</strong><span>Apply when you want it to become the input</span></div>
         <textarea id="textOutput" class="text-area output" spellcheck="false" placeholder="Choose a transform…"></textarea>
       </div>
     </div>
@@ -75,8 +83,16 @@
       <button id="copyOutput" class="text-button primary" type="button">Copy output</button>
       <button id="useOutput" class="text-button" type="button">Use output as input</button>
       <button id="swapText" class="text-button" type="button">Swap</button>
+      <button id="undoText" class="text-button" type="button">↶ Undo</button>
+      <button id="redoText" class="text-button" type="button">↷ Redo</button>
+      <button id="showTextHistory" class="text-button" type="button">History</button>
       <span id="textStatus" class="text-status" aria-live="polite"></span>
     </div>
+  </section>
+
+  <section id="textHistory" class="text-history" hidden>
+    <div class="text-side-head"><strong>History</strong><button id="closeTextHistory" class="text-button" type="button">Close</button></div>
+    <ol id="textHistoryList"></ol>
   </section>
 
   <section id="markdownPanel" class="text-panel" hidden>
@@ -97,6 +113,7 @@
 </main>
 <script src="./text-core.js"></script>
 <script src="./text-app.js"></script>
+<script type="module" src="./text-workspace.js"></script>
 <!-- Markdown mode lazy-loads pinned Marked and DOMPurify builds only when opened. -->
 </body>
 </html>
