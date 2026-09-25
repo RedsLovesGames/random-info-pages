@@ -44,7 +44,16 @@ REQUIRED = [
     'tools/media/media-quick.js',
     'tools/media/media-quick.css',
     'tools/media/mediabunny-loader.js',
+    'tools/data/index.html',
+    'tools/data/data-core.js',
+    'tools/data/data-engines.js',
+    'tools/data/data-io.js',
+    'tools/data/data-charts.js',
+    'tools/data/data-app.js',
+    'tools/data/data-route.js',
+    'tools/data/data.css',
     'tools/OPEN_SOURCE.md',
+    'tools/DATA_OPEN_SOURCE.md',
 ]
 
 
@@ -61,11 +70,11 @@ if 'href="./tools/"' not in home:
     fail('homepage does not link ./tools/')
 
 hub = (ROOT / 'tools/index.html').read_text(encoding='utf-8')
-for route in ('./time/', './image/', './money/', './text/', './pdf/', './files/', './media/'):
+for route in ('./time/', './image/', './money/', './text/', './pdf/', './files/', './media/', './data/'):
     if f'href="{route}"' not in hub:
         fail(f'toolbox hub missing route {route}')
 
-for path in ('tools/time/index.html', 'tools/image/index.html', 'tools/money/index.html', 'tools/text/index.html', 'tools/pdf/index.html', 'tools/files/index.html', 'tools/media/index.html'):
+for path in ('tools/time/index.html', 'tools/image/index.html', 'tools/money/index.html', 'tools/text/index.html', 'tools/pdf/index.html', 'tools/files/index.html', 'tools/media/index.html', 'tools/data/index.html'):
     text = (ROOT / path).read_text(encoding='utf-8')
     if 'href="../"' not in text:
         fail(f'{path} has no relative link back to toolbox')
@@ -90,6 +99,11 @@ for asset in ('media.css', 'media-quick.css', 'mediabunny-loader.js', 'media-app
     if asset not in media:
         fail(f'Media Studio does not load {asset}')
 
+data = (ROOT / 'tools/data/index.html').read_text(encoding='utf-8')
+for asset in ('data.css', 'data-app.js', 'data-route.js'):
+    if asset not in data:
+        fail(f'Data Studio does not load {asset}')
+
 with (ROOT / 'tools/money/data/us-cpi.json').open(encoding='utf-8') as handle:
     cpi = json.load(handle)
 values = cpi.get('values', {})
@@ -110,6 +124,11 @@ for token in ('pica@10.0.3', 'fflate@0.8.3', 'cropperjs@2.2.0', 'gifenc@1.0.3', 
     if token not in open_source:
         fail(f'OPEN_SOURCE.md missing incorporated source: {token}')
 
+data_open_source = (ROOT / 'tools/DATA_OPEN_SOURCE.md').read_text(encoding='utf-8')
+for token in ('papaparse@5.7.0', 'SheetJS CE 0.20.3', '@duckdb/duckdb-wasm@1.33.0', '@observablehq/plot@0.6.17'):
+    if token not in data_open_source:
+        fail(f'DATA_OPEN_SOURCE.md missing incorporated source: {token}')
+
 absolute_tool_paths = []
 for html_path in (ROOT / 'tools').rglob('*.html'):
     text = html_path.read_text(encoding='utf-8')
@@ -118,4 +137,4 @@ for html_path in (ROOT / 'tools').rglob('*.html'):
 if absolute_tool_paths:
     fail(f'root-absolute /tools paths break project-site deployment: {absolute_tool_paths}')
 
-print('PASS toolbox static routes, assets, CPI coverage, attribution, and relative paths')
+print('PASS toolbox static routes, assets, data disclosures, CPI coverage, attribution, and relative paths')
