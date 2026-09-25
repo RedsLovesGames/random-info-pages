@@ -14,6 +14,9 @@ REQUIRED = [
     'tools/time/index.html',
     'tools/time/time.js',
     'tools/time/time-app.js',
+    'tools/time/time-utils.js',
+    'tools/time/time-tools.js',
+    'tools/time/time-tools.css',
     'tools/image/index.html',
     'tools/image/image-core.js',
     'tools/image/image-engine.js',
@@ -25,6 +28,9 @@ REQUIRED = [
     'tools/money/index.html',
     'tools/money/money-core.js',
     'tools/money/fx-core.js',
+    'tools/money/finance-core.js',
+    'tools/money/money-scenario.js',
+    'tools/money/money-scenario.css',
     'tools/money/data/us-cpi.json',
     'tools/text/index.html',
     'tools/text/text-core.js',
@@ -84,6 +90,16 @@ for path in ('tools/time/index.html', 'tools/image/index.html', 'tools/money/ind
     text = (ROOT / path).read_text(encoding='utf-8')
     if 'href="../"' not in text:
         fail(f'{path} has no relative link back to toolbox')
+
+time_page = (ROOT / 'tools/time/index.html').read_text(encoding='utf-8')
+for asset in ('time.css', 'time-app.js', 'time-utils.js', 'time-tools.js', 'time-tools.css'):
+    if asset not in time_page:
+        fail(f'Time & Scheduling does not load {asset}')
+
+money_page = (ROOT / 'tools/money/index.html').read_text(encoding='utf-8')
+for asset in ('money.css', 'money-scenario.css', 'money-core.js', 'fx-core.js', 'finance-core.js', 'money-app.js', 'money-scenario.js'):
+    if asset not in money_page:
+        fail(f'Money & Finance does not load {asset}')
 
 image = (ROOT / 'tools/image/index.html').read_text(encoding='utf-8')
 for asset in ('image-core.js', 'image-engine.js', 'image-app.js', 'image-workspace.js', 'crop-editor.js', 'gif-maker.js', 'bg-remove-core.js', 'bg-remove.js'):
