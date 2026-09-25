@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0a">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="A local-first PDF workspace: load once, organize, edit, extract, OCR, compress, and export.">
+<title>PDF & Documents · Toolbox</title>
+<link rel="stylesheet" href="../shared/toolbox.css">
+<link rel="stylesheet" href="./pdf.css">
+</head>
+<body>
+<header class="tb-top"><nav class="tb-shell tb-nav"><a class="tb-brand" href="../">RIP/26 · TOOLBOX</a><a class="tb-back" href="../">← Toolbox</a></nav></header>
+<main class="tb-shell pdf-page">
+  <section class="pdf-hero">
+    <div class="tb-kicker">05 / Documents · Local processing</div>
+    <h1>PDF &<br>Documents</h1>
+    <p>Load a PDF once. Every compatible tool works against the same document until you export it.</p>
+  </section>
+
+  <section id="pdfDrop" class="tb-dropzone pdf-drop" tabindex="0" role="button" aria-label="Choose a PDF">
+    <div><strong>DROP A PDF</strong><span>or click to choose · files stay on this device</span></div>
+    <input id="pdfInput" type="file" accept="application/pdf,.pdf" hidden>
+  </section>
+
+  <section id="pdfWorkspace" class="tb-workspace" hidden>
+    <div class="tb-sourcebar">
+      <div><small>Working document</small><strong id="sourceName">document.pdf</strong><span id="sourceMeta" class="pdf-source-meta"></span></div>
+      <div class="pdf-source-actions"><button id="replacePdf" class="tb-toolbutton" type="button">Replace</button><button id="addPdf" class="tb-toolbutton" type="button">+ Add PDF</button><button id="addImages" class="tb-toolbutton" type="button">+ Images</button></div>
+      <input id="mergeInput" type="file" accept="application/pdf,.pdf" multiple hidden>
+      <input id="imagePdfInput" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" multiple hidden>
+    </div>
+
+    <div id="selectionBar" class="tb-selectionbar">
+      <div><strong id="selectionCount">1 page selected</strong><small id="selectionHint">Click a page. Ctrl/Cmd-click adds to selection.</small></div>
+      <div><button id="selectAllPages" class="tb-toolbutton" type="button">Select all</button><button id="clearSelection" class="tb-toolbutton" type="button">Clear</button></div>
+    </div>
+
+    <div class="pdf-workarea">
+      <aside class="pdf-pages" aria-label="PDF pages">
+        <div class="pdf-pages-head"><span>Pages</span><span id="pageCount">0</span></div>
+        <div id="pageRail" class="pdf-page-rail"></div>
+      </aside>
+      <section class="pdf-preview-shell">
+        <div class="pdf-preview-toolbar"><button id="prevPage" type="button" aria-label="Previous page">←</button><span id="previewPageLabel">Page 1</span><button id="nextPage" type="button" aria-label="Next page">→</button></div>
+        <div class="tb-preview pdf-preview-stage"><canvas id="pdfPreview"></canvas></div>
+      </section>
+    </div>
+
+    <section class="pdf-tools" aria-label="PDF tools">
+      <h2>Tools</h2>
+      <div class="tb-group-title">Organize</div>
+      <div class="tb-toolgrid">
+        <button class="tb-toolicon" data-pdf-action="merge"><span class="tb-toolicon-icon">＋</span><span class="tb-toolicon-label">Merge</span></button>
+        <button class="tb-toolicon" data-pdf-action="split"><span class="tb-toolicon-icon">✂</span><span class="tb-toolicon-label">Split</span></button>
+        <button class="tb-toolicon" data-pdf-action="reorder"><span class="tb-toolicon-icon">↕</span><span class="tb-toolicon-label">Reorder</span></button>
+        <button class="tb-toolicon" data-pdf-action="rotate"><span class="tb-toolicon-icon">↻</span><span class="tb-toolicon-label">Rotate</span></button>
+        <button class="tb-toolicon" data-pdf-action="delete"><span class="tb-toolicon-icon">−</span><span class="tb-toolicon-label">Delete</span></button>
+        <button class="tb-toolicon" data-pdf-action="duplicate"><span class="tb-toolicon-icon">⧉</span><span class="tb-toolicon-label">Duplicate</span></button>
+        <button class="tb-toolicon" data-pdf-action="extract"><span class="tb-toolicon-icon">↓</span><span class="tb-toolicon-label">Extract</span></button>
+        <button class="tb-toolicon" data-pdf-action="blank"><span class="tb-toolicon-icon">□+</span><span class="tb-toolicon-label">Blank page</span></button>
+      </div>
+
+      <div class="tb-group-title">Edit</div>
+      <div class="tb-toolgrid">
+        <button class="tb-toolicon" data-pdf-action="page-numbers"><span class="tb-toolicon-icon">#</span><span class="tb-toolicon-label">Page numbers</span></button>
+        <button class="tb-toolicon" data-pdf-action="watermark"><span class="tb-toolicon-icon">W</span><span class="tb-toolicon-label">Watermark</span></button>
+        <button class="tb-toolicon" data-pdf-action="flatten"><span class="tb-toolicon-icon">▱</span><span class="tb-toolicon-label">Flatten forms</span></button>
+      </div>
+
+      <div class="tb-group-title">Extract & Convert</div>
+      <div class="tb-toolgrid">
+        <button class="tb-toolicon" data-pdf-action="pdf-images"><span class="tb-toolicon-icon">IMG</span><span class="tb-toolicon-label">PDF → Images</span></button>
+        <button class="tb-toolicon" data-pdf-action="extract-text"><span class="tb-toolicon-icon">TXT</span><span class="tb-toolicon-label">Extract text</span></button>
+      </div>
+
+      <div class="tb-group-title">Process</div>
+      <div class="tb-toolgrid">
+        <button class="tb-toolicon" data-pdf-action="ocr"><span class="tb-toolicon-icon">OCR</span><span class="tb-toolicon-label">OCR</span></button>
+        <button class="tb-toolicon" data-pdf-action="compress"><span class="tb-toolicon-icon">⇣</span><span class="tb-toolicon-label">Compress copy</span></button>
+        <button class="tb-toolicon" data-pdf-action="metadata"><span class="tb-toolicon-icon">i</span><span class="tb-toolicon-label">Metadata</span></button>
+      </div>
+    </section>
+
+    <section id="actionPanel" class="tb-action-panel" hidden aria-live="polite"></section>
+    <section id="pdfProgress" class="tb-progress" hidden><div><strong id="progressLabel">Working…</strong><span id="progressValue">0%</span></div><progress id="progressBar" max="1" value="0"></progress></section>
+    <section id="historyPanel" class="tb-history" hidden><div class="pdf-panel-head"><strong>History</strong><button id="closeHistory" class="tb-toolbutton" type="button">Close</button></div><ol id="historyList"></ol></section>
+
+    <div class="tb-exportbar">
+      <div class="pdf-history-actions"><button id="undoPdf" class="tb-toolbutton" type="button">↶ Undo</button><button id="redoPdf" class="tb-toolbutton" type="button">↷ Redo</button><button id="showHistory" class="tb-toolbutton" type="button">History</button></div>
+      <button id="downloadPdf" class="pdf-primary" type="button">Download PDF</button>
+    </div>
+  </section>
+</main>
+<script type="module" src="./pdf-app.js"></script>
+</body>
+</html>
