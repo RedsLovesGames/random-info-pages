@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0b0a">
+<meta name="theme-color" content="#05080d">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Private time-zone workspace for comparing clocks, availability, and shared instants.">
-<title>Time Zone Board · Toolbox</title>
+<meta name="description" content="Private map, planner, and people-first time-zone workspace.">
+<title>Time Workspace · Toolbox</title>
 <link rel="stylesheet" href="../shared/toolbox.css">
 <link rel="stylesheet" href="./time.css">
 </head>
-<body>
+<body class="time-body">
 <section id="accessGate" class="access-gate" aria-labelledby="accessTitle">
   <form id="loginForm" class="access-card" autocomplete="on">
     <div class="tb-kicker">Private / Time workspace</div>
     <h1 id="accessTitle">Time access</h1>
-    <p>Sign in to open the map, planner, and Time Zone Board.</p>
+    <p>Sign in to open the map, planner, and people board.</p>
     <label class="field"><span>Username</span><input id="loginUsername" class="input" name="username" autocomplete="username" required></label>
     <label class="field"><span>Password</span><input id="loginPassword" class="input" name="password" type="password" autocomplete="current-password" required></label>
     <button class="button primary access-submit" type="submit">Unlock</button>
@@ -23,63 +23,125 @@
   </form>
 </section>
 
-<div id="protectedTimeApp" hidden>
-  <header class="tb-top"><nav class="tb-shell tb-nav" aria-label="Time Zone Board"><a class="tb-brand" href="../">RIP/26 · TOOLBOX</a><div class="time-nav-actions"><button id="logoutAccess" class="button time-logout" type="button">Logout</button><a class="tb-back" href="../">← All tools</a></div></nav></header>
-  <main class="time-shell">
-    <section class="time-head">
-      <div class="tb-kicker">01 / Time · stored on this device</div>
-      <h1>Time Zone Board</h1>
-      <p>Name the people or places you care about, then move one shared instant and every clock follows. DST comes from each IANA time zone at the selected instant. Optional availability hours make overlap visible.</p>
+<div id="protectedTimeApp" class="time-app" hidden>
+  <header class="time-topbar">
+    <a class="time-brand" href="../" aria-label="Back to Toolbox"><span class="brand-dot"></span>TIME<span>.live</span></a>
+    <nav class="time-view-tabs" aria-label="Time workspace views">
+      <button class="time-view-tab active" data-view="map" type="button">Map</button>
+      <button class="time-view-tab" data-view="planner" type="button">Planner</button>
+      <button class="time-view-tab" data-view="board" type="button">Board</button>
+    </nav>
+    <div class="top-controls">
+      <button id="format" class="compact-control" type="button" aria-label="Toggle time format">12h</button>
+      <button id="liveTime" class="compact-control live-control active" type="button"><span class="status-dot"></span>Live</button>
+      <button id="addPerson" class="compact-control add-person-top" type="button">+ Person</button>
+      <button id="logoutAccess" class="compact-control" type="button">Logout</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section id="mapView" class="time-view map-view" data-view-panel="map">
+      <aside class="location-rail" aria-label="Locations">
+        <div class="rail-head">
+          <div>
+            <div class="rail-eyebrow">Your people</div>
+            <h1>Locations</h1>
+          </div>
+          <button class="round-add" data-open-person type="button" aria-label="Add person">+</button>
+        </div>
+        <div id="locationCards" class="location-cards" aria-live="polite"></div>
+        <button class="add-location-button" data-open-person type="button">＋ Add person</button>
+      </aside>
+
+      <section class="map-stage" aria-label="World time map">
+        <div class="map-toolbar">
+          <div id="mapMoment" class="map-moment">Now</div>
+          <div class="map-hint">Drag the timeline to compare one shared instant</div>
+        </div>
+        <svg id="worldMap" class="world-map" viewBox="0 0 1000 500" role="img" aria-label="World map with grouped time-zone locations">
+          <defs>
+            <radialGradient id="dayGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#315579" stop-opacity=".34"/>
+              <stop offset=".62" stop-color="#15253a" stop-opacity=".17"/>
+              <stop offset="1" stop-color="#05080d" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="markerGlow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <rect width="1000" height="500" class="ocean"/>
+          <g class="map-grid" aria-hidden="true">
+            <path d="M0 125H1000M0 250H1000M0 375H1000"/>
+            <path d="M250 0V500M500 0V500M750 0V500"/>
+          </g>
+          <g class="land" aria-hidden="true">
+            <path d="M63 112L91 76l49-28 65-8 52 26 39 54-12 43-34 18-8 43-44 5-20 41-48-18-12-45-38-28z"/>
+            <path d="M218 266l48 7 34 34 13 57-24 76-27 37-24-26 4-51-23-46-14-50z"/>
+            <path d="M414 87l37-37 75-17 73 15 40-19 89 35 45 47 63 13 71 68-14 58-42 13-31-31-53 17-28-20-42 29-52-9-31 28-46-16-27-47-48-19-18-46-39-19-11-35z"/>
+            <path d="M472 228l66 3 57 35 18 68-28 83-44 21-31-31 5-52-35-42-29-45z"/>
+            <path d="M784 338l42-23 53 12 37 44-13 42-59 18-43-22-21-38z"/>
+            <path d="M332 60l32-29 47 4 13 33-29 24-44-8z"/>
+            <path d="M889 164l19-20 29 9 7 26-24 15z"/>
+          </g>
+          <ellipse id="dayNightGlow" class="day-glow" cx="500" cy="250" rx="260" ry="215" fill="url(#dayGlow)" pointer-events="none"/>
+          <g id="mapMarkers" class="map-markers"></g>
+        </svg>
+        <div class="map-legend"><span><i class="legend-dot reference"></i>Reference</span><span><i class="legend-dot"></i>Location</span><span id="locationCount">0 locations</span></div>
+
+        <div class="timeline-panel">
+          <div class="timeline-main">
+            <div class="timeline-reference"><span id="referenceName">Reference</span><strong id="referenceTime">--:--</strong></div>
+            <div class="timeline-track-wrap">
+              <input id="timelineSlider" class="timeline-slider" type="range" min="-10080" max="10080" step="15" value="0" aria-label="Minutes from now">
+              <div class="timeline-axis" aria-hidden="true"><span>-7d</span><span>-3d</span><span id="timelineLabel">Now</span><span>+3d</span><span>+7d</span></div>
+            </div>
+            <button id="timelineNow" class="live-pill" type="button"><span class="status-dot"></span>Now</button>
+          </div>
+        </div>
+      </section>
     </section>
 
-    <section class="control">
-      <div class="control-row">
-        <input id="slider" class="range" type="range" min="-168" max="168" step="1" value="0" aria-label="Hours from now">
-        <button id="now" class="button primary" type="button">Now</button>
-        <button id="format" class="button" type="button">12 hour</button>
+    <section id="plannerView" class="time-view planner-view" data-view-panel="planner" hidden>
+      <div class="section-shell">
+        <div class="section-heading">
+          <div><div class="rail-eyebrow">Shared hours</div><h1>Meeting planner</h1><p>Compare every person at the same instant and scan the next 24 hours for overlap.</p></div>
+          <button class="button primary" data-open-person type="button">+ Add person</button>
+        </div>
+        <div id="plannerSummary" class="planner-summary" aria-live="polite"></div>
+        <div class="planner-scroll">
+          <div id="plannerGrid" class="planner-grid"></div>
+        </div>
       </div>
-      <div class="slider-meta"><span id="offsetLabel">Now</span><span>± 7 days</span></div>
     </section>
 
-    <section id="overlap" class="overlap" hidden aria-live="polite">
-      <div class="overlap-top"><strong id="overlapSummary"></strong><span>Availability at selected instant</span></div>
-      <div id="overlapPeople" class="overlap-people"></div>
-    </section>
-
-    <section id="clocks" class="clocks" aria-live="polite"></section>
-
-    <section class="add">
-      <form id="addForm" class="add-grid">
-        <input id="name" class="input" maxlength="28" placeholder="Name, e.g. Alex" required aria-label="Clock name">
-        <input id="zone" class="input" list="zones" placeholder="IANA zone, e.g. America/New_York" required aria-label="Time zone">
-        <datalist id="zones"></datalist>
-        <button class="button primary" type="submit">Add clock</button>
-      </form>
-      <p id="message" class="notice">Up to 16 clocks. Edit a clock to add optional available hours. Your board never leaves this browser.</p>
+    <section id="boardView" class="time-view board-view" data-view-panel="board" hidden>
+      <div class="section-shell">
+        <div class="section-heading">
+          <div><div class="rail-eyebrow">People first</div><h1>Time board</h1><p>Detailed cards for every location, with people grouped together when they share a time zone.</p></div>
+          <button class="button primary" data-open-person type="button">+ Add person</button>
+        </div>
+        <div id="peopleBoard" class="people-board" aria-live="polite"></div>
+      </div>
     </section>
   </main>
 
-  <dialog id="clockDialog" class="clock-dialog">
-    <form id="editForm" class="dialog-form">
-      <div class="dialog-head"><h2>Edit clock</h2><button id="cancelEdit" class="button" type="button">Close</button></div>
-      <input id="editId" type="hidden">
-      <label class="field"><span>Name</span><input id="editName" class="input" maxlength="28" required></label>
-      <label class="field"><span>IANA time zone</span><input id="editZone" class="input" list="editZones" required></label>
-      <datalist id="editZones"></datalist>
+  <dialog id="personDialog" class="person-dialog">
+    <form id="personForm" class="dialog-form">
+      <div class="dialog-head"><div><div class="rail-eyebrow" id="personDialogEyebrow">Person</div><h2 id="personDialogTitle">Add person</h2></div><button id="cancelPerson" class="compact-control" type="button">Close</button></div>
+      <input id="personId" type="hidden">
+      <label class="field"><span>Name</span><input id="personName" class="input" maxlength="40" placeholder="Alex" required></label>
+      <label class="field"><span>City</span><select id="personCity" class="input" required></select></label>
       <div class="hours-grid">
-        <label class="field"><span>Available from</span><input id="availableStart" class="input" type="time"></label>
-        <label class="field"><span>Available until</span><input id="availableEnd" class="input" type="time"></label>
+        <label class="field"><span>Usually available from</span><input id="personAvailableStart" class="input" type="time"></label>
+        <label class="field"><span>Usually available until</span><input id="personAvailableEnd" class="input" type="time"></label>
       </div>
-      <p id="editMessage" class="dialog-note">Availability is optional.</p>
+      <p id="personMessage" class="dialog-note">People in the same time zone are automatically grouped together. Availability is optional and can cross midnight.</p>
       <div class="dialog-actions">
-        <button id="clearHours" class="button" type="button">Clear hours</button>
-        <button class="button primary" type="submit">Save changes</button>
+        <button id="removePerson" class="button danger" type="button" hidden>Remove</button>
+        <button class="button primary" type="submit">Save person</button>
       </div>
     </form>
   </dialog>
 </div>
 
 <script type="module" src="./time-app.js"></script>
-<!-- time-app.js imports ./time.js for DST-aware IANA calculations and persisted state. -->
 </body>
 </html>
