@@ -8,7 +8,7 @@ This file records third-party projects evaluated or incorporated by the Random I
 - Source: browser standards implemented by the user's browser.
 - Use: `Intl.DateTimeFormat`, Canvas 2D, `createImageBitmap`, `HTMLCanvasElement.toBlob`, `OffscreenCanvas`, `localStorage`, Cache Storage, Clipboard API, File/Blob/Object URL APIs, `<video>` frame sampling.
 - Status: **Primary implementation path.**
-- User image/video bytes stay on-device. Runtime/model downloads described below do not upload the selected media.
+- User image/video/text bytes stay on-device. Runtime/model downloads described below do not upload selected media or text.
 
 ## Image Studio incorporated sources
 
@@ -99,6 +99,42 @@ This file records third-party projects evaluated or incorporated by the Random I
 - Delivery used by Toolbox: pinned jsDelivr mirror of `Suemura/client-side-image-converter@4bde3a9b.../public/models/u2netp.onnx`, approximately 4.6 MB.
 - The model is downloaded only when the user invokes background removal and is placed in Cache Storage when available. Selected image bytes are never sent with that request.
 
+## Text Tools incorporated sources
+
+### markedjs/marked
+- Repository: https://github.com/markedjs/marked
+- Package/version: `marked@18.0.14`
+- License: MIT.
+- Status: **Incorporated as a lazy runtime dependency for Markdown parsing.**
+- Local integration: `tools/text/text-app.js`.
+- Delivery: pinned jsDelivr UMD build, loaded only when Markdown mode is opened.
+- Security note: Marked output is never inserted directly into the preview; it is passed through DOMPurify first.
+
+### cure53/DOMPurify
+- Repository: https://github.com/cure53/DOMPurify
+- Package/version: `dompurify@3.4.16`
+- License: MPL-2.0 OR Apache-2.0. Toolbox relies on the Apache-2.0 option.
+- Status: **Incorporated as a lazy runtime dependency for Markdown sanitization.**
+- Local integration: `tools/text/text-app.js`.
+- Delivery: pinned jsDelivr browser build, loaded only when Markdown mode is opened.
+
+## Money Through Time data/API sources
+
+### Federal Reserve Bank of Minneapolis annual CPI series
+- Source: https://www.minneapolisfed.org/about-us/monetary-policy/inflation-calculator/consumer-price-index-1800-
+- Status: **Incorporated as versioned static public data.**
+- Local file: `tools/money/data/us-cpi.json`.
+- Frozen coverage: 1800–2025, retrieved 2026-09-24. The source's 2026 estimate is deliberately excluded from the frozen completed-year series.
+- Methodology disclosure: pre-1913 observations are historical estimates; the source identifies 1913 onward with modern CPI/CPI-U source series.
+
+### Frankfurter FX API
+- Site/API: https://frankfurter.dev/
+- Runtime endpoint: `https://api.frankfurter.dev/v2/rates?base=...`
+- Status: **Incorporated as a runtime data source.**
+- Local integration: `tools/money/money-app.js`, `tools/money/fx-core.js`.
+- Behavior: no user API key, current rate/effective date shown, 12-hour local cache, and dated stale-cache fallback on network failure.
+- Historical inflation and current FX remain separate calculations; Toolbox does not imply historical FX conversion.
+
 ## Image Studio selected but not yet incorporated
 
 ### jamsinclair/jSquash
@@ -146,6 +182,6 @@ This file records third-party projects evaluated or incorporated by the Random I
 
 ## Runtime dependency note
 
-The current static deployment lazy-loads Pica, fflate, Cropper.js, gifenc, and ONNX Runtime from pinned jsDelivr package URLs. Background removal additionally downloads the pinned U²-Net-small model on first use. Only library/model assets are requested from those hosts; selected image/video bytes remain local. The model is cached with Cache Storage when available. A later packaging pass may vendor permissively licensed builds to eliminate runtime CDN dependence.
+The current static deployment lazy-loads Pica, fflate, Cropper.js, gifenc, ONNX Runtime, Marked, and DOMPurify from pinned jsDelivr package URLs. Background removal additionally downloads the pinned U²-Net-small model on first use. Only library/model assets are requested from those hosts; selected image/video/text content remains local. The model is cached with Cache Storage when available. A later packaging pass may vendor permissively licensed builds to eliminate runtime CDN dependence.
 
 See `tools/IMAGE_UPSTREAM_REVIEW.md` for the technical comparison and implementation rationale.
