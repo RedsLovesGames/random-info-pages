@@ -7,7 +7,7 @@ const routes = [
   ['/tools/', 'Toolbox'],
   ['/tools/time/', 'Time access'],
   ['/tools/image/', 'Image Studio'],
-  ['/tools/money/', 'Money Through Time'],
+  ['/tools/money/', 'Money & Finance'],
   ['/tools/text/', 'Text Tools'],
 ];
 
