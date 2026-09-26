@@ -9,6 +9,7 @@ on:
       - 'tests/computer-*.test.mjs'
       - 'scripts/computer_browser_smoke.mjs'
       - '.github/workflows/computer-ci.yml'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
