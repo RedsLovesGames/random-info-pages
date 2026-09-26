@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import useInitialWindowSize from '../../hooks/useInitialWindowSize';
 import Window from '../os/Window';
 import { RandomInfoApp } from './RandomInfoCatalog';
@@ -6,6 +6,9 @@ import { RandomInfoApp } from './RandomInfoCatalog';
 export interface EmbeddedSiteProps extends WindowAppProps {
     app: RandomInfoApp;
 }
+
+const DESKTOP_VIEWPORT_WIDTH = 1440;
+const MIN_SCALE = 0.1;
 
 const getRepoBase = (): string => {
     if (typeof window === 'undefined') return '';
@@ -17,6 +20,37 @@ const getRepoBase = (): string => {
 const EmbeddedSite: React.FC<EmbeddedSiteProps> = (props) => {
     const { initWidth, initHeight } = useInitialWindowSize({ margin: 90 });
     const src = `${getRepoBase()}${props.app.path}`;
+    const viewportRef = useRef<HTMLDivElement>(null);
+    const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+
+    useEffect(() => {
+        const viewport = viewportRef.current;
+        if (!viewport) return;
+
+        const measure = () => {
+            const rect = viewport.getBoundingClientRect();
+            setViewportSize((previous) => {
+                const width = Math.max(0, rect.width);
+                const height = Math.max(0, rect.height);
+                if (previous.width === width && previous.height === height) {
+                    return previous;
+                }
+                return { width, height };
+            });
+        };
+
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(viewport);
+        return () => observer.disconnect();
+    }, []);
+
+    const scale = viewportSize.width
+        ? Math.max(MIN_SCALE, viewportSize.width / DESKTOP_VIEWPORT_WIDTH)
+        : 1;
+    const logicalHeight = viewportSize.height
+        ? Math.max(1, viewportSize.height / scale)
+        : initHeight;
 
     return (
         <Window
@@ -46,12 +80,19 @@ const EmbeddedSite: React.FC<EmbeddedSiteProps> = (props) => {
                         Open outside OS
                     </a>
                 </div>
-                <iframe
-                    title={props.app.title}
-                    src={src}
-                    style={styles.iframe}
-                    loading="eager"
-                />
+                <div ref={viewportRef} style={styles.viewport}>
+                    <iframe
+                        title={props.app.title}
+                        src={src}
+                        style={Object.assign({}, styles.iframe, {
+                            width: DESKTOP_VIEWPORT_WIDTH,
+                            height: logicalHeight,
+                            transform: `scale(${scale})`,
+                            transformOrigin: 'top left',
+                        })}
+                        loading="eager"
+                    />
+                </div>
             </div>
         </Window>
     );
@@ -63,6 +104,7 @@ const styles: StyleSheetCSS = {
         flexDirection: 'column',
         height: '100%',
         minHeight: 0,
+        minWidth: 0,
         backgroundColor: '#c0c0c0',
     },
     addressBar: {
@@ -110,10 +152,20 @@ const styles: StyleSheetCSS = {
         fontSize: 11,
         textDecoration: 'none',
     },
-    iframe: {
+    viewport: {
+        position: 'relative',
         display: 'block',
         flex: 1,
-        width: '100%',
+        minWidth: 0,
+        minHeight: 0,
+        overflow: 'hidden',
+        backgroundColor: '#ffffff',
+    },
+    iframe: {
+        display: 'block',
+        position: 'absolute',
+        top: 0,
+        left: 0,
         minHeight: 0,
         border: 0,
         backgroundColor: '#ffffff',
