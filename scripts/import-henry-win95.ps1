@@ -163,6 +163,11 @@ try {
     $packagePath = Join-Path $OsSrc 'package.json'
     $package = Get-Content $packagePath -Raw | ConvertFrom-Json
     $package.name = 'random-info-os'
+    # The pinned upstream package.json was changed after its lock was generated: it asks for
+    # react-router ^6.22.3 while the committed lock intentionally contains 6.2.2. Align the
+    # package spec with the locked version so npm ci remains a true clean install without
+    # regenerating or floating the dependency graph.
+    $package.dependencies.'react-router' = '6.2.2'
     if ($package.PSObject.Properties.Name -contains 'homepage') {
         $package.homepage = 'https://redslovesgames.github.io/random-info-pages/os'
     } else {
@@ -188,6 +193,7 @@ try {
         "- Upstream: $SourceLabel",
         "- Pinned commit: $SourceCommit",
         '- Purpose: retain the authentic React Win95 shell, window manager, js-dos runtime, and game bundles while removing personal portfolio content.',
+        '- Dependency note: react-router is pinned to the upstream lock version 6.2.2 because the source package.json had drifted ahead of its committed lock.',
         '- Excluded: showcase components, personal pictures, personal audio, resume assets, and Henry-specific Credits/Showcase applications.',
         '- Adaptation: Random Info Explorer launches existing site pages inside authentic draggable/resizable windows with external-open fallbacks.',
         '',
