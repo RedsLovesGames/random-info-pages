@@ -54,6 +54,7 @@ jobs:
 
           This directory is the upstream outer 3D experience adapted for Random Info Pages. The generated `public/` build output is intentionally not committed.
           EOF
+          sed -i '/^package-lock\.json$/d' computer-src/.gitignore
           cd computer-src
           npm install --package-lock-only --ignore-scripts
 
