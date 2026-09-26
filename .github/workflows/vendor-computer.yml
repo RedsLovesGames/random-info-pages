@@ -1,0 +1,75 @@
+name: Vendor Random Info Computer
+
+on:
+  push:
+    branches: [computer-experience]
+    paths:
+      - '.github/workflows/vendor-computer.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v6
+        with:
+          ref: computer-experience
+          fetch-depth: 0
+
+      - name: Confirm vendor contract is RED before copy
+        shell: bash
+        run: |
+          set -u
+          if node --test tests/computer-vendor.test.mjs; then
+            echo 'Vendor test unexpectedly passed before vendoring.'
+            exit 1
+          fi
+          echo 'RED confirmed: computer-src is absent/incomplete.'
+
+      - name: Clone pinned upstream outer portfolio
+        shell: bash
+        env:
+          UPSTREAM_SHA: c53c5a50183655eb83d70048403a5084f5d1214c
+        run: |
+          set -euxo pipefail
+          rm -rf /tmp/portfolio-upstream computer-src
+          git clone https://github.com/henryjeff/portfolio-website.git /tmp/portfolio-upstream
+          git -C /tmp/portfolio-upstream checkout "$UPSTREAM_SHA"
+          mkdir -p computer-src
+          rsync -a --exclude '.git' --exclude 'public' /tmp/portfolio-upstream/ computer-src/
+
+      - name: Add RIP provenance and lockfile
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cat > computer-src/README-RIP.md <<'EOF'
+          # Random Info Pages vendored 3D computer source
+
+          Original outer 3D portfolio project: `henryjeff/portfolio-website`.
+
+          Pinned upstream commit: `c53c5a50183655eb83d70048403a5084f5d1214c`.
+
+          This directory is the upstream outer 3D experience adapted for Random Info Pages. The generated `public/` build output is intentionally not committed.
+          EOF
+          cd computer-src
+          npm install --package-lock-only --ignore-scripts
+
+      - name: Confirm vendor contract is GREEN
+        run: node --test tests/computer-vendor.test.mjs
+
+      - name: Commit vendored baseline
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git config user.name 'RedsLovesGames'
+          git config user.email '75150137+RedsLovesGames@users.noreply.github.com'
+          git add computer-src tests/computer-vendor.test.mjs
+          if git diff --cached --quiet; then
+            echo 'No vendored changes to commit.'
+            exit 0
+          fi
+          git commit -m 'feat: vendor 3d computer experience baseline'
+          git push origin HEAD:computer-experience
