@@ -14,6 +14,7 @@ permissions:
   contents: read
 
 # Feature-branch verification for the vendored 3D computer experience.
+# Re-run after compatibility lock refresh.
 jobs:
   build-test:
     runs-on: ubuntu-latest
