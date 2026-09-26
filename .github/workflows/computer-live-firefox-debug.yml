@@ -113,6 +113,32 @@ jobs:
           assert.equal(new URL(nestedFrame.url()).pathname, '/random-info-pages/tools/');
           await nestedFrame.locator('h1').filter({ hasText: 'Toolbox' }).waitFor({ state: 'visible', timeout: 10000 });
 
+          const stacking = await nested.evaluate(el => {
+            const rect = el.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + Math.min(rect.height / 2, 120);
+            const top = document.elementFromPoint(x, y);
+            const windows = [...document.querySelectorAll('[style*="z-index"]')]
+              .map(node => ({
+                zIndex: getComputedStyle(node).zIndex,
+                text: (node.textContent || '').trim().slice(0, 80),
+              }))
+              .filter(item => item.text.includes('Random Info Explorer') || item.text.includes('Toolbox'));
+            return {
+              iframeIsTopmost: top === el,
+              iframeContainsTopmost: top ? el.contains(top) : false,
+              topTag: top?.tagName || null,
+              topTitle: top?.getAttribute?.('title') || null,
+              topText: (top?.textContent || '').trim().slice(0, 120),
+              windows,
+            };
+          });
+          console.log('Stacking check:', stacking);
+          assert.ok(
+            stacking.iframeIsTopmost || stacking.iframeContainsTopmost,
+            `Toolbox iframe is loaded but covered by another OS element: ${JSON.stringify(stacking)}`
+          );
+
           console.log('Page errors:', pageErrors);
           console.log('Bad responses:', badResponses);
           assert.deepEqual(pageErrors, []);
