@@ -182,6 +182,10 @@ async function assertDirectOsNarrowExperience(browser) {
       .slice(0, 12);
     return {
       clientWidth,
+      innerWidth: window.innerWidth,
+      visualViewportWidth: window.visualViewport?.width || null,
+      outerWidth: window.outerWidth,
+      screenWidth: window.screen.width,
       scrollWidth: document.documentElement.scrollWidth,
       offenders,
     };
