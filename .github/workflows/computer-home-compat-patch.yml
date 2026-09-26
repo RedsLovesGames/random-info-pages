@@ -1,0 +1,37 @@
+name: Apply Computer Home Compatibility Patch
+
+on:
+  push:
+    branches: [computer-customization]
+    paths:
+      - '.github/workflows/computer-home-compat-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: computer-customization
+      - name: Preserve archive computer compatibility label
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          old = '<a class="computer-entry win95-computer-button" href="./computer/">'
+          new = '<a class="computer-entry win95-computer-button" href="./computer/" title="ENTER ARCHIVE COMPUTER">'
+          if old not in s:
+              raise SystemExit('Windows 95 computer launcher anchor not found')
+          p.write_text(s.replace(old, new, 1))
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "fix: preserve archive computer launcher label"
+          git push origin HEAD:computer-customization
