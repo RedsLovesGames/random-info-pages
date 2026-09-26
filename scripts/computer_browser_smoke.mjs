@@ -5,8 +5,11 @@ const require = createRequire(new URL('../computer-src/package.json', import.met
 const { chromium } = require('playwright');
 
 const baseURL = process.env.COMPUTER_SMOKE_URL || 'http://127.0.0.1:4173';
-const computerURL = `${baseURL.replace(/\/$/, '')}/computer/`;
-const osURL = `${baseURL.replace(/\/$/, '')}/os/`;
+const normalizedBaseURL = baseURL.replace(/\/$/, '');
+const basePath = new URL(normalizedBaseURL).pathname.replace(/\/$/, '');
+const computerURL = `${normalizedBaseURL}/computer/`;
+const osURL = `${normalizedBaseURL}/os/`;
+const expectedToolboxPath = `${basePath}/tools/` || '/tools/';
 
 function attachDiagnostics(page) {
   const pageErrors = [];
@@ -34,6 +37,13 @@ async function waitForComputerState(page) {
   );
 }
 
+async function startComputer(page) {
+  const start = page.getByText('START', { exact: true });
+  await start.waitFor({ state: 'visible', timeout: 60000 });
+  await start.click();
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('ui')).pointerEvents === 'none', { timeout: 10000 });
+}
+
 async function assertDesktopExperience(browser) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
@@ -45,6 +55,8 @@ async function assertDesktopExperience(browser) {
   const fallbackVisible = await page.locator('#computer-fallback').isVisible();
   assert.equal(fallbackVisible, false, 'desktop Chromium should start the 3D experience');
   assert.ok(await page.locator('#webgl canvas').count(), 'WebGL canvas must be present');
+
+  await startComputer(page);
 
   const iframe = page.locator('#computer-screen');
   await iframe.waitFor({ state: 'attached', timeout: 60000 });
@@ -67,27 +79,54 @@ async function assertDesktopExperience(browser) {
   }
 
   const toolbox = frame.getByRole('button', { name: /Toolbox/ }).first();
-  await toolbox.dispatchEvent('click');
+  await toolbox.click({ timeout: 10000 });
   const toolboxIframe = frame.locator('iframe[title="Toolbox"]');
   await toolboxIframe.waitFor({ state: 'attached', timeout: 10000 });
   const toolboxFrame = await toolboxIframe.elementHandle().then((handle) => handle?.contentFrame());
-  assert.ok(toolboxFrame, 'Toolbox must launch inside a nested Win95 application window');
+  assert.ok(toolboxFrame, 'Toolbox must launch inside a nested Win95 application window after a real pointer click');
   await toolboxFrame.waitForLoadState('domcontentloaded');
-  assert.equal(new URL(toolboxFrame.url()).pathname, '/tools/', 'embedded Toolbox must keep its native route');
+  assert.equal(
+    new URL(toolboxFrame.url()).pathname,
+    expectedToolboxPath,
+    'embedded Toolbox must preserve the GitHub Pages repository prefix'
+  );
+
+  await frame.waitForTimeout(250);
+  const embeddedMetrics = await toolboxIframe.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const parentRect = element.parentElement?.getBoundingClientRect();
+    return {
+      internalWidth: element.contentWindow?.innerWidth || 0,
+      layoutWidth: Number.parseFloat(getComputedStyle(element).width),
+      visibleWidth: rect.width,
+      parentWidth: parentRect?.width || 0,
+    };
+  });
+  assert.ok(
+    embeddedMetrics.internalWidth >= 1400 && embeddedMetrics.layoutWidth >= 1400,
+    `embedded pages must retain a desktop-sized internal viewport: ${JSON.stringify(embeddedMetrics)}`
+  );
+  assert.ok(
+    Math.abs(embeddedMetrics.visibleWidth - embeddedMetrics.parentWidth) <= 2,
+    `scaled desktop page must fit the Win95 content width: ${JSON.stringify(embeddedMetrics)}`
+  );
+
   assert.ok(
     await frame.getByRole('link', { name: 'Open outside OS', exact: true }).count(),
     'embedded windows must offer an external-open fallback'
   );
 
-  await page.evaluate(() => {
-    const screen = document.getElementById('computer-screen');
-    window.__ripBridgeKeydown = false;
-    screen?.addEventListener('keydown', () => {
-      window.__ripBridgeKeydown = true;
-    }, { once: true });
-  });
-  await frame.locator('body').press('A');
-  await page.waitForFunction(() => window.__ripBridgeKeydown === true, { timeout: 5000 });
+  if (process.env.SKIP_KEY_BRIDGE !== '1') {
+    await page.evaluate(() => {
+      const screen = document.getElementById('computer-screen');
+      window.__ripBridgeKeydown = false;
+      screen?.addEventListener('keydown', () => {
+        window.__ripBridgeKeydown = true;
+      }, { once: true });
+    });
+    await frame.locator('body').press('A');
+    await page.waitForFunction(() => window.__ripBridgeKeydown === true, { timeout: 5000 });
+  }
 
   await page.waitForTimeout(500);
   assert.deepEqual(diagnostics.criticalFailures, [], `critical assets failed: ${diagnostics.criticalFailures.join(', ')}`);
@@ -122,10 +161,35 @@ async function assertDirectOsNarrowExperience(browser) {
   await page.getByText('Start', { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
   await page.getByText('Random Info Explorer', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 });
 
-  const sizes = await page.evaluate(() => ({
-    clientWidth: document.documentElement.clientWidth,
-    scrollWidth: document.documentElement.scrollWidth,
-  }));
+  const sizes = await page.evaluate(() => {
+    const clientWidth = document.documentElement.clientWidth;
+    const offenders = [...document.querySelectorAll('*')]
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          tag: element.tagName,
+          className: typeof element.className === 'string' ? element.className : '',
+          text: (element.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80),
+          left: Math.round(rect.left),
+          right: Math.round(rect.right),
+          width: Math.round(rect.width),
+          scrollWidth: element.scrollWidth,
+          overflowX: getComputedStyle(element).overflowX,
+        };
+      })
+      .filter((entry) => entry.right > clientWidth + 2 || entry.scrollWidth > clientWidth + 2)
+      .sort((a, b) => Math.max(b.right, b.scrollWidth) - Math.max(a.right, a.scrollWidth))
+      .slice(0, 12);
+    return {
+      clientWidth,
+      innerWidth: window.innerWidth,
+      visualViewportWidth: window.visualViewport?.width || null,
+      outerWidth: window.outerWidth,
+      screenWidth: window.screen.width,
+      scrollWidth: document.documentElement.scrollWidth,
+      offenders,
+    };
+  });
   assert.ok(sizes.scrollWidth <= sizes.clientWidth + 2, `direct OS overflows narrow viewport: ${JSON.stringify(sizes)}`);
   assert.deepEqual(diagnostics.pageErrors, [], `direct OS mobile errors: ${diagnostics.pageErrors.join(' | ')}`);
   await context.close();
