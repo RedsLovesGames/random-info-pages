@@ -1,11 +1,15 @@
 * {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 html,
 body {
+    width: 100%;
+    max-width: 100%;
     overflow: hidden;
+    overflow-x: hidden;
 }
 
 .webgl {
@@ -35,6 +39,68 @@ body {
     width: 26.5px;
 }
 
+#computer-fallback {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    padding: 24px;
+    overflow: auto;
+    background: radial-gradient(circle at 50% 15%, #1a2a28 0, #071011 55%, #020505 100%);
+    color: #d8ead6;
+    font-family: "Courier New", ui-monospace, monospace;
+}
+
+#computer-fallback[hidden] {
+    display: none;
+}
+
+.computer-fallback-card {
+    width: min(680px, 100%);
+    min-width: 0;
+    padding: clamp(24px, 5vw, 48px);
+    border: 1px solid rgba(195, 255, 199, 0.35);
+    background: rgba(6, 17, 16, 0.9);
+    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.55);
+}
+
+.computer-fallback-kicker {
+    margin-bottom: 14px;
+    color: #8ab593;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+}
+
+.computer-fallback-card h1 {
+    margin-bottom: 18px;
+    color: #d3ffd2;
+    font-size: clamp(30px, 7vw, 58px);
+    line-height: 0.95;
+    letter-spacing: -0.055em;
+}
+
+.computer-fallback-card p {
+    max-width: 60ch;
+    line-height: 1.55;
+}
+
+.computer-fallback-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.computer-fallback-actions a {
+    display: inline-block;
+    padding: 11px 14px;
+    border: 1px solid rgba(200, 238, 200, 0.35);
+    color: #d3ffd2;
+    text-decoration: none;
+}
+
 @media only screen and (max-width: 768px) {
     .interface-wrapper {
         width: 100%;
@@ -45,6 +111,43 @@ body {
     .icon-control-container {
         height: 19.5px;
         width: 19.5px;
+    }
+}
+
+@media only screen and (max-width: 430px) {
+    html,
+    body,
+    #computer-fallback {
+        width: 100%;
+        max-width: 430px;
+        overflow-x: hidden;
+    }
+
+    #computer-fallback {
+        padding: 14px;
+    }
+
+    .computer-fallback-actions {
+        flex-direction: column;
+    }
+
+    .computer-fallback-actions a {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+
+    .jitter {
+        animation: none !important;
     }
 }
 
