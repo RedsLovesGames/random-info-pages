@@ -56,6 +56,7 @@ jobs:
           EOF
           sed -i '/^package-lock\.json$/d' computer-src/.gitignore
           cd computer-src
+          npm pkg set 'overrides.@types/node=17.0.45'
           npm install --package-lock-only --ignore-scripts
 
       - name: Confirm vendor contract is GREEN
@@ -72,5 +73,5 @@ jobs:
             echo 'No vendored changes to commit.'
             exit 0
           fi
-          git commit -m 'feat: vendor 3d computer experience baseline'
+          git commit -m 'build: pin TypeScript-compatible node types'
           git push origin HEAD:computer-experience
