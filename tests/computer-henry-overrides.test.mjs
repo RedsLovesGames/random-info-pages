@@ -32,6 +32,15 @@ test('native RIP pages launch in Win95 windows with an external fallback', () =>
   assert.match(embedded, /Open outside OS/);
 });
 
+test('embedded RIP pages keep a full desktop viewport and scale it to the Win95 window', () => {
+  const embedded = read('src/components/applications/EmbeddedSite.tsx');
+  assert.match(embedded, /DESKTOP_VIEWPORT_WIDTH\s*=\s*1440/);
+  assert.match(embedded, /ResizeObserver/);
+  assert.match(embedded, /transform:\s*`scale\(\$\{scale\}\)`/);
+  assert.match(embedded, /transformOrigin:\s*['\"]top left['\"]/);
+  assert.match(embedded, /width:\s*DESKTOP_VIEWPORT_WIDTH/);
+});
+
 test('desktop uses authentic games plus Random Info Explorer and removes Showcase/Credits', () => {
   const desktop = read('src/components/os/Desktop.tsx');
   assert.match(desktop, /Random Info Explorer/);
