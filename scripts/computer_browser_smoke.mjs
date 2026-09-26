@@ -57,7 +57,9 @@ async function assertDesktopExperience(browser) {
   assert.equal(await frame.title(), 'Random Info OS', 'monitor iframe must expose the Random Info OS desktop');
 
   const toolsShortcut = frame.locator('.folder-shortcut[data-folder="tools"]');
-  await toolsShortcut.dblclick();
+  // The iframe is transformed as a CSS3D monitor surface until the camera enters
+  // interaction mode, so validate the OS desktop handler inside its own DOM here.
+  await toolsShortcut.dispatchEvent('dblclick');
   const toolsWindow = frame.locator('.explorer-window').filter({ hasText: 'Tools' });
   await toolsWindow.waitFor({ state: 'visible', timeout: 5000 });
   assert.ok(await toolsWindow.getByText('Toolbox', { exact: true }).count(), 'Tools folder must expose Toolbox');
