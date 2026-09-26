@@ -161,10 +161,31 @@ async function assertDirectOsNarrowExperience(browser) {
   await page.getByText('Start', { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
   await page.getByText('Random Info Explorer', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 });
 
-  const sizes = await page.evaluate(() => ({
-    clientWidth: document.documentElement.clientWidth,
-    scrollWidth: document.documentElement.scrollWidth,
-  }));
+  const sizes = await page.evaluate(() => {
+    const clientWidth = document.documentElement.clientWidth;
+    const offenders = [...document.querySelectorAll('*')]
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          tag: element.tagName,
+          className: typeof element.className === 'string' ? element.className : '',
+          text: (element.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80),
+          left: Math.round(rect.left),
+          right: Math.round(rect.right),
+          width: Math.round(rect.width),
+          scrollWidth: element.scrollWidth,
+          overflowX: getComputedStyle(element).overflowX,
+        };
+      })
+      .filter((entry) => entry.right > clientWidth + 2 || entry.scrollWidth > clientWidth + 2)
+      .sort((a, b) => Math.max(b.right, b.scrollWidth) - Math.max(a.right, a.scrollWidth))
+      .slice(0, 12);
+    return {
+      clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      offenders,
+    };
+  });
   assert.ok(sizes.scrollWidth <= sizes.clientWidth + 2, `direct OS overflows narrow viewport: ${JSON.stringify(sizes)}`);
   assert.deepEqual(diagnostics.pageErrors, [], `direct OS mobile errors: ${diagnostics.pageErrors.join(' | ')}`);
   await context.close();
