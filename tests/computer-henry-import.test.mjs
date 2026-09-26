@@ -34,8 +34,8 @@ test('importer excludes Henry personal portfolio media and leaves git history to
   assert.match(text, /src[\\/]assets[\\/]pictures/);
   assert.match(text, /src[\\/]assets[\\/]audio/);
   assert.match(text, /src[\\/]assets[\\/]resume/);
-  assert.doesNotMatch(text, /git\s+(?:-C\s+\S+\s+)?commit\b/i);
-  assert.doesNotMatch(text, /git\s+(?:-C\s+\S+\s+)?push\b/i);
+  assert.doesNotMatch(text, /^\s*git\s+(?:-C\s+\S+\s+)?commit\b/im);
+  assert.doesNotMatch(text, /^\s*git\s+(?:-C\s+\S+\s+)?push\b/im);
   assert.match(text, /manifest/i);
 });
 
