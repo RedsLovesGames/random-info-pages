@@ -65,8 +65,20 @@ const RandomInfoExplorer: React.FC<RandomInfoExplorerProps> = (props) => {
                             <button
                                 type="button"
                                 key={app.key}
-                                onDoubleClick={() => props.onLaunchApp(app)}
-                                onClick={() => props.onLaunchApp(app)}
+                                onPointerDown={(event) => {
+                                    if (event.button === 0) {
+                                        props.onLaunchApp(app);
+                                    }
+                                }}
+                                onClick={(event) => {
+                                    // Keyboard-triggered button clicks have detail === 0.
+                                    // Pointer activation is handled on pointer-down so the
+                                    // transformed CRT iframe cannot lose the click if the
+                                    // camera moves before mouse-up.
+                                    if (event.detail === 0) {
+                                        props.onLaunchApp(app);
+                                    }
+                                }}
                                 style={styles.appCard}
                                 title={`Open ${app.title}`}
                             >
