@@ -22,31 +22,32 @@ test('archive homepage exposes a Windows 95 styled computer launcher', () => {
   assert.doesNotMatch(html, /computer-src\/|bundle\.[a-f0-9]+\.js|three(?:\.min)?\.js/i);
 });
 
-test('Random Info OS matches the Henry-style Windows desktop and exposes archive folders', () => {
+test('Random Info OS keeps the authentic React Win95 desktop while replacing portfolio content', () => {
   const html = read('os/index.html');
-  const css = read('os/styles.css');
-  const app = read('os/app.js');
+  const colors = read('os-src/src/constants/colors.ts');
+  const desktop = read('os-src/src/components/os/Desktop.tsx');
+  const catalog = read('os-src/src/components/applications/RandomInfoCatalog.ts');
 
-  assert.match(css, /#3e9697/i, 'desktop must use Henry teal');
-  assert.match(css, /#c0c0c0/i, 'taskbar/windows must use Windows 95 gray');
-  assert.match(css, /MS Sans Serif/i);
-  assert.match(html, /class=["'][^"']*start-button[^"']*["']/);
-  assert.match(html, /id=["']startMenu["']/);
+  assert.match(colors, /#3e9697/i, 'desktop must keep the upstream teal');
+  assert.match(colors, /#c3c6ca/i, 'taskbar/windows must keep the upstream Windows gray');
+  assert.match(html, /Random Info OS/);
+  assert.match(html, /js-dos\/js-dos\.js/);
 
-  assert.match(html, /Doom/);
-  assert.match(html, /The Oregon Trail/);
-  assert.match(html, /raw\.githubusercontent\.com\/henryjeff\/portfolio-inner-site\/master\/src\/assets\/icons\/doomIcon\.png/);
-  assert.match(html, /raw\.githubusercontent\.com\/henryjeff\/portfolio-inner-site\/master\/src\/assets\/icons\/trailIcon\.png/);
-
-  for (const folder of ['tools', 'school', 'friends', 'games', 'data', 'experiments']) {
-    assert.match(html, new RegExp(`data-folder=["']${folder}["']`), `missing ${folder} shortcut`);
+  for (const app of ['Doom', 'The Oregon Trail', 'Scrabble', 'RIP Wordle', 'Random Info Explorer']) {
+    assert.match(desktop, new RegExp(app.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `missing ${app}`);
   }
 
-  for (const route of ['../tools/', '../school-schedule/', '../friends/', '../tideborne/', '../oldasspolitic/', '../wanuiv2/']) {
-    assert.match(app, new RegExp(route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  for (const folder of ['Tools', 'School', 'Friends', 'Games', 'Data', 'Experiments']) {
+    assert.match(catalog, new RegExp(`['\"]${folder}['\"]`), `missing ${folder} folder`);
   }
 
-  assert.match(app, /openFolderWindow/);
-  assert.match(app, /explorer-window/);
-  assert.match(html, /folder-icon/);
+  for (const route of ['/tools/', '/school-schedule/', '/friends/', '/tideborne/', '/wanuiv2/']) {
+    assert.match(catalog, new RegExp(route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+
+  for (const bundle of ['os/doom.jsdos', 'os/trail.jsdos', 'os/scrabble.jsdos', 'os/js-dos/js-dos.js']) {
+    assert.ok(fs.existsSync(bundle), `${bundle} must be deployed locally`);
+  }
+
+  assert.doesNotMatch(desktop, /ShowcaseExplorer|Credits/);
 });
