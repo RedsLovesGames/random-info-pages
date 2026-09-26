@@ -1,0 +1,53 @@
+name: Patch Random Info Computer Home Entry
+
+on:
+  push:
+    branches: [computer-experience]
+    paths:
+      - '.github/workflows/patch-computer-home.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: computer-experience
+          fetch-depth: 0
+
+      - name: Add lightweight archive computer entrance
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('index.html')
+          html = path.read_text()
+
+          old_copy = '<p class="hero-copy">A collection of things I’ve built, tracked, calculated, tested, or made for no consistent reason.</p>'
+          new_copy = '<p class="hero-copy">A collection of things I’ve built, tracked, calculated, tested, or made for no consistent reason.<a class="computer-entry" href="./computer/">ENTER ARCHIVE COMPUTER <span aria-hidden="true">→</span></a></p>'
+          if old_copy not in html:
+              raise SystemExit('Hero copy anchor not found or already changed')
+          html = html.replace(old_copy, new_copy, 1)
+
+          css_anchor = '.hero-copy{margin:0;max-width:680px;font-size:clamp(1.3rem,2.6vw,2.5rem);line-height:1.03;letter-spacing:-.045em}'
+          css_extra = '.computer-entry{display:flex;width:max-content;max-width:100%;align-items:center;gap:10px;margin-top:24px;padding:10px 0 7px;border-bottom:1px solid var(--acid);color:var(--acid);font:750 .68rem/1 var(--mono);letter-spacing:.09em;text-decoration:none;text-transform:uppercase;transition:gap .2s ease,color .2s ease}.computer-entry:hover,.computer-entry:focus-visible{gap:16px;color:var(--paper)}'
+          if css_anchor not in html:
+              raise SystemExit('Hero CSS anchor not found')
+          html = html.replace(css_anchor, css_anchor + css_extra, 1)
+
+          path.write_text(html)
+
+      - name: Verify homepage entry contract
+        run: |
+          node --test tests/computer-home.test.mjs tests/home-index.test.mjs
+
+      - name: Commit homepage entry
+        run: |
+          git config user.name 'RedsLovesGames'
+          git config user.email '75150137+RedsLovesGames@users.noreply.github.com'
+          git add index.html
+          git commit -m 'feat: add archive computer entrance'
+          git push origin HEAD:computer-experience
