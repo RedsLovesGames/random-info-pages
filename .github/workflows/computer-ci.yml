@@ -1,0 +1,39 @@
+name: Random Info Computer CI
+
+on:
+  push:
+    branches: [computer-experience]
+    paths:
+      - 'computer-src/**'
+      - 'os/**'
+      - 'tests/computer-*.test.mjs'
+      - 'scripts/computer_browser_smoke.mjs'
+      - '.github/workflows/computer-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: computer-src/package-lock.json
+
+      - name: Install pinned computer dependencies
+        working-directory: computer-src
+        run: npm ci
+
+      - name: Build computer experience
+        working-directory: computer-src
+        run: npm run build
+
+      - name: Run computer contracts
+        run: node --test tests/computer-*.test.mjs
