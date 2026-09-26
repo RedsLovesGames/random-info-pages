@@ -145,57 +145,63 @@ export default class MonitorScreen extends EventEmitter {
         const iframe = document.createElement('iframe');
 
         // Bubble mouse move events to the main application, so we can affect the camera
+        // Bubble iframe input events to the main application so the camera and
+        // physical mouse/keyboard audio continue to react while the CRT is focused.
         iframe.onload = () => {
-            if (iframe.contentWindow) {
-                window.addEventListener('message', (event) => {
-                    var evt = new CustomEvent(event.data.type, {
-                        bubbles: true,
-                        cancelable: false,
-                    });
+            if (!iframe.contentWindow) return;
 
-                    // @ts-ignore
-                    evt.inComputer = true;
-                    if (event.data.type === 'mousemove') {
-                        var clRect = iframe.getBoundingClientRect();
-                        const { top, left, width, height } = clRect;
-                        const widthRatio = width / IFRAME_SIZE.w;
-                        const heightRatio = height / IFRAME_SIZE.h;
+            window.addEventListener('message', (event) => {
+                if (
+                    event.source !== iframe.contentWindow ||
+                    event.origin !== window.location.origin
+                ) {
+                    return;
+                }
 
-                        // @ts-ignore
-                        evt.clientX = Math.round(
-                            event.data.clientX * widthRatio + left
-                        );
-                        //@ts-ignore
-                        evt.clientY = Math.round(
-                            event.data.clientY * heightRatio + top
-                        );
-                    } else if (event.data.type === 'keydown') {
-                        // @ts-ignore
-                        evt.key = event.data.key;
-                    } else if (event.data.type === 'keyup') {
-                        // @ts-ignore
-                        evt.key = event.data.key;
-                    }
+                const data = event.data || {};
+                const type = data.type;
+                const supportedEvents = [
+                    'mousemove',
+                    'mousedown',
+                    'mouseup',
+                    'keydown',
+                    'keyup',
+                ];
+                if (!supportedEvents.includes(type)) return;
 
-                    iframe.dispatchEvent(evt);
+                var evt = new CustomEvent(type, {
+                    bubbles: true,
+                    cancelable: false,
                 });
-            }
+
+                // @ts-ignore
+                evt.inComputer = true;
+                if (type.startsWith('mouse')) {
+                    var clRect = iframe.getBoundingClientRect();
+                    const { top, left, width, height } = clRect;
+                    const widthRatio = width / IFRAME_SIZE.w;
+                    const heightRatio = height / IFRAME_SIZE.h;
+
+                    if (Number.isFinite(data.clientX)) {
+                        // @ts-ignore
+                        evt.clientX = Math.round(data.clientX * widthRatio + left);
+                    }
+                    if (Number.isFinite(data.clientY)) {
+                        // @ts-ignore
+                        evt.clientY = Math.round(data.clientY * heightRatio + top);
+                    }
+                } else {
+                    // @ts-ignore
+                    evt.key = data.key;
+                }
+
+                iframe.dispatchEvent(evt);
+            });
         };
 
         // Set iframe attributes
-        // PROD
-        iframe.src = 'https://os.henryheffernan.com/';
-        /**
-         * Use dev server is query params are present
-         *
-         * Warning: This will not work unless the dev server is running on localhost:3000
-         * Also running the dev server causes browsers to freak out over unsecure connections
-         * in the iframe, so it will flag a ton of issues.
-         */
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('dev')) {
-            iframe.src = 'http://localhost:3000/';
-        }
+        // Set iframe attributes. The OS is a same-origin sibling of /computer/.
+        iframe.src = new URL('../os/', window.location.href).href;
         iframe.style.width = this.screenSize.width + 'px';
         iframe.style.height = this.screenSize.height + 'px';
         iframe.style.padding = IFRAME_PADDING + 'px';
@@ -204,7 +210,7 @@ export default class MonitorScreen extends EventEmitter {
         iframe.className = 'jitter';
         iframe.id = 'computer-screen';
         iframe.frameBorder = '0';
-        iframe.title = 'HeffernanOS';
+        iframe.title = 'Random Info OS';
 
         // Add iframe to container
         container.appendChild(iframe);
