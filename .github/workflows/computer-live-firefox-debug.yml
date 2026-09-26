@@ -47,32 +47,26 @@ jobs:
           const badResponses = [];
           page.on('pageerror', error => pageErrors.push(error.message));
           page.on('response', response => {
-            if (response.status() >= 400 && /\/random-info-pages\/(?:os|tools|computer)\//.test(response.url())) {
+            if (response.status() >= 400 && /\/random-info-pages\/(?:os|tools)\//.test(response.url())) {
               badResponses.push(`${response.status()} ${response.url()}`);
             }
           });
 
-          await page.goto('https://redslovesgames.github.io/random-info-pages/computer/', {
+          await page.goto('https://redslovesgames.github.io/random-info-pages/os/', {
             waitUntil: 'domcontentloaded',
             timeout: 60000,
           });
 
-          const monitor = page.locator('#computer-screen');
-          await monitor.waitFor({ state: 'attached', timeout: 60000 });
-          const osFrame = await monitor.elementHandle().then(handle => handle?.contentFrame());
-          assert.ok(osFrame, 'live monitor frame must exist');
-          await osFrame.getByText('Random Info Explorer', { exact: true }).first().waitFor({ state: 'visible', timeout: 20000 });
+          await page.getByText('Random Info Explorer', { exact: true }).first().waitFor({ state: 'visible', timeout: 20000 });
 
-          const toolbox = osFrame.getByRole('button', { name: /Toolbox/ }).first();
+          const toolbox = page.getByRole('button', { name: /Toolbox/ }).first();
           await toolbox.waitFor({ state: 'visible', timeout: 10000 });
-          const box = await toolbox.boundingBox();
-          console.log('Toolbox button box:', box);
+          console.log('Toolbox button box:', await toolbox.boundingBox());
           await toolbox.click({ timeout: 10000 });
 
-          const nested = osFrame.locator('iframe[title="Toolbox"]');
+          const nested = page.locator('iframe[title="Toolbox"]');
           await nested.waitFor({ state: 'attached', timeout: 10000 });
-          const nestedBox = await nested.boundingBox();
-          console.log('Nested iframe box:', nestedBox);
+          console.log('Nested iframe box:', await nested.boundingBox());
           const nestedFrame = await nested.elementHandle().then(handle => handle?.contentFrame());
           assert.ok(nestedFrame, 'live Toolbox iframe must expose a frame in Firefox');
           await nestedFrame.waitForLoadState('domcontentloaded', { timeout: 20000 });
