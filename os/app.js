@@ -20,12 +20,11 @@
     }
   }
 
-  for (const type of pointerEvents) {
-    document.addEventListener(type, (event) => forwardEvent(type, event), { passive: true });
-  }
-  for (const type of keyboardEvents) {
-    document.addEventListener(type, (event) => forwardEvent(type, event));
-  }
+  document.addEventListener('mousemove', (event) => forwardEvent('mousemove', event), { passive: true });
+  document.addEventListener('mousedown', (event) => forwardEvent('mousedown', event), { passive: true });
+  document.addEventListener('mouseup', (event) => forwardEvent('mouseup', event), { passive: true });
+  document.addEventListener('keydown', (event) => forwardEvent('keydown', event));
+  document.addEventListener('keyup', (event) => forwardEvent('keyup', event));
 
   window.addEventListener('load', () => document.body.focus());
 })();
