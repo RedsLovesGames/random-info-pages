@@ -1,3 +1,5 @@
+export const LARGE_FILE_WARNING_BYTES = 256 * 1024 * 1024;
+
 export function formatBytes(bytes) {
   const value = Number(bytes);
   if (!Number.isFinite(value) || value <= 0) return '0 B';
@@ -14,6 +16,22 @@ export function safeFilename(name, fallback = 'download') {
     .replace(/[<>:"/\\|?*\u0000-\u001F]/g, '-')
     .replace(/[. ]+$/g, '');
   return cleaned || fallback;
+}
+
+export function totalFileBytes(files) {
+  return [...(files || [])].reduce((sum, file) => sum + Math.max(0, Number(file?.size) || 0), 0);
+}
+
+export function isUnusuallyLargeFileJob(files, thresholdBytes = LARGE_FILE_WARNING_BYTES) {
+  const threshold = Math.max(1, Number(thresholdBytes) || LARGE_FILE_WARNING_BYTES);
+  return totalFileBytes(files) >= threshold;
+}
+
+export function confirmLargeFileJob(files, { thresholdBytes = LARGE_FILE_WARNING_BYTES, confirmFn = globalThis.confirm } = {}) {
+  const total = totalFileBytes(files);
+  if (total < Math.max(1, Number(thresholdBytes) || LARGE_FILE_WARNING_BYTES)) return true;
+  if (typeof confirmFn !== 'function') return true;
+  return Boolean(confirmFn(`This local job is ${formatBytes(total)}. Large browser jobs can use substantial memory or become slow. Continue processing on this device?`));
 }
 
 export function safeObjectUrl(blob) {
@@ -50,3 +68,21 @@ export function pickLocalFiles({ accept = '', multiple = false, directory = fals
     input.click();
   });
 }
+
+function installLargeFileGuard() {
+  if (typeof document === 'undefined' || document.documentElement?.dataset.toolboxLargeFileGuard === 'true') return;
+  if (document.documentElement) document.documentElement.dataset.toolboxLargeFileGuard = 'true';
+  document.addEventListener('change', event => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.type !== 'file' || !input.files?.length) return;
+    const configured = Number(input.dataset.largeFileThreshold);
+    const thresholdBytes = Number.isFinite(configured) && configured > 0 ? configured : LARGE_FILE_WARNING_BYTES;
+    if (!isUnusuallyLargeFileJob(input.files, thresholdBytes)) return;
+    if (confirmLargeFileJob(input.files, { thresholdBytes })) return;
+    input.value = '';
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
+}
+
+installLargeFileGuard();
