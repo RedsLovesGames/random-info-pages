@@ -42,6 +42,7 @@ for name in routes:
     route = f'./{name}/'
     if f'href="{route}"' not in hub: fail(f'toolbox hub missing route {route}')
 if './shared/command.js' not in hub: fail('toolbox hub does not load shared command search')
+if re.search(r'https?://', hub): fail('Toolbox hub must not eagerly reference external engines, models, or CDNs')
 
 for name in routes:
     path = ROOT / f'tools/{name}/index.html'
@@ -96,4 +97,17 @@ for html_path in (ROOT / 'tools').rglob('*.html'):
     if re.search(r'(?:href|src)=["\']/tools/', text): absolute_tool_paths.append(str(html_path.relative_to(ROOT)))
 if absolute_tool_paths: fail(f'root-absolute /tools paths break project-site deployment: {absolute_tool_paths}')
 
-print('PASS toolbox static routes, assets, Step 10 integration, disclosures, CPI coverage, attribution, and relative paths')
+# Runtime npm CDN dependencies must be immutable/version-pinned. This catches accidental
+# @latest/unversioned additions before they reach GitHub Pages.
+unpinned = []
+for source_path in list((ROOT / 'tools').rglob('*.js')) + list((ROOT / 'tools').rglob('*.mjs')) + list((ROOT / 'tools').rglob('*.html')):
+    text = source_path.read_text(encoding='utf-8')
+    for match in re.finditer(r'https://cdn\.jsdelivr\.net/npm/([^\s\'"`<>]+)', text):
+        spec = match.group(1).split('?')[0]
+        parts = spec.split('/')
+        package_segment = parts[1] if spec.startswith('@') and len(parts) > 1 else parts[0]
+        pinned = '@' in package_segment and not package_segment.endswith('@latest')
+        if not pinned: unpinned.append(f'{source_path.relative_to(ROOT)} → {spec}')
+if unpinned: fail(f'unpinned jsDelivr npm dependencies: {unpinned}')
+
+print('PASS toolbox static routes, assets, Step 11 integration, disclosures, CPI coverage, pinned dependencies, lazy hub, attribution, and relative paths')
