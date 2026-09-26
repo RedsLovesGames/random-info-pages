@@ -5,11 +5,14 @@ on:
     branches: ['computer-*']
     paths:
       - 'computer-src/**'
+      - 'os-src/**'
       - 'os/**'
       - 'index.html'
       - 'tests/home-index.test.mjs'
       - 'tests/computer-*.test.mjs'
       - 'scripts/computer_browser_smoke.mjs'
+      - 'scripts/import-henry-win95.ps1'
+      - 'scripts/win95-overrides/**'
       - '.github/workflows/computer-ci.yml'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
@@ -17,7 +20,7 @@ on:
 permissions:
   contents: read
 
-# Full exact-head verification gate for the vendored 3D computer experience.
+# Full exact-head verification gate for the 3D computer plus the authentic Win95 inner OS.
 jobs:
   build-test:
     runs-on: ubuntu-latest
@@ -39,6 +42,10 @@ jobs:
       - name: Build computer experience
         working-directory: computer-src
         run: npm run build
+
+      - name: Import and build authentic Win95 OS
+        shell: pwsh
+        run: ./scripts/import-henry-win95.ps1
 
       - name: Run computer contracts
         run: |
@@ -74,9 +81,10 @@ jobs:
       - name: Stage local computer smoke site
         run: |
           rm -rf _computer-smoke-site
-          mkdir -p _computer-smoke-site/computer _computer-smoke-site/os
+          mkdir -p _computer-smoke-site/computer _computer-smoke-site/os _computer-smoke-site/tools
           cp -a computer-src/public/. _computer-smoke-site/computer/
-          cp -a os/. _computer-smoke-site/os/
+          cp -a os-src/build/. _computer-smoke-site/os/
+          cp -a tools/. _computer-smoke-site/tools/
 
       - name: Run Chromium computer smoke
         shell: bash
