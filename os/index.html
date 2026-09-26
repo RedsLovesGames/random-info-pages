@@ -3,29 +3,46 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="light">
   <title>Random Info OS</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body tabindex="0">
-  <main class="desktop" aria-label="Random Info OS placeholder desktop">
-    <header class="boot-card">
-      <p class="eyebrow">RIP SYSTEMS · ARCHIVE TERMINAL 26</p>
-      <h1>RANDOM INFO OS</h1>
-      <p class="status"><span class="status-dot" aria-hidden="true"></span> SYSTEM READY</p>
-    </header>
+  <main class="desktop" id="desktop" aria-label="Random Info OS desktop">
+    <section class="desktop-shortcuts" aria-label="Desktop shortcuts">
+      <button class="desktop-shortcut legacy-shortcut" type="button" data-legacy="doom" aria-label="Doom">
+        <img class="shortcut-image pixelated" src="https://raw.githubusercontent.com/henryjeff/portfolio-inner-site/master/src/assets/icons/doomIcon.png" alt="">
+        <span class="shortcut-label">Doom</span>
+      </button>
+      <button class="desktop-shortcut legacy-shortcut" type="button" data-legacy="trail" aria-label="The Oregon Trail">
+        <img class="shortcut-image pixelated" src="https://raw.githubusercontent.com/henryjeff/portfolio-inner-site/master/src/assets/icons/trailIcon.png" alt="">
+        <span class="shortcut-label">The Oregon Trail</span>
+      </button>
 
-    <section class="icons" aria-label="Future applications">
-      <button class="desktop-icon" type="button" disabled><span aria-hidden="true">▦</span><b>TOOLBOX</b><small>COMING SOON</small></button>
-      <button class="desktop-icon" type="button" disabled><span aria-hidden="true">◎</span><b>FRIENDS.DB</b><small>COMING SOON</small></button>
-      <button class="desktop-icon" type="button" disabled><span aria-hidden="true">◇</span><b>VCT SCOUT</b><small>COMING SOON</small></button>
-      <button class="desktop-icon" type="button" disabled><span aria-hidden="true">≈</span><b>TIDEBORNE</b><small>COMING SOON</small></button>
+      <button class="desktop-shortcut folder-shortcut" type="button" data-folder="tools"><span class="folder-icon" aria-hidden="true"></span><span class="shortcut-label">Tools</span></button>
+      <button class="desktop-shortcut folder-shortcut" type="button" data-folder="school"><span class="folder-icon" aria-hidden="true"></span><span class="shortcut-label">School</span></button>
+      <button class="desktop-shortcut folder-shortcut" type="button" data-folder="friends"><span class="folder-icon" aria-hidden="true"></span><span class="shortcut-label">Friends</span></button>
+      <button class="desktop-shortcut folder-shortcut" type="button" data-folder="games"><span class="folder-icon" aria-hidden="true"></span><span class="shortcut-label">Games</span></button>
+      <button class="desktop-shortcut folder-shortcut" type="button" data-folder="data"><span class="folder-icon" aria-hidden="true"></span><span class="shortcut-label">Data</span></button>
+      <button class="desktop-shortcut folder-shortcut" type="button" data-folder="experiments"><span class="folder-icon" aria-hidden="true"></span><span class="shortcut-label">Experiments</span></button>
     </section>
 
+    <div id="windowLayer" class="window-layer" aria-live="polite"></div>
+
+    <aside class="start-menu" id="startMenu" hidden>
+      <div class="start-menu-rail">RANDOM INFO OS <b>95</b></div>
+      <div class="start-menu-items">
+        <a href="../" target="_top"><span class="mini-computer" aria-hidden="true"></span>Archive Home</a>
+        <a href="../computer/" target="_top"><span class="mini-monitor" aria-hidden="true"></span>3D Computer</a>
+        <button type="button" id="aboutComputer"><span class="mini-info" aria-hidden="true">i</span>About Random Info OS</button>
+      </div>
+    </aside>
+
     <footer class="taskbar">
-      <span class="start">RIP ▣</span>
-      <a href="../" target="_top">Back to archive</a>
-      <output id="inputStatus" aria-live="polite">INPUT LINK: ONLINE</output>
+      <button class="start-button" id="startButton" type="button" aria-expanded="false"><span class="win-logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>Start</b></button>
+      <div class="task-buttons" id="taskButtons" aria-label="Open windows"></div>
+      <output id="inputStatus" class="input-status" aria-live="polite">INPUT: ONLINE</output>
+      <time id="clock" class="task-clock">--:--</time>
     </footer>
   </main>
   <script src="./app.js"></script>
