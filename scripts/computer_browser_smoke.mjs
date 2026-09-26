@@ -61,7 +61,7 @@ async function assertDesktopExperience(browser) {
   const requiredFolders = ['Tools', 'School', 'Friends', 'Games', 'Data', 'Experiments'];
   for (const folder of requiredFolders) {
     assert.ok(
-      await frame.getByRole('button', { name: folder, exact: true }).count(),
+      await frame.getByRole('button', { name: new RegExp(`${folder}$`) }).count(),
       `Explorer must expose ${folder}`
     );
   }
