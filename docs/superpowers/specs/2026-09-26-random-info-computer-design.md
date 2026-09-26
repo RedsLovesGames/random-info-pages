@@ -36,6 +36,7 @@ random-info-pages/
 │   ├── .babelrc
 │   ├── LICENSE.md
 │   ├── package.json
+│   ├── package-lock.json   # generated during the initial port and then committed
 │   ├── bundler/
 │   ├── src/
 │   ├── static/
@@ -160,7 +161,9 @@ No redesign of these behaviors is required for V1 unless a behavior is broken un
 
 ### Local build
 
-`computer-src/package.json` remains the source of truth for the copied project dependencies and production build.
+`computer-src/package.json` remains the source manifest for the copied project dependencies and production build.
+
+The upstream repository does not include a lockfile at the pinned commit. During the initial port, run the install once from the pinned upstream `package.json`, generate `computer-src/package-lock.json`, review that the dependency graph builds successfully, and commit the lockfile. All subsequent CI and documented installs use `npm ci` against that committed lockfile.
 
 A production build must produce static output without requiring the upstream Express server afterward.
 
@@ -169,7 +172,7 @@ A production build must produce static output without requiring the upstream Exp
 Update `.github/workflows/pages.yml` so that before `Stage static site` it:
 
 1. sets up an appropriate Node version;
-2. installs `computer-src` dependencies deterministically;
+2. runs `npm ci` in `computer-src/`;
 3. runs the production build;
 4. stages the rest of Random Info Pages as it already does;
 5. overlays `computer-src/public/` into `_site/computer/`.
@@ -182,7 +185,7 @@ Do not copy `computer-src/node_modules/` or source-only build artifacts into the
 
 Because Pages deploys only from `main`, add a branch-safe verification path for `computer-experience` that at minimum runs:
 
-- dependency install
+- `npm ci`
 - production Webpack build
 - static existence checks for generated `public/index.html` and bundle assets
 - browser smoke against a local static server
@@ -197,7 +200,8 @@ Verify:
 
 - upstream source is pinned/documented;
 - `computer-src/LICENSE.md` exists;
-- `npm install`/`npm ci` equivalent succeeds with the copied dependency graph;
+- `computer-src/package-lock.json` is committed after the initial dependency resolution;
+- `npm ci` succeeds with the committed dependency graph;
 - production Webpack build succeeds;
 - generated computer HTML exists;
 - generated asset references are valid under the `/computer/` base path;
