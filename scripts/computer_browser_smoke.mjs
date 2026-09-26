@@ -37,6 +37,13 @@ async function waitForComputerState(page) {
   );
 }
 
+async function startComputer(page) {
+  const start = page.getByText('START', { exact: true });
+  await start.waitFor({ state: 'visible', timeout: 60000 });
+  await start.click();
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('ui')).pointerEvents === 'none', { timeout: 10000 });
+}
+
 async function assertDesktopExperience(browser) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
@@ -48,6 +55,8 @@ async function assertDesktopExperience(browser) {
   const fallbackVisible = await page.locator('#computer-fallback').isVisible();
   assert.equal(fallbackVisible, false, 'desktop Chromium should start the 3D experience');
   assert.ok(await page.locator('#webgl canvas').count(), 'WebGL canvas must be present');
+
+  await startComputer(page);
 
   const iframe = page.locator('#computer-screen');
   await iframe.waitFor({ state: 'attached', timeout: 60000 });
