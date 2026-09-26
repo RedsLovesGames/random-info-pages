@@ -9,12 +9,11 @@ on:
       - 'tests/computer-*.test.mjs'
       - 'scripts/computer_browser_smoke.mjs'
       - '.github/workflows/computer-ci.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-# Feature-branch verification for the vendored 3D computer experience.
-# Re-run after compatibility lock refresh.
 jobs:
   build-test:
     runs-on: ubuntu-latest
