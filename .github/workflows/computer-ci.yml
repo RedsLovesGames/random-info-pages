@@ -6,6 +6,8 @@ on:
     paths:
       - 'computer-src/**'
       - 'os/**'
+      - 'index.html'
+      - 'tests/home-index.test.mjs'
       - 'tests/computer-*.test.mjs'
       - 'scripts/computer_browser_smoke.mjs'
       - '.github/workflows/computer-ci.yml'
@@ -38,7 +40,9 @@ jobs:
         run: npm run build
 
       - name: Run computer contracts
-        run: node --test tests/computer-*.test.mjs
+        run: |
+          node --test tests/computer-*.test.mjs
+          node --test tests/home-index.test.mjs
 
       - name: Install Chromium smoke dependency
         working-directory: computer-src
