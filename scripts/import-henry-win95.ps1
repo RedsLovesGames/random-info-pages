@@ -159,7 +159,8 @@ try {
     $wordleText = $wordleText.Replace('<p>Thanks for playing! Remember: the word is always "HENRY"!</p>', '<p>Thanks for playing. The answer is shown below.</p>')
     Set-Content -Path $wordle -Value $wordleText -Encoding utf8
 
-    # CRA must emit paths that work below /random-info-pages/os/ on GitHub Pages.
+    # Keep the imported CRA bundle location-independent. Relative build URLs work at /os/ in
+    # local smoke tests and under /random-info-pages/os/ on GitHub Pages without a second build.
     $packagePath = Join-Path $OsSrc 'package.json'
     $package = Get-Content $packagePath -Raw | ConvertFrom-Json
     $package.name = 'random-info-os'
@@ -169,9 +170,9 @@ try {
     # regenerating or floating the dependency graph.
     $package.dependencies.'react-router' = '6.2.2'
     if ($package.PSObject.Properties.Name -contains 'homepage') {
-        $package.homepage = 'https://redslovesgames.github.io/random-info-pages/os'
+        $package.homepage = '.'
     } else {
-        $package | Add-Member -NotePropertyName homepage -NotePropertyValue 'https://redslovesgames.github.io/random-info-pages/os'
+        $package | Add-Member -NotePropertyName homepage -NotePropertyValue '.'
     }
     $package | ConvertTo-Json -Depth 20 | Set-Content -Path $packagePath -Encoding utf8
 
@@ -194,6 +195,7 @@ try {
         "- Pinned commit: $SourceCommit",
         '- Purpose: retain the authentic React Win95 shell, window manager, js-dos runtime, and game bundles while removing personal portfolio content.',
         '- Dependency note: react-router is pinned to the upstream lock version 6.2.2 because the source package.json had drifted ahead of its committed lock.',
+        '- Build note: homepage is set to . so one bundle works at both /os/ locally and /random-info-pages/os/ on GitHub Pages.',
         '- Excluded: showcase components, personal pictures, personal audio, resume assets, and Henry-specific Credits/Showcase applications.',
         '- Adaptation: Random Info Explorer launches existing site pages inside authentic draggable/resizable windows with external-open fallbacks.',
         '',
