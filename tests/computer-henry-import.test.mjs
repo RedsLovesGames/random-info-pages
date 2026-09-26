@@ -45,4 +45,5 @@ test('importer installs Random Info overrides and builds the deployed os directo
   assert.match(text, /npm\s+ci/i);
   assert.match(text, /npm\s+run\s+build/i);
   assert.match(text, /\bos\b/i);
+  assert.match(text, /homepage\s*=\s*['"]\.['"]/i);
 });
