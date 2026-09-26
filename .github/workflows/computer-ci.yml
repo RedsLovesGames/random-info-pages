@@ -17,6 +17,7 @@ on:
 permissions:
   contents: read
 
+# Full exact-head verification gate for the vendored 3D computer experience.
 jobs:
   build-test:
     runs-on: ubuntu-latest
