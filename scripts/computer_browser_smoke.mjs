@@ -102,13 +102,22 @@ async function assertDesktopExperience(browser) {
       parentWidth: parentRect?.width || 0,
     };
   });
+  const toolboxTitle = frame.locator('.showcase-header').filter({ hasText: 'Toolbox' }).first();
+  const windowChromeWidth = await toolboxTitle.evaluate((title) => {
+    const topBar = title.parentElement?.parentElement;
+    return topBar?.getBoundingClientRect().width || 0;
+  });
   assert.ok(
     embeddedMetrics.internalWidth >= 1400 && embeddedMetrics.layoutWidth >= 1400,
     `embedded pages must retain a desktop-sized internal viewport: ${JSON.stringify(embeddedMetrics)}`
   );
   assert.ok(
     Math.abs(embeddedMetrics.visibleWidth - embeddedMetrics.parentWidth) <= 2,
-    `scaled desktop page must fit the Win95 content width: ${JSON.stringify(embeddedMetrics)}`
+    `scaled desktop page must fit the embedded viewport: ${JSON.stringify(embeddedMetrics)}`
+  );
+  assert.ok(
+    windowChromeWidth > 0 && embeddedMetrics.visibleWidth >= windowChromeWidth - 24,
+    `embedded page must resize with the Win95 window instead of staying narrow: ${JSON.stringify({ ...embeddedMetrics, windowChromeWidth })}`
   );
 
   assert.ok(

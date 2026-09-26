@@ -101,10 +101,13 @@ const EmbeddedSite: React.FC<EmbeddedSiteProps> = (props) => {
 const styles: StyleSheetCSS = {
     shell: {
         display: 'flex',
+        flex: 1,
         flexDirection: 'column',
+        width: '100%',
         height: '100%',
         minHeight: 0,
         minWidth: 0,
+        boxSizing: 'border-box',
         backgroundColor: '#c0c0c0',
     },
     addressBar: {
@@ -156,6 +159,7 @@ const styles: StyleSheetCSS = {
         position: 'relative',
         display: 'block',
         flex: 1,
+        width: '100%',
         minWidth: 0,
         minHeight: 0,
         overflow: 'hidden',
