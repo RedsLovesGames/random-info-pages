@@ -6,9 +6,27 @@ This file records third-party projects evaluated or incorporated by the Random I
 
 ### Web Platform APIs
 - Source: browser standards implemented by the user's browser.
-- Use: `Intl.DateTimeFormat`, Canvas 2D, `createImageBitmap`, `HTMLCanvasElement.toBlob`, `OffscreenCanvas`, `localStorage`, Cache Storage, Clipboard API, File/Blob/Object URL APIs, `<video>` frame sampling.
+- Use: `Intl.DateTimeFormat`, Canvas 2D, `createImageBitmap`, `HTMLCanvasElement.toBlob`, `OffscreenCanvas`, Web Crypto, Web Audio, AudioContext, MediaRecorder, `getUserMedia`, `getDisplayMedia`, BarcodeDetector when available, localStorage, IndexedDB, Cache Storage, Clipboard, File/Blob/Object URL APIs, streams, `<audio>` and `<video>`.
 - Status: **Primary implementation path.**
-- User image/video/text bytes stay on-device. Runtime/model downloads described below do not upload selected media or text.
+- User files/media/text stay on-device. Runtime/model/library downloads described below do not upload selected content.
+
+## Time Workspace incorporated references
+
+### zzjoey/ZoneMap
+- Repository: https://github.com/zzjoey/ZoneMap
+- Revision reviewed: `9ea97e6cd45ee47d100aed5af7bdf3421ac3e85e`
+- License: MIT, copyright 2026 ZoneMap.live.
+- Status: **Incorporated by visual/interaction adaptation; no React/Vite/Hono source was transplanted.**
+- Local integration: `tools/time/index.html`, `tools/time/time.css`, `tools/time/time-app.js`.
+- Modification: rewritten as framework-free static HTML/CSS/JavaScript for GitHub Pages.
+
+### Manaiakalani/world-clock
+- Repository: https://github.com/Manaiakalani/world-clock
+- Revision reviewed: `3f35ed8c09e0b80cac42b86a3ddbb42708118b85`
+- License: MIT, copyright 2026 World Clock Contributors.
+- Status: **Incorporated by feature/interaction adaptation; no Next.js/React source was transplanted.**
+- Local integration: `tools/time/index.html`, `tools/time/time.css`, `tools/time/time-app.js`, `tools/time/time.js`.
+- Modification: Toolbox implements its own local person/location model, timezone grouping, availability planner, map markers, persistence, and Board view.
 
 ## Image Studio incorporated sources
 
@@ -18,9 +36,7 @@ This file records third-party projects evaluated or incorporated by the Random I
 - License: MIT, copyright Wendy Liga.
 - Status: **Incorporated by adaptation.**
 - Local files: `tools/image/image-core.js`, `tools/image/image-engine.js`.
-- Upstream areas studied/adapted: `src/core/decodeImage.ts`, `src/core/canvasExport.ts`, `src/core/resize.ts`, `src/core/zip.ts`.
-- Adapted behavior: `createImageBitmap` decode with image-element fallback, defensive dimensions/no-upscale behavior, OffscreenCanvas/DOM Canvas fallback, explicit JPEG white background, high-quality smoothing, output MIME verification, duplicate-safe output naming, and store-mode ZIP behavior.
-- Modification: rewritten as dependency-light plain JavaScript for the repository's static architecture. The React/Vite shell and worker implementation were not imported.
+- Adapted behavior: image decode, Canvas export/resize fallbacks, JPEG background handling, MIME verification, output naming, and ZIP behavior. Rewritten as plain JavaScript.
 
 ### nodeca/pica
 - Repository: https://github.com/nodeca/pica
@@ -29,25 +45,23 @@ This file records third-party projects evaluated or incorporated by the Random I
 - License: MIT, copyright Vitaly Puzrin.
 - Status: **Incorporated as a lazy runtime dependency.**
 - Local integration: `tools/image/image-engine.js`.
-- Delivery: pinned jsDelivr browser build. Loaded only when dimensions actually change. Native Canvas remains the fallback if the library cannot load or resize.
+- Delivery: pinned jsDelivr browser build, loaded only for actual resizes; Canvas remains fallback.
 
 ### 101arrowz/fflate
 - Repository: https://github.com/101arrowz/fflate
 - Package/version: `fflate@0.8.3`
 - License: MIT, copyright Arjun Barrett.
 - Status: **Incorporated as a lazy runtime dependency.**
-- Local integration: `tools/image/image-app.js`, `tools/image/image-engine.js`.
-- Delivery: pinned jsDelivr UMD build, loaded only when multiple processed results are downloaded as a ZIP.
-- Modification: image entries use ZIP store level 0 because the image payloads are already compressed.
+- Local integration: `tools/image/image-app.js`, `tools/image/image-engine.js`, `tools/files/files-app.js`.
+- Delivery: pinned jsDelivr UMD build. Image Studio uses it for multi-result ZIPs; File & Archive Lab uses it for ZIP creation and ZIP extraction.
 
 ### nervtech/browser-image-compressor
 - Repository: https://github.com/nervtech/browser-image-compressor
 - Revision reviewed: `01940fdfbc3a8c96facb65f83f0336d05fbffec2`
-- License: MIT, copyright nervtech.
+- License: MIT.
 - Status: **Incorporated by algorithmic adaptation.**
 - Local integration: `tools/image/image-engine.js`.
-- Adapted behavior: target-size compression searches lossy quality first, then progressively lowers resolution only when quality alone cannot meet the requested byte target.
-- Modification: Toolbox uses its own bounds helper, iteration count, resolution scale sequence, batch integration, progress reporting, and explicit JPEG/WebP-only guard.
+- Adapted behavior: target-size compression searches quality first, then lowers resolution when required.
 
 ### fengyuanchen/cropperjs
 - Repository: https://github.com/fengyuanchen/cropperjs
@@ -56,9 +70,7 @@ This file records third-party projects evaluated or incorporated by the Random I
 - License: MIT, copyright Chen Fengyuan.
 - Status: **Incorporated as a lazy runtime dependency.**
 - Local integration: `tools/image/crop-editor.js`, `tools/image/crop.css`, `tools/image/index.html`.
-- Delivery: pinned jsDelivr build, requested only after the user opens Crop / rotate.
-- Upstream APIs used: `new Cropper`, `getCropperSelection`, selection `$toCanvas`, `getCropperImage`, `$rotate`, `$scale`, and `destroy`.
-- Modification: the crop result becomes a local PNG working source inside Image Studio; the original selected file remains available through Reset edit.
+- Delivery: pinned jsDelivr build, loaded only when Crop / rotate is opened.
 
 ### mattdesl/gifenc
 - Repository: https://github.com/mattdesl/gifenc
@@ -67,19 +79,15 @@ This file records third-party projects evaluated or incorporated by the Random I
 - License: MIT, copyright Matt DesLauriers.
 - Status: **Incorporated as a lazy runtime dependency.**
 - Local integration: `tools/image/gif-maker.js`, `tools/image/gif.css`, `tools/image/index.html`.
-- Delivery: pinned jsDelivr ESM build, requested only when a GIF is actually encoded.
-- Upstream APIs used: `GIFEncoder`, `quantize`, `applyPalette`.
-- Modification: Toolbox supplies its own still-frame ordering, contain-fit drawing, loop/FPS controls, cancellation between frames, and browser-native `<video>` seek/canvas sampling. Video conversion is capped at 300 sampled frames across the selected clip, so FFmpeg is not required for the normal path.
+- Delivery: pinned jsDelivr ESM build. Toolbox supplies its own frame ordering, drawing, loop/FPS controls, cancellation, and browser-native video sampling.
 
 ### Suemura/client-side-image-converter
 - Repository: https://github.com/Suemura/client-side-image-converter
 - Revision reviewed/adapted: `4bde3a9b07af41585df18ce61dd493d58bfc7cf9`
 - Project license: MIT, copyright Masato Suemura.
-- Status: **Incorporated by adaptation for v1 background removal.**
+- Status: **Incorporated by adaptation for background removal.**
 - Local integration: `tools/image/bg-remove-core.js`, `tools/image/bg-remove.js`, `tools/image/bg-remove.css`, `tools/image/index.html`.
-- Upstream areas adapted: `src/utils/removeBgCore.ts`, `src/utils/imageBackgroundRemover.ts`, `src/utils/onnxSession.ts`, `src/utils/modelLoader.ts`.
-- Adapted behavior: 320×320 U²-Net preprocessing, ImageNet normalization, saliency min/max normalization, bilinear mask upscale, alpha composition, runtime/model lazy loading, cache-first model fetch, WebGPU warmup with WASM fallback, and progress staging.
-- Modification: rewritten as plain browser JavaScript, integrated with Image Studio working-file state, and sized for static GitHub Pages delivery.
+- Adapted behavior: U²-Net preprocessing/postprocessing, runtime/model lazy loading, cache-first fetch, WebGPU attempt with WASM fallback, and progress staging.
 
 ### microsoft/onnxruntime / onnxruntime-web
 - Repository: https://github.com/microsoft/onnxruntime
@@ -87,17 +95,15 @@ This file records third-party projects evaluated or incorporated by the Random I
 - License: MIT, copyright Microsoft Corporation.
 - Status: **Incorporated as a lazy runtime dependency for background removal.**
 - Local integration: `tools/image/bg-remove.js`.
-- Delivery: pinned jsDelivr `ort.webgpu.min.js` with WASM-capable fallback; runtime assets are fetched only when background removal is used.
-- Runtime policy: WebGPU is attempted on compatible non-iOS clients and verified with a warmup inference. U²-Net operator incompatibility or GPU failure falls back to single-threaded WASM, which does not require COOP/COEP on GitHub Pages.
+- Delivery: pinned jsDelivr WebGPU-capable build with WASM fallback.
 
 ### U²-Net small / `u2netp.onnx`
 - Architecture source: https://github.com/xuebinqin/U-2-Net
 - ONNX distribution: https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx
 - Architecture/weights license: Apache-2.0.
 - Upstream documented SHA-256: `309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8`.
-- Status: **Incorporated as the v1 background-removal model.**
-- Delivery used by Toolbox: pinned jsDelivr mirror of `Suemura/client-side-image-converter@4bde3a9b.../public/models/u2netp.onnx`, approximately 4.6 MB.
-- The model is downloaded only when the user invokes background removal and is placed in Cache Storage when available. Selected image bytes are never sent with that request.
+- Status: **Incorporated as the background-removal model.**
+- Delivery: pinned jsDelivr mirror from the reviewed Suemura revision; cached when available.
 
 ## Text Tools incorporated sources
 
@@ -107,16 +113,75 @@ This file records third-party projects evaluated or incorporated by the Random I
 - License: MIT.
 - Status: **Incorporated as a lazy runtime dependency for Markdown parsing.**
 - Local integration: `tools/text/text-app.js`.
-- Delivery: pinned jsDelivr UMD build, loaded only when Markdown mode is opened.
-- Security note: Marked output is never inserted directly into the preview; it is passed through DOMPurify first.
+- Delivery: pinned jsDelivr UMD build, loaded only in Markdown mode.
 
 ### cure53/DOMPurify
 - Repository: https://github.com/cure53/DOMPurify
 - Package/version: `dompurify@3.4.16`
-- License: MPL-2.0 OR Apache-2.0. Toolbox relies on the Apache-2.0 option.
+- License: MPL-2.0 OR Apache-2.0; Toolbox relies on the Apache-2.0 option.
 - Status: **Incorporated as a lazy runtime dependency for Markdown sanitization.**
 - Local integration: `tools/text/text-app.js`.
-- Delivery: pinned jsDelivr browser build, loaded only when Markdown mode is opened.
+
+## File & Archive Lab incorporated sources
+
+### Daninet/hash-wasm
+- Repository: https://github.com/Daninet/hash-wasm
+- Package/version: `hash-wasm@4.12.0`
+- License: MIT.
+- Status: **Incorporated as a lazy runtime dependency for large streamed hashes.**
+- Local integration: `tools/files/files-app.js`.
+- Delivery: pinned jsDelivr UMD build. Files up to 64 MiB use native Web Crypto when available; larger files use hash-wasm incrementally from the browser file stream to avoid requiring one giant ArrayBuffer.
+- Algorithms currently exposed by File Lab: SHA-256, with SHA-512 engine support available in the shared hashing helper.
+
+### fflate reuse
+- File & Archive Lab reuses the already-audited `fflate@0.8.3` runtime above for ZIP creation, inspection and extraction.
+- Current Step 4 scope deliberately does not ship RAR/7z/TAR via a second archive engine yet; broader archive formats remain a later extension.
+
+## Media Studio incorporated sources
+
+### Vanilagy/Mediabunny
+- Repository: https://github.com/Vanilagy/mediabunny
+- Package/version: `mediabunny@1.59.1`
+- License: MPL-2.0.
+- Status: **Incorporated unmodified as a lazy runtime dependency.**
+- Local integration: `tools/media/media-app.js`.
+- Delivery: pinned jsDelivr browser bundle, requested only for media conversion, trimming, transform/export, extraction, or detailed track inspection.
+- APIs used: `Input`, `BlobSource`, `ALL_FORMATS`, `Output`, `BufferTarget`, `Conversion`, `Mp4OutputFormat`, `WebMOutputFormat`, `WavOutputFormat`, track metadata APIs, conversion progress, trim and video transform options.
+- Toolbox-specific code remains separate framework-free JavaScript. Media files are read from local `Blob` objects and conversion output remains local.
+- Browser-native Web Audio and MediaRecorder are used directly for source-audio editing, tone generation, microphone/camera/screen recording, and metronome behavior rather than routing those tasks through Mediabunny.
+
+## PDF & Documents incorporated sources
+
+### Hopding/pdf-lib
+- Repository: https://github.com/Hopding/pdf-lib
+- Package/version: `pdf-lib@1.17.1`
+- License: MIT.
+- Status: **Incorporated as a lazy runtime dependency for PDF mutation/export.**
+- Local integration: `tools/pdf/pdf-engine.js`, `tools/pdf/pdf-app.js`.
+
+### Mozilla PDF.js
+- Repository: https://github.com/mozilla/pdf.js
+- Package/version used by Toolbox: `pdfjs-dist@6.3.289`
+- License: Apache-2.0.
+- Status: **Incorporated as a lazy runtime dependency for PDF rendering/text extraction.**
+- Local integration: `tools/pdf/pdf-engine.js`.
+
+### naptha/tesseract.js
+- Repository: https://github.com/naptha/tesseract.js
+- Status: **Incorporated as a lazy runtime dependency for local PDF OCR.**
+- Local integration: `tools/pdf/pdf-app.js`.
+
+## Codes & Generator Lab incorporated sources
+
+### metafloor/bwip-js
+- Repository: https://github.com/metafloor/bwip-js
+- Package/version: `bwip-js@4.11.4`
+- License: MIT.
+- Status: **Incorporated unmodified as a lazy runtime dependency.**
+- Local integration: `tools/codes/codes-app.js`.
+- Delivery: pinned jsDelivr browser build, loaded only when a QR or barcode is actually rendered.
+- Use: local Canvas rendering for QR Code, Data Matrix, Code 128, EAN-13, and UPC-A. User payload text remains in-browser; the CDN request fetches library code only.
+- Scanning uses the browser-native `BarcodeDetector` API when available and does not upload selected images.
 
 ## Money Through Time data/API sources
 
@@ -133,9 +198,8 @@ This file records third-party projects evaluated or incorporated by the Random I
 - Status: **Incorporated as a runtime data source.**
 - Local integration: `tools/money/money-app.js`, `tools/money/fx-core.js`.
 - Behavior: no user API key, current rate/effective date shown, 12-hour local cache, and dated stale-cache fallback on network failure.
-- Historical inflation and current FX remain separate calculations; Toolbox does not imply historical FX conversion.
 
-## Image Studio selected but not yet incorporated
+## Selected but not yet incorporated
 
 ### jamsinclair/jSquash
 - Repository: https://github.com/jamsinclair/jSquash
@@ -146,18 +210,23 @@ This file records third-party projects evaluated or incorporated by the Random I
 ### lightScout/light-converter
 - Repository: https://github.com/lightScout/light-converter
 - Revision reviewed: `1d72b59254ac05b7ab98ee7945d10fda009eb14c`
-- Code license: MIT, copyright Juan Muller Da Costa E Silva.
+- Code license: MIT.
 - Model licenses documented upstream: BiRefNet MIT; IS-Net/DIS Apache-2.0.
-- Status: later high-quality background-removal reference/optional mode only. Its generated model set is roughly 160 MB, so it is not the v1 default.
+- Status: later high-quality background-removal reference/optional mode only.
+
+### nibble-gnarl/libarchivejs
+- Repository: https://github.com/nibble-gnarl/libarchivejs
+- License: MIT.
+- Status: **Selected for later evaluation, not currently loaded by Toolbox.**
+- Possible future use: browser-side RAR/7z/TAR/GZIP and broader archive extraction after bundle/performance validation.
 
 ## Reference-only sources
 
 ### dannycranmer/imagetoolkit (PicBrew)
 - Repository: https://github.com/dannycranmer/imagetoolkit
 - Revision reviewed: `5678c0df06ebbc843eee75de9d48e96ca06e710c`
-- License: MIT, copyright Danny Cranmer.
+- License: MIT.
 - Status: **Reference only so far.**
-- Studied for its static GitHub-Pages workflow, batch UX, progress, ZIP download, crop and resize organization. Current Toolbox UI/implementation was written separately rather than copied from PicBrew.
 
 ### getalatify/AlatifyWeb
 - Repository: https://github.com/getalatify/AlatifyWeb
@@ -173,15 +242,15 @@ This file records third-party projects evaluated or incorporated by the Random I
 ### IT-Tools
 - Repository family: https://github.com/CorentinTh/it-tools and maintained forks where applicable.
 - License: GPL-family.
-- Status: **Reference only.** Text transforms are implemented independently.
+- Status: **Reference only.**
 
 ### ffmpeg.wasm
 - Repository: https://github.com/ffmpegwasm/ffmpeg.wasm
-- Wrapper license: MIT; distributed FFmpeg core builds can have LGPL/GPL obligations depending on the exact build.
-- Status: **Deferred.** Normal GIF creation uses `gifenc` and browser-native video decoding first.
+- Wrapper license: MIT; distributed FFmpeg core builds can have LGPL/GPL obligations depending on exact build.
+- Status: **Deferred.** Image GIF and Step 4 Media Studio use browser-native APIs plus focused libraries instead of making FFmpeg the default path.
 
 ## Runtime dependency note
 
-The current static deployment lazy-loads Pica, fflate, Cropper.js, gifenc, ONNX Runtime, Marked, and DOMPurify from pinned jsDelivr package URLs. Background removal additionally downloads the pinned U²-Net-small model on first use. Only library/model assets are requested from those hosts; selected image/video/text content remains local. The model is cached with Cache Storage when available. A later packaging pass may vendor permissively licensed builds to eliminate runtime CDN dependence.
+The static deployment lazy-loads focused dependencies only when their feature is invoked. Current pinned runtime dependencies include Pica, fflate, Cropper.js, gifenc, ONNX Runtime, Marked, DOMPurify, hash-wasm, Mediabunny, bwip-js, pdf-lib, PDF.js, and Tesseract.js. Background removal additionally downloads the pinned U²-Net-small model on first use. User-selected files are not uploaded to those package/model hosts; requests are for library/model assets only.
 
-See `tools/IMAGE_UPSTREAM_REVIEW.md` for the technical comparison and implementation rationale.
+See `tools/IMAGE_UPSTREAM_REVIEW.md` for the earlier Image Studio technical comparison and rationale.

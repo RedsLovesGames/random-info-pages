@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0a"><meta name="color-scheme" content="dark">
+<meta name="description" content="Local calculator, units, graphing, physics, chemistry, electronics, geometry, algebra, and grade tools.">
+<title>Math & Science Lab · Toolbox</title>
+<link rel="stylesheet" href="../shared/toolbox.css"><link rel="stylesheet" href="./math.css">
+</head>
+<body>
+<header class="tb-top"><nav class="tb-shell tb-nav"><a class="tb-brand" href="../">RIP/26 · TOOLBOX</a><a class="tb-back" href="../">← Toolbox</a></nav></header>
+<main class="math-page">
+<section class="math-head"><div><div class="tb-kicker">Local · formula driven</div><h1>Math &<br>Science Lab</h1><p>One workspace for calculation, conversion, graphing, core science formulas, electronics, and grades. Results stay on-device and show the formula behind the answer.</p></div><span class="math-badge">NO EVAL · NO BACKEND</span></section>
+<nav id="mathModeNav" class="math-mode-nav" aria-label="Math and science modes">
+<button data-math-mode="calculator">Calculator</button><button data-math-mode="units">Units</button><button data-math-mode="algebra">Algebra</button><button data-math-mode="graph">Graph</button><button data-math-mode="geometry">Geometry</button><button data-math-mode="physics">Physics</button><button data-math-mode="chemistry">Chemistry</button><button data-math-mode="electronics">Electronics</button><button data-math-mode="grades">Grades</button>
+</nav>
+
+<section class="math-panel" data-math-panel="calculator">
+<div class="math-panel-head"><div><small>MATH</small><h2>Scientific calculator</h2></div><span>+, −, ×, ÷, ^, sin, cos, tan, sqrt, ln, log, pi, e</span></div>
+<label class="math-field"><span>Expression</span><input id="calcExpression" value="sin(pi / 2) + sqrt(16)" autocomplete="off"></label>
+<button class="math-primary" id="calculateExpression">Calculate</button><div class="math-result" id="calcResult"><small>RESULT</small><strong>—</strong><span class="formula">Formula: parsed locally using standard operator precedence.</span></div>
+</section>
+
+<section class="math-panel" data-math-panel="units" hidden>
+<div class="math-panel-head"><div><small>CONVERT</small><h2>Unit converter</h2></div><span>Length · mass · time · speed · area · volume · temperature</span></div>
+<div class="math-grid three"><label class="math-field"><span>Value</span><input id="unitValue" type="number" value="1" step="any"></label><label class="math-field"><span>From</span><select id="unitFrom"></select></label><label class="math-field"><span>To</span><select id="unitTo"></select></label></div>
+<div class="math-result" id="unitResult"><small>RESULT</small><strong>—</strong><span class="formula">Units: conversion is restricted to matching physical dimensions.</span></div>
+</section>
+
+<section class="math-panel" data-math-panel="algebra" hidden>
+<div class="math-panel-head"><div><small>ALGEBRA</small><h2>Quadratics & 2×2 systems</h2></div><span>Numeric solving only; no symbolic-solver claims.</span></div>
+<h3>Quadratic</h3><div class="math-grid three"><label class="math-field"><span>a</span><input id="quadA" type="number" value="1" step="any"></label><label class="math-field"><span>b</span><input id="quadB" type="number" value="-5" step="any"></label><label class="math-field"><span>c</span><input id="quadC" type="number" value="6" step="any"></label></div><div class="math-result" id="quadResult"><small>FORMULA</small><strong>—</strong><span class="formula">x = (−b ± √(b² − 4ac)) / 2a</span></div>
+<h3>Linear system</h3><div class="math-equation"><input id="mA" type="number" value="2">x + <input id="mB" type="number" value="1">y = <input id="mE" type="number" value="5"></div><div class="math-equation"><input id="mC" type="number" value="1">x + <input id="mD" type="number" value="-1">y = <input id="mF" type="number" value="1"></div><div class="math-result" id="linearResult"><small>RESULT</small><strong>—</strong><span class="formula">Uses the 2×2 determinant / Cramer’s rule.</span></div>
+</section>
+
+<section class="math-panel" data-math-panel="graph" hidden>
+<div class="math-panel-head"><div><small>GRAPH</small><h2>Function plotter</h2></div><span>Same parser as Calculator.</span></div>
+<div class="math-grid"><label class="math-field"><span>y =</span><input id="graphExpression" value="sin(x)"></label><div class="math-grid three compact"><label class="math-field"><span>Min x</span><input id="graphMin" type="number" value="-10"></label><label class="math-field"><span>Max x</span><input id="graphMax" type="number" value="10"></label><label class="math-field"><span>Samples</span><input id="graphSamples" type="number" value="401" min="2" max="2000"></label></div></div><canvas id="graphCanvas" width="1000" height="520" aria-label="Function graph"></canvas><div id="graphStatus" class="math-note">Formula: y = f(x). Dragging/zooming is intentionally omitted; edit the numeric range directly.</div>
+</section>
+
+<section class="math-panel" data-math-panel="geometry" hidden>
+<div class="math-panel-head"><div><small>GEOMETRY</small><h2>2D & 3D formulas</h2></div><span>Circle · rectangle · triangle · sphere · cylinder</span></div>
+<div class="math-grid three"><label class="math-field"><span>Shape</span><select id="geometryShape"><option value="circle">Circle</option><option value="rectangle">Rectangle</option><option value="triangle">Triangle</option><option value="sphere">Sphere</option><option value="cylinder">Cylinder</option></select></label><label class="math-field"><span id="geometryALabel">Radius</span><input id="geometryA" type="number" value="3" min="0" step="any"></label><label class="math-field"><span id="geometryBLabel">Height / second value</span><input id="geometryB" type="number" value="4" min="0" step="any"></label></div><div class="math-result" id="geometryResult"><small>FORMULA + RESULT</small><strong>—</strong><span class="formula">Formula: —</span></div>
+</section>
+
+<section class="math-panel" data-math-panel="physics" hidden>
+<div class="math-panel-head"><div><small>PHYSICS</small><h2>Core mechanics</h2></div><span>SI units by default; variables are shown explicitly.</span></div>
+<label class="math-field"><span>Formula</span><select id="physicsType"><option value="velocity">Final velocity · v = u + at</option><option value="displacement">Displacement · s = ut + ½at²</option><option value="kinetic">Kinetic energy · KE = ½mv²</option><option value="potential">Potential energy · PE = mgh</option><option value="vector">Vector magnitude · |v| = √(x²+y²)</option></select></label><div class="math-grid four"><label class="math-field"><span id="physicsALabel">u · m/s</span><input id="physicsA" type="number" value="5" step="any"></label><label class="math-field"><span id="physicsBLabel">a · m/s²</span><input id="physicsB" type="number" value="2" step="any"></label><label class="math-field"><span id="physicsCLabel">t · s</span><input id="physicsC" type="number" value="4" step="any"></label><label class="math-field"><span id="physicsDLabel">extra</span><input id="physicsD" type="number" value="9.80665" step="any"></label></div><div class="math-result" id="physicsResult"><small>FORMULA + UNITS</small><strong>—</strong><span class="formula">Formula: —</span></div>
+</section>
+
+<section class="math-panel" data-math-panel="chemistry" hidden>
+<div class="math-panel-head"><div><small>CHEMISTRY</small><h2>Moles, molar mass & dilution</h2></div><span>Common elemental atomic masses; formula parser supports parentheses.</span></div>
+<div class="math-grid"><div><h3>Molar mass / moles</h3><div class="math-grid two"><label class="math-field"><span>Formula</span><input id="chemFormula" value="Ca(OH)2"></label><label class="math-field"><span>Mass · g</span><input id="chemMass" type="number" value="74.092" step="any"></label></div><div class="math-result" id="chemMassResult"><small>RESULT</small><strong>—</strong><span class="formula">n = m / M</span></div></div><div><h3>Dilution</h3><div class="math-grid two"><label class="math-field"><span>C₁</span><input id="chemC1" type="number" value="2" step="any"></label><label class="math-field"><span>V₁</span><input id="chemV1" type="number" value="50" step="any"></label><label class="math-field"><span>C₂</span><input id="chemC2" type="number" value="0.5" step="any"></label><label class="math-field"><span>V₂ · leave one blank</span><input id="chemV2" type="number" step="any"></label></div><div class="math-result" id="dilutionResult"><small>FORMULA</small><strong>—</strong><span class="formula">C₁V₁ = C₂V₂</span></div></div></div>
+</section>
+
+<section class="math-panel" data-math-panel="electronics" hidden>
+<div class="math-panel-head"><div><small>ELECTRONICS</small><h2>Ohm’s law & resistors</h2></div><span>V = IR · P = VI · voltage divider · series/parallel resistance</span></div>
+<h3>Ohm’s law</h3><p class="math-note">Enter exactly two; leave the unknown blank.</p><div class="math-grid three"><label class="math-field"><span>Voltage · V</span><input id="ohmVoltage" type="number" value="12" step="any"></label><label class="math-field"><span>Current · A</span><input id="ohmCurrent" type="number" step="any"></label><label class="math-field"><span>Resistance · Ω</span><input id="ohmResistance" type="number" value="6" step="any"></label></div><div class="math-result" id="ohmResult"><small>FORMULA + RESULT</small><strong>—</strong><span class="formula">V = IR; P = VI</span></div>
+<h3>Voltage divider / equivalent resistance</h3><div class="math-grid four"><label class="math-field"><span>Vin · V</span><input id="dividerVin" type="number" value="12"></label><label class="math-field"><span>R₁ · Ω</span><input id="dividerR1" type="number" value="1000"></label><label class="math-field"><span>R₂ · Ω</span><input id="dividerR2" type="number" value="1000"></label><label class="math-field"><span>Resistors list · Ω</span><input id="resistorList" value="100, 200"></label></div><div class="math-result" id="dividerResult"><small>RESULT</small><strong>—</strong><span class="formula">Vout = Vin × R₂/(R₁+R₂)</span></div>
+</section>
+
+<section class="math-panel" data-math-panel="grades" hidden>
+<div class="math-panel-head"><div><small>SCHOOL</small><h2>Grade calculator</h2></div><span>Weighted categories + required final exam score</span></div>
+<div class="math-grid"><div><h3>Weighted grade</h3><label class="math-field"><span>One score:weight per line</span><textarea id="gradeEntries">90:40\n80:60</textarea></label><div class="math-result" id="weightedGradeResult"><small>CURRENT GRADE</small><strong>—</strong><span class="formula">Σ(score × weight) / Σ(weight)</span></div></div><div><h3>Required final</h3><div class="math-grid two"><label class="math-field"><span>Current grade %</span><input id="currentGrade" type="number" value="84"></label><label class="math-field"><span>Course completed %</span><input id="currentWeight" type="number" value="80"></label><label class="math-field"><span>Target course grade %</span><input id="targetGrade" type="number" value="85"></label><label class="math-field"><span>Final exam weight %</span><input id="finalWeight" type="number" value="20"></label></div><div class="math-result" id="requiredFinalResult"><small>REQUIRED FINAL</small><strong>—</strong><span class="formula">F = (target − current × currentWeight) / finalWeight</span></div></div></div>
+</section>
+</main>
+<script type="module" src="./calc-core.js"></script><script type="module" src="./units-core.js"></script><script type="module" src="./science-core.js"></script><script type="module" src="./grade-core.js"></script><script type="module" src="./math-app.js"></script>
+</body></html>

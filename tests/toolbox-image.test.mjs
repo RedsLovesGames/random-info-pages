@@ -12,6 +12,23 @@ test('image studio loads hardened local processing modules', () => {
   assert.match(html, /LOCAL PROCESSING/i);
 });
 
+test('image studio exposes the shared asset-workspace shell', () => {
+  assert.match(html, /id="imageSourceHeader"/);
+  assert.match(html, /id="imageToolGrid"/);
+  assert.match(html, /id="imageSettingsDrawer"/);
+  assert.match(html, /id="imageUndo"/);
+  assert.match(html, /id="imageRedo"/);
+  assert.match(html, /id="imageHistoryPanel"/);
+  assert.match(html, /id="imageExportBar"/);
+  assert.match(html, /image-workspace\.js/);
+});
+
+test('image studio exposes icon actions without replacing existing engines', () => {
+  for (const action of ['crop', 'remove-bg', 'resize', 'convert', 'compress', 'gif', 'reset']) {
+    assert.match(html, new RegExp(`data-image-tool="${action}"`));
+  }
+});
+
 test('image studio exposes real batch controls', () => {
   assert.match(html, /id="processSelected"/);
   assert.match(html, /id="processAll"/);

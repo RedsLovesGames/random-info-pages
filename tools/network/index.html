@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0a"><meta name="color-scheme" content="dark">
+<meta name="description" content="Local subnet, storage, transfer, media-size, display, and browser capability tools.">
+<title>Network & System Lab · Toolbox</title>
+<link rel="stylesheet" href="../shared/toolbox.css"><link rel="stylesheet" href="./network.css">
+</head>
+<body>
+<header class="tb-top"><nav class="tb-shell tb-nav"><a class="tb-brand" href="../">RIP/26 · TOOLBOX</a><a class="tb-back" href="../">← Toolbox</a></nav></header>
+<main class="network-page">
+<section class="network-head"><div><div class="tb-kicker">Local · system calculations</div><h1>Network &<br>System Lab</h1><p>Subnet addresses, data sizes, transfer time, bitrate/storage estimates, display metrics, and current browser capabilities in one local workspace.</p></div><span class="network-badge">NO LOOKUP API</span></section>
+<nav id="networkModeNav" class="network-mode-nav" aria-label="Network and system modes"><button data-network-mode="subnet">Subnet</button><button data-network-mode="storage">Storage</button><button data-network-mode="transfer">Transfer</button><button data-network-mode="media-size">Media size</button><button data-network-mode="display">Display</button><button data-network-mode="device">Device</button></nav>
+
+<section class="network-panel" data-network-panel="subnet">
+<div class="network-panel-head"><div><small>IP / CIDR</small><h2>Subnet calculator</h2></div><span>IPv4 + IPv6</span></div><div class="network-grid three"><label><span>Version</span><select id="ipVersion"><option value="4">IPv4</option><option value="6">IPv6</option></select></label><label><span>Address</span><input id="ipAddress" value="192.168.1.130"></label><label><span>Prefix</span><input id="ipPrefix" type="number" value="24" min="0" max="32"></label></div><button id="calculateSubnet" class="network-primary">Calculate subnet</button>
+</section>
+<section class="network-panel" data-network-panel="storage" hidden>
+<div class="network-panel-head"><div><small>DATA SIZE</small><h2>Storage units</h2></div><span>Decimal + binary units</span></div><div class="network-grid three"><label><span>Value</span><input id="storageValue" type="number" value="1" step="any"></label><label><span>From</span><select id="storageFrom"><option>B</option><option>KB</option><option>MB</option><option>GB</option><option>TB</option><option>KiB</option><option>MiB</option><option selected>GiB</option><option>TiB</option></select></label><label><span>To</span><select id="storageTo"><option>B</option><option>KB</option><option selected>MB</option><option>GB</option><option>TB</option><option>KiB</option><option>MiB</option><option>GiB</option><option>TiB</option></select></label></div><button id="convertStorage" class="network-primary">Convert</button>
+</section>
+<section class="network-panel" data-network-panel="transfer" hidden>
+<div class="network-panel-head"><div><small>TRANSFER</small><h2>Download / upload time</h2></div><span>Size ÷ throughput</span></div><div class="network-grid four"><label><span>Size</span><input id="transferSize" type="number" value="1" step="any"></label><label><span>Size unit</span><select id="transferSizeUnit"><option>MB</option><option selected>GB</option><option>GiB</option><option>TB</option></select></label><label><span>Speed</span><input id="transferSpeed" type="number" value="100" step="any"></label><label><span>Speed unit</span><select id="transferSpeedUnit"><option>Kbps</option><option selected>Mbps</option><option>Gbps</option><option>MBps</option></select></label></div><button id="calculateTransfer" class="network-primary">Calculate time</button>
+</section>
+<section class="network-panel" data-network-panel="media-size" hidden>
+<div class="network-panel-head"><div><small>BITRATE</small><h2>Media storage estimate</h2></div><span>Bitrate × duration</span></div><div class="network-grid three"><label><span>Bitrate</span><input id="mediaBitrate" type="number" value="8" step="any"></label><label><span>Bitrate unit</span><select id="mediaBitrateUnit"><option>Kbps</option><option selected>Mbps</option><option>Gbps</option></select></label><label><span>Duration seconds</span><input id="mediaDuration" type="number" value="60" min="0"></label></div><button id="calculateMediaSize" class="network-primary">Estimate storage</button>
+</section>
+<section class="network-panel" data-network-panel="display" hidden>
+<div class="network-panel-head"><div><small>DISPLAY</small><h2>Resolution / PPI / aspect</h2></div><span>Physical display geometry</span></div><div class="network-grid three"><label><span>Width px</span><input id="displayWidth" type="number" value="1920"></label><label><span>Height px</span><input id="displayHeight" type="number" value="1080"></label><label><span>Diagonal inches</span><input id="displayDiagonal" type="number" value="24" step="any"></label></div><button id="calculateDisplay" class="network-primary">Calculate display</button>
+</section>
+<section class="network-panel" data-network-panel="device" hidden>
+<div class="network-panel-head"><div><small>SYSTEM</small><h2>Browser capabilities</h2></div><span>Current browser only; no fingerprinting service</span></div><button id="inspectDevice" class="network-primary">Inspect this browser</button><div id="deviceCapabilities" class="device-capabilities"></div>
+</section>
+
+<section class="network-result"><small>RESULT</small><pre id="networkResult">Ready.</pre><button id="copyNetworkResult" class="tb-toolbutton">Copy</button></section>
+</main>
+<script type="module" src="./network-app.js"></script>
+</body></html>

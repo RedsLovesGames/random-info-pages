@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0a"><meta name="color-scheme" content="dark">
+<meta name="description" content="Local QR, barcode, scanner, password, passphrase, UUID and secure-token tools.">
+<title>Codes & Generator Lab · Toolbox</title>
+<link rel="stylesheet" href="../shared/toolbox.css"><link rel="stylesheet" href="./codes.css">
+</head>
+<body>
+<header class="tb-top"><nav class="tb-shell tb-nav"><a class="tb-brand" href="../">RIP/26 · TOOLBOX</a><a class="tb-back" href="../">← Toolbox</a></nav></header>
+<main class="codes-page">
+<section class="codes-head"><div><div class="tb-kicker">Local · secure generation</div><h1>Codes &<br>Generator Lab</h1><p>Keep one source loaded while you generate QR/barcodes, scan an image, or create passwords, passphrases, UUIDs, and secure tokens.</p></div><span class="codes-badge">WEB CRYPTO</span></section>
+<nav id="codesModeNav" class="codes-mode-nav" aria-label="Code and generator modes"><button data-codes-mode="qr">QR</button><button data-codes-mode="barcode">Barcode</button><button data-codes-mode="scan">Scan</button><button data-codes-mode="password">Password</button><button data-codes-mode="uuid">UUID / Token</button></nav>
+
+<section class="codes-panel" data-codes-panel="qr">
+<div class="codes-panel-head"><div><small>QR</small><h2>QR payload builder</h2></div><span>Text · URL · Wi‑Fi · email · SMS · vCard · calendar</span></div>
+<div class="codes-grid two"><label><span>Payload type</span><select id="qrType"><option value="text">Text</option><option value="url">URL</option><option value="wifi">Wi‑Fi</option><option value="email">Email</option><option value="sms">SMS</option><option value="vcard">vCard</option><option value="calendar">Calendar</option></select></label><label><span>Primary text / URL / SSID / address / name / title</span><input id="qrPrimary" value="https://example.com"></label></div>
+<div id="qrExtraFields" class="codes-grid two"></div><div class="codes-actions"><button id="generateQr" class="codes-primary">Generate QR</button><button id="downloadCode" class="tb-toolbutton">Download PNG</button></div>
+</section>
+
+<section class="codes-panel" data-codes-panel="barcode" hidden>
+<div class="codes-panel-head"><div><small>BARCODE</small><h2>Barcode generator</h2></div><span>Code 128 · EAN‑13 · UPC‑A · Data Matrix</span></div><div class="codes-grid two"><label><span>Format</span><select id="barcodeFormat"><option value="code128">Code 128</option><option value="ean13">EAN‑13</option><option value="upca">UPC‑A</option><option value="datamatrix">Data Matrix</option></select></label><label><span>Content</span><input id="barcodeText" value="HELLO-123"></label></div><div class="codes-actions"><button id="generateBarcode" class="codes-primary">Generate barcode</button><button id="downloadBarcode" class="tb-toolbutton">Download PNG</button></div>
+</section>
+
+<section class="codes-panel" data-codes-panel="scan" hidden>
+<div class="codes-panel-head"><div><small>SCAN</small><h2>Scan code from image</h2></div><span>Uses native BarcodeDetector when available</span></div><input id="scanFile" type="file" accept="image/*"><div class="codes-actions"><button id="scanCode" class="codes-primary">Scan image</button></div>
+</section>
+
+<section class="codes-panel" data-codes-panel="password" hidden>
+<div class="codes-panel-head"><div><small>SECURE</small><h2>Password / passphrase</h2></div><span>Generated locally from browser crypto</span></div><div class="codes-grid four"><label><span>Length</span><input id="passwordLength" type="number" min="4" max="512" value="24"></label><label><span>Lowercase</span><select id="passwordLower"><option value="true">Yes</option><option value="false">No</option></select></label><label><span>Uppercase</span><select id="passwordUpper"><option value="true">Yes</option><option value="false">No</option></select></label><label><span>Digits</span><select id="passwordDigits"><option value="true">Yes</option><option value="false">No</option></select></label></div><label class="codes-check"><input id="passwordSymbols" type="checkbox" checked> Include symbols</label><div class="codes-actions"><button id="generatePassword" class="codes-primary">Generate password</button><button id="generatePassphrase" class="tb-toolbutton">Generate passphrase</button></div>
+</section>
+
+<section class="codes-panel" data-codes-panel="uuid" hidden>
+<div class="codes-panel-head"><div><small>IDENTIFIERS</small><h2>UUID / secure token</h2></div><span>UUID v4 and random byte tokens</span></div><div class="codes-grid two"><label><span>Token bytes</span><input id="tokenBytes" type="number" min="1" max="4096" value="32"></label><label><span>Token format</span><select id="tokenFormat"><option value="hex">Hex</option><option value="base64url">Base64URL</option></select></label></div><div class="codes-actions"><button id="generateUuid" class="codes-primary">Generate UUID</button><button id="generateToken" class="tb-toolbutton">Generate token</button></div>
+</section>
+
+<section class="codes-output"><div class="codes-canvas-wrap"><canvas id="codeCanvas" width="512" height="512" aria-label="Generated code preview"></canvas></div><div class="codes-result"><small>OUTPUT</small><pre id="codesResult">Ready.</pre><button id="copyCodesResult" class="tb-toolbutton">Copy output</button></div></section>
+</main>
+<script type="module" src="./codes-app.js"></script>
+</body></html>

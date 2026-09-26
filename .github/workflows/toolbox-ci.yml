@@ -8,6 +8,17 @@ on:
       - 'tests/**'
       - 'scripts/check_toolbox.py'
       - 'scripts/toolbox_browser_smoke.mjs'
+      - 'scripts/toolbox_pdf_browser_smoke.mjs'
+      - 'scripts/toolbox_image_workspace_smoke.mjs'
+      - 'scripts/toolbox_files_browser_smoke.mjs'
+      - 'scripts/toolbox_media_browser_smoke.mjs'
+      - 'scripts/toolbox_data_browser_smoke.mjs'
+      - 'scripts/toolbox_text_developer_browser_smoke.mjs'
+      - 'scripts/toolbox_time_money_browser_smoke.mjs'
+      - 'scripts/toolbox_math_browser_smoke.mjs'
+      - 'scripts/toolbox_general_browser_smoke.mjs'
+      - 'scripts/toolbox_integration_browser_smoke.mjs'
+      - 'scripts/toolbox_hardening_browser_smoke.mjs'
       - 'index.html'
       - '.github/workflows/toolbox-ci.yml'
   workflow_dispatch:
@@ -46,7 +57,7 @@ jobs:
   browser-smoke:
     needs: test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout toolbox
         uses: actions/checkout@v5
@@ -75,3 +86,69 @@ jobs:
 
       - name: Chromium desktop and mobile smoke
         run: node scripts/toolbox_browser_smoke.mjs
+
+      - name: PDF upload-once workspace smoke
+        run: node scripts/toolbox_pdf_browser_smoke.mjs
+
+      - name: Image persistent workspace smoke
+        run: node scripts/toolbox_image_workspace_smoke.mjs
+
+      - name: File Lab persistent workspace smoke
+        run: node scripts/toolbox_files_browser_smoke.mjs
+
+      - name: Media Studio persistent workspace smoke
+        run: node scripts/toolbox_media_browser_smoke.mjs
+
+      - name: Data Studio persistent workspace smoke
+        run: node scripts/toolbox_data_browser_smoke.mjs
+
+      - name: Text Studio and Developer Lab workspace smoke
+        run: node scripts/toolbox_text_developer_browser_smoke.mjs
+
+      - name: Time scheduling and Money finance scenario smoke
+        run: node scripts/toolbox_time_money_browser_smoke.mjs
+
+      - name: Math Science Lab browser smoke
+        run: node scripts/toolbox_math_browser_smoke.mjs
+
+      - name: Random Codes Network browser smoke
+        run: node scripts/toolbox_general_browser_smoke.mjs
+
+      - name: Cross-tool artifacts and command search smoke
+        run: node scripts/toolbox_integration_browser_smoke.mjs
+
+      - name: Step 11 Chromium hardening smoke
+        run: TOOLBOX_BROWSER=chromium node scripts/toolbox_hardening_browser_smoke.mjs
+
+  firefox-smoke:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout toolbox
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install Playwright Firefox
+        run: |
+          npm install --no-save playwright@1.59.1
+          npx playwright install --with-deps firefox
+
+      - name: Serve repository
+        shell: bash
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/toolbox-http.log 2>&1 &
+          echo $! > /tmp/toolbox-http.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8000/tools/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/toolbox-http.log
+          exit 1
+
+      - name: Step 11 Firefox hardening smoke
+        run: TOOLBOX_BROWSER=firefox node scripts/toolbox_hardening_browser_smoke.mjs

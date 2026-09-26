@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0a">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Rename, inspect, hash, deduplicate and archive files entirely in your browser.">
+<title>File & Archive Lab · Toolbox</title>
+<link rel="stylesheet" href="../shared/toolbox.css">
+<link rel="stylesheet" href="./files.css">
+</head>
+<body>
+<header class="tb-top"><nav class="tb-shell tb-nav"><a class="tb-brand" href="../">RIP/26 · TOOLBOX</a><a class="tb-back" href="../">← Toolbox</a></nav></header>
+<main class="tb-shell files-page">
+  <section class="files-hero"><div class="tb-kicker">06 / Files · Local processing</div><h1>File &amp;<br>Archive Lab</h1><p>Drop files once, select what you want, then rename, inspect, verify, deduplicate, archive or export without uploading them.</p></section>
+  <input id="filesPicker" type="file" multiple hidden><input id="folderPicker" type="file" webkitdirectory multiple hidden>
+  <section id="filesDrop" class="tb-dropzone files-drop" tabindex="0" role="button" aria-label="Choose files"><div><strong>DROP FILES</strong><span>or click to choose · any file type · stays on this device</span></div></section>
+  <section id="filesWorkspace" class="tb-workspace" hidden>
+    <div class="tb-sourcebar"><div><small>Working collection</small><strong id="filesSummary">0 files</strong><span id="filesMeta">0 B</span></div><div class="files-source-actions"><button id="addFiles" class="tb-toolbutton" type="button">+ Files</button><button id="addFolder" class="tb-toolbutton" type="button">+ Folder</button><button id="clearFiles" class="tb-toolbutton" type="button">Clear</button></div></div>
+    <div class="tb-selectionbar"><div><strong id="filesSelection">0 selected</strong><small>Select files, then choose an action below.</small></div><div><button id="selectAllFiles" class="tb-toolbutton" type="button">Select all</button><button id="selectNoneFiles" class="tb-toolbutton" type="button">Clear selection</button></div></div>
+    <section class="files-table-shell" aria-label="Working files"><div class="files-table-head"><span></span><span>Name</span><span>Type</span><span>Size</span><span>Status</span></div><div id="fileList" class="files-list"></div></section>
+    <section class="files-tools" aria-label="File tools"><h2>Tools</h2><div class="tb-group-title">Names</div><div class="tb-toolgrid"><button id="renameFiles" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">Aa</span><span class="tb-toolicon-label">Bulk rename</span></button></div><div class="tb-group-title">Verify & Find</div><div class="tb-toolgrid"><button id="hashFiles" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">#</span><span class="tb-toolicon-label">Checksums</span></button><button id="findDuplicates" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">≡</span><span class="tb-toolicon-label">Duplicates</span></button></div><div class="tb-group-title">Archive & Inspect</div><div class="tb-toolgrid"><button id="archiveFiles" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">ZIP</span><span class="tb-toolicon-label">Archive</span></button><button id="inspectFile" class="tb-toolicon" type="button"><span class="tb-toolicon-icon">i</span><span class="tb-toolicon-label">Inspect</span></button></div></section>
+    <section id="filesActionPanel" class="tb-action-panel" hidden aria-live="polite"></section><section id="filesProgress" class="tb-progress" hidden><div><strong id="filesProgressLabel">Working…</strong><span id="filesProgressValue">0%</span></div><progress id="filesProgressBar" max="1" value="0"></progress></section><section id="filesHistory" class="tb-history" hidden><div class="files-panel-head"><strong>History</strong><button id="closeFilesHistory" class="tb-toolbutton" type="button">Close</button></div><ol id="filesHistoryList"></ol></section>
+    <div class="tb-exportbar"><div><button id="undoFiles" class="tb-toolbutton" type="button">↶ Undo</button><button id="redoFiles" class="tb-toolbutton" type="button">↷ Redo</button><button id="showFilesHistory" class="tb-toolbutton" type="button">History</button></div><button id="downloadFiles" class="files-primary" type="button">Download selected</button></div>
+  </section>
+</main>
+<script type="module" src="./files-app.js"></script>
+<script type="module" src="../shared/handoff-producers.js"></script>
+</body>
+</html>

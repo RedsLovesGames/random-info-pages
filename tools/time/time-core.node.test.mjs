@@ -33,22 +33,81 @@ test('day difference detects date rollover across zones', () => {
   assert.equal(mod.dayDifference(instant, 'America/Los_Angeles', 'Europe/London'), -1);
 });
 
-test('corrupt saved state falls back to a usable board', () => {
-  const state = mod.deserializeState('{bad json');
-  assert.ok(Array.isArray(state.clocks));
-  assert.ok(state.clocks.length > 0);
+test('v3 state round trips locations and people', () => {
+  const state = {
+    version: 3,
+    format24: true,
+    referenceLocationId: 'nyc',
+    offsetMinutes: 90,
+    activeView: 'planner',
+    locations: [{ id: 'nyc', label: 'New York', country: 'United States', zone: 'America/New_York', lat: 40.7128, lon: -74.006 }],
+    people: [{ id: 'tommy', name: 'Tommy', locationId: 'nyc', availableStart: '09:00', availableEnd: '17:00' }],
+  };
+  const restored = mod.deserializeState(mod.serializeState(state));
+  assert.equal(restored.version, 3);
+  assert.equal(restored.offsetMinutes, 90);
+  assert.equal(restored.activeView, 'planner');
+  assert.equal(restored.locations[0].zone, 'America/New_York');
+  assert.equal(restored.people[0].name, 'Tommy');
 });
 
-test('saved state preserves valid availability hours and drops invalid hours', () => {
-  const raw = JSON.stringify({ version: 2, format24: true, referenceId: 'a', offsetHours: 2, clocks: [
-    { id: 'a', name: 'A', zone: 'UTC', availableStart: '09:00', availableEnd: '17:00' },
-    { id: 'b', name: 'B', zone: 'Europe/London', availableStart: '99:00', availableEnd: '17:00' },
+test('v2 clocks migrate to v3 people and merge duplicate zones', () => {
+  const raw = JSON.stringify({ version: 2, format24: false, referenceId: 'a', offsetHours: 2, clocks: [
+    { id: 'a', name: 'Tommy', zone: 'America/New_York', availableStart: '09:00', availableEnd: '17:00' },
+    { id: 'b', name: 'Alex', zone: 'America/New_York', availableStart: null, availableEnd: null },
+    { id: 'c', name: 'Rita', zone: 'Europe/London', availableStart: '10:00', availableEnd: '18:00' },
   ] });
   const state = mod.deserializeState(raw);
-  assert.equal(state.clocks[0].availableStart, '09:00');
-  assert.equal(state.clocks[0].availableEnd, '17:00');
-  assert.equal(state.clocks[1].availableStart, null);
-  assert.equal(state.clocks[1].availableEnd, null);
+  assert.equal(state.version, 3);
+  assert.equal(state.locations.length, 2);
+  assert.equal(state.people.length, 3);
+  assert.equal(state.offsetMinutes, 120);
+  assert.equal(state.people.find(p => p.name === 'Tommy').locationId, state.people.find(p => p.name === 'Alex').locationId);
+  assert.equal(state.referenceLocationId, state.people.find(p => p.name === 'Tommy').locationId);
+});
+
+test('corrupt saved state falls back to a usable grouped workspace', () => {
+  const state = mod.deserializeState('{bad json');
+  assert.equal(state.version, 3);
+  assert.ok(Array.isArray(state.locations));
+  assert.ok(state.locations.length > 0);
+  assert.ok(Array.isArray(state.people));
+  assert.ok(state.people.length > 0);
+});
+
+test('adding a person in an existing city reuses its location', () => {
+  const state = mod.deserializeState(JSON.stringify({
+    version: 3,
+    locations: [{ id: 'nyc', label: 'New York', country: 'United States', zone: 'America/New_York', lat: 40.7128, lon: -74.006 }],
+    people: [{ id: 'a', name: 'Tommy', locationId: 'nyc', availableStart: null, availableEnd: null }],
+  }));
+  const next = mod.addPersonToState(state, { name: 'Alex', cityId: 'new-york', availableStart: '09:00', availableEnd: '17:00' });
+  assert.equal(next.locations.length, 1);
+  assert.equal(next.people.length, 2);
+  assert.equal(next.people[0].locationId, next.people[1].locationId);
+});
+
+test('peopleForLocation and grouping expose one group per location', () => {
+  const locations = [
+    { id: 'nyc', zone: 'America/New_York' },
+    { id: 'lon', zone: 'Europe/London' },
+  ];
+  const people = [
+    { id: 'a', name: 'Tommy', locationId: 'nyc' },
+    { id: 'b', name: 'Alex', locationId: 'nyc' },
+    { id: 'c', name: 'Rita', locationId: 'lon' },
+  ];
+  assert.deepEqual(mod.peopleForLocation(people, 'nyc').map(p => p.name), ['Tommy', 'Alex']);
+  const groups = mod.groupPeopleByLocation({ locations, people });
+  assert.equal(groups.length, 2);
+  assert.equal(groups[0].people.length, 2);
+});
+
+test('equirectangular projection puts zero latitude/longitude at map center', () => {
+  assert.deepEqual(mod.projectCoordinates(0, 0, 1000, 500), { x: 500, y: 250 });
+  const nyc = mod.projectCoordinates(40.7128, -74.006, 1000, 500);
+  assert.ok(nyc.x > 200 && nyc.x < 400);
+  assert.ok(nyc.y > 100 && nyc.y < 200);
 });
 
 test('availability supports normal and overnight windows', () => {
@@ -57,10 +116,4 @@ test('availability supports normal and overnight windows', () => {
   assert.equal(mod.isAvailableAt(noonUtc, 'UTC', '09:00', '17:00'), true);
   assert.equal(mod.isAvailableAt(twoAmUtc, 'UTC', '09:00', '17:00'), false);
   assert.equal(mod.isAvailableAt(twoAmUtc, 'UTC', '22:00', '06:00'), true);
-});
-
-test('moveClock reorders by id and clamps at edges', () => {
-  const clocks = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
-  assert.deepEqual(mod.moveClock(clocks, 'b', -1).map(x => x.id), ['b', 'a', 'c']);
-  assert.deepEqual(mod.moveClock(clocks, 'a', -1).map(x => x.id), ['a', 'b', 'c']);
 });

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0b0a">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Convert, resize, crop, animate and compress images locally in your browser.">
+<meta name="description" content="Load images once, then edit, resize, convert, compress, animate and export locally in your browser.">
 <title>Image Studio · Toolbox</title>
 <link rel="stylesheet" href="../shared/toolbox.css">
 <link rel="stylesheet" href="./image.css">
@@ -18,21 +18,27 @@
   <header class="image-head">
     <div>
       <a class="tb-back" href="../">← Toolbox</a>
-      <h1>Image Studio</h1>
-      <p>Convert, resize, crop, animate and batch-process PNG, JPEG and WebP files without uploading them.</p>
+      <div class="tb-kicker">02 / Media · Local processing</div>
+      <h1>Image<br>Studio</h1>
+      <p>Load images once. Edit the same working source, switch output operations, then export without uploading anything.</p>
     </div>
     <span class="privacy-chip">LOCAL PROCESSING</span>
   </header>
 
   <input id="picker" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
   <div id="drop" class="drop-zone" tabindex="0" role="button" aria-label="Choose images">
-    <div><strong>Drop images here</strong><span class="muted">or tap to choose PNG, JPEG or WebP files</span></div>
+    <div><strong>DROP IMAGES</strong><span class="muted">or click to choose PNG, JPEG or WebP files</span></div>
   </div>
 
+  <section id="imageSourceHeader" class="tb-sourcebar image-sourcebar" hidden>
+    <div class="image-source-copy"><small>Working image</small><strong id="imageSourceName">image.png</strong><span id="imageSourceMeta">Local source</span></div>
+    <div class="image-source-actions"><button id="imageAddMore" class="tb-toolbutton" type="button">+ Add images</button><button id="clearAll" class="tb-toolbutton" type="button" disabled>Clear queue</button></div>
+  </section>
+
   <section class="image-workspace">
-    <div class="image-panel">
+    <div class="image-panel image-preview-panel">
       <div class="panel-head">
-        <h2>Preview</h2>
+        <h2>Workspace</h2>
         <div class="preview-toolbar" aria-label="Preview source">
           <button id="showOriginal" class="mini-btn active" type="button">Source</button>
           <button id="showResult" class="mini-btn" type="button" disabled>Result</button>
@@ -41,67 +47,91 @@
       <div id="preview" class="preview-wrap"><div id="previewEmpty" class="preview-empty">Choose an image to preview it.</div></div>
       <div id="sourceMeta" class="source-meta">PNG, JPEG and WebP are processed entirely on this device.</div>
       <div class="queue-section">
-        <div class="panel-head"><h2>Queue</h2><span class="muted">Batch-ready</span></div>
+        <div class="panel-head"><h2>Queue</h2><span class="muted">Choose a working image</span></div>
         <div id="queue" class="queue" aria-live="polite"></div>
       </div>
     </div>
 
-    <aside class="image-panel" aria-label="Image settings">
-      <div class="panel-head"><h2>Output</h2><span class="muted">Applied when processing</span></div>
-      <div class="settings">
-        <label class="setting-block"><span>Format</span><select id="format"><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></label>
-
-        <div class="setting-block">
-          <span>Edit source</span>
-          <div class="action-grid">
-            <button id="cropSelected" class="action-btn" type="button" disabled>Crop / rotate</button>
-            <button id="resetCrop" class="action-btn" type="button" disabled>Reset edit</button>
-            <button id="removeBgSelected" class="action-btn wide" type="button" disabled>Remove background (AI)</button>
-          </div>
+    <aside class="image-panel image-tools-panel" aria-label="Image tools">
+      <div class="panel-head"><h2>Tools</h2><span class="muted">One source, many actions</span></div>
+      <div id="imageToolGrid" class="image-tool-hub">
+        <div class="tb-group-title">Transform</div>
+        <div class="tb-toolgrid image-icon-grid">
+          <button id="cropSelected" class="tb-toolicon" data-image-tool="crop" type="button" disabled><span class="tb-toolicon-icon">⌗</span><span class="tb-toolicon-label">Crop / rotate</span></button>
+          <button class="tb-toolicon" data-image-tool="resize" data-open-image-settings="resize" type="button"><span class="tb-toolicon-icon">↔</span><span class="tb-toolicon-label">Resize</span></button>
+          <button id="resetCrop" class="tb-toolicon" data-image-tool="reset" type="button" disabled><span class="tb-toolicon-icon">↺</span><span class="tb-toolicon-label">Reset edit</span></button>
         </div>
 
-        <div class="setting-block">
-          <span>Animate</span>
-          <button id="gifMaker" class="action-btn" type="button">Make animated GIF</button>
+        <div class="tb-group-title">Edit</div>
+        <div class="tb-toolgrid image-icon-grid">
+          <button id="removeBgSelected" class="tb-toolicon" data-image-tool="remove-bg" type="button" disabled><span class="tb-toolicon-icon">◌</span><span class="tb-toolicon-label">Remove background</span></button>
         </div>
 
-        <label class="setting-block"><span>Resize mode</span><select id="resizeMode"><option value="original">Original size</option><option value="width">Set width</option><option value="height">Set height</option><option value="percent">Percentage</option><option value="max-width">Maximum width</option><option value="max-height">Maximum height</option><option value="fit">Fit inside box</option><option value="fill">Fill box</option><option value="exact">Exact dimensions</option></select></label>
-
-        <div id="dimensions" class="setting-grid" hidden>
-          <label class="setting-block"><span>Width</span><input id="width" type="number" min="1" step="1" inputmode="numeric"></label>
-          <label class="setting-block"><span>Height</span><input id="height" type="number" min="1" step="1" inputmode="numeric"></label>
+        <div class="tb-group-title">Output</div>
+        <div class="tb-toolgrid image-icon-grid">
+          <button class="tb-toolicon" data-image-tool="convert" data-open-image-settings="convert" type="button"><span class="tb-toolicon-icon">⇄</span><span class="tb-toolicon-label">Convert</span></button>
+          <button class="tb-toolicon" data-image-tool="compress" data-open-image-settings="compress" type="button"><span class="tb-toolicon-icon">⇣</span><span class="tb-toolicon-label">Compress</span></button>
         </div>
 
-        <label id="percentWrap" class="setting-block" hidden><span>Scale percent</span><input id="percent" type="number" min="1" max="1000" step="1" value="50" inputmode="numeric"></label>
-        <label class="checkbox"><input id="preventUpscale" type="checkbox" checked> Prevent enlargement beyond the source</label>
-
-        <label id="qualityWrap" class="setting-block"><span>Quality</span><div class="range-row"><input id="quality" type="range" min="1" max="100" value="86"><span id="qualityValue" class="quality-value">86%</span></div></label>
-
-        <div class="setting-block">
-          <label class="checkbox"><input id="targetSizeEnabled" type="checkbox"> Compress toward a target file size</label>
-          <div id="targetSizeControls" class="setting-grid" hidden>
-            <label class="setting-block"><span>Target</span><input id="targetSize" type="number" min="1" step="1" value="500" inputmode="decimal"></label>
-            <label class="setting-block"><span>Unit</span><select id="targetUnit"><option value="KB">KB</option><option value="MB">MB</option></select></label>
-          </div>
-          <label id="preserveResolutionWrap" class="checkbox" hidden><input id="preserveResolution" type="checkbox"> Never lower resolution to hit target</label>
-          <span id="targetSizeHint" class="muted" hidden>JPEG/WebP only. Quality is searched first; resolution is reduced only when needed.</span>
-        </div>
-
-        <div class="action-grid">
-          <button id="processSelected" class="action-btn primary" type="button" disabled>Process selected</button>
-          <button id="processAll" class="action-btn" type="button" disabled>Process all</button>
-          <button id="downloadAll" class="action-btn wide" type="button" disabled>Download results</button>
-          <button id="cancelBatch" class="action-btn danger" type="button" hidden>Stop batch</button>
-          <button id="clearAll" class="action-btn" type="button" disabled>Clear queue</button>
-        </div>
-
-        <div class="progress-shell" aria-live="polite">
-          <div class="progress-track" aria-hidden="true"><div id="progressBar" class="progress-bar"></div></div>
-          <div id="status" class="status-line">Images stay on this device. Heavy helpers load only when you use them.</div>
+        <div class="tb-group-title">Create</div>
+        <div class="tb-toolgrid image-icon-grid">
+          <button id="gifMaker" class="tb-toolicon" data-image-tool="gif" type="button"><span class="tb-toolicon-icon">GIF</span><span class="tb-toolicon-label">GIF Maker</span></button>
         </div>
       </div>
+
+      <section id="imageSettingsDrawer" class="image-settings-drawer" hidden>
+        <div class="image-drawer-head"><div><span class="muted">OUTPUT SETTINGS</span><h3 id="imageSettingsTitle">Resize</h3></div><button id="closeImageSettings" class="mini-btn" type="button">Close</button></div>
+        <div class="settings">
+          <div data-image-setting="convert resize compress">
+            <label class="setting-block"><span>Format</span><select id="format"><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></label>
+            <label id="qualityWrap" class="setting-block"><span>Quality</span><div class="range-row"><input id="quality" type="range" min="1" max="100" value="86"><span id="qualityValue" class="quality-value">86%</span></div></label>
+          </div>
+
+          <div data-image-setting="resize compress">
+            <label class="setting-block"><span>Resize mode</span><select id="resizeMode"><option value="original">Original size</option><option value="width">Set width</option><option value="height">Set height</option><option value="percent">Percentage</option><option value="max-width">Maximum width</option><option value="max-height">Maximum height</option><option value="fit">Fit inside box</option><option value="fill">Fill box</option><option value="exact">Exact dimensions</option></select></label>
+            <div id="dimensions" class="setting-grid" hidden>
+              <label class="setting-block"><span>Width</span><input id="width" type="number" min="1" step="1" inputmode="numeric"></label>
+              <label class="setting-block"><span>Height</span><input id="height" type="number" min="1" step="1" inputmode="numeric"></label>
+            </div>
+            <label id="percentWrap" class="setting-block" hidden><span>Scale percent</span><input id="percent" type="number" min="1" max="1000" step="1" value="50" inputmode="numeric"></label>
+            <label class="checkbox"><input id="preventUpscale" type="checkbox" checked> Prevent enlargement beyond the source</label>
+          </div>
+
+          <div data-image-setting="compress">
+            <div class="setting-block">
+              <label class="checkbox"><input id="targetSizeEnabled" type="checkbox"> Compress toward a target file size</label>
+              <div id="targetSizeControls" class="setting-grid" hidden>
+                <label class="setting-block"><span>Target</span><input id="targetSize" type="number" min="1" step="1" value="500" inputmode="decimal"></label>
+                <label class="setting-block"><span>Unit</span><select id="targetUnit"><option value="KB">KB</option><option value="MB">MB</option></select></label>
+              </div>
+              <label id="preserveResolutionWrap" class="checkbox" hidden><input id="preserveResolution" type="checkbox"> Never lower resolution to hit target</label>
+              <span id="targetSizeHint" class="muted" hidden>JPEG/WebP only. Quality is searched first; resolution is reduced only when needed.</span>
+            </div>
+          </div>
+
+          <div class="action-grid image-batch-actions">
+            <button id="processAll" class="action-btn" type="button" disabled>Process entire queue</button>
+            <button id="cancelBatch" class="action-btn danger" type="button" hidden>Stop batch</button>
+          </div>
+
+          <div class="progress-shell" aria-live="polite">
+            <div class="progress-track" aria-hidden="true"><div id="progressBar" class="progress-bar"></div></div>
+            <div id="status" class="status-line">Images stay on this device. Heavy helpers load only when you use them.</div>
+          </div>
+        </div>
+      </section>
     </aside>
   </section>
+
+  <section id="imageHistoryPanel" class="tb-history image-history" hidden>
+    <div class="image-history-head"><strong>Edit history</strong><button id="closeImageHistory" class="tb-toolbutton" type="button">Close</button></div>
+    <ol id="imageHistoryList"></ol>
+  </section>
+
+  <div id="imageExportBar" class="tb-exportbar image-exportbar">
+    <div class="image-history-actions"><button id="imageUndo" class="tb-toolbutton" type="button" disabled>↶ Undo</button><button id="imageRedo" class="tb-toolbutton" type="button" disabled>↷ Redo</button><button id="showImageHistory" class="tb-toolbutton" type="button" disabled>History</button></div>
+    <div class="image-export-actions"><button id="processSelected" class="action-btn primary" type="button" disabled>Process selected</button><button id="downloadSelected" class="action-btn" type="button" disabled>Download selected</button><button id="downloadAll" class="action-btn" type="button" disabled>Download results</button></div>
+  </div>
 </main>
 
 <dialog id="cropDialog" class="crop-dialog">
@@ -206,5 +236,6 @@
 <script src="./gif-maker.js"></script>
 <script src="./bg-remove-core.js"></script>
 <script src="./bg-remove.js"></script>
+<script type="module" src="./image-workspace.js"></script>
 </body>
 </html>
