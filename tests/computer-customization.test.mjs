@@ -30,6 +30,8 @@ test('Random Info OS matches the Henry-style Windows desktop and exposes archive
   assert.match(css, /#3e9697/i, 'desktop must use Henry teal');
   assert.match(css, /#c0c0c0/i, 'taskbar/windows must use Windows 95 gray');
   assert.match(css, /MS Sans Serif/i);
+  assert.match(html, /class=["'][^"']*start-button[^"']*["']/);
+  assert.match(html, /id=["']startMenu["']/);
 
   assert.match(html, /Doom/);
   assert.match(html, /The Oregon Trail/);
