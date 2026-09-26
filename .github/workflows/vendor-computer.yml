@@ -19,15 +19,15 @@ jobs:
           ref: computer-experience
           fetch-depth: 0
 
-      - name: Confirm vendor contract is RED before copy
+      - name: Check current vendor contract
         shell: bash
         run: |
           set -u
           if node --test tests/computer-vendor.test.mjs; then
-            echo 'Vendor test unexpectedly passed before vendoring.'
-            exit 1
+            echo 'Existing vendor baseline is already complete; refreshing pinned source for dependency compatibility.'
+          else
+            echo 'Vendor baseline is incomplete; creating it from the pinned upstream.'
           fi
-          echo 'RED confirmed: computer-src is absent/incomplete.'
 
       - name: Clone pinned upstream outer portfolio
         shell: bash
