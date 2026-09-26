@@ -53,7 +53,8 @@ async function assertDesktopExperience(browser) {
   await frame.waitForLoadState('domcontentloaded');
   assert.equal(new URL(frame.url()).origin, new URL(baseURL).origin, 'monitor iframe must be same-origin');
   assert.equal(new URL(frame.url()).pathname, new URL(osURL).pathname, 'monitor iframe must load /os/');
-  await frame.locator('.start-menu-rail').filter({ hasText: 'RANDOM INFO OS' }).waitFor({ timeout: 10000 });
+  await frame.locator('.desktop-shortcuts').waitFor({ state: 'visible', timeout: 10000 });
+  assert.equal(await frame.title(), 'Random Info OS', 'monitor iframe must expose the Random Info OS desktop');
 
   const toolsShortcut = frame.locator('.folder-shortcut[data-folder="tools"]');
   await toolsShortcut.dblclick();
