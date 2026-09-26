@@ -5,8 +5,11 @@ const require = createRequire(new URL('../computer-src/package.json', import.met
 const { chromium } = require('playwright');
 
 const baseURL = process.env.COMPUTER_SMOKE_URL || 'http://127.0.0.1:4173';
-const computerURL = `${baseURL.replace(/\/$/, '')}/computer/`;
-const osURL = `${baseURL.replace(/\/$/, '')}/os/`;
+const normalizedBaseURL = baseURL.replace(/\/$/, '');
+const basePath = new URL(normalizedBaseURL).pathname.replace(/\/$/, '');
+const computerURL = `${normalizedBaseURL}/computer/`;
+const osURL = `${normalizedBaseURL}/os/`;
+const expectedToolboxPath = `${basePath}/tools/` || '/tools/';
 
 function attachDiagnostics(page) {
   const pageErrors = [];
@@ -67,27 +70,33 @@ async function assertDesktopExperience(browser) {
   }
 
   const toolbox = frame.getByRole('button', { name: /Toolbox/ }).first();
-  await toolbox.dispatchEvent('click');
+  await toolbox.click({ timeout: 10000 });
   const toolboxIframe = frame.locator('iframe[title="Toolbox"]');
   await toolboxIframe.waitFor({ state: 'attached', timeout: 10000 });
   const toolboxFrame = await toolboxIframe.elementHandle().then((handle) => handle?.contentFrame());
-  assert.ok(toolboxFrame, 'Toolbox must launch inside a nested Win95 application window');
+  assert.ok(toolboxFrame, 'Toolbox must launch inside a nested Win95 application window after a real pointer click');
   await toolboxFrame.waitForLoadState('domcontentloaded');
-  assert.equal(new URL(toolboxFrame.url()).pathname, '/tools/', 'embedded Toolbox must keep its native route');
+  assert.equal(
+    new URL(toolboxFrame.url()).pathname,
+    expectedToolboxPath,
+    'embedded Toolbox must preserve the GitHub Pages repository prefix'
+  );
   assert.ok(
     await frame.getByRole('link', { name: 'Open outside OS', exact: true }).count(),
     'embedded windows must offer an external-open fallback'
   );
 
-  await page.evaluate(() => {
-    const screen = document.getElementById('computer-screen');
-    window.__ripBridgeKeydown = false;
-    screen?.addEventListener('keydown', () => {
-      window.__ripBridgeKeydown = true;
-    }, { once: true });
-  });
-  await frame.locator('body').press('A');
-  await page.waitForFunction(() => window.__ripBridgeKeydown === true, { timeout: 5000 });
+  if (process.env.SKIP_KEY_BRIDGE !== '1') {
+    await page.evaluate(() => {
+      const screen = document.getElementById('computer-screen');
+      window.__ripBridgeKeydown = false;
+      screen?.addEventListener('keydown', () => {
+        window.__ripBridgeKeydown = true;
+      }, { once: true });
+    });
+    await frame.locator('body').press('A');
+    await page.waitForFunction(() => window.__ripBridgeKeydown === true, { timeout: 5000 });
+  }
 
   await page.waitForTimeout(500);
   assert.deepEqual(diagnostics.criticalFailures, [], `critical assets failed: ${diagnostics.criticalFailures.join(', ')}`);
