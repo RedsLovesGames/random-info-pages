@@ -1,0 +1,89 @@
+name: Random Info Computer Live Firefox Debug
+
+on:
+  push:
+    branches: ['computer-rip-window-fix']
+    paths:
+      - '.github/workflows/computer-live-firefox-debug.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: random-info-computer-live-firefox-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-firefox:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 18
+
+      - name: Install Firefox browser dependency
+        working-directory: computer-src
+        run: |
+          npm install --no-save --package-lock=false playwright@1.59.1
+          npx playwright install --with-deps firefox
+
+      - name: Test live Random Info app window in Firefox
+        working-directory: computer-src
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { firefox } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser = await firefox.launch({ headless: true });
+          const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+          const page = await context.newPage();
+          const pageErrors = [];
+          const badResponses = [];
+          page.on('pageerror', error => pageErrors.push(error.message));
+          page.on('response', response => {
+            if (response.status() >= 400 && /\/random-info-pages\/(?:os|tools|computer)\//.test(response.url())) {
+              badResponses.push(`${response.status()} ${response.url()}`);
+            }
+          });
+
+          await page.goto('https://redslovesgames.github.io/random-info-pages/computer/', {
+            waitUntil: 'domcontentloaded',
+            timeout: 60000,
+          });
+
+          const monitor = page.locator('#computer-screen');
+          await monitor.waitFor({ state: 'attached', timeout: 60000 });
+          const osFrame = await monitor.elementHandle().then(handle => handle?.contentFrame());
+          assert.ok(osFrame, 'live monitor frame must exist');
+          await osFrame.getByText('Random Info Explorer', { exact: true }).first().waitFor({ state: 'visible', timeout: 20000 });
+
+          const toolbox = osFrame.getByRole('button', { name: /Toolbox/ }).first();
+          await toolbox.waitFor({ state: 'visible', timeout: 10000 });
+          const box = await toolbox.boundingBox();
+          console.log('Toolbox button box:', box);
+          await toolbox.click({ timeout: 10000 });
+
+          const nested = osFrame.locator('iframe[title="Toolbox"]');
+          await nested.waitFor({ state: 'attached', timeout: 10000 });
+          const nestedBox = await nested.boundingBox();
+          console.log('Nested iframe box:', nestedBox);
+          const nestedFrame = await nested.elementHandle().then(handle => handle?.contentFrame());
+          assert.ok(nestedFrame, 'live Toolbox iframe must expose a frame in Firefox');
+          await nestedFrame.waitForLoadState('domcontentloaded', { timeout: 20000 });
+          console.log('Nested iframe URL:', nestedFrame.url());
+          assert.equal(new URL(nestedFrame.url()).pathname, '/random-info-pages/tools/');
+          await nestedFrame.locator('h1').filter({ hasText: 'Toolbox' }).waitFor({ state: 'visible', timeout: 10000 });
+
+          console.log('Page errors:', pageErrors);
+          console.log('Bad responses:', badResponses);
+          assert.deepEqual(pageErrors, []);
+          assert.deepEqual(badResponses, []);
+
+          await browser.close();
+          NODE
