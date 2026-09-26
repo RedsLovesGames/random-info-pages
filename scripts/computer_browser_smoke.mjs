@@ -90,6 +90,27 @@ async function assertDesktopExperience(browser) {
     expectedToolboxPath,
     'embedded Toolbox must preserve the GitHub Pages repository prefix'
   );
+
+  await frame.waitForTimeout(250);
+  const embeddedMetrics = await toolboxIframe.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const parentRect = element.parentElement?.getBoundingClientRect();
+    return {
+      internalWidth: element.contentWindow?.innerWidth || 0,
+      layoutWidth: Number.parseFloat(getComputedStyle(element).width),
+      visibleWidth: rect.width,
+      parentWidth: parentRect?.width || 0,
+    };
+  });
+  assert.ok(
+    embeddedMetrics.internalWidth >= 1400 && embeddedMetrics.layoutWidth >= 1400,
+    `embedded pages must retain a desktop-sized internal viewport: ${JSON.stringify(embeddedMetrics)}`
+  );
+  assert.ok(
+    Math.abs(embeddedMetrics.visibleWidth - embeddedMetrics.parentWidth) <= 2,
+    `scaled desktop page must fit the Win95 content width: ${JSON.stringify(embeddedMetrics)}`
+  );
+
   assert.ok(
     await frame.getByRole('link', { name: 'Open outside OS', exact: true }).count(),
     'embedded windows must offer an external-open fallback'
