@@ -97,6 +97,10 @@ jobs:
         working-directory: computer-src
         run: npm run build
 
+      - name: Import and build authentic Win95 OS
+        shell: pwsh
+        run: ./scripts/import-henry-win95.ps1
+
       - name: Stage static site
         run: |
           rm -rf _site
@@ -106,6 +110,7 @@ jobs:
             --exclude '.github' \
             --exclude '_site' \
             --exclude 'computer-src' \
+            --exclude 'os-src' \
             --exclude '_computer-smoke-site' \
             ./ _site/
           mkdir -p _site/computer
@@ -116,8 +121,14 @@ jobs:
         run: |
           test -f _site/computer/index.html
           test -f _site/os/index.html
+          test -f _site/os/doom.jsdos
+          test -f _site/os/trail.jsdos
+          test -f _site/os/scrabble.jsdos
+          test -f _site/os/js-dos/js-dos.js
           find _site/computer -maxdepth 1 -name 'bundle.*.js' | grep -q .
+          find _site/os/static/js -maxdepth 1 -name 'main.*.js' | grep -q .
           test ! -e _site/computer-src/node_modules
+          test ! -e _site/os-src
           grep -Fq 'computer-fallback' _site/computer/index.html
           grep -Fq 'RANDOM INFO OS' _site/os/index.html
 
@@ -148,8 +159,12 @@ jobs:
           base="${SITE_URL%/}"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/computer.html "$base/computer/"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/os.html "$base/os/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/os-main.js "$(grep -oE 'src="\./static/js/main\.[a-f0-9]+\.js"' /tmp/os.html | head -1 | cut -d'"' -f2 | sed "s#^\.#$base/os#")"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/doom.jsdos "$base/os/doom.jsdos"
           grep -Fq 'computer-fallback' /tmp/computer.html
           grep -Fq 'RANDOM INFO OS' /tmp/os.html
+          grep -Fq 'Random Info Explorer' /tmp/os-main.js
+          test -s /tmp/doom.jsdos
 
       - name: Check school schedule
         env:

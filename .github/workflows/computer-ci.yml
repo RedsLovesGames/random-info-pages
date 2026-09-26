@@ -5,11 +5,14 @@ on:
     branches: ['computer-*']
     paths:
       - 'computer-src/**'
+      - 'os-src/**'
       - 'os/**'
       - 'index.html'
       - 'tests/home-index.test.mjs'
       - 'tests/computer-*.test.mjs'
       - 'scripts/computer_browser_smoke.mjs'
+      - 'scripts/import-henry-win95.ps1'
+      - 'scripts/win95-overrides/**'
       - '.github/workflows/computer-ci.yml'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
@@ -17,7 +20,10 @@ on:
 permissions:
   contents: read
 
-# Full exact-head verification gate for the vendored 3D computer experience.
+concurrency:
+  group: random-info-computer-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-test:
     runs-on: ubuntu-latest
@@ -39,6 +45,30 @@ jobs:
       - name: Build computer experience
         working-directory: computer-src
         run: npm run build
+
+      - name: Import and build authentic Win95 OS
+        id: win95_import
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          try {
+            & ./scripts/import-henry-win95.ps1 *>&1 | Tee-Object -FilePath win95-import.log
+          } catch {
+            $_ | Format-List -Force | Out-String | Tee-Object -FilePath win95-import.log -Append
+            exit 1
+          }
+
+      - name: Preserve Win95 importer diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: win95-import-diagnostics
+          path: win95-import.log
+          if-no-files-found: warn
+
+      - name: Enforce Win95 import success
+        if: steps.win95_import.outcome != 'success'
+        run: exit 1
 
       - name: Run computer contracts
         run: |
@@ -74,9 +104,10 @@ jobs:
       - name: Stage local computer smoke site
         run: |
           rm -rf _computer-smoke-site
-          mkdir -p _computer-smoke-site/computer _computer-smoke-site/os
+          mkdir -p _computer-smoke-site/computer _computer-smoke-site/os _computer-smoke-site/tools
           cp -a computer-src/public/. _computer-smoke-site/computer/
-          cp -a os/. _computer-smoke-site/os/
+          cp -a os-src/build/. _computer-smoke-site/os/
+          cp -a tools/. _computer-smoke-site/tools/
 
       - name: Run Chromium computer smoke
         shell: bash
