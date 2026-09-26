@@ -45,6 +45,26 @@ jobs:
           node --test tests/computer-*.test.mjs
           node --test tests/home-index.test.mjs
 
+      - name: Run existing Pages regressions
+        run: |
+          node --test wheel/*.test.mjs
+          for f in wheel/*.js; do node --check "$f"; done
+          node --test vct-scout/recommendation.test.cjs
+          node --test vct-scout/map-geometry.test.cjs
+          node --test vct-scout/agent-tactics.test.cjs
+          node --test vct-scout/recommended-plays.test.cjs
+          node --test vct-scout/observed-rounds.test.cjs
+          node --test vct-scout/tactical-renderer-v3.test.cjs
+          node --check vct-scout/recommendation.js
+          node --check vct-scout/app-core.js
+          node --check vct-scout/app-lab.js
+          node --check vct-scout/map-geometry.js
+          node --check vct-scout/agent-tactics.js
+          node --check vct-scout/recommended-plays.js
+          node --check vct-scout/observed-rounds.js
+          node --check vct-scout/tactical-renderer-v3.js
+          grep -Fq 'Fall 2026 School Schedule' school-schedule/index.html
+
       - name: Install Chromium smoke dependency
         working-directory: computer-src
         run: |
