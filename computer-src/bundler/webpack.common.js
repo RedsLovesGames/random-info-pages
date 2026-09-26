@@ -18,6 +18,7 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             template: path.resolve(__dirname, '../src/index.html'),
+            favicon: path.resolve(__dirname, '../static/images/favicon.ico'),
             minify: true,
         }),
         new MiniCSSExtractPlugin(),
@@ -52,7 +53,6 @@ module.exports = {
                 test: /\.css$/,
                 use: [MiniCSSExtractPlugin.loader, 'css-loader'],
             },
-
             // Images
             {
                 test: /\.(jpg|png|gif|svg)$/,
