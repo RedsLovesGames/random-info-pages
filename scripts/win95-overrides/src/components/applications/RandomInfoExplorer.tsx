@@ -15,6 +15,8 @@ export interface RandomInfoExplorerProps extends WindowAppProps {
 const RandomInfoExplorer: React.FC<RandomInfoExplorerProps> = (props) => {
     const { initWidth, initHeight } = useInitialWindowSize({ margin: 100 });
     const [folder, setFolder] = useState<RandomInfoFolder>('Tools');
+    const visibleWidth = window.visualViewport?.width || window.innerWidth;
+    const narrowViewport = visibleWidth <= 600;
 
     const apps = useMemo(
         () => RANDOM_INFO_APPS.filter((app) => app.folder === folder),
@@ -23,8 +25,8 @@ const RandomInfoExplorer: React.FC<RandomInfoExplorerProps> = (props) => {
 
     return (
         <Window
-            top={24}
-            left={56}
+            top={narrowViewport ? 0 : 24}
+            left={narrowViewport ? 0 : 56}
             width={initWidth}
             height={initHeight}
             windowTitle="Random Info Explorer"
