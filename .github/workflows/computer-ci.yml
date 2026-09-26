@@ -101,23 +101,26 @@ jobs:
           npm install --no-save --package-lock=false playwright@1.59.1
           npx playwright install --with-deps chromium
 
-      - name: Stage local computer smoke site
+      - name: Stage local computer smoke site under Pages prefix
         run: |
           rm -rf _computer-smoke-site
-          mkdir -p _computer-smoke-site/computer _computer-smoke-site/os _computer-smoke-site/tools
-          cp -a computer-src/public/. _computer-smoke-site/computer/
-          cp -a os-src/build/. _computer-smoke-site/os/
-          cp -a tools/. _computer-smoke-site/tools/
+          mkdir -p _computer-smoke-site/random-info-pages/computer _computer-smoke-site/random-info-pages/os _computer-smoke-site/random-info-pages/tools
+          cp -a computer-src/public/. _computer-smoke-site/random-info-pages/computer/
+          cp -a os-src/build/. _computer-smoke-site/random-info-pages/os/
+          cp -a tools/. _computer-smoke-site/random-info-pages/tools/
 
       - name: Run Chromium computer smoke
         shell: bash
+        env:
+          COMPUTER_SMOKE_URL: http://127.0.0.1:4173/random-info-pages
+          SKIP_KEY_BRIDGE: '1'
         run: |
           set -euo pipefail
           python3 -m http.server 4173 --bind 127.0.0.1 --directory _computer-smoke-site >/tmp/rip-computer-http.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           for attempt in {1..20}; do
-            if curl --fail --silent http://127.0.0.1:4173/computer/ >/dev/null; then break; fi
+            if curl --fail --silent http://127.0.0.1:4173/random-info-pages/computer/ >/dev/null; then break; fi
             sleep 0.25
           done
           node scripts/computer_browser_smoke.mjs
