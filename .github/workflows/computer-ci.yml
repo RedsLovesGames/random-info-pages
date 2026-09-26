@@ -20,7 +20,6 @@ on:
 permissions:
   contents: read
 
-# Full exact-head verification gate for the 3D computer plus the authentic Win95 inner OS.
 jobs:
   build-test:
     runs-on: ubuntu-latest
@@ -44,8 +43,28 @@ jobs:
         run: npm run build
 
       - name: Import and build authentic Win95 OS
+        id: win95_import
+        continue-on-error: true
         shell: pwsh
-        run: ./scripts/import-henry-win95.ps1
+        run: |
+          try {
+            & ./scripts/import-henry-win95.ps1 *>&1 | Tee-Object -FilePath win95-import.log
+          } catch {
+            $_ | Format-List -Force | Out-String | Tee-Object -FilePath win95-import.log -Append
+            exit 1
+          }
+
+      - name: Preserve Win95 importer diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: win95-import-diagnostics
+          path: win95-import.log
+          if-no-files-found: warn
+
+      - name: Enforce Win95 import success
+        if: steps.win95_import.outcome != 'success'
+        run: exit 1
 
       - name: Run computer contracts
         run: |
