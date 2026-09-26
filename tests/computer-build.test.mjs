@@ -25,3 +25,21 @@ test('computer production build is safe to serve from /computer/', () => {
   const webpack = read('computer-src/bundler/webpack.common.js');
   assert.match(webpack, /publicPath:\s*['"]\.\/['"]/, 'webpack output.publicPath must be explicitly relative');
 });
+
+test('computer source provides usable failure, reduced-motion, and narrow-screen fallbacks', () => {
+  const html = read('computer-src/src/index.html');
+  assert.match(html, /id=["']computer-fallback["']/);
+  assert.match(html, /href=["']\.\.\/os\/["']/);
+  assert.match(html, /href=["']\.\.\/["']/);
+
+  const css = read('computer-src/src/style.css');
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+  assert.match(css, /max-width:\s*430px/);
+  assert.match(css, /overflow-x:\s*hidden/);
+
+  const script = read('computer-src/src/script.ts');
+  assert.match(script, /supportsWebGL/);
+  assert.match(script, /showComputerFallback/);
+  assert.match(script, /try\s*\{/);
+  assert.match(script, /catch\s*\(/);
+});
