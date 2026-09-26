@@ -2,7 +2,7 @@ name: Random Info Computer CI
 
 on:
   push:
-    branches: [computer-experience]
+    branches: [computer-experience, computer-customization]
     paths:
       - 'computer-src/**'
       - 'os/**'
