@@ -2,7 +2,13 @@ const promises = new Map();
 
 export function loadModuleOnce(key, url) {
   if (!key || !url) return Promise.reject(new Error('A loader key and URL are required.'));
-  if (!promises.has(key)) promises.set(key, import(url));
+  if (!promises.has(key)) {
+    const promise = import(url).catch(error => {
+      promises.delete(key);
+      throw error;
+    });
+    promises.set(key, promise);
+  }
   return promises.get(key);
 }
 
@@ -28,6 +34,7 @@ export function loadScriptOnce(key, url, { integrity, crossOrigin = 'anonymous' 
     }, { once: true });
     script.addEventListener('error', () => {
       promises.delete(key);
+      if (script.dataset.loaded !== 'true') script.remove();
       reject(new Error(`Failed to load ${key}.`));
     }, { once: true });
     if (!existing) document.head.append(script);
