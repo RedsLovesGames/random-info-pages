@@ -24,6 +24,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup Node for Random Info Computer
+        uses: actions/setup-node@v6
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: computer-src/package-lock.json
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
@@ -82,6 +89,14 @@ jobs:
       - name: Build Tideborne fish index
         run: python3 scripts/build_tideborne_fish_index.py
 
+      - name: Install Random Info Computer dependencies
+        working-directory: computer-src
+        run: npm ci
+
+      - name: Build Random Info Computer
+        working-directory: computer-src
+        run: npm run build
+
       - name: Stage static site
         run: |
           rm -rf _site
@@ -90,8 +105,21 @@ jobs:
             --exclude '.git' \
             --exclude '.github' \
             --exclude '_site' \
+            --exclude 'computer-src' \
+            --exclude '_computer-smoke-site' \
             ./ _site/
+          mkdir -p _site/computer
+          cp -a computer-src/public/. _site/computer/
           touch _site/.nojekyll
+
+      - name: Verify staged Random Info Computer
+        run: |
+          test -f _site/computer/index.html
+          test -f _site/os/index.html
+          find _site/computer -maxdepth 1 -name 'bundle.*.js' | grep -q .
+          test ! -e _site/computer-src/node_modules
+          grep -Fq 'computer-fallback' _site/computer/index.html
+          grep -Fq 'RANDOM INFO OS' _site/os/index.html
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
@@ -112,6 +140,16 @@ jobs:
           grep -Fq 'id="searchDialog"' /tmp/home.html
           grep -Fq './wheel/' /tmp/home.html
           grep -Fq './friends/' /tmp/home.html
+
+      - name: Check Random Info Computer
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          base="${SITE_URL%/}"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/computer.html "$base/computer/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/os.html "$base/os/"
+          grep -Fq 'computer-fallback' /tmp/computer.html
+          grep -Fq 'RANDOM INFO OS' /tmp/os.html
 
       - name: Check school schedule
         env:
