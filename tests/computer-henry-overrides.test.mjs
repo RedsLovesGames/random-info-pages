@@ -46,7 +46,10 @@ test('desktop uses authentic games plus Random Info Explorer and removes Showcas
 test('source-facing branding is neutralized', () => {
   const henordle = read('src/components/applications/Henordle.tsx');
   const generalIndex = read('src/components/general/index.ts');
+  const shutdown = read('src/components/os/ShutdownSequence.tsx');
   assert.match(henordle, /RIP Wordle/);
   assert.doesNotMatch(henordle, /Henry Heffernan/);
   assert.doesNotMatch(generalIndex, /MusicPlayer|Link/);
+  assert.doesNotMatch(shutdown, /assets\/pictures|HHOS|Henry/i);
+  assert.match(shutdown, /Random Info OS/);
 });
