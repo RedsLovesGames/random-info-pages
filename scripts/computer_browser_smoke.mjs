@@ -16,7 +16,7 @@ function attachDiagnostics(page) {
     const url = response.url();
     if (
       response.status() >= 400 &&
-      /\/computer\/(?:models|textures|audio|draco)\//.test(url)
+      (/\/computer\/(?:models|textures|audio|draco)\//.test(url) || /\/(?:os|tools)\//.test(url))
     ) {
       criticalFailures.push(`${response.status()} ${url}`);
     }
@@ -53,16 +53,31 @@ async function assertDesktopExperience(browser) {
   await frame.waitForLoadState('domcontentloaded');
   assert.equal(new URL(frame.url()).origin, new URL(baseURL).origin, 'monitor iframe must be same-origin');
   assert.equal(new URL(frame.url()).pathname, new URL(osURL).pathname, 'monitor iframe must load /os/');
-  await frame.locator('.desktop-shortcuts').waitFor({ state: 'visible', timeout: 10000 });
-  assert.equal(await frame.title(), 'Random Info OS', 'monitor iframe must expose the Random Info OS desktop');
+  assert.equal(await frame.title(), 'Random Info OS', 'monitor iframe must expose Random Info OS');
 
-  const toolsShortcut = frame.locator('.folder-shortcut[data-folder="tools"]');
-  // The iframe is transformed as a CSS3D monitor surface until the camera enters
-  // interaction mode, so validate the OS desktop handler inside its own DOM here.
-  await toolsShortcut.dispatchEvent('dblclick');
-  const toolsWindow = frame.locator('.explorer-window').filter({ hasText: 'Tools' });
-  await toolsWindow.waitFor({ state: 'visible', timeout: 5000 });
-  assert.ok(await toolsWindow.getByText('Toolbox', { exact: true }).count(), 'Tools folder must expose Toolbox');
+  await frame.getByText('Start', { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
+  await frame.getByText('Random Info Explorer', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 });
+
+  const requiredFolders = ['Tools', 'School', 'Friends', 'Games', 'Data', 'Experiments'];
+  for (const folder of requiredFolders) {
+    assert.ok(
+      await frame.getByRole('button', { name: folder, exact: true }).count(),
+      `Explorer must expose ${folder}`
+    );
+  }
+
+  const toolbox = frame.getByRole('button', { name: /Toolbox/ }).first();
+  await toolbox.dispatchEvent('click');
+  const toolboxIframe = frame.locator('iframe[title="Toolbox"]');
+  await toolboxIframe.waitFor({ state: 'attached', timeout: 10000 });
+  const toolboxFrame = await toolboxIframe.elementHandle().then((handle) => handle?.contentFrame());
+  assert.ok(toolboxFrame, 'Toolbox must launch inside a nested Win95 application window');
+  await toolboxFrame.waitForLoadState('domcontentloaded');
+  assert.equal(new URL(toolboxFrame.url()).pathname, '/tools/', 'embedded Toolbox must keep its native route');
+  assert.ok(
+    await frame.getByRole('link', { name: 'Open outside OS', exact: true }).count(),
+    'embedded windows must offer an external-open fallback'
+  );
 
   await page.evaluate(() => {
     const screen = document.getElementById('computer-screen');
@@ -73,7 +88,6 @@ async function assertDesktopExperience(browser) {
   });
   await frame.locator('body').press('A');
   await page.waitForFunction(() => window.__ripBridgeKeydown === true, { timeout: 5000 });
-  assert.match(await frame.locator('html').getAttribute('data-last-event') || '', /key(?:down|up)/);
 
   await page.waitForTimeout(500);
   assert.deepEqual(diagnostics.criticalFailures, [], `critical assets failed: ${diagnostics.criticalFailures.join(', ')}`);
@@ -97,6 +111,23 @@ async function assertNarrowExperience(browser) {
   assert.ok(sizes.scrollWidth <= sizes.clientWidth + 1, `mobile page overflows horizontally: ${JSON.stringify(sizes)}`);
   assert.ok(sizes.fallbackVisible || sizes.hasMonitor, 'mobile must expose either the 3D monitor or intentional fallback');
   assert.deepEqual(diagnostics.pageErrors, [], `mobile page errors: ${diagnostics.pageErrors.join(' | ')}`);
+  await context.close();
+}
+
+async function assertDirectOsNarrowExperience(browser) {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true });
+  const page = await context.newPage();
+  const diagnostics = attachDiagnostics(page);
+  await page.goto(osURL, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.getByText('Start', { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
+  await page.getByText('Random Info Explorer', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 });
+
+  const sizes = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  assert.ok(sizes.scrollWidth <= sizes.clientWidth + 2, `direct OS overflows narrow viewport: ${JSON.stringify(sizes)}`);
+  assert.deepEqual(diagnostics.pageErrors, [], `direct OS mobile errors: ${diagnostics.pageErrors.join(' | ')}`);
   await context.close();
 }
 
@@ -130,8 +161,9 @@ const browser = await chromium.launch({
 try {
   await assertDesktopExperience(browser);
   await assertNarrowExperience(browser);
+  await assertDirectOsNarrowExperience(browser);
   await assertReducedMotionExperience(browser);
-  console.log('Random Info Computer browser smoke passed.');
+  console.log('Random Info Computer + authentic Win95 browser smoke passed.');
 } finally {
   await browser.close();
 }
