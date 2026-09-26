@@ -53,7 +53,13 @@ async function assertDesktopExperience(browser) {
   await frame.waitForLoadState('domcontentloaded');
   assert.equal(new URL(frame.url()).origin, new URL(baseURL).origin, 'monitor iframe must be same-origin');
   assert.equal(new URL(frame.url()).pathname, new URL(osURL).pathname, 'monitor iframe must load /os/');
-  await frame.locator('text=RANDOM INFO OS').waitFor({ timeout: 10000 });
+  await frame.locator('.start-menu-rail').filter({ hasText: 'RANDOM INFO OS' }).waitFor({ timeout: 10000 });
+
+  const toolsShortcut = frame.locator('.folder-shortcut[data-folder="tools"]');
+  await toolsShortcut.dblclick();
+  const toolsWindow = frame.locator('.explorer-window').filter({ hasText: 'Tools' });
+  await toolsWindow.waitFor({ state: 'visible', timeout: 5000 });
+  assert.ok(await toolsWindow.getByText('Toolbox', { exact: true }).count(), 'Tools folder must expose Toolbox');
 
   await page.evaluate(() => {
     const screen = document.getElementById('computer-screen');
