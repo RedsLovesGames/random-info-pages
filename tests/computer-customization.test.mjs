@@ -40,7 +40,7 @@ test('Random Info OS matches the Henry-style Windows desktop and exposes archive
     assert.match(html, new RegExp(`data-folder=["']${folder}["']`), `missing ${folder} shortcut`);
   }
 
-  for (const route of ['./tools/', './school-schedule/', './friends/', './tideborne/', './oldasspolitic/', './wanuiv2/']) {
+  for (const route of ['../tools/', '../school-schedule/', '../friends/', '../tideborne/', '../oldasspolitic/', '../wanuiv2/']) {
     assert.match(app, new RegExp(route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
 
