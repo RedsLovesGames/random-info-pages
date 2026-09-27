@@ -1,0 +1,59 @@
+name: LACUNA ARG CI
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/lacuna-source.part*.b64'
+      - 'scripts/lacuna-runtime/**'
+      - 'scripts/win95-overrides/**'
+      - 'scripts/import-henry-win95.ps1'
+      - 'scripts/lacuna_browser_smoke.mjs'
+      - 'scripts/lacuna_local_verify.ps1'
+      - '.github/workflows/lacuna-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: computer-src/package-lock.json
+      - name: Install computer dependencies
+        working-directory: computer-src
+        run: npm ci
+      - name: Import and build Random Info OS with LACUNA
+        shell: pwsh
+        run: ./scripts/import-henry-win95.ps1
+      - name: Run LACUNA unit and integration contracts
+        run: node --test scripts/lacuna-runtime/tests/*.test.mjs
+      - name: Install Chromium smoke dependency
+        working-directory: computer-src
+        run: |
+          npm install --no-save --package-lock=false playwright@1.59.1
+          npx playwright install --with-deps chromium
+      - name: Stage Pages-prefix smoke site
+        run: |
+          rm -rf _computer-smoke-site
+          mkdir -p _computer-smoke-site/random-info-pages/computer _computer-smoke-site/random-info-pages/os _computer-smoke-site/random-info-pages/tools
+          cp -a computer-src/public/. _computer-smoke-site/random-info-pages/computer/
+          cp -a os-src/build/. _computer-smoke-site/random-info-pages/os/
+          cp -a tools/. _computer-smoke-site/random-info-pages/tools/
+      - name: Run LACUNA and existing computer browser smoke
+        env:
+          LACUNA_SMOKE_URL: http://127.0.0.1:4173/random-info-pages
+          COMPUTER_SMOKE_URL: http://127.0.0.1:4173/random-info-pages
+          SKIP_KEY_BRIDGE: '1'
+        run: |
+          node scripts/lacuna_static_server.mjs _computer-smoke-site 4173 >/tmp/lacuna-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..20}; do curl --fail --silent http://127.0.0.1:4173/random-info-pages/os/ >/dev/null && break; sleep 0.25; done
+          node scripts/lacuna_browser_smoke.mjs
+          node scripts/computer_browser_smoke.mjs
