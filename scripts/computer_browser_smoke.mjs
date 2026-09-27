@@ -68,7 +68,7 @@ async function assertDesktopExperience(browser) {
   assert.equal(await frame.title(), 'Random Info OS', 'monitor iframe must expose Random Info OS');
 
   await frame.getByText('Start', { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
-  await frame.getByText('Random Info Explorer', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 });
+  await frame.getByRole('button', { name: /Tools$/ }).waitFor({ state: 'visible', timeout: 15000 });
 
   const requiredFolders = ['Tools', 'School', 'Friends', 'Games', 'Data', 'Experiments'];
   for (const folder of requiredFolders) {
