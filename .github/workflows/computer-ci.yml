@@ -17,6 +17,7 @@ on:
       - 'scripts/import-henry-win95.ps1'
       - 'scripts/win95-overrides/**'
       - '.github/workflows/computer-ci.yml'
+      - '.github/workflows/lacuna-ci.yml'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
