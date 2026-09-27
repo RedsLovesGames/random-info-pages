@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Webamp</title>
+  <style>
+    html,body,#app{width:100%;height:100%;margin:0;overflow:hidden;background:#111;color:#ddd;font-family:Arial,sans-serif}
+    #app{position:relative}
+    #controls{position:absolute;z-index:100000;left:8px;bottom:8px;display:flex;align-items:center;gap:8px;padding:6px;background:#c0c0c0;color:#000;border:2px outset #fff;font-size:11px}
+    #status{max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    label{cursor:pointer;padding:3px 7px;border:2px outset #fff;background:#c0c0c0}
+    input{display:none}
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="controls"><label>Load audio<input id="audio-files" type="file" accept="audio/*" multiple></label><span id="status">Loading Webamp…</span></div>
+  <script type="module">
+    const status = document.getElementById('status');
+    try {
+      const { default: Webamp } = await import('https://unpkg.com/webamp@^2');
+      const webamp = new Webamp({});
+      await webamp.renderWhenReady(document.getElementById('app'));
+      status.textContent = 'Drop files on Webamp or use Load audio.';
+      document.getElementById('audio-files').addEventListener('change', (event) => {
+        const files = Array.from(event.target.files || []);
+        if (!files.length) return;
+        webamp.setTracksToPlay(files.map((file) => ({ blob: file, defaultName: file.name })));
+        status.textContent = `${files.length} local track${files.length === 1 ? '' : 's'} loaded`;
+        event.target.value = '';
+      });
+    } catch (error) {
+      status.textContent = 'Webamp could not load. Check the network connection.';
+      console.error(error);
+    }
+  </script>
+</body>
+</html>

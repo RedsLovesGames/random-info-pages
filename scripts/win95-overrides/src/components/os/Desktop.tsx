@@ -2,11 +2,24 @@ import React, { useCallback, useMemo, useState } from 'react';
 import Colors from '../../constants/colors';
 import Calculator from '../applications/core/Calculator';
 import Game2048 from '../applications/core/Game2048';
+import JsPaint from '../applications/core/JsPaint';
 import Minesweeper from '../applications/core/Minesweeper';
 import Notepad from '../applications/core/Notepad';
+import PixelEditor from '../applications/core/PixelEditor';
 import ReactionTest from '../applications/core/ReactionTest';
+import SandSimulator from '../applications/core/SandSimulator';
 import Snake from '../applications/core/Snake';
-import { CoreAppDefinition } from '../applications/CoreAppCatalog';
+import StickyNotes from '../applications/core/StickyNotes';
+import TimerApp from '../applications/core/TimerApp';
+import WebampPlayer from '../applications/core/WebampPlayer';
+import {
+    CORE_APPS,
+    LEGACY_GAMES,
+    CoreAppDefinition,
+    CoreAppKey,
+    LegacyGameKey,
+    getCoreApp,
+} from '../applications/CoreAppCatalog';
 import CoreAppsExplorer from '../applications/CoreAppsExplorer';
 import Doom from '../applications/Doom';
 import EmbeddedSite from '../applications/EmbeddedSite';
@@ -18,56 +31,41 @@ import Scrabble from '../applications/Scrabble';
 import { IconName } from '../../assets/icons';
 import DesktopShortcut, { DesktopShortcutProps } from './DesktopShortcut';
 import ShutdownSequence from './ShutdownSequence';
-import Toolbar from './Toolbar';
+import Toolbar, { StartMenuItem } from './Toolbar';
 
 export interface DesktopProps {}
 
-type StaticAppKey = 'explorer' | 'core' | 'trail' | 'doom' | 'scrabble' | 'wordle';
+type FolderKey = 'explorer' | 'accessories' | 'games';
 
-type StaticApp = {
-    key: StaticAppKey;
-    name: string;
-    shortcutIcon: IconName;
+type FolderDefinition = {
+    key: FolderKey;
+    title: string;
+    icon: IconName;
 };
 
-const STATIC_APPS: StaticApp[] = [
-    {
-        key: 'explorer',
-        name: 'Random Info Explorer',
-        shortcutIcon: 'showcaseIcon',
-    },
-    {
-        key: 'core',
-        name: 'Core Apps',
-        shortcutIcon: 'showcaseIcon',
-    },
-    {
-        key: 'trail',
-        name: 'The Oregon Trail',
-        shortcutIcon: 'trailIcon',
-    },
-    {
-        key: 'doom',
-        name: 'Doom',
-        shortcutIcon: 'doomIcon',
-    },
-    {
-        key: 'scrabble',
-        name: 'Scrabble',
-        shortcutIcon: 'scrabbleIcon',
-    },
-    {
-        key: 'wordle',
-        name: 'RIP Wordle',
-        shortcutIcon: 'henordleIcon',
-    },
+const FOLDERS: FolderDefinition[] = [
+    { key: 'explorer', title: 'Random Info Explorer', icon: 'showcaseIcon' },
+    { key: 'accessories', title: 'Accessories', icon: 'folderAccessories' },
+    { key: 'games', title: 'Games', icon: 'folderGames' },
 ];
 
+const CORE_COMPONENTS: Record<CoreAppKey, React.ComponentType<WindowAppProps>> = {
+    calculator: Calculator,
+    notepad: Notepad,
+    paint: JsPaint,
+    winamp: WebampPlayer,
+    sticky: StickyNotes,
+    timer: TimerApp,
+    pixel: PixelEditor,
+    minesweeper: Minesweeper,
+    snake: Snake,
+    '2048': Game2048,
+    reaction: ReactionTest,
+    sand: SandSimulator,
+};
+
 const highestZIndex = (windows: DesktopWindows): number =>
-    Object.keys(windows).reduce(
-        (highest, key) => Math.max(highest, windows[key]?.zIndex || 0),
-        0
-    );
+    Object.keys(windows).reduce((highest, key) => Math.max(highest, windows[key]?.zIndex || 0), 0);
 
 const Desktop: React.FC<DesktopProps> = () => {
     const [windows, setWindows] = useState<DesktopWindows>({});
@@ -86,30 +84,14 @@ const Desktop: React.FC<DesktopProps> = () => {
     }, []);
 
     const minimizeWindow = useCallback((key: string) => {
-        setWindows((previous) => {
-            if (!previous[key]) return previous;
-            return {
-                ...previous,
-                [key]: {
-                    ...previous[key],
-                    minimized: true,
-                },
-            };
-        });
+        setWindows((previous) => previous[key] ? { ...previous, [key]: { ...previous[key], minimized: true } } : previous);
     }, []);
 
     const onWindowInteract = useCallback((key: string) => {
-        setWindows((previous) => {
-            if (!previous[key]) return previous;
-            return {
-                ...previous,
-                [key]: {
-                    ...previous[key],
-                    minimized: false,
-                    zIndex: highestZIndex(previous) + 1,
-                },
-            };
-        });
+        setWindows((previous) => previous[key] ? {
+            ...previous,
+            [key]: { ...previous[key], minimized: false, zIndex: highestZIndex(previous) + 1 },
+        } : previous);
     }, []);
 
     const toggleMinimize = useCallback((key: string) => {
@@ -118,165 +100,89 @@ const Desktop: React.FC<DesktopProps> = () => {
             const highest = highestZIndex(previous);
             const current = previous[key];
             const shouldToggle = current.minimized || current.zIndex === highest;
-            return {
-                ...previous,
-                [key]: {
-                    ...current,
-                    minimized: shouldToggle ? !current.minimized : false,
-                    zIndex: highest + 1,
-                },
-            };
+            return { ...previous, [key]: { ...current, minimized: shouldToggle ? !current.minimized : false, zIndex: highest + 1 } };
         });
     }, []);
 
-    const addWindow = useCallback(
-        (
-            key: string,
-            name: string,
-            icon: IconName,
-            component: React.ReactElement
-        ) => {
-            setWindows((previous) => ({
-                ...previous,
-                [key]: {
-                    zIndex: highestZIndex(previous) + 1,
-                    minimized: false,
-                    component,
-                    name,
-                    icon,
-                },
-            }));
-        },
-        []
-    );
+    const addWindow = useCallback((key: string, name: string, icon: IconName, component: React.ReactElement) => {
+        setWindows((previous) => ({
+            ...previous,
+            [key]: { zIndex: highestZIndex(previous) + 1, minimized: false, component, name, icon },
+        }));
+    }, []);
 
-    const openRandomInfoApp = useCallback(
-        (app: RandomInfoApp) => {
-            const key = `rip:${app.key}`;
-            addWindow(
-                key,
-                app.title,
-                'windowExplorerIcon',
-                <EmbeddedSite
+    const openRandomInfoApp = useCallback((app: RandomInfoApp) => {
+        const key = `rip:${app.key}`;
+        addWindow(key, app.title, 'windowExplorerIcon', <EmbeddedSite key={key} app={app} onInteract={() => onWindowInteract(key)} onMinimize={() => minimizeWindow(key)} onClose={() => removeWindow(key)} />);
+    }, [addWindow, minimizeWindow, onWindowInteract, removeWindow]);
+
+    const openCoreApp = useCallback((app: CoreAppDefinition) => {
+        const key = `core:${app.key}`;
+        const Component = CORE_COMPONENTS[app.key];
+        addWindow(key, app.title, app.icon, <Component key={key} onInteract={() => onWindowInteract(key)} onMinimize={() => minimizeWindow(key)} onClose={() => removeWindow(key)} />);
+    }, [addWindow, minimizeWindow, onWindowInteract, removeWindow]);
+
+    const openLegacyGame = useCallback((gameKey: LegacyGameKey) => {
+        const game = LEGACY_GAMES.find((candidate) => candidate.key === gameKey);
+        if (!game) return;
+        const key = `legacy:${game.key}`;
+        const lifecycle = { onInteract: () => onWindowInteract(key), onMinimize: () => minimizeWindow(key), onClose: () => removeWindow(key) };
+        let component: React.ReactElement;
+        switch (game.key) {
+            case 'doom': component = <Doom key={key} {...lifecycle} />; break;
+            case 'trail': component = <OregonTrail key={key} {...lifecycle} />; break;
+            case 'scrabble': component = <Scrabble key={key} {...lifecycle} />; break;
+            case 'wordle': component = <Henordle key={key} {...lifecycle} />; break;
+            default: return;
+        }
+        addWindow(key, game.title, game.icon, component);
+    }, [addWindow, minimizeWindow, onWindowInteract, removeWindow]);
+
+    const openFolder = useCallback((folderKey: FolderKey) => {
+        const folder = FOLDERS.find((candidate) => candidate.key === folderKey);
+        if (!folder) return;
+        const key = `folder:${folder.key}`;
+        const lifecycle = { onInteract: () => onWindowInteract(key), onMinimize: () => minimizeWindow(key), onClose: () => removeWindow(key) };
+        let component: React.ReactElement;
+        if (folder.key === 'explorer') {
+            component = <RandomInfoExplorer key={key} {...lifecycle} onLaunchApp={openRandomInfoApp} />;
+        } else {
+            component = (
+                <CoreAppsExplorer
                     key={key}
-                    app={app}
-                    onInteract={() => onWindowInteract(key)}
-                    onMinimize={() => minimizeWindow(key)}
-                    onClose={() => removeWindow(key)}
+                    {...lifecycle}
+                    category={folder.key === 'games' ? 'Games' : 'Accessories'}
+                    onLaunchApp={openCoreApp}
+                    onLaunchLegacyGame={openLegacyGame}
                 />
             );
-        },
-        [addWindow, minimizeWindow, onWindowInteract, removeWindow]
-    );
+        }
+        addWindow(key, folder.title, folder.icon, component);
+    }, [addWindow, minimizeWindow, onWindowInteract, openCoreApp, openLegacyGame, openRandomInfoApp, removeWindow]);
 
-    const openCoreApp = useCallback(
-        (app: CoreAppDefinition) => {
-            const key = `core:${app.key}`;
-            const lifecycle = {
-                onInteract: () => onWindowInteract(key),
-                onMinimize: () => minimizeWindow(key),
-                onClose: () => removeWindow(key),
-            };
-            let component: React.ReactElement;
-            switch (app.key) {
-                case 'calculator':
-                    component = <Calculator key={key} {...lifecycle} />;
-                    break;
-                case 'notepad':
-                    component = <Notepad key={key} {...lifecycle} />;
-                    break;
-                case 'minesweeper':
-                    component = <Minesweeper key={key} {...lifecycle} />;
-                    break;
-                case 'snake':
-                    component = <Snake key={key} {...lifecycle} />;
-                    break;
-                case '2048':
-                    component = <Game2048 key={key} {...lifecycle} />;
-                    break;
-                case 'reaction':
-                    component = <ReactionTest key={key} {...lifecycle} />;
-                    break;
-                default:
-                    return;
-            }
-            addWindow(key, app.title, 'windowExplorerIcon', component);
-        },
-        [addWindow, minimizeWindow, onWindowInteract, removeWindow]
-    );
+    const shortcuts = useMemo<DesktopShortcutProps[]>(() => [
+        ...FOLDERS.map((folder) => ({ shortcutName: folder.title, icon: folder.icon, onOpen: () => openFolder(folder.key) })),
+        { shortcutName: 'Doom', icon: 'doomIcon', onOpen: () => openLegacyGame('doom') },
+    ], [openFolder, openLegacyGame]);
 
-    const openStaticApp = useCallback(
-        (appKey: StaticAppKey) => {
-            const app = STATIC_APPS.find((candidate) => candidate.key === appKey);
-            if (!app) return;
+    const startItems = useMemo<StartMenuItem[]>(() => {
+        const launchCore = (key: CoreAppKey) => {
+            const app = getCoreApp(key);
+            if (app) openCoreApp(app);
+        };
+        return [
+            { label: 'Accessories', icon: 'folderAccessories', onOpen: () => openFolder('accessories') },
+            { label: 'Games', icon: 'folderGames', onOpen: () => openFolder('games') },
+            { label: 'Paint', icon: 'paintIcon', onOpen: () => launchCore('paint') },
+            { label: 'Winamp', icon: 'winampIcon', onOpen: () => launchCore('winamp') },
+            { label: 'Notepad', icon: 'windowExplorerIcon', onOpen: () => launchCore('notepad') },
+            { label: 'Sticky Notes', icon: 'stickyIcon', onOpen: () => launchCore('sticky') },
+            { label: 'Timer / Stopwatch', icon: 'timerIcon', onOpen: () => launchCore('timer') },
+            { label: 'Doom', icon: 'doomIcon', onOpen: () => openLegacyGame('doom') },
+        ];
+    }, [openCoreApp, openFolder, openLegacyGame]);
 
-            const lifecycle = {
-                onInteract: () => onWindowInteract(app.key),
-                onMinimize: () => minimizeWindow(app.key),
-                onClose: () => removeWindow(app.key),
-            };
-
-            let component: React.ReactElement;
-            switch (app.key) {
-                case 'explorer':
-                    component = (
-                        <RandomInfoExplorer
-                            key={app.key}
-                            {...lifecycle}
-                            onLaunchApp={openRandomInfoApp}
-                        />
-                    );
-                    break;
-                case 'core':
-                    component = (
-                        <CoreAppsExplorer
-                            key={app.key}
-                            {...lifecycle}
-                            onLaunchApp={openCoreApp}
-                        />
-                    );
-                    break;
-                case 'trail':
-                    component = <OregonTrail key={app.key} {...lifecycle} />;
-                    break;
-                case 'doom':
-                    component = <Doom key={app.key} {...lifecycle} />;
-                    break;
-                case 'scrabble':
-                    component = <Scrabble key={app.key} {...lifecycle} />;
-                    break;
-                case 'wordle':
-                    component = <Henordle key={app.key} {...lifecycle} />;
-                    break;
-                default:
-                    return;
-            }
-
-            addWindow(app.key, app.name, app.shortcutIcon, component);
-        },
-        [
-            addWindow,
-            minimizeWindow,
-            onWindowInteract,
-            openCoreApp,
-            openRandomInfoApp,
-            removeWindow,
-        ]
-    );
-
-    const shortcuts = useMemo<DesktopShortcutProps[]>(
-        () =>
-            STATIC_APPS.map((app) => ({
-                shortcutName: app.name,
-                icon: app.shortcutIcon,
-                onOpen: () => openStaticApp(app.key),
-            })),
-        [openStaticApp]
-    );
-
-    React.useEffect(() => {
-        openStaticApp('explorer');
-    }, [openStaticApp]);
+    React.useEffect(() => { openFolder('explorer'); }, [openFolder]);
 
     const startShutdown = useCallback(() => {
         setTimeout(() => {
@@ -286,14 +192,7 @@ const Desktop: React.FC<DesktopProps> = () => {
         }, 600);
     }, []);
 
-    if (shutdown) {
-        return (
-            <ShutdownSequence
-                setShutdown={setShutdown}
-                numShutdowns={numShutdowns}
-            />
-        );
-    }
+    if (shutdown) return <ShutdownSequence setShutdown={setShutdown} numShutdowns={numShutdowns} />;
 
     return (
         <div style={styles.desktop}>
@@ -301,64 +200,28 @@ const Desktop: React.FC<DesktopProps> = () => {
                 const element = windows[key].component;
                 if (!element) return null;
                 return (
-                    <div
-                        key={`win-${key}`}
-                        style={Object.assign(
-                            {},
-                            { zIndex: windows[key].zIndex },
-                            windows[key].minimized && styles.minimized
-                        )}
-                    >
-                        {React.cloneElement(element, {
-                            onInteract: () => onWindowInteract(key),
-                            onMinimize: () => minimizeWindow(key),
-                            onClose: () => removeWindow(key),
-                        })}
+                    <div key={`win-${key}`} style={Object.assign({}, { zIndex: windows[key].zIndex }, windows[key].minimized && styles.minimized)}>
+                        {React.cloneElement(element, { onInteract: () => onWindowInteract(key), onMinimize: () => minimizeWindow(key), onClose: () => removeWindow(key) })}
                     </div>
                 );
             })}
-
             <div style={styles.shortcuts}>
                 {shortcuts.map((shortcut, index) => (
-                    <div
-                        style={Object.assign({}, styles.shortcutContainer, {
-                            top: index * 104,
-                        })}
-                        key={shortcut.shortcutName}
-                    >
+                    <div style={Object.assign({}, styles.shortcutContainer, { top: index * 104 })} key={shortcut.shortcutName}>
                         <DesktopShortcut {...shortcut} />
                     </div>
                 ))}
             </div>
-
-            <Toolbar
-                windows={windows}
-                toggleMinimize={toggleMinimize}
-                shutdown={startShutdown}
-            />
+            <Toolbar windows={windows} toggleMinimize={toggleMinimize} shutdown={startShutdown} startItems={startItems} />
         </div>
     );
 };
 
 const styles: StyleSheetCSS = {
-    desktop: {
-        minHeight: '100%',
-        flex: 1,
-        backgroundColor: Colors.turquoise,
-        overflow: 'hidden',
-    },
-    shortcutContainer: {
-        position: 'absolute',
-    },
-    shortcuts: {
-        position: 'absolute',
-        top: 16,
-        left: 6,
-    },
-    minimized: {
-        pointerEvents: 'none',
-        opacity: 0,
-    },
+    desktop: { minHeight: '100%', flex: 1, backgroundColor: Colors.turquoise, overflow: 'hidden' },
+    shortcutContainer: { position: 'absolute' },
+    shortcuts: { position: 'absolute', top: 16, left: 6 },
+    minimized: { pointerEvents: 'none', opacity: 0 },
 };
 
 export default Desktop;
