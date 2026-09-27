@@ -79,10 +79,12 @@ function Build-LacunaRuntime {
     $dist = Join-Path $RepoRoot 'scripts/lacuna-runtime/dist'
     $css = Join-Path $RepoRoot 'scripts/lacuna-runtime/lacuna.css'
     $publicTarget = Join-Path $OsSrc 'public/lacuna'
-    $localTsc = Join-Path $OsSrc 'node_modules/.bin/tsc.cmd'
+    $localTscUnix = Join-Path $OsSrc 'node_modules/.bin/tsc'
+    $localTscWindows = Join-Path $OsSrc 'node_modules/.bin/tsc.cmd'
+    $localTsc = if (Test-Path $localTscUnix -PathType Leaf) { $localTscUnix } elseif (Test-Path $localTscWindows -PathType Leaf) { $localTscWindows } else { $null }
 
     if (-not (Test-Path $tsconfig -PathType Leaf)) { throw "LACUNA runtime tsconfig missing: $tsconfig" }
-    if (Test-Path $localTsc -PathType Leaf) {
+    if ($localTsc) {
         & $localTsc -p $tsconfig
     } elseif (Get-Command tsc -ErrorAction SilentlyContinue) {
         tsc -p $tsconfig
@@ -136,6 +138,7 @@ try {
     if (Test-Path $OsSrc) { Remove-Item $OsSrc -Recurse -Force }
     New-Item -ItemType Directory -Force -Path $OsSrc | Out-Null
 
+    # Root build configuration. The package lock is kept exactly as upstream for reproducibility.
     @(
         '.prettierrc',
         'package.json',
@@ -164,6 +167,7 @@ try {
         'src/components/applications/Henordle.tsx'
     ) | ForEach-Object { Copy-RelativeFile $_ }
 
+    # Authentic OS/window manager and the retained game/runtime code.
     @(
         'src/components/os',
         'src/components/dos',
@@ -173,19 +177,31 @@ try {
         'public/js-dos'
     ) | ForEach-Object { Copy-RelativeTree $_ }
 
+    # DOS bundles are binaries, so this local importer is intentionally responsible for them.
     @(
         'public/doom.jsdos',
         'public/trail.jsdos',
         'public/scrabble.jsdos'
     ) | ForEach-Object { Copy-RelativeFile $_ }
 
+    # Explicitly excluded personal portfolio content. These paths are documented here so the
+    # import contract can prove they are intentionally omitted rather than accidentally lost:
+    # src/components/showcase
+    # src/assets/pictures
+    # src/assets/audio
+    # src/assets/resume
+    # src/components/applications/ShowcaseExplorer.tsx
+    # src/components/applications/Credits.tsx
+
     Overlay-Tree $Overrides $OsSrc
 
+    # Rebrand remaining upstream shell strings without altering the authentic window mechanics.
     $toolbar = Join-Path $OsSrc 'src/components/os/Toolbar.tsx'
     $toolbarText = Get-Content $toolbar -Raw
     $toolbarText = $toolbarText.Replace('HeffernanOS', 'Random Info OS')
     Set-Content -Path $toolbar -Value $toolbarText -Encoding utf8
 
+    # Convert the original personal Henordle copy into a neutral RIP Wordle while retaining its game code.
     $wordle = Join-Path $OsSrc 'src/components/wordle/Wordle.tsx'
     $wordleText = Get-Content $wordle -Raw
     $wordleText = $wordleText.Replace("const word = 'HENRY';", "const word = 'TOOLS';")
@@ -195,9 +211,15 @@ try {
     $wordleText = $wordleText.Replace('<p>Thanks for playing! Remember: the word is always "HENRY"!</p>', '<p>Thanks for playing. The answer is shown below.</p>')
     Set-Content -Path $wordle -Value $wordleText -Encoding utf8
 
+    # Keep the imported CRA bundle location-independent. Relative build URLs work at /os/ in
+    # local smoke tests and under /random-info-pages/os/ on GitHub Pages without a second build.
     $packagePath = Join-Path $OsSrc 'package.json'
     $package = Get-Content $packagePath -Raw | ConvertFrom-Json
     $package.name = 'random-info-os'
+    # The pinned upstream package.json was changed after its lock was generated: it asks for
+    # react-router ^6.22.3 while the committed lock intentionally contains 6.2.2. Align the
+    # package spec with the locked version so npm ci remains a true clean install without
+    # regenerating or floating the dependency graph.
     $package.dependencies.'react-router' = '6.2.2'
     if ($package.PSObject.Properties.Name -contains 'homepage') {
         $package.homepage = '.'
@@ -206,6 +228,7 @@ try {
     }
     $package | ConvertTo-Json -Depth 20 | Set-Content -Path $packagePath -Encoding utf8
 
+    # Fail closed if user-facing personal branding survived the selective import/override pass.
     $forbidden = Get-ChildItem $OsSrc -Recurse -File -Include *.ts,*.tsx,*.css,*.html,*.json |
         Select-String -Pattern 'Henry Heffernan|HeffernanOS|My Showcase'
     if ($forbidden) {
