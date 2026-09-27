@@ -77,7 +77,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ windows, toggleMinimize, shutdown, st
             )}
             <div style={styles.toolbarInner}>
                 <div style={styles.toolbar}>
-                    <div style={Object.assign({}, styles.startContainerOuter, startWindowOpen && styles.activeTabOuter)} onMouseDown={(event) => { event.stopPropagation(); setStartWindowOpen((value) => !value); }}>
+                    <div id="random-info-start-button" data-rip-role="start-button" style={Object.assign({}, styles.startContainerOuter, startWindowOpen && styles.activeTabOuter)} onMouseDown={(event) => { event.stopPropagation(); setStartWindowOpen((value) => !value); }}>
                         <div style={Object.assign({}, styles.startContainer, startWindowOpen && styles.activeTabInner)}>
                             <Icon size={18} icon="windowsStartIcon" style={styles.startIcon} />
                             <p className="toolbar-text">Start</p>
