@@ -9,6 +9,7 @@ on:
       - 'scripts/lacuna-source.part*.b64'
       - 'scripts/lacuna-hotfix/**'
       - 'scripts/import-henry-win95.ps1'
+      - 'scripts/lacuna-assisted-overlay.zip'
 
 permissions:
   contents: read
@@ -28,11 +29,13 @@ jobs:
       - name: Expand LACUNA source
         shell: pwsh
         run: ./scripts/import-henry-win95.ps1 -SkipBuild
-      - name: Upload expanded sources
+      - name: Upload working sources
         uses: actions/upload-artifact@v4
         with:
-          name: lacuna-expanded-source
+          name: lacuna-working-source
           path: |
             scripts/lacuna-runtime
             scripts/win95-overrides/src/arg
+            scripts/import-henry-win95.ps1
+            .github/workflows/lacuna-ci.yml
           if-no-files-found: error
