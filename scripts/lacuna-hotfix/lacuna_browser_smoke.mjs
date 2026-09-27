@@ -73,8 +73,14 @@ async function verifyArg(browser) {
     await api.store.event({ type:'file-opened', target:'c-crosswalk' });
   });
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('rip-lacuna-open-console')));
-  await page.getByText('RECONSTRUCTION SYSTEM', { exact:true }).waitFor();
-  assert.ok(await page.getByText('SUBJECT 00 — [NO IDENTITY]', { exact:true }).count());
+  const lacunaConsole = page.locator('[data-lacuna-window="lacuna-console"]').last();
+  await lacunaConsole.getByText('RECONSTRUCTION SYSTEM', { exact:true }).waitFor();
+  assert.ok(await lacunaConsole.getByText('SUBJECT 00 — [NO IDENTITY]', { exact:true }).count());
+
+  // Follow the same z-order interaction a real player would use instead of clicking through
+  // the foreground console. This keeps the smoke sensitive to window-management regressions.
+  await lacunaConsole.getByRole('button', { name:'Close' }).click();
+  await lacunaConsole.waitFor({ state:'detached' });
 
   await computer.getByRole('button', { name:'Disk Utility' }).click();
   const disk = page.locator('.lac-window', { hasText:'Disk Image Utility' }).last();
