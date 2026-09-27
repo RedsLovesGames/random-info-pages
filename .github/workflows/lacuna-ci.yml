@@ -31,6 +31,9 @@ jobs:
       - name: Install computer dependencies
         working-directory: computer-src
         run: npm ci
+      - name: Build computer experience
+        working-directory: computer-src
+        run: npm run build
       - name: Import and build Random Info OS with LACUNA
         shell: pwsh
         run: ./scripts/import-henry-win95.ps1
