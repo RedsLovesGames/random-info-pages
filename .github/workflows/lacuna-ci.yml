@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/lacuna-source.part*.b64'
       - 'scripts/lacuna-runtime/**'
+      - 'scripts/lacuna-hotfix/**'
       - 'scripts/win95-overrides/**'
       - 'scripts/import-henry-win95.ps1'
       - 'scripts/lacuna_browser_smoke.mjs'
