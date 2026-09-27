@@ -15,7 +15,9 @@ const PixelEditor: React.FC<WindowAppProps> = (props) => {
     const [color, setColor] = useState('#000000');
     const painting = useRef(false);
 
-    useEffect(() => saveLocal(STORAGE_KEY, pixels), [pixels]);
+    useEffect(() => {
+        saveLocal(STORAGE_KEY, pixels);
+    }, [pixels]);
     useEffect(() => {
         const stop = () => { painting.current = false; };
         window.addEventListener('pointerup', stop);
