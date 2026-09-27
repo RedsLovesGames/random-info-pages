@@ -62,6 +62,25 @@ test('reaction history stores newest attempts first and limits history', async (
   assert.deepEqual(history, [210, 240, 260, 280, 300]);
 });
 
+test('storage helper degrades safely when storage is unavailable or malformed', async () => {
+  const { loadLocal, saveLocal } = await importSource(
+    'scripts/win95-overrides/src/components/applications/core/logic/storage.js'
+  );
+
+  const broken = {
+    getItem() { throw new Error('blocked'); },
+    setItem() { throw new Error('blocked'); },
+  };
+  assert.deepEqual(loadLocal('x', { ok: true }, broken), { ok: true });
+  assert.equal(saveLocal('x', 3, broken), false);
+
+  const malformed = {
+    getItem() { return '{bad json'; },
+    setItem() {},
+  };
+  assert.equal(loadLocal('x', 42, malformed), 42);
+});
+
 test('minesweeper board always protects the first clicked cell', async () => {
   const { createBoard, toggleFlag } = await importSource(
     'scripts/win95-overrides/src/components/applications/core/logic/minesweeper.js'
