@@ -7,6 +7,7 @@ on:
       - 'scripts/lacuna-source.part*.b64'
       - 'scripts/lacuna-runtime/**'
       - 'scripts/lacuna-hotfix/**'
+      - 'scripts/lacuna-assisted-overlay.zip'
       - 'scripts/win95-overrides/**'
       - 'scripts/import-henry-win95.ps1'
       - 'scripts/lacuna_browser_smoke.mjs'
@@ -62,4 +63,5 @@ jobs:
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           for attempt in {1..20}; do curl --fail --silent http://127.0.0.1:4173/random-info-pages/os/ >/dev/null && break; sleep 0.25; done
           node scripts/lacuna_browser_smoke.mjs
+          node scripts/lacuna_assistance_browser_smoke.mjs
           node scripts/computer_browser_smoke.mjs

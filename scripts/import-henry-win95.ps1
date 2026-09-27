@@ -20,6 +20,8 @@ $Manifest = Join-Path $OsSrc 'IMPORT_MANIFEST.md'
 $LacunaBundleDir = Join-Path $RepoRoot 'scripts'
 $LacunaBundleSha256 = 'e4ec1b88f4ff84940291003a81f21b514e007760378f049991fb60f6b9cbaf21'
 $LacunaHotfixDir = Join-Path $RepoRoot 'scripts/lacuna-hotfix'
+$LacunaAssistanceOverlay = Join-Path $RepoRoot 'scripts/lacuna-assisted-overlay.zip'
+$LacunaAssistanceOverlaySha256 = '0a2f424c13de7dc87635165515fbf912b2c256b51d00f7559d01c4fe31e465d4'
 
 function Expand-LacunaBundle {
     $runtimeTsconfig = Join-Path $RepoRoot 'scripts/lacuna-runtime/tsconfig.json'
@@ -53,6 +55,16 @@ function Overlay-LacunaHotfix {
         Copy-Item $_.FullName $target -Force
     }
     Write-Host 'Applied LACUNA hotfix overlay.'
+}
+
+function Expand-LacunaAssistanceOverlay {
+    if (-not (Test-Path $LacunaAssistanceOverlay -PathType Leaf)) { return }
+    $actualSha = (Get-FileHash -Algorithm SHA256 -Path $LacunaAssistanceOverlay).Hash.ToLowerInvariant()
+    if ($actualSha -ne $LacunaAssistanceOverlaySha256) {
+        throw "LACUNA assisted overlay checksum mismatch. Expected $LacunaAssistanceOverlaySha256, got $actualSha."
+    }
+    Expand-Archive -Path $LacunaAssistanceOverlay -DestinationPath $RepoRoot -Force
+    Write-Host 'Applied LACUNA assisted-mode overlay.'
 }
 
 function Assert-Command([string]$Name) {
@@ -137,6 +149,7 @@ try {
     New-Item -ItemType Directory -Force -Path $TempRoot | Out-Null
     Expand-LacunaBundle
     Overlay-LacunaHotfix
+    Expand-LacunaAssistanceOverlay
     git clone --quiet --filter=blob:none --no-checkout $SourceRepo $Upstream
     if ($LASTEXITCODE -ne 0) { throw 'git clone failed.' }
 
