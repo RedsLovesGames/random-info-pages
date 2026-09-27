@@ -22,15 +22,14 @@ test('Command Prompt preserves terminal lines instead of breaking at arbitrary c
   assert.doesNotMatch(rule, /word-break:break-word/);
 });
 
-test('Command Prompt renders each output entry as a forced vertical terminal row', () => {
-  const outputRule = css.match(/\.lac-terminal-output\{([^}]*)\}/)?.[1] ?? '';
-  const lineRule = css.match(/\.lac-terminal-line\{([^}]*)\}/)?.[1] ?? '';
-  assert.match(outputRule, /display:flex/);
-  assert.match(outputRule, /flex-direction:column/);
-  assert.match(outputRule, /align-items:flex-start/);
-  assert.match(lineRule, /display:block/);
-  assert.match(lineRule, /flex:/);
+test('Command Prompt renderer force-stacks each output entry vertically', () => {
   assert.match(terminalSource, /class=\"lac-terminal-line\"/);
+  assert.match(terminalSource, /out\.style\.setProperty\('display',\s*'flex',\s*'important'\)/);
+  assert.match(terminalSource, /out\.style\.setProperty\('flex-direction',\s*'column',\s*'important'\)/);
+  assert.match(terminalSource, /out\.style\.setProperty\('align-items',\s*'flex-start',\s*'important'\)/);
+  assert.match(terminalSource, /querySelectorAll<HTMLElement>\('\.lac-terminal-line'\)/);
+  assert.match(terminalSource, /lineElement\.style\.setProperty\('display',\s*'block',\s*'important'\)/);
+  assert.match(terminalSource, /lineElement\.style\.setProperty\('flex',\s*'0 0 auto',\s*'important'\)/);
 });
 
 test('Disk comparison uses a constrained summary plus two-column evidence layout', () => {
