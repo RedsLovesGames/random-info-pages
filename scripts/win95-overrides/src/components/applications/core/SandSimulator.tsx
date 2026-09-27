@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import CoreAppFrame from './CoreAppFrame';
 import { createSandGrid, stepSand } from './logic/sand';
 
@@ -11,7 +11,7 @@ const SandSimulator: React.FC<WindowAppProps> = (props) => {
     const [running, setRunning] = useState(true);
     const [brush, setBrush] = useState(2);
 
-    const render = () => {
+    const render = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         const context = canvas.getContext('2d');
@@ -22,7 +22,7 @@ const SandSimulator: React.FC<WindowAppProps> = (props) => {
         gridRef.current.forEach((row, y) => row.forEach((cell, x) => {
             if (cell === 1) context.fillRect(x, y, 1, 1);
         }));
-    };
+    }, []);
 
     useEffect(() => {
         render();
@@ -32,7 +32,7 @@ const SandSimulator: React.FC<WindowAppProps> = (props) => {
             render();
         }, 35);
         return () => window.clearInterval(interval);
-    }, [running]);
+    }, [render, running]);
 
     const addSand = (event: React.PointerEvent<HTMLCanvasElement>) => {
         if (event.buttons === 0 && event.type !== 'pointerdown') return;
