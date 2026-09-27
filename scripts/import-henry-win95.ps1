@@ -19,6 +19,7 @@ $Upstream = Join-Path $TempRoot 'portfolio-inner-site'
 $Manifest = Join-Path $OsSrc 'IMPORT_MANIFEST.md'
 $LacunaBundleDir = Join-Path $RepoRoot 'scripts'
 $LacunaBundleSha256 = 'e4ec1b88f4ff84940291003a81f21b514e007760378f049991fb60f6b9cbaf21'
+$LacunaHotfixDir = Join-Path $RepoRoot 'scripts/lacuna-hotfix'
 
 function Expand-LacunaBundle {
     $runtimeTsconfig = Join-Path $RepoRoot 'scripts/lacuna-runtime/tsconfig.json'
@@ -41,6 +42,17 @@ function Expand-LacunaBundle {
         throw 'LACUNA bundle extracted but runtime tsconfig is still missing.'
     }
     Write-Host "Expanded LACUNA source bundle from $($parts.Count) part(s)."
+}
+
+function Overlay-LacunaHotfix {
+    if (-not (Test-Path $LacunaHotfixDir -PathType Container)) { return }
+    Get-ChildItem $LacunaHotfixDir -Recurse -File | ForEach-Object {
+        $relative = $_.FullName.Substring($LacunaHotfixDir.Length).TrimStart('\', '/')
+        $target = Join-Path $LacunaBundleDir $relative
+        New-Item -ItemType Directory -Force -Path (Split-Path $target -Parent) | Out-Null
+        Copy-Item $_.FullName $target -Force
+    }
+    Write-Host 'Applied LACUNA hotfix overlay.'
 }
 
 function Assert-Command([string]$Name) {
@@ -124,6 +136,7 @@ Write-Host "Target deployment: $DeployDir"
 try {
     New-Item -ItemType Directory -Force -Path $TempRoot | Out-Null
     Expand-LacunaBundle
+    Overlay-LacunaHotfix
     git clone --quiet --filter=blob:none --no-checkout $SourceRepo $Upstream
     if ($LASTEXITCODE -ne 0) { throw 'git clone failed.' }
 
