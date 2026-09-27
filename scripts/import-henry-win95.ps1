@@ -17,6 +17,31 @@ $Overrides = Join-Path $RepoRoot 'scripts/win95-overrides'
 $TempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('rip-win95-' + [guid]::NewGuid().ToString('N'))
 $Upstream = Join-Path $TempRoot 'portfolio-inner-site'
 $Manifest = Join-Path $OsSrc 'IMPORT_MANIFEST.md'
+$LacunaBundleDir = Join-Path $RepoRoot 'scripts'
+$LacunaBundleSha256 = 'e4ec1b88f4ff84940291003a81f21b514e007760378f049991fb60f6b9cbaf21'
+
+function Expand-LacunaBundle {
+    $runtimeTsconfig = Join-Path $RepoRoot 'scripts/lacuna-runtime/tsconfig.json'
+    if (Test-Path $runtimeTsconfig -PathType Leaf) { return }
+
+    $parts = Get-ChildItem $LacunaBundleDir -Filter 'lacuna-source.part*.b64' -File | Sort-Object Name
+    if (-not $parts -or $parts.Count -eq 0) {
+        throw 'LACUNA runtime source is missing and no lacuna-source.part*.b64 bundle parts were found.'
+    }
+
+    $bundleZip = Join-Path $TempRoot 'lacuna-source.zip'
+    $encoded = ($parts | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() }) -join ''
+    [System.IO.File]::WriteAllBytes($bundleZip, [System.Convert]::FromBase64String($encoded))
+    $actualSha = (Get-FileHash -Algorithm SHA256 -Path $bundleZip).Hash.ToLowerInvariant()
+    if ($actualSha -ne $LacunaBundleSha256) {
+        throw "LACUNA bundle checksum mismatch. Expected $LacunaBundleSha256, got $actualSha."
+    }
+    Expand-Archive -Path $bundleZip -DestinationPath $RepoRoot -Force
+    if (-not (Test-Path $runtimeTsconfig -PathType Leaf)) {
+        throw 'LACUNA bundle extracted but runtime tsconfig is still missing.'
+    }
+    Write-Host "Expanded LACUNA source bundle from $($parts.Count) part(s)."
+}
 
 function Assert-Command([string]$Name) {
     if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
@@ -49,6 +74,30 @@ function Copy-RelativeTree([string]$RelativePath) {
     }
 }
 
+function Build-LacunaRuntime {
+    $tsconfig = Join-Path $RepoRoot 'scripts/lacuna-runtime/tsconfig.json'
+    $dist = Join-Path $RepoRoot 'scripts/lacuna-runtime/dist'
+    $css = Join-Path $RepoRoot 'scripts/lacuna-runtime/lacuna.css'
+    $publicTarget = Join-Path $OsSrc 'public/lacuna'
+    $localTsc = Join-Path $OsSrc 'node_modules/.bin/tsc.cmd'
+
+    if (-not (Test-Path $tsconfig -PathType Leaf)) { throw "LACUNA runtime tsconfig missing: $tsconfig" }
+    if (Test-Path $localTsc -PathType Leaf) {
+        & $localTsc -p $tsconfig
+    } elseif (Get-Command tsc -ErrorAction SilentlyContinue) {
+        tsc -p $tsconfig
+    } else {
+        throw 'TypeScript compiler unavailable. Run npm ci in os-src or install tsc on PATH.'
+    }
+    if ($LASTEXITCODE -ne 0) { throw 'LACUNA runtime TypeScript compilation failed.' }
+
+    if (Test-Path $publicTarget) { Remove-Item $publicTarget -Recurse -Force }
+    New-Item -ItemType Directory -Force -Path $publicTarget | Out-Null
+    Copy-Item (Join-Path $dist '*') $publicTarget -Recurse -Force
+    Copy-Item $css (Join-Path $publicTarget 'lacuna.css') -Force
+    Write-Host "Staged LACUNA runtime: $publicTarget"
+}
+
 function Overlay-Tree([string]$Source, [string]$Destination) {
     Get-ChildItem $Source -Recurse -File | ForEach-Object {
         $relative = $_.FullName.Substring($Source.Length).TrimStart('\', '/')
@@ -72,6 +121,7 @@ Write-Host "Target deployment: $DeployDir"
 
 try {
     New-Item -ItemType Directory -Force -Path $TempRoot | Out-Null
+    Expand-LacunaBundle
     git clone --quiet --filter=blob:none --no-checkout $SourceRepo $Upstream
     if ($LASTEXITCODE -ne 0) { throw 'git clone failed.' }
 
@@ -86,7 +136,6 @@ try {
     if (Test-Path $OsSrc) { Remove-Item $OsSrc -Recurse -Force }
     New-Item -ItemType Directory -Force -Path $OsSrc | Out-Null
 
-    # Root build configuration. The package lock is kept exactly as upstream for reproducibility.
     @(
         '.prettierrc',
         'package.json',
@@ -115,7 +164,6 @@ try {
         'src/components/applications/Henordle.tsx'
     ) | ForEach-Object { Copy-RelativeFile $_ }
 
-    # Authentic OS/window manager and the retained game/runtime code.
     @(
         'src/components/os',
         'src/components/dos',
@@ -125,31 +173,19 @@ try {
         'public/js-dos'
     ) | ForEach-Object { Copy-RelativeTree $_ }
 
-    # DOS bundles are binaries, so this local importer is intentionally responsible for them.
     @(
         'public/doom.jsdos',
         'public/trail.jsdos',
         'public/scrabble.jsdos'
     ) | ForEach-Object { Copy-RelativeFile $_ }
 
-    # Explicitly excluded personal portfolio content. These paths are documented here so the
-    # import contract can prove they are intentionally omitted rather than accidentally lost:
-    # src/components/showcase
-    # src/assets/pictures
-    # src/assets/audio
-    # src/assets/resume
-    # src/components/applications/ShowcaseExplorer.tsx
-    # src/components/applications/Credits.tsx
-
     Overlay-Tree $Overrides $OsSrc
 
-    # Rebrand remaining upstream shell strings without altering the authentic window mechanics.
     $toolbar = Join-Path $OsSrc 'src/components/os/Toolbar.tsx'
     $toolbarText = Get-Content $toolbar -Raw
     $toolbarText = $toolbarText.Replace('HeffernanOS', 'Random Info OS')
     Set-Content -Path $toolbar -Value $toolbarText -Encoding utf8
 
-    # Convert the original personal Henordle copy into a neutral RIP Wordle while retaining its game code.
     $wordle = Join-Path $OsSrc 'src/components/wordle/Wordle.tsx'
     $wordleText = Get-Content $wordle -Raw
     $wordleText = $wordleText.Replace("const word = 'HENRY';", "const word = 'TOOLS';")
@@ -159,15 +195,9 @@ try {
     $wordleText = $wordleText.Replace('<p>Thanks for playing! Remember: the word is always "HENRY"!</p>', '<p>Thanks for playing. The answer is shown below.</p>')
     Set-Content -Path $wordle -Value $wordleText -Encoding utf8
 
-    # Keep the imported CRA bundle location-independent. Relative build URLs work at /os/ in
-    # local smoke tests and under /random-info-pages/os/ on GitHub Pages without a second build.
     $packagePath = Join-Path $OsSrc 'package.json'
     $package = Get-Content $packagePath -Raw | ConvertFrom-Json
     $package.name = 'random-info-os'
-    # The pinned upstream package.json was changed after its lock was generated: it asks for
-    # react-router ^6.22.3 while the committed lock intentionally contains 6.2.2. Align the
-    # package spec with the locked version so npm ci remains a true clean install without
-    # regenerating or floating the dependency graph.
     $package.dependencies.'react-router' = '6.2.2'
     if ($package.PSObject.Properties.Name -contains 'homepage') {
         $package.homepage = '.'
@@ -176,7 +206,6 @@ try {
     }
     $package | ConvertTo-Json -Depth 20 | Set-Content -Path $packagePath -Encoding utf8
 
-    # Fail closed if user-facing personal branding survived the selective import/override pass.
     $forbidden = Get-ChildItem $OsSrc -Recurse -File -Include *.ts,*.tsx,*.css,*.html,*.json |
         Select-String -Pattern 'Henry Heffernan|HeffernanOS|My Showcase'
     if ($forbidden) {
@@ -213,6 +242,8 @@ try {
             Pop-Location
         }
     }
+
+    Build-LacunaRuntime
 
     if (-not $SkipBuild) {
         Push-Location $OsSrc
