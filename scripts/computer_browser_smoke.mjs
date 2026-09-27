@@ -137,16 +137,23 @@ async function assertDesktopExperience(browser) {
     await page.waitForFunction(() => window.__ripBridgeKeydown === true, { timeout: 5000 });
   }
 
-  const coreShortcut = frame.getByText('Core Apps', { exact: true }).first();
-  await coreShortcut.dblclick({ timeout: 10000 });
-  const calculatorLauncher = frame.getByRole('button', { name: 'Open Calculator', exact: true });
-  await calculatorLauncher.waitFor({ state: 'visible', timeout: 10000 });
-  for (const appName of ['Calculator', 'Notepad', 'Minesweeper', 'Snake', '2048', 'Reaction Test']) {
+  const accessoriesShortcut = frame.locator('#desktop-shortcut-Accessories').first();
+  const gamesShortcut = frame.locator('#desktop-shortcut-Games').first();
+  const doomShortcut = frame.locator('#desktop-shortcut-Doom').first();
+  await accessoriesShortcut.waitFor({ state: 'visible', timeout: 10000 });
+  assert.ok(await gamesShortcut.count(), 'desktop must expose the Games folder');
+  assert.ok(await doomShortcut.count(), 'desktop must retain the working Doom shortcut');
+
+  await accessoriesShortcut.dblclick({ timeout: 10000 });
+  const accessoryApps = ['Calculator', 'Notepad', 'Paint', 'Winamp', 'Sticky Notes', 'Timer / Stopwatch', 'Pixel Editor'];
+  for (const appName of accessoryApps) {
     assert.ok(
       await frame.getByRole('button', { name: `Open ${appName}`, exact: true }).count(),
-      `Core Apps launcher must expose ${appName}`
+      `Accessories must expose ${appName}`
     );
   }
+
+  const calculatorLauncher = frame.getByRole('button', { name: 'Open Calculator', exact: true });
   await calculatorLauncher.click();
   const calculatorDisplay = frame.locator('output[aria-label="Calculator display"]');
   await calculatorDisplay.waitFor({ state: 'visible', timeout: 10000 });
@@ -155,6 +162,26 @@ async function assertDesktopExperience(browser) {
   await frame.getByRole('button', { name: '8', exact: true }).click();
   await frame.getByRole('button', { name: '=', exact: true }).click();
   assert.equal((await calculatorDisplay.textContent())?.trim(), '56', 'Calculator must execute 7 × 8 = 56 inside the CRT OS');
+
+  await frame.getByText('Start', { exact: true }).click();
+  const timerStartItem = frame.getByRole('button', { name: 'Open Timer / Stopwatch', exact: true });
+  await timerStartItem.waitFor({ state: 'visible', timeout: 10000 });
+  await timerStartItem.click();
+  const timerDisplay = frame.locator('output[aria-label="Timer display"]');
+  await timerDisplay.waitFor({ state: 'visible', timeout: 10000 });
+  assert.equal((await timerDisplay.textContent())?.trim(), '00:00.0', 'Timer must open from the Start menu with a reset display');
+
+  await frame.getByText('Start', { exact: true }).click();
+  const gamesStartItem = frame.getByRole('button', { name: 'Open Games', exact: true });
+  await gamesStartItem.waitFor({ state: 'visible', timeout: 10000 });
+  await gamesStartItem.click();
+  const gameApps = ['Minesweeper', 'Snake', '2048', 'Reaction Test', 'Sand Simulator', 'Doom', 'The Oregon Trail', 'Scrabble', 'RIP Wordle'];
+  for (const gameName of gameApps) {
+    assert.ok(
+      await frame.getByRole('button', { name: `Open ${gameName}`, exact: true }).count(),
+      `Games must expose ${gameName}`
+    );
+  }
 
   await page.waitForTimeout(500);
   assert.deepEqual(diagnostics.criticalFailures, [], `critical assets failed: ${diagnostics.criticalFailures.join(', ')}`);
