@@ -35,6 +35,21 @@ async function verifyArg(browser) {
   // Recycle Bin vertical-slice recovery.
   const recycle = page.locator('[data-lacuna-app="recycle-bin"]');
   await recycle.dblclick();
+  const recycleRows = page.locator('.lac-recycle-row');
+  const recycleGeometry = await recycleRows.evaluateAll((rows) => rows.slice(0, 3).map((row) => {
+    const rect = row.getBoundingClientRect();
+    const actions = row.querySelector('.lac-recycle-actions');
+    const actionRect = actions?.getBoundingClientRect();
+    return { top: rect.top, bottom: rect.bottom, width: rect.width, actionLeft: actionRect?.left ?? 0, actionRight: actionRect?.right ?? 0, rowRight: rect.right };
+  }));
+  assert.ok(recycleGeometry.length >= 3, 'Recycle Bin smoke requires at least three deleted-file rows');
+  for (let i = 1; i < recycleGeometry.length; i += 1) {
+    assert.ok(recycleGeometry[i].top >= recycleGeometry[i - 1].bottom - 1, `Recycle Bin rows must stack vertically: ${JSON.stringify(recycleGeometry)}`);
+  }
+  for (const row of recycleGeometry) {
+    assert.ok(row.width > 300, `Recycle Bin rows should use the available row width: ${JSON.stringify(row)}`);
+    assert.ok(row.actionRight <= row.rowRight + 1, `Recycle Bin actions must stay inside their row: ${JSON.stringify(row)}`);
+  }
   const todo = page.locator('.lac-recycle-row', { hasText:'todo-old.txt' });
   await todo.getByRole('button', { name:'Restore' }).click();
   await todo.waitFor({ state:'detached' });
@@ -53,13 +68,16 @@ async function verifyArg(browser) {
     const output = element.querySelector('.lac-terminal-output');
     const windowStyle = getComputedStyle(element);
     const outputStyle = output ? getComputedStyle(output) : null;
-    return { width: rect.width, height: rect.height, resize: windowStyle.resize, overflowX: outputStyle?.overflowX, overflowY: outputStyle?.overflowY };
+    return { width: rect.width, height: rect.height, resize: windowStyle.resize, overflowX: outputStyle?.overflowX, overflowY: outputStyle?.overflowY, whiteSpace: outputStyle?.whiteSpace, overflowWrap: outputStyle?.overflowWrap, wordBreak: outputStyle?.wordBreak };
   });
   assert.ok(terminalGeometry.width <= 644, `Command Prompt should retain a console-like width: ${JSON.stringify(terminalGeometry)}`);
   assert.ok(terminalGeometry.height >= 360, `Command Prompt should open with useful vertical space: ${JSON.stringify(terminalGeometry)}`);
   assert.equal(terminalGeometry.resize, 'vertical', 'desktop Command Prompt should resize vertically, not stretch horizontally');
-  assert.equal(terminalGeometry.overflowX, 'hidden');
+  assert.equal(terminalGeometry.overflowX, 'auto');
   assert.equal(terminalGeometry.overflowY, 'auto');
+  assert.equal(terminalGeometry.whiteSpace, 'pre');
+  assert.equal(terminalGeometry.overflowWrap, 'normal');
+  assert.equal(terminalGeometry.wordBreak, 'normal');
   const command = terminal.getByLabel('Command');
   await command.fill('attrib -h C:\\Research'); await command.press('Enter');
   await command.fill('dir C:\\Research /a'); await command.press('Enter');
@@ -78,9 +96,6 @@ async function verifyArg(browser) {
   const lacunaConsole = page.locator('[data-lacuna-window="lacuna-console"]').last();
   await lacunaConsole.getByText('RECONSTRUCTION SYSTEM', { exact:true }).waitFor();
   assert.ok(await lacunaConsole.getByText('SUBJECT 00 — [NO IDENTITY]', { exact:true }).count());
-
-  // Follow the same z-order interaction a real player would use instead of clicking through
-  // the foreground console. This keeps the smoke sensitive to window-management regressions.
   await lacunaConsole.getByRole('button', { name:'Close' }).click();
   await lacunaConsole.waitFor({ state:'detached' });
 
@@ -90,6 +105,22 @@ async function verifyArg(browser) {
   await disk.getByRole('button', { name:'Mount Image' }).click();
   await disk.getByRole('button', { name:'Compare Sources' }).click();
   assert.match(await disk.textContent(), /reconstruction_00\.txt/i);
+  const diskLayout = await disk.evaluate((element) => {
+    const results = element.querySelector('[data-results]');
+    const grid = element.querySelector('.lac-disk-compare-grid');
+    const groups = Array.from(element.querySelectorAll('.lac-disk-compare-group'));
+    const resultRect = results?.getBoundingClientRect();
+    const groupRects = groups.map((group) => group.getBoundingClientRect());
+    return {
+      resultsWidth: resultRect?.width ?? 0,
+      gridColumns: grid ? getComputedStyle(grid).gridTemplateColumns : '',
+      groupTops: groupRects.map((rect) => Math.round(rect.top)),
+    };
+  });
+  assert.ok(diskLayout.resultsWidth <= 982, `Disk comparison should stay within a readable max width: ${JSON.stringify(diskLayout)}`);
+  assert.ok(diskLayout.gridColumns.split(' ').filter(Boolean).length >= 2, `Disk comparison should use two columns on desktop: ${JSON.stringify(diskLayout)}`);
+  assert.equal(diskLayout.groupTops.length, 2);
+  assert.equal(diskLayout.groupTops[0], diskLayout.groupTops[1], 'Disk comparison columns should align at the top');
 
   await page.evaluate(async () => {
     const api = window.__RIP_LACUNA__;

@@ -30,8 +30,8 @@ test('Command Prompt uses a fixed console column width and vertical resizing/scr
   assert.match(terminal, /width:\s*640/);
   assert.match(terminal, /height:\s*400/);
   assert.match(css, /\.lac-terminal-window\{[^}]*resize:vertical/i);
-  assert.match(css, /\.lac-terminal-output\{[^}]*overflow-y:auto[^}]*overflow-x:hidden/i);
-  assert.match(css, /\.lac-terminal-output\{[^}]*overflow-wrap:anywhere/i);
+  assert.match(css, /\.lac-terminal-output\{[^}]*overflow-y:auto[^}]*overflow-x:auto/i);
+  assert.match(css, /\.lac-terminal-output\{[^}]*white-space:pre[^}]*overflow-wrap:normal[^}]*word-break:normal/i);
 });
 
 test('Win95 TypeScript override enables ES5 iterable lowering for ARG engine code', () => {
