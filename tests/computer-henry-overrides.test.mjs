@@ -41,13 +41,15 @@ test('embedded RIP pages keep a full desktop viewport and scale it to the Win95 
   assert.match(embedded, /width:\s*DESKTOP_VIEWPORT_WIDTH/);
 });
 
-test('desktop uses authentic games plus Random Info Explorer and removes Showcase/Credits', () => {
+test('desktop keeps authentic games available through the Games launcher and removes Showcase/Credits', () => {
   const desktop = read('src/components/os/Desktop.tsx');
+  const coreCatalog = read('src/components/applications/CoreAppCatalog.ts');
+  const programSources = `${desktop}\n${coreCatalog}`;
   assert.match(desktop, /Random Info Explorer/);
-  assert.match(desktop, /Oregon Trail/);
-  assert.match(desktop, /Doom/);
-  assert.match(desktop, /Scrabble/);
-  assert.match(desktop, /RIP Wordle/);
+  assert.match(desktop, /name:\s*'Games'/);
+  for (const game of ['The Oregon Trail', 'Doom', 'Scrabble', 'RIP Wordle']) {
+    assert.match(programSources, new RegExp(game.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `missing ${game}`);
+  }
   assert.doesNotMatch(desktop, /ShowcaseExplorer|Credits/);
   assert.match(desktop, /EmbeddedSite/);
 });

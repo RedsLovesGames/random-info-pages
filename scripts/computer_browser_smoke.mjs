@@ -67,8 +67,9 @@ async function assertDesktopExperience(browser) {
   assert.equal(new URL(frame.url()).pathname, new URL(osURL).pathname, 'monitor iframe must load /os/');
   assert.equal(await frame.title(), 'Random Info OS', 'monitor iframe must expose Random Info OS');
 
-  await frame.getByText('Start', { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
-  await frame.getByText('Random Info Explorer', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 });
+  const osStartButton = frame.locator('#random-info-start-button');
+  await osStartButton.waitFor({ state: 'visible', timeout: 15000 });
+  await frame.getByRole('button', { name: /Tools$/ }).waitFor({ state: 'visible', timeout: 15000 });
 
   const requiredFolders = ['Tools', 'School', 'Friends', 'Games', 'Data', 'Experiments'];
   for (const folder of requiredFolders) {
@@ -137,16 +138,23 @@ async function assertDesktopExperience(browser) {
     await page.waitForFunction(() => window.__ripBridgeKeydown === true, { timeout: 5000 });
   }
 
-  const coreShortcut = frame.getByText('Core Apps', { exact: true }).first();
-  await coreShortcut.dblclick({ timeout: 10000 });
-  const calculatorLauncher = frame.getByRole('button', { name: 'Open Calculator', exact: true });
-  await calculatorLauncher.waitFor({ state: 'visible', timeout: 10000 });
-  for (const appName of ['Calculator', 'Notepad', 'Minesweeper', 'Snake', '2048', 'Reaction Test']) {
+  const accessoriesShortcut = frame.locator('#desktop-shortcut-Accessories').first();
+  const gamesShortcut = frame.locator('#desktop-shortcut-Games').first();
+  const doomShortcut = frame.locator('#desktop-shortcut-Doom').first();
+  await accessoriesShortcut.waitFor({ state: 'visible', timeout: 10000 });
+  assert.ok(await gamesShortcut.count(), 'desktop must expose the Games folder');
+  assert.ok(await doomShortcut.count(), 'desktop must retain the working Doom shortcut');
+
+  await accessoriesShortcut.dblclick({ timeout: 10000 });
+  const accessoryApps = ['Calculator', 'Notepad', 'Paint', 'Winamp', 'Sticky Notes', 'Timer / Stopwatch', 'Pixel Editor'];
+  for (const appName of accessoryApps) {
     assert.ok(
       await frame.getByRole('button', { name: `Open ${appName}`, exact: true }).count(),
-      `Core Apps launcher must expose ${appName}`
+      `Accessories must expose ${appName}`
     );
   }
+
+  const calculatorLauncher = frame.getByRole('button', { name: 'Open Calculator', exact: true });
   await calculatorLauncher.click();
   const calculatorDisplay = frame.locator('output[aria-label="Calculator display"]');
   await calculatorDisplay.waitFor({ state: 'visible', timeout: 10000 });
@@ -155,6 +163,26 @@ async function assertDesktopExperience(browser) {
   await frame.getByRole('button', { name: '8', exact: true }).click();
   await frame.getByRole('button', { name: '=', exact: true }).click();
   assert.equal((await calculatorDisplay.textContent())?.trim(), '56', 'Calculator must execute 7 × 8 = 56 inside the CRT OS');
+
+  await osStartButton.click();
+  const timerStartItem = frame.locator('.start-menu-option[aria-label="Open Timer / Stopwatch"]');
+  await timerStartItem.waitFor({ state: 'visible', timeout: 10000 });
+  await timerStartItem.click();
+  const timerDisplay = frame.locator('output[aria-label="Timer display"]');
+  await timerDisplay.waitFor({ state: 'visible', timeout: 10000 });
+  assert.equal((await timerDisplay.textContent())?.trim(), '00:00.0', 'Timer must open from the Start menu with a reset display');
+
+  await osStartButton.click();
+  const gamesStartItem = frame.locator('.start-menu-option[aria-label="Open Games"]');
+  await gamesStartItem.waitFor({ state: 'visible', timeout: 10000 });
+  await gamesStartItem.click();
+  const gameApps = ['Minesweeper', 'Snake', '2048', 'Reaction Test', 'Sand Simulator', 'Doom', 'The Oregon Trail', 'Scrabble', 'RIP Wordle'];
+  for (const gameName of gameApps) {
+    assert.ok(
+      await frame.getByRole('button', { name: `Open ${gameName}`, exact: true }).count(),
+      `Games must expose ${gameName}`
+    );
+  }
 
   await page.waitForTimeout(500);
   assert.deepEqual(diagnostics.criticalFailures, [], `critical assets failed: ${diagnostics.criticalFailures.join(', ')}`);
@@ -186,8 +214,8 @@ async function assertDirectOsNarrowExperience(browser) {
   const page = await context.newPage();
   const diagnostics = attachDiagnostics(page);
   await page.goto(osURL, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  await page.getByText('Start', { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
-  await page.getByText('Random Info Explorer', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('#random-info-start-button').waitFor({ state: 'visible', timeout: 15000 });
+  await page.getByRole('button', { name: /Tools$/ }).waitFor({ state: 'visible', timeout: 15000 });
 
   const sizes = await page.evaluate(() => {
     const clientWidth = document.documentElement.clientWidth;

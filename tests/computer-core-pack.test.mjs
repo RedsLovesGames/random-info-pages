@@ -11,14 +11,15 @@ async function importSource(path) {
   return import(url);
 }
 
-test('Desktop registers one Core Apps launcher and all six core applications', async () => {
+test('Desktop preserves the six core applications inside categorized launchers', async () => {
   const source = await readFile(
     sourcePath('scripts/win95-overrides/src/components/os/Desktop.tsx'),
     'utf8'
   );
 
   assert.match(source, /CoreAppsExplorer/);
-  assert.match(source, /name:\s*'Core Apps'/);
+  assert.match(source, /name:\s*'Accessories'/);
+  assert.match(source, /name:\s*'Games'/);
   for (const component of [
     'Calculator',
     'Notepad',
