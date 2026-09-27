@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const css = fs.readFileSync('scripts/lacuna-runtime/lacuna.css', 'utf8');
+const terminalSource = fs.readFileSync('scripts/lacuna-runtime/src/ui/terminalApp.ts', 'utf8');
 const diskSource = fs.readFileSync('scripts/lacuna-runtime/src/ui/diskUtility.ts', 'utf8');
 
 test('Recycle Bin forces one full-width vertical row per deleted file', () => {
@@ -19,6 +20,17 @@ test('Command Prompt preserves terminal lines instead of breaking at arbitrary c
   assert.match(rule, /word-break:normal/);
   assert.doesNotMatch(rule, /overflow-wrap:anywhere/);
   assert.doesNotMatch(rule, /word-break:break-word/);
+});
+
+test('Command Prompt renders each output entry as a forced vertical terminal row', () => {
+  const outputRule = css.match(/\.lac-terminal-output\{([^}]*)\}/)?.[1] ?? '';
+  const lineRule = css.match(/\.lac-terminal-line\{([^}]*)\}/)?.[1] ?? '';
+  assert.match(outputRule, /display:flex/);
+  assert.match(outputRule, /flex-direction:column/);
+  assert.match(outputRule, /align-items:flex-start/);
+  assert.match(lineRule, /display:block/);
+  assert.match(lineRule, /flex:/);
+  assert.match(terminalSource, /class=\"lac-terminal-line\"/);
 });
 
 test('Disk comparison uses a constrained summary plus two-column evidence layout', () => {
