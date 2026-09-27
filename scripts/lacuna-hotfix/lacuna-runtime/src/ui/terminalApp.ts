@@ -10,7 +10,18 @@ export function openTerminal(store: ArgRuntimeStore): void {
 
   const render = (): void => {
     ui.body.innerHTML = `<div class="lac-terminal-output" aria-live="polite">${output.map((line)=>`<div class="lac-terminal-line">${escapeHtml(line) || '&nbsp;'}</div>`).join('')}</div><form class="lac-terminal-form"><label><span>${escapeHtml(cwd)}&gt;</span><input autocomplete="off" spellcheck="false" aria-label="Command"></label></form>`;
-    const out = ui.body.querySelector<HTMLElement>('.lac-terminal-output')!; out.scrollTop = out.scrollHeight;
+    const out = ui.body.querySelector<HTMLElement>('.lac-terminal-output')!;
+    out.style.setProperty('display', 'flex', 'important');
+    out.style.setProperty('flex-direction', 'column', 'important');
+    out.style.setProperty('align-items', 'flex-start', 'important');
+    out.querySelectorAll<HTMLElement>('.lac-terminal-line').forEach((lineElement) => {
+      lineElement.style.setProperty('display', 'block', 'important');
+      lineElement.style.setProperty('flex', '0 0 auto', 'important');
+      lineElement.style.setProperty('min-width', '100%');
+      lineElement.style.setProperty('width', 'max-content');
+      lineElement.style.setProperty('box-sizing', 'border-box');
+    });
+    out.scrollTop = out.scrollHeight;
     const form = ui.body.querySelector<HTMLFormElement>('.lac-terminal-form')!;
     const input = form.querySelector<HTMLInputElement>('input')!; input.focus();
     form.addEventListener('submit', async (event) => {
