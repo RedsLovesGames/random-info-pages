@@ -33,3 +33,9 @@ test('Command Prompt uses a fixed console column width and vertical resizing/scr
   assert.match(css, /\.lac-terminal-output\{[^}]*overflow-y:auto[^}]*overflow-x:hidden/i);
   assert.match(css, /\.lac-terminal-output\{[^}]*overflow-wrap:anywhere/i);
 });
+
+test('Win95 TypeScript override enables ES5 iterable lowering for ARG engine code', () => {
+  const config = JSON.parse(read('scripts/win95-overrides/tsconfig.json'));
+  assert.equal(config.compilerOptions.target.toLowerCase(), 'es5');
+  assert.equal(config.compilerOptions.downlevelIteration, true);
+});
