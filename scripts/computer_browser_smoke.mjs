@@ -164,7 +164,7 @@ async function assertDesktopExperience(browser) {
   assert.equal((await calculatorDisplay.textContent())?.trim(), '56', 'Calculator must execute 7 × 8 = 56 inside the CRT OS');
 
   await frame.getByText('Start', { exact: true }).click();
-  const timerStartItem = frame.getByRole('button', { name: 'Open Timer / Stopwatch', exact: true });
+  const timerStartItem = frame.locator('.start-menu-option[aria-label="Open Timer / Stopwatch"]');
   await timerStartItem.waitFor({ state: 'visible', timeout: 10000 });
   await timerStartItem.click();
   const timerDisplay = frame.locator('output[aria-label="Timer display"]');
@@ -172,7 +172,7 @@ async function assertDesktopExperience(browser) {
   assert.equal((await timerDisplay.textContent())?.trim(), '00:00.0', 'Timer must open from the Start menu with a reset display');
 
   await frame.getByText('Start', { exact: true }).click();
-  const gamesStartItem = frame.getByRole('button', { name: 'Open Games', exact: true });
+  const gamesStartItem = frame.locator('.start-menu-option[aria-label="Open Games"]');
   await gamesStartItem.waitFor({ state: 'visible', timeout: 10000 });
   await gamesStartItem.click();
   const gameApps = ['Minesweeper', 'Snake', '2048', 'Reaction Test', 'Sand Simulator', 'Doom', 'The Oregon Trail', 'Scrabble', 'RIP Wordle'];
