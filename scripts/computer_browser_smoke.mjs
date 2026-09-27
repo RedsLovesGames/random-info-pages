@@ -67,7 +67,8 @@ async function assertDesktopExperience(browser) {
   assert.equal(new URL(frame.url()).pathname, new URL(osURL).pathname, 'monitor iframe must load /os/');
   assert.equal(await frame.title(), 'Random Info OS', 'monitor iframe must expose Random Info OS');
 
-  await frame.getByText('Start', { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
+  const osStartButton = frame.locator('#random-info-start-button');
+  await osStartButton.waitFor({ state: 'visible', timeout: 15000 });
   await frame.getByRole('button', { name: /Tools$/ }).waitFor({ state: 'visible', timeout: 15000 });
 
   const requiredFolders = ['Tools', 'School', 'Friends', 'Games', 'Data', 'Experiments'];
@@ -163,7 +164,7 @@ async function assertDesktopExperience(browser) {
   await frame.getByRole('button', { name: '=', exact: true }).click();
   assert.equal((await calculatorDisplay.textContent())?.trim(), '56', 'Calculator must execute 7 × 8 = 56 inside the CRT OS');
 
-  await frame.getByText('Start', { exact: true }).click();
+  await osStartButton.click();
   const timerStartItem = frame.locator('.start-menu-option[aria-label="Open Timer / Stopwatch"]');
   await timerStartItem.waitFor({ state: 'visible', timeout: 10000 });
   await timerStartItem.click();
@@ -171,7 +172,7 @@ async function assertDesktopExperience(browser) {
   await timerDisplay.waitFor({ state: 'visible', timeout: 10000 });
   assert.equal((await timerDisplay.textContent())?.trim(), '00:00.0', 'Timer must open from the Start menu with a reset display');
 
-  await frame.getByText('Start', { exact: true }).click();
+  await osStartButton.click();
   const gamesStartItem = frame.locator('.start-menu-option[aria-label="Open Games"]');
   await gamesStartItem.waitFor({ state: 'visible', timeout: 10000 });
   await gamesStartItem.click();
@@ -213,8 +214,8 @@ async function assertDirectOsNarrowExperience(browser) {
   const page = await context.newPage();
   const diagnostics = attachDiagnostics(page);
   await page.goto(osURL, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  await page.getByText('Start', { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
-  await page.getByText('Random Info Explorer', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('#random-info-start-button').waitFor({ state: 'visible', timeout: 15000 });
+  await page.getByRole('button', { name: /Tools$/ }).waitFor({ state: 'visible', timeout: 15000 });
 
   const sizes = await page.evaluate(() => {
     const clientWidth = document.documentElement.clientWidth;
