@@ -11,6 +11,7 @@ on:
       - 'scripts/import-henry-win95.ps1'
       - 'scripts/lacuna_browser_smoke.mjs'
       - 'scripts/lacuna_local_verify.ps1'
+      - 'docs/lacuna-arg-*.md'
       - '.github/workflows/computer-ci.yml'
       - '.github/workflows/lacuna-ci.yml'
 
