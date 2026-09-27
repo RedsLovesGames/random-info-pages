@@ -39,11 +39,13 @@ test('desktop wires the six phase 2 applications and both program folders', asyn
   assert.match(source, /startItems=/);
 });
 
-test('toolbar exposes program launch entries before shutdown', async () => {
+test('toolbar exposes stable Start control and program entries before shutdown', async () => {
   const source = await readFile(
     sourcePath('scripts/win95-overrides/src/components/os/Toolbar.tsx'),
     'utf8'
   );
+  assert.match(source, /id="random-info-start-button"/);
+  assert.match(source, /data-rip-role="start-button"/);
   assert.match(source, /startItems/);
   assert.match(source, /Random Info OS/);
   assert.match(source, /Sh<u>u<\/u>t down/);
