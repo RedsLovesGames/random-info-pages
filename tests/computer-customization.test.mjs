@@ -27,6 +27,8 @@ test('Random Info OS keeps the authentic React Win95 desktop while replacing por
   const colors = read('os-src/src/constants/colors.ts');
   const desktop = read('os-src/src/components/os/Desktop.tsx');
   const catalog = read('os-src/src/components/applications/RandomInfoCatalog.ts');
+  const coreCatalog = read('os-src/src/components/applications/CoreAppCatalog.ts');
+  const programSources = `${desktop}\n${coreCatalog}`;
 
   assert.match(colors, /#3e9697/i, 'desktop must keep the upstream teal');
   assert.match(colors, /#c3c6ca/i, 'taskbar/windows must keep the upstream Windows gray');
@@ -34,7 +36,7 @@ test('Random Info OS keeps the authentic React Win95 desktop while replacing por
   assert.match(html, /js-dos\/js-dos\.js/);
 
   for (const app of ['Doom', 'The Oregon Trail', 'Scrabble', 'RIP Wordle', 'Random Info Explorer']) {
-    assert.match(desktop, new RegExp(app.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `missing ${app}`);
+    assert.match(programSources, new RegExp(app.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `missing ${app}`);
   }
 
   for (const folder of ['Tools', 'School', 'Friends', 'Games', 'Data', 'Experiments']) {
