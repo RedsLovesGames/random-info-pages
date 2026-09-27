@@ -1,7 +1,7 @@
 function resolveStorage(storage) {
     if (storage !== undefined) return storage;
     try {
-        return globalThis.localStorage;
+        return typeof window === 'undefined' ? null : window.localStorage;
     } catch (_error) {
         return null;
     }
