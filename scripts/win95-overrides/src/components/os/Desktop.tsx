@@ -1,5 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import Colors from '../../constants/colors';
+import Calculator from '../applications/core/Calculator';
+import Game2048 from '../applications/core/Game2048';
+import Minesweeper from '../applications/core/Minesweeper';
+import Notepad from '../applications/core/Notepad';
+import ReactionTest from '../applications/core/ReactionTest';
+import Snake from '../applications/core/Snake';
+import { CoreAppDefinition } from '../applications/CoreAppCatalog';
+import CoreAppsExplorer from '../applications/CoreAppsExplorer';
 import Doom from '../applications/Doom';
 import EmbeddedSite from '../applications/EmbeddedSite';
 import Henordle from '../applications/Henordle';
@@ -14,7 +22,7 @@ import Toolbar from './Toolbar';
 
 export interface DesktopProps {}
 
-type StaticAppKey = 'explorer' | 'trail' | 'doom' | 'scrabble' | 'wordle';
+type StaticAppKey = 'explorer' | 'core' | 'trail' | 'doom' | 'scrabble' | 'wordle';
 
 type StaticApp = {
     key: StaticAppKey;
@@ -26,6 +34,11 @@ const STATIC_APPS: StaticApp[] = [
     {
         key: 'explorer',
         name: 'Random Info Explorer',
+        shortcutIcon: 'showcaseIcon',
+    },
+    {
+        key: 'core',
+        name: 'Core Apps',
         shortcutIcon: 'showcaseIcon',
     },
     {
@@ -156,6 +169,42 @@ const Desktop: React.FC<DesktopProps> = () => {
         [addWindow, minimizeWindow, onWindowInteract, removeWindow]
     );
 
+    const openCoreApp = useCallback(
+        (app: CoreAppDefinition) => {
+            const key = `core:${app.key}`;
+            const lifecycle = {
+                onInteract: () => onWindowInteract(key),
+                onMinimize: () => minimizeWindow(key),
+                onClose: () => removeWindow(key),
+            };
+            let component: React.ReactElement;
+            switch (app.key) {
+                case 'calculator':
+                    component = <Calculator key={key} {...lifecycle} />;
+                    break;
+                case 'notepad':
+                    component = <Notepad key={key} {...lifecycle} />;
+                    break;
+                case 'minesweeper':
+                    component = <Minesweeper key={key} {...lifecycle} />;
+                    break;
+                case 'snake':
+                    component = <Snake key={key} {...lifecycle} />;
+                    break;
+                case '2048':
+                    component = <Game2048 key={key} {...lifecycle} />;
+                    break;
+                case 'reaction':
+                    component = <ReactionTest key={key} {...lifecycle} />;
+                    break;
+                default:
+                    return;
+            }
+            addWindow(key, app.title, 'windowExplorerIcon', component);
+        },
+        [addWindow, minimizeWindow, onWindowInteract, removeWindow]
+    );
+
     const openStaticApp = useCallback(
         (appKey: StaticAppKey) => {
             const app = STATIC_APPS.find((candidate) => candidate.key === appKey);
@@ -175,6 +224,15 @@ const Desktop: React.FC<DesktopProps> = () => {
                             key={app.key}
                             {...lifecycle}
                             onLaunchApp={openRandomInfoApp}
+                        />
+                    );
+                    break;
+                case 'core':
+                    component = (
+                        <CoreAppsExplorer
+                            key={app.key}
+                            {...lifecycle}
+                            onLaunchApp={openCoreApp}
                         />
                     );
                     break;
@@ -200,6 +258,7 @@ const Desktop: React.FC<DesktopProps> = () => {
             addWindow,
             minimizeWindow,
             onWindowInteract,
+            openCoreApp,
             openRandomInfoApp,
             removeWindow,
         ]
