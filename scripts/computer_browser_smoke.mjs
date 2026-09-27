@@ -137,6 +137,25 @@ async function assertDesktopExperience(browser) {
     await page.waitForFunction(() => window.__ripBridgeKeydown === true, { timeout: 5000 });
   }
 
+  const coreShortcut = frame.getByText('Core Apps', { exact: true }).first();
+  await coreShortcut.dblclick({ timeout: 10000 });
+  const calculatorLauncher = frame.getByRole('button', { name: 'Open Calculator', exact: true });
+  await calculatorLauncher.waitFor({ state: 'visible', timeout: 10000 });
+  for (const appName of ['Calculator', 'Notepad', 'Minesweeper', 'Snake', '2048', 'Reaction Test']) {
+    assert.ok(
+      await frame.getByRole('button', { name: `Open ${appName}`, exact: true }).count(),
+      `Core Apps launcher must expose ${appName}`
+    );
+  }
+  await calculatorLauncher.click();
+  const calculatorDisplay = frame.locator('output[aria-label="Calculator display"]');
+  await calculatorDisplay.waitFor({ state: 'visible', timeout: 10000 });
+  await frame.getByRole('button', { name: '7', exact: true }).click();
+  await frame.getByRole('button', { name: '×', exact: true }).click();
+  await frame.getByRole('button', { name: '8', exact: true }).click();
+  await frame.getByRole('button', { name: '=', exact: true }).click();
+  assert.equal((await calculatorDisplay.textContent())?.trim(), '56', 'Calculator must execute 7 × 8 = 56 inside the CRT OS');
+
   await page.waitForTimeout(500);
   assert.deepEqual(diagnostics.criticalFailures, [], `critical assets failed: ${diagnostics.criticalFailures.join(', ')}`);
   assert.deepEqual(diagnostics.pageErrors, [], `page errors: ${diagnostics.pageErrors.join(' | ')}`);
