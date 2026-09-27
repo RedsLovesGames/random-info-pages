@@ -13,7 +13,6 @@ import StickyNotes from '../applications/core/StickyNotes';
 import TimerApp from '../applications/core/TimerApp';
 import WebampPlayer from '../applications/core/WebampPlayer';
 import {
-    CORE_APPS,
     LEGACY_GAMES,
     CoreAppDefinition,
     CoreAppKey,
