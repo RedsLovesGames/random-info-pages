@@ -78,10 +78,29 @@ async function verifyArg(browser) {
   assert.equal(terminalGeometry.whiteSpace, 'pre');
   assert.equal(terminalGeometry.overflowWrap, 'normal');
   assert.equal(terminalGeometry.wordBreak, 'normal');
+
+  const terminalLines = terminal.locator('.lac-terminal-line');
+  await terminalLines.first().waitFor();
+  const initialLineGeometry = await terminalLines.evaluateAll((rows) => rows.slice(0, 5).map((row) => {
+    const rect = row.getBoundingClientRect();
+    return { top: Math.round(rect.top), bottom: Math.round(rect.bottom), text: row.textContent ?? '' };
+  }));
+  assert.ok(initialLineGeometry.length >= 5, `Command Prompt should expose distinct output rows: ${JSON.stringify(initialLineGeometry)}`);
+  for (let i = 1; i < initialLineGeometry.length; i += 1) {
+    assert.ok(initialLineGeometry[i].top > initialLineGeometry[i - 1].top, `CMD output rows must advance vertically instead of sharing one horizontal line: ${JSON.stringify(initialLineGeometry)}`);
+  }
+
   const command = terminal.getByLabel('Command');
   await command.fill('attrib -h C:\\Research'); await command.press('Enter');
   await command.fill('dir C:\\Research /a'); await command.press('Enter');
   assert.match(await terminal.textContent(), /docs/i, 'Terminal and Explorer share the revealed filesystem');
+  const postCommandLineGeometry = await terminal.locator('.lac-terminal-line').evaluateAll((rows) => rows.slice(-6).map((row) => {
+    const rect = row.getBoundingClientRect();
+    return { top: Math.round(rect.top), text: row.textContent ?? '' };
+  }));
+  for (let i = 1; i < postCommandLineGeometry.length; i += 1) {
+    assert.ok(postCommandLineGeometry[i].top > postCommandLineGeometry[i - 1].top, `CMD command/result rows must remain vertically stacked after execution: ${JSON.stringify(postCommandLineGeometry)}`);
+  }
   await terminal.getByRole('button', { name:'Close' }).click();
   await terminal.waitFor({ state:'detached' });
 
