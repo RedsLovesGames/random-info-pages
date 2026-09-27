@@ -38,14 +38,14 @@ type FolderKey = 'explorer' | 'accessories' | 'games';
 
 type FolderDefinition = {
     key: FolderKey;
-    title: string;
+    name: string;
     icon: IconName;
 };
 
 const FOLDERS: FolderDefinition[] = [
-    { key: 'explorer', title: 'Random Info Explorer', icon: 'showcaseIcon' },
-    { key: 'accessories', title: 'Accessories', icon: 'folderAccessories' },
-    { key: 'games', title: 'Games', icon: 'folderGames' },
+    { key: 'explorer', name: 'Random Info Explorer', icon: 'showcaseIcon' },
+    { key: 'accessories', name: 'Accessories', icon: 'folderAccessories' },
+    { key: 'games', name: 'Games', icon: 'folderGames' },
 ];
 
 const CORE_COMPONENTS: Record<CoreAppKey, React.ComponentType<WindowAppProps>> = {
@@ -156,11 +156,11 @@ const Desktop: React.FC<DesktopProps> = () => {
                 />
             );
         }
-        addWindow(key, folder.title, folder.icon, component);
+        addWindow(key, folder.name, folder.icon, component);
     }, [addWindow, minimizeWindow, onWindowInteract, openCoreApp, openLegacyGame, openRandomInfoApp, removeWindow]);
 
     const shortcuts = useMemo<DesktopShortcutProps[]>(() => [
-        ...FOLDERS.map((folder) => ({ shortcutName: folder.title, icon: folder.icon, onOpen: () => openFolder(folder.key) })),
+        ...FOLDERS.map((folder) => ({ shortcutName: folder.name, icon: folder.icon, onOpen: () => openFolder(folder.key) })),
         { shortcutName: 'Doom', icon: 'doomIcon', onOpen: () => openLegacyGame('doom') },
     ], [openFolder, openLegacyGame]);
 
