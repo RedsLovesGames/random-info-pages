@@ -64,6 +64,8 @@ async function verifyArg(browser) {
   await command.fill('attrib -h C:\\Research'); await command.press('Enter');
   await command.fill('dir C:\\Research /a'); await command.press('Enter');
   assert.match(await terminal.textContent(), /docs/i, 'Terminal and Explorer share the revealed filesystem');
+  await terminal.getByRole('button', { name:'Close' }).click();
+  await terminal.waitFor({ state:'detached' });
 
   // Late-game state is injected only through the same public store actions used by UI paths.
   await page.evaluate(async () => {
