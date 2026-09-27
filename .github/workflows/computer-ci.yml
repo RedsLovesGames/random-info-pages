@@ -13,6 +13,7 @@ on:
       - 'scripts/computer_browser_smoke.mjs'
       - 'scripts/lacuna-source.part*.b64'
       - 'scripts/lacuna-runtime/**'
+      - 'scripts/lacuna-hotfix/**'
       - 'scripts/lacuna_browser_smoke.mjs'
       - 'scripts/import-henry-win95.ps1'
       - 'scripts/win95-overrides/**'
