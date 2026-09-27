@@ -2,218 +2,184 @@
 
 ## Goal
 
-Turn the existing Random Info OS from primarily a Win95-styled launcher into a small functional desktop that can host self-contained apps inside the 3D computer without changing the Three.js shell or breaking existing project links.
+Turn the existing Random Info OS into a more functional little computer by adding six native applications: Calculator, Notepad, Minesweeper, Snake, 2048, and Reaction Test.
 
-The first release will ship six native apps: Calculator, Notepad, Minesweeper, Snake, 2048, and Reaction Test.
+The applications must run inside the existing authentic Win95 React shell used by the 3D computer, preserve every current project/game shortcut, and remain fully static for GitHub Pages.
+
+## Canonical Source and Build Contract
+
+Random Info OS is not authored directly in the committed `/os/` bundle. `scripts/import-henry-win95.ps1` pins `henryjeff/portfolio-inner-site` at commit `23cf84acd5c76d2c719e1d04c3d976dc4b0b49f8`, selectively imports its React Win95 shell into generated `os-src/`, then overlays repo-owned files from `scripts/win95-overrides/` before building `/os/`.
+
+Therefore all durable core-pack source changes belong in `scripts/win95-overrides/` and tests/workflows, not in generated `os-src/` or compiled `/os/` assets.
+
+## Existing Architecture to Reuse
+
+The imported shell already provides:
+
+- draggable windows
+- resizable windows
+- maximize/restore
+- minimize/close lifecycle
+- taskbar buttons
+- z-index/focus management
+- Windows 95 styling and icons
+- existing Doom, Oregon Trail, Scrabble, RIP Wordle, and Random Info Explorer applications
+
+No second window manager or iframe application framework will be added. Each core-pack app will be a native React component rendered inside the existing `Window` component and registered through the existing `Desktop.tsx` lifecycle.
 
 ## Constraints
 
-- Keep the existing `/computer/` 3D experience and monitor input forwarding intact.
-- Keep existing folders and routes working exactly as they do now.
-- Keep the implementation static-site compatible for GitHub Pages.
-- No backend, accounts, database, or new build system.
-- Prefer vanilla HTML/CSS/JS and localStorage.
+- Keep the `/computer/` Three.js experience and monitor input forwarding unchanged.
+- Keep Doom, Oregon Trail, Scrabble, RIP Wordle, Random Info Explorer, and all existing Random Info project links working.
+- Keep the upstream Win95 source pinned and imported through the existing script.
+- Do not add a backend, account system, database, or new runtime dependency.
+- Do not edit generated `os-src/` as source-of-truth.
+- Prefer React 17, TypeScript 4.6, existing CRA/Jest tooling, and localStorage.
 - Keep `main` untouched until the feature branch is verified.
 
-## Current Architecture
+## Core App Structure
 
-`computer-src/src/Application/World/MonitorScreen.ts` embeds the same-origin `../os/` route in the CRT iframe. The OS itself is a small vanilla HTML/CSS/JS desktop with draggable Explorer-like windows, taskbar buttons, folder shortcuts, and legacy game placeholders.
+Core applications live under:
 
-The existing generic Explorer window is intentionally small and fixed-size, so it should remain the folder/document window rather than becoming the application runtime.
+`/scripts/win95-overrides/src/components/applications/core/`
 
-## Chosen Approach
+Each interactive game separates deterministic state transitions from presentation where useful so Jest can test rules without relying on pixel/UI behavior.
 
-Add a lightweight application layer to the existing OS instead of rewriting the shell.
+Shared files provide:
 
-- Keep `FOLDERS` and existing link behavior unchanged.
-- Add an `APPS` registry in `os/app.js` describing app title, route, dimensions, and resize/maximize behavior.
-- Add `openAppWindow(appKey)` to create application windows that host same-origin app iframes.
-- Extend the window manager with optional dimensions, maximize/restore, and resize support while preserving current Explorer behavior.
-- Put each app in its own directory under `os/apps/`.
-- Add shared Win95 app styling and a tiny storage helper under `os/shared/`.
+- `CoreAppWindow.tsx`: thin wrapper around the existing Win95 `Window` with standard sizing/icon/status defaults.
+- `coreStyles.ts`: reusable Win95-compatible content styles for buttons, inset panels, labels, score rows, boards, and utility layouts.
+- `storage.ts`: namespaced safe localStorage helpers that degrade to in-memory state when storage is unavailable or malformed.
 
-This isolates failures. A broken game should not break the desktop shell, another app, or the 3D computer.
+## Desktop Integration
 
-## Alternatives Considered
+`Desktop.tsx` remains the single owner of open/minimize/focus/close lifecycle.
 
-### 1. Put every app directly into `os/app.js`
+The static app registry is extended with six core apps. Existing shortcuts retain their current keys and behavior. The new apps use existing generic icons (`windowExplorerIcon` for utilities, `windowGameIcon` for games) in the first release to avoid adding binary icon assets.
 
-Fast for the first app but creates a large coupled file, makes styling difficult, and risks regressions across unrelated programs. Rejected.
+Shortcut ordering keeps Random Info Explorer and current games intact, followed by the new core applications. A later pass may reorganize shortcuts into folders, but folder hierarchy work is outside this core-pack scope.
 
-### 2. Rewrite Random Info OS in React or another framework
-
-Would provide stronger component structure but adds a build system and substantially increases migration risk for a small static desktop. Rejected.
-
-### 3. Self-contained iframe apps with a thin native window manager extension
-
-Selected because it preserves the current OS, keeps apps independent, remains GitHub Pages compatible, and makes third-party apps such as JS Paint or Webamp easier to integrate later.
-
-## App Runtime
-
-Each app entry will support fields equivalent to:
-
-```js
-{
-  title: 'Minesweeper',
-  src: './apps/minesweeper/',
-  width: 460,
-  height: 520,
-  minWidth: 320,
-  minHeight: 300,
-  resizable: true,
-  maximizable: true
-}
-```
-
-`openAppWindow()` will:
-
-1. Look up the app definition.
-2. Create an OS window through the existing window manager.
-3. Insert an iframe pointing to the app route.
-4. Add a taskbar button through the existing taskbar flow.
-5. Forward focus correctly when the app is clicked.
-6. Allow minimize, close, maximize/restore, and resize as configured.
-
-App iframes will remain same-origin so future controlled messaging between the shell and apps is possible without cross-origin workarounds.
-
-## Window Manager Changes
-
-The existing `createWindow()` behavior will remain the default for folders and legacy dialogs.
-
-New optional behavior:
-
-- custom width and height
-- minimum width and height
-- maximize/restore button
-- resize handle
-- viewport clamping
-- state restoration after maximize
-
-The implementation must not change current folder sizing unless explicitly requested through options.
-
-## Shared App Infrastructure
-
-### `os/shared/win95.css`
-
-Reusable controls for app interiors:
-
-- buttons
-- inset fields
-- panels
-- menu bars
-- status bars
-- tabs
-- game panels
-- utility spacing
-
-### `os/shared/storage.js`
-
-A tiny namespaced wrapper around localStorage:
-
-```js
-RIPStorage.get(key, fallback)
-RIPStorage.set(key, value)
-RIPStorage.remove(key)
-```
-
-It must tolerate malformed stored JSON and fall back safely.
-
-## Core Apps
+## Applications
 
 ### Calculator
 
 - four-function arithmetic
 - decimal input
-- clear/backspace
+- clear and backspace
 - keyboard number/operator support
-- divide-by-zero handled without crashing
+- repeated calculations use the displayed result
+- divide-by-zero produces a recoverable error state instead of throwing
 
 ### Notepad
 
-- plain-text editor
-- autosave to localStorage
-- clear/new action
-- word and character counts
-- no rich-text dependency
+- plain-text editing
+- autosave to namespaced localStorage
+- New/Clear command
+- word count and character count
+- gracefully falls back if storage is unavailable
 
 ### Minesweeper
 
-- beginner board by default
+- beginner 9×9 board with 10 mines
 - first-click safety
-- flagging
+- reveal/flood-fill for empty cells
+- flag/unflag
 - win/loss detection
-- timer
-- mines remaining counter
-- best time persisted locally
+- elapsed timer
+- mines-remaining display
+- best completed time persisted locally
 
 ### Snake
 
-- keyboard controls
-- restart
-- score and high score
-- deterministic collision rules
-- pause on window blur so input focus changes do not cause accidental loss
+- keyboard arrow/WASD controls
+- fixed-step grid movement
+- food never spawns on the snake
+- wall/self collision ends the run
+- restart and pause
+- pause on window/document blur
+- score and persisted high score
 
 ### 2048
 
-- arrow-key controls
-- correct merge-once-per-move rules
+- 4×4 board
+- keyboard arrow controls
+- standard compress/merge/compress behavior
+- each tile merges at most once per move
 - score and persisted best score
 - restart
-- win/game-over state
+- win and game-over status
 
 ### Reaction Test
 
-- waiting/random delay/ready/result states
+- idle, waiting, ready, result states
+- randomized wait before ready
 - false-start handling
-- recent attempts
-- persisted best result
-
-## Desktop Integration
-
-The first pass will add an `Accessories` folder and expand `Games` rather than crowding the desktop with every app.
-
-Suggested grouping:
-
-- Accessories: Calculator, Notepad
-- Games: Minesweeper, Snake, 2048, Reaction Test, plus existing project links
-
-A small number of direct desktop shortcuts may be added later after the folder experience is verified.
+- recent-attempt history
+- persisted best reaction time
+- timers cleaned up on restart/unmount
 
 ## Error Handling
 
-- Missing app definitions should fail silently rather than creating broken windows.
-- App iframe loading failures should show a simple in-window error state.
-- localStorage failures should degrade to in-memory behavior for the current session.
-- App code must not assume the outer 3D shell exists.
-- Keyboard-driven games must prevent only the keys they actively own so browser/OS interactions are not broadly blocked.
+- localStorage reads/writes never crash an app.
+- Invalid persisted values fall back to defaults.
+- Keyboard apps prevent default behavior only for keys they consume.
+- Timers and listeners are cleaned up on unmount.
+- Opening an already-open app raises/restores it through the existing desktop state rather than creating duplicate lifecycle state.
 
-## Testing
+## Testing and Verification
 
-Verification will include:
+### Unit tests
 
-1. Syntax checks for all new JavaScript files.
-2. Existing computer/OS CI where available.
-3. Static route checks for every new app entry.
-4. Desktop behavior checks: open, drag, minimize, restore, maximize, resize, close, taskbar focus.
-5. App-specific deterministic tests for game logic where practical.
-6. Manual browser validation inside `/os/` and through `/computer/` to confirm iframe input forwarding still works.
-7. Mobile/coarse-pointer smoke test to ensure existing single-tap shortcut behavior is preserved.
+Use the imported CRA/Jest toolchain to test deterministic logic and critical state helpers. Tests live with the override source and are copied into generated `os-src/` by the overlay process.
 
-## Out of Scope for the Core Pack
+Coverage must include:
+
+- calculator operation/error behavior
+- storage malformed/unavailable fallback
+- Minesweeper first-click safety and win/loss rules
+- Snake movement/collision/food placement
+- 2048 merge-once rules and game-over detection
+- Reaction Test false-start/result state transitions
+
+### Repository contracts
+
+Extend `tests/computer-*.test.mjs` or add a focused computer core-pack contract test to confirm the importer/override tree contains all six app registrations and does not remove existing applications.
+
+### CI
+
+`computer-ci.yml` continues to:
+
+1. build the Three.js computer
+2. import/build the Win95 OS
+3. run computer contracts
+4. stage the local Pages prefix
+5. run Chromium smoke tests
+
+Add the generated OS Jest suite after the Win95 import succeeds and before browser smoke testing.
+
+### Browser smoke
+
+Extend the Chromium smoke flow to verify at least:
+
+- the OS loads through `/computer/`
+- an existing application still opens
+- one utility app opens and accepts input
+- one keyboard game opens and responds to its controls
+- minimize/restore still works
+
+## Out of Scope
 
 - JS Paint
 - Webamp
-- Doom or emulator runtimes
+- additional emulator runtimes
 - Solitaire
 - virtual pet
 - screensavers
 - terminal
 - virtual filesystem
 - backend synchronization
-
-These can be layered on after the core runtime is stable.
+- shortcut folders/reorganization beyond registering the six apps
 
 ## Success Criteria
 
-The feature is complete when the six core apps launch from Random Info OS, coexist in independent movable windows, preserve their intended local state, work inside the 3D CRT, and all pre-existing OS folders/project links still work without regression.
+The feature is complete when all six native apps launch in the authentic Random Info OS window system, core rules pass Jest tests, state persistence behaves safely, existing applications and Random Info links remain intact, the computer CI workflow passes, and Chromium smoke testing confirms the apps still function through the 3D CRT integration.
