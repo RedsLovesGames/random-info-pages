@@ -9,7 +9,7 @@ export function openTerminal(store: ArgRuntimeStore): void {
   const output: string[] = ['Microsoft(R) Windows 95', '   (C)Copyright Microsoft Corp 1981-1995.', '', 'Random Info OS compatibility shell.', ''];
 
   const render = (): void => {
-    ui.body.innerHTML = `<div class="lac-terminal-output" aria-live="polite">${output.map((line)=>`<div>${escapeHtml(line) || '&nbsp;'}</div>`).join('')}</div><form class="lac-terminal-form"><label><span>${escapeHtml(cwd)}&gt;</span><input autocomplete="off" spellcheck="false" aria-label="Command"></label></form>`;
+    ui.body.innerHTML = `<div class="lac-terminal-output" aria-live="polite">${output.map((line)=>`<div class="lac-terminal-line">${escapeHtml(line) || '&nbsp;'}</div>`).join('')}</div><form class="lac-terminal-form"><label><span>${escapeHtml(cwd)}&gt;</span><input autocomplete="off" spellcheck="false" aria-label="Command"></label></form>`;
     const out = ui.body.querySelector<HTMLElement>('.lac-terminal-output')!; out.scrollTop = out.scrollHeight;
     const form = ui.body.querySelector<HTMLFormElement>('.lac-terminal-form')!;
     const input = form.querySelector<HTMLInputElement>('input')!; input.focus();
