@@ -97,7 +97,9 @@ const Desktop: React.FC<DesktopProps> = () => {
     const [windows, setWindows] = useState<DesktopWindows>({});
     const [shutdown, setShutdown] = useState(false);
     const [numShutdowns, setNumShutdowns] = useState(1);
-    const compactDesktop = (window.visualViewport?.width || window.innerWidth) <= 600;
+    const desktopWidth = window.visualViewport?.width || window.innerWidth;
+    const adaptiveDesktop = desktopWidth < 1180;
+    const adaptiveColumns = Math.max(1, Math.floor(Math.max(desktopWidth - 16, 90) / 90));
 
     const removeWindow = useCallback((key: string) => {
         setTimeout(() => {
@@ -239,8 +241,8 @@ const Desktop: React.FC<DesktopProps> = () => {
         <div style={styles.desktop}>
             <div style={styles.shortcuts} aria-label="Desktop programs">
                 {shortcuts.map((shortcut, index) => {
-                    const position = compactDesktop
-                        ? { left: 8 + (index % 4) * 90, top: 12 + Math.floor(index / 4) * 92 }
+                    const position = adaptiveDesktop
+                        ? { left: 8 + (index % adaptiveColumns) * 90, top: 12 + Math.floor(index / adaptiveColumns) * 92 }
                         : (DESKTOP_LAYOUT[shortcut.layoutKey] || { left: 12, top: 12 });
                     const { layoutKey, ...shortcutProps } = shortcut;
                     return (
