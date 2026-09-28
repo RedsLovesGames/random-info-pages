@@ -142,6 +142,24 @@ async function assertDesktopExperience(browser) {
     await page.waitForFunction(() => window.__ripBridgeKeydown === true, { timeout: 5000 });
   }
 
+  // The desktop layer must remain behind open app windows. Minimize the windows
+  // used above before exercising the scattered desktop shortcuts with real clicks.
+  const toolboxTask = frame.locator('[data-rip-window-task="rip:toolbox"]');
+  await toolboxTask.click({ timeout: 10000 });
+  await frame.waitForFunction(() => {
+    const layer = document.querySelector('[data-rip-window-layer="rip:toolbox"]');
+    return Boolean(layer && getComputedStyle(layer).pointerEvents === 'none');
+  });
+
+  const explorerTask = frame.locator('[data-rip-window-task="folder:explorer"]');
+  await explorerTask.click({ timeout: 10000 });
+  await frame.waitForTimeout(75);
+  await explorerTask.click({ timeout: 10000 });
+  await frame.waitForFunction(() => {
+    const layer = document.querySelector('[data-rip-window-layer="folder:explorer"]');
+    return Boolean(layer && getComputedStyle(layer).pointerEvents === 'none');
+  });
+
   const desktopApps = [
     'Calculator',
     'Notepad',
