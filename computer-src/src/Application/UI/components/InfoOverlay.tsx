@@ -6,7 +6,7 @@ interface InfoOverlayProps {
     visible: boolean;
 }
 
-const NAME_TEXT = 'Henry Heffernan';
+const NAME_TEXT = 'E Vale';
 const TITLE_TEXT = 'Software Engineer';
 const MULTIPLIER = 1;
 
@@ -163,8 +163,6 @@ const styles: StyleSheetCSS = {
         justifyContent: 'flex-start',
     },
     blinkingContainer: {
-        // width: 100,
-        // height: 100,
         marginLeft: 8,
         paddingBottom: 2,
         paddingRight: 4,
