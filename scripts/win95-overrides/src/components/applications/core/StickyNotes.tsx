@@ -6,10 +6,37 @@ type StickyNote = { id: string; text: string; color: string };
 
 const STORAGE_KEY = 'rip.core.sticky-notes';
 const COLORS = ['#fff28a', '#ffd1dc', '#ccecff', '#d9f7be', '#ead7ff'];
-const DEFAULT_NOTES: StickyNote[] = [{ id: 'welcome', text: 'Random Info OS sticky note', color: COLORS[0] }];
+
+const SEED_NOTES: StickyNote[] = [
+    {
+        id: 'vale-recycle-hint',
+        text: 'clean the Recycle Bin later. todo-old.txt is still in there.',
+        color: COLORS[0],
+    },
+    {
+        id: 'vale-temp-hint',
+        text: 'Temp is filling up again. Check C:\\Temp\\lacuna.log before clearing it.',
+        color: COLORS[2],
+    },
+    {
+        id: 'vale-research-hint',
+        text: 'Research folder vanished again. attrib -h C:\\Research should bring it back.',
+        color: COLORS[3],
+    },
+];
+
+const ensureSeedNotes = (notes: StickyNote[]): StickyNote[] => {
+    const ids = new Set(notes.map((note) => note.id));
+    const missing = SEED_NOTES.filter((note) => !ids.has(note.id));
+    return missing.length ? [...notes, ...missing] : notes;
+};
+
+const DEFAULT_NOTES = SEED_NOTES;
 
 const StickyNotes: React.FC<WindowAppProps> = (props) => {
-    const [notes, setNotes] = useState<StickyNote[]>(() => loadLocal(STORAGE_KEY, DEFAULT_NOTES));
+    const [notes, setNotes] = useState<StickyNote[]>(() =>
+        ensureSeedNotes(loadLocal(STORAGE_KEY, DEFAULT_NOTES))
+    );
 
     useEffect(() => {
         saveLocal(STORAGE_KEY, notes);
