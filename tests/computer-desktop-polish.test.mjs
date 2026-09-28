@@ -38,6 +38,28 @@ test('desktop shortcut selection uses one stable id without the scaling position
   assert.doesNotMatch(source, /getBoundingClientRect\(\)/);
 });
 
+test('desktop shortcuts drag with pointer capture and persist custom positions', async () => {
+  const desktop = await read('scripts/win95-overrides/src/components/os/Desktop.tsx');
+  const shortcut = await read('scripts/win95-overrides/src/components/os/DesktopShortcut.tsx');
+  assert.match(desktop, /DESKTOP_POSITION_KEY/);
+  assert.match(desktop, /loadLocal\(DESKTOP_POSITION_KEY/);
+  assert.match(desktop, /saveLocal\(DESKTOP_POSITION_KEY/);
+  assert.match(desktop, /onDragDelta/);
+  assert.match(desktop, /clampShortcutPosition/);
+  assert.match(shortcut, /setPointerCapture/);
+  assert.match(shortcut, /onPointerMove/);
+  assert.match(shortcut, /onDragDelta/);
+  assert.match(shortcut, /touchAction:\s*'none'/);
+});
+
+test('LACUNA system shortcuts use the same movable desktop model', async () => {
+  const source = await read('scripts/lacuna-hotfix/win95-overrides/public/index.html');
+  assert.match(source, /LACUNA_DESKTOP_POSITION_KEY/);
+  assert.match(source, /\.lac-desktop-shortcut/);
+  assert.match(source, /MutationObserver/);
+  assert.match(source, /setPointerCapture/);
+});
+
 test('core app catalog uses distinct program icons instead of generic explorer/game icons', async () => {
   const source = await read('scripts/win95-overrides/src/components/applications/CoreAppCatalog.ts');
   assert.doesNotMatch(source, /icon:\s*'windowExplorerIcon',\s*category:\s*'Accessories'/);
