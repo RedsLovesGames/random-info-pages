@@ -91,6 +91,7 @@ const styles: StyleSheetCSS = {
         outline: 'none',
         cursor: 'default',
         userSelect: 'none',
+        pointerEvents: 'auto',
     },
     shortcutText: {
         cursor: 'default',
