@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import Colors from '../../constants/colors';
 import Calculator from '../applications/core/Calculator';
 import Game2048 from '../applications/core/Game2048';
@@ -12,6 +12,7 @@ import Snake from '../applications/core/Snake';
 import StickyNotes from '../applications/core/StickyNotes';
 import TimerApp from '../applications/core/TimerApp';
 import WebampPlayer from '../applications/core/WebampPlayer';
+import { loadLocal, saveLocal } from '../applications/core/logic/storage';
 import {
     CORE_APPS,
     LEGACY_GAMES,
@@ -36,6 +37,7 @@ import Toolbar, { StartMenuItem } from './Toolbar';
 export interface DesktopProps {}
 
 type FolderKey = 'explorer' | 'accessories' | 'games';
+type DesktopGroupKey = 'system' | 'accessories' | 'games';
 
 type FolderDefinition = {
     key: FolderKey;
@@ -47,26 +49,82 @@ type ShortcutEntry = DesktopShortcutProps & {
     layoutKey: string;
 };
 
-const WINDOW_LAYER_BASE = 100;
+type ShortcutPosition = { left: number; top: number };
+type ShortcutPositions = Record<string, ShortcutPosition>;
 
-const DESKTOP_LAYOUT: Record<string, { left: number; top: number }> = {
-    explorer: { left: 18, top: 16 },
-    calculator: { left: 150, top: 42 },
-    notepad: { left: 305, top: 18 },
-    paint: { left: 468, top: 72 },
-    winamp: { left: 660, top: 28 },
-    sticky: { left: 850, top: 82 },
-    timer: { left: 1040, top: 30 },
-    pixel: { left: 150, top: 200 },
-    minesweeper: { left: 345, top: 250 },
-    snake: { left: 550, top: 190 },
-    '2048': { left: 750, top: 255 },
-    reaction: { left: 945, top: 195 },
-    sand: { left: 1090, top: 275 },
-    doom: { left: 38, top: 390 },
-    trail: { left: 250, top: 430 },
-    scrabble: { left: 505, top: 385 },
-    wordle: { left: 775, top: 445 },
+type DesktopGroupDefinition = {
+    keys: string[];
+    origin: ShortcutPosition;
+    columns: number;
+};
+
+const WINDOW_LAYER_BASE = 100;
+const DESKTOP_POSITION_KEY = 'rip.desktop.shortcut-positions.v2';
+const SHORTCUT_WIDTH = 78;
+const SHORTCUT_HEIGHT = 84;
+const TOOLBAR_CLEARANCE = 34;
+const GROUP_COLUMN_GAP = 96;
+const GROUP_ROW_GAP = 94;
+
+const DESKTOP_GROUPS: Record<DesktopGroupKey, DesktopGroupDefinition> = {
+    system: {
+        keys: ['explorer'],
+        origin: { left: 18, top: 204 },
+        columns: 1,
+    },
+    accessories: {
+        keys: ['calculator', 'notepad', 'paint', 'winamp', 'sticky', 'timer', 'pixel'],
+        origin: { left: 140, top: 16 },
+        columns: 2,
+    },
+    games: {
+        keys: ['minesweeper', 'snake', '2048', 'reaction', 'sand', 'doom', 'trail', 'scrabble', 'wordle'],
+        origin: { left: 390, top: 16 },
+        columns: 3,
+    },
+};
+
+const buildGroupedDesktopLayout = (): Record<string, ShortcutPosition> => {
+    const layout: Record<string, ShortcutPosition> = {};
+    (Object.keys(DESKTOP_GROUPS) as DesktopGroupKey[]).forEach((groupKey) => {
+        const group = DESKTOP_GROUPS[groupKey];
+        group.keys.forEach((key, index) => {
+            const column = index % group.columns;
+            const row = Math.floor(index / group.columns);
+            layout[key] = {
+                left: group.origin.left + column * GROUP_COLUMN_GAP,
+                top: group.origin.top + row * GROUP_ROW_GAP,
+            };
+        });
+    });
+    return layout;
+};
+
+const DESKTOP_LAYOUT = buildGroupedDesktopLayout();
+
+const getAdaptiveDesktopPosition = (layoutKey: string, contentColumns: number): ShortcutPosition => {
+    if (layoutKey === 'explorer') return { left: 8, top: 196 };
+
+    const accessories = DESKTOP_GROUPS.accessories.keys;
+    const accessoryIndex = accessories.indexOf(layoutKey);
+    if (accessoryIndex >= 0) {
+        return {
+            left: 8 + (1 + (accessoryIndex % contentColumns)) * 90,
+            top: 12 + Math.floor(accessoryIndex / contentColumns) * 92,
+        };
+    }
+
+    const games = DESKTOP_GROUPS.games.keys;
+    const gameIndex = games.indexOf(layoutKey);
+    const accessoryRows = Math.ceil(accessories.length / contentColumns);
+    if (gameIndex >= 0) {
+        return {
+            left: 8 + (1 + (gameIndex % contentColumns)) * 90,
+            top: 12 + (accessoryRows + 1 + Math.floor(gameIndex / contentColumns)) * 92,
+        };
+    }
+
+    return { left: 98, top: 12 };
 };
 
 const FOLDERS: FolderDefinition[] = [
@@ -93,13 +151,35 @@ const CORE_COMPONENTS: Record<CoreAppKey, React.ComponentType<WindowAppProps>> =
 const highestZIndex = (windows: DesktopWindows): number =>
     Object.keys(windows).reduce((highest, key) => Math.max(highest, windows[key]?.zIndex || 0), 0);
 
+const isShortcutPosition = (value: unknown): value is ShortcutPosition => {
+    if (!value || typeof value !== 'object') return false;
+    const position = value as ShortcutPosition;
+    return Number.isFinite(position.left) && Number.isFinite(position.top);
+};
+
+const clampShortcutPosition = (position: ShortcutPosition, desktopWidth: number, desktopHeight: number): ShortcutPosition => {
+    const maxLeft = Math.max(0, desktopWidth - SHORTCUT_WIDTH);
+    const maxTop = Math.max(0, desktopHeight - SHORTCUT_HEIGHT - TOOLBAR_CLEARANCE);
+    return {
+        left: Math.round(Math.min(Math.max(position.left, 0), maxLeft)),
+        top: Math.round(Math.min(Math.max(position.top, 0), maxTop)),
+    };
+};
+
 const Desktop: React.FC<DesktopProps> = () => {
     const [windows, setWindows] = useState<DesktopWindows>({});
     const [shutdown, setShutdown] = useState(false);
     const [numShutdowns, setNumShutdowns] = useState(1);
+    const [shortcutPositions, setShortcutPositions] = useState<ShortcutPositions>(() => {
+        const saved = loadLocal(DESKTOP_POSITION_KEY, {});
+        return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved as ShortcutPositions : {};
+    });
+    const shortcutPositionsRef = useRef<ShortcutPositions>(shortcutPositions);
     const desktopWidth = window.visualViewport?.width || window.innerWidth;
-    const adaptiveDesktop = desktopWidth < 1180;
+    const desktopHeight = window.visualViewport?.height || window.innerHeight;
+    const adaptiveDesktop = desktopWidth < 700;
     const adaptiveColumns = Math.max(1, Math.floor(Math.max(desktopWidth - 16, 90) / 90));
+    const adaptiveContentColumns = Math.max(1, adaptiveColumns - 1);
 
     const removeWindow = useCallback((key: string) => {
         setTimeout(() => {
@@ -210,6 +290,32 @@ const Desktop: React.FC<DesktopProps> = () => {
         })),
     ], [openCoreApp, openFolder, openLegacyGame]);
 
+    const moveShortcutBy = useCallback((
+        layoutKey: string,
+        fallbackPosition: ShortcutPosition,
+        deltaX: number,
+        deltaY: number
+    ) => {
+        const currentMap = shortcutPositionsRef.current;
+        const storedPosition = currentMap[layoutKey];
+        const currentPosition = clampShortcutPosition(
+            isShortcutPosition(storedPosition) ? storedPosition : fallbackPosition,
+            desktopWidth,
+            desktopHeight
+        );
+        const nextPosition = clampShortcutPosition({
+            left: currentPosition.left + deltaX,
+            top: currentPosition.top + deltaY,
+        }, desktopWidth, desktopHeight);
+        const nextMap = { ...currentMap, [layoutKey]: nextPosition };
+        shortcutPositionsRef.current = nextMap;
+        setShortcutPositions(nextMap);
+    }, [desktopHeight, desktopWidth]);
+
+    const persistShortcutPositions = useCallback(() => {
+        saveLocal(DESKTOP_POSITION_KEY, shortcutPositionsRef.current);
+    }, []);
+
     const startItems = useMemo<StartMenuItem[]>(() => {
         const launchCore = (key: CoreAppKey) => {
             const app = getCoreApp(key);
@@ -240,14 +346,28 @@ const Desktop: React.FC<DesktopProps> = () => {
     return (
         <div style={styles.desktop}>
             <div style={styles.shortcuts} aria-label="Desktop programs">
-                {shortcuts.map((shortcut, index) => {
-                    const position = adaptiveDesktop
-                        ? { left: 8 + (index % adaptiveColumns) * 90, top: 12 + Math.floor(index / adaptiveColumns) * 92 }
+                {shortcuts.map((shortcut) => {
+                    const defaultPosition = adaptiveDesktop
+                        ? getAdaptiveDesktopPosition(shortcut.layoutKey, adaptiveContentColumns)
                         : (DESKTOP_LAYOUT[shortcut.layoutKey] || { left: 12, top: 12 });
+                    const savedPosition = shortcutPositions[shortcut.layoutKey];
+                    const position = clampShortcutPosition(
+                        isShortcutPosition(savedPosition) ? savedPosition : defaultPosition,
+                        desktopWidth,
+                        desktopHeight
+                    );
                     const { layoutKey, ...shortcutProps } = shortcut;
                     return (
-                        <div style={Object.assign({}, styles.shortcutContainer, position)} key={layoutKey}>
-                            <DesktopShortcut {...shortcutProps} />
+                        <div
+                            style={Object.assign({}, styles.shortcutContainer, position)}
+                            key={layoutKey}
+                            data-desktop-layout-key={layoutKey}
+                        >
+                            <DesktopShortcut
+                                {...shortcutProps}
+                                onDragDelta={(deltaX, deltaY) => moveShortcutBy(layoutKey, position, deltaX, deltaY)}
+                                onDragEnd={persistShortcutPositions}
+                            />
                         </div>
                     );
                 })}

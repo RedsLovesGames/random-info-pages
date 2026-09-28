@@ -8,11 +8,33 @@ export interface DesktopShortcutProps {
     shortcutName: string;
     invertText?: boolean;
     onOpen: () => void;
+    onDragDelta?: (deltaX: number, deltaY: number) => void;
+    onDragEnd?: () => void;
 }
 
-const DesktopShortcut: React.FC<DesktopShortcutProps> = ({ icon, shortcutName, invertText, onOpen }) => {
+type DragState = {
+    pointerId: number;
+    startX: number;
+    startY: number;
+    lastX: number;
+    lastY: number;
+    dragging: boolean;
+};
+
+const DRAG_THRESHOLD = 4;
+
+const DesktopShortcut: React.FC<DesktopShortcutProps> = ({
+    icon,
+    shortcutName,
+    invertText,
+    onOpen,
+    onDragDelta,
+    onDragEnd,
+}) => {
     const [isSelected, setIsSelected] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const dragRef = useRef<DragState | null>(null);
+    const suppressOpenUntilRef = useRef(0);
     const iconUrl = getIconByName(icon) as unknown as string;
     const shortcutId = useMemo(
         () => `desktop-shortcut-${shortcutName.replace(/[^A-Za-z0-9_-]/g, '')}`,
@@ -31,6 +53,7 @@ const DesktopShortcut: React.FC<DesktopShortcutProps> = ({ icon, shortcutName, i
     }, [handleClickOutside]);
 
     const open = useCallback(() => {
+        if (Date.now() < suppressOpenUntilRef.current) return;
         setIsSelected(false);
         onOpen();
     }, [onOpen]);
@@ -42,6 +65,59 @@ const DesktopShortcut: React.FC<DesktopShortcutProps> = ({ icon, shortcutName, i
         }
     }, [open]);
 
+    const onPointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+        if (event.button !== 0) return;
+        event.stopPropagation();
+        setIsSelected(true);
+        dragRef.current = {
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY,
+            lastX: event.clientX,
+            lastY: event.clientY,
+            dragging: false,
+        };
+        if (onDragDelta) {
+            event.currentTarget.setPointerCapture(event.pointerId);
+        }
+    }, [onDragDelta]);
+
+    const onPointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+        const drag = dragRef.current;
+        if (!drag || drag.pointerId !== event.pointerId || !onDragDelta) return;
+
+        if (!drag.dragging) {
+            const totalX = event.clientX - drag.startX;
+            const totalY = event.clientY - drag.startY;
+            if (Math.hypot(totalX, totalY) < DRAG_THRESHOLD) return;
+            drag.dragging = true;
+            drag.lastX = event.clientX;
+            drag.lastY = event.clientY;
+            suppressOpenUntilRef.current = Date.now() + 400;
+            onDragDelta(totalX, totalY);
+            return;
+        }
+
+        const deltaX = event.clientX - drag.lastX;
+        const deltaY = event.clientY - drag.lastY;
+        drag.lastX = event.clientX;
+        drag.lastY = event.clientY;
+        if (deltaX || deltaY) onDragDelta(deltaX, deltaY);
+    }, [onDragDelta]);
+
+    const finishDrag = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+        const drag = dragRef.current;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        if (drag.dragging) {
+            suppressOpenUntilRef.current = Date.now() + 400;
+            onDragEnd?.();
+        }
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+        dragRef.current = null;
+    }, [onDragEnd]);
+
     return (
         <div
             id={shortcutId}
@@ -51,10 +127,10 @@ const DesktopShortcut: React.FC<DesktopShortcutProps> = ({ icon, shortcutName, i
             aria-label={shortcutName}
             data-shortcut-name={shortcutName}
             style={styles.appShortcut}
-            onMouseDown={(event) => {
-                event.stopPropagation();
-                setIsSelected(true);
-            }}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={finishDrag}
+            onPointerCancel={finishDrag}
             onDoubleClick={open}
             onKeyDown={onKeyDown}
         >
@@ -94,6 +170,7 @@ const styles: StyleSheetCSS = {
         outline: 'none',
         cursor: 'default',
         userSelect: 'none',
+        touchAction: 'none',
         pointerEvents: 'auto',
     },
     shortcutText: {
