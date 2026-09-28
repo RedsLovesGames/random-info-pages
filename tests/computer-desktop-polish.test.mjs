@@ -40,7 +40,7 @@ test('core app catalog uses distinct program icons instead of generic explorer/g
 });
 
 test('LACUNA desktop shortcuts are forced beneath normal application windows', async () => {
-  const source = await read('scripts/win95-overrides/public/index.html');
+  const source = await read('scripts/lacuna-hotfix/win95-overrides/public/index.html');
   assert.match(source, /\.lac-desktop-shortcut\s*\{\s*z-index:\s*10\s*!important;\s*\}/);
 });
 
