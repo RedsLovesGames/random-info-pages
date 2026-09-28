@@ -29,9 +29,144 @@
   <link rel="stylesheet" href="%PUBLIC_URL%/lacuna/lacuna.css">
   <style id="rip-desktop-layer-fix">
     /* System shortcuts belong to the desktop layer, never above app windows. */
-    .lac-desktop-shortcut { z-index: 10 !important; }
+    .lac-desktop-shortcut { z-index: 10 !important; touch-action: none; }
   </style>
   <script type="module" src="%PUBLIC_URL%/lacuna/lacuna-runtime/src/runtime.js"></script>
+  <script>
+    (() => {
+      const LACUNA_DESKTOP_POSITION_KEY = 'rip.lacuna.desktop.shortcut-positions.v1';
+      const DRAG_THRESHOLD = 4;
+      const TOOLBAR_CLEARANCE = 34;
+      let activeDrag = null;
+      const suppressUntil = new WeakMap();
+
+      const loadPositions = () => {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(LACUNA_DESKTOP_POSITION_KEY) || '{}');
+          return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+        } catch (_error) {
+          return {};
+        }
+      };
+
+      let positions = loadPositions();
+
+      const savePositions = () => {
+        try {
+          localStorage.setItem(LACUNA_DESKTOP_POSITION_KEY, JSON.stringify(positions));
+        } catch (_error) {
+          // Local persistence is optional; dragging still works without storage access.
+        }
+      };
+
+      const shortcutKey = (element) => {
+        if (element.dataset.lacDragKey) return element.dataset.lacDragKey;
+        const label = element.id || element.getAttribute('aria-label') || element.textContent || 'system-shortcut';
+        const key = label.trim().replace(/\s+/g, ' ');
+        element.dataset.lacDragKey = key;
+        return key;
+      };
+
+      const clampPosition = (element, left, top) => {
+        const width = element.offsetWidth || 76;
+        const height = element.offsetHeight || 82;
+        return {
+          left: Math.round(Math.min(Math.max(left, 0), Math.max(0, window.innerWidth - width))),
+          top: Math.round(Math.min(Math.max(top, 0), Math.max(0, window.innerHeight - height - TOOLBAR_CLEARANCE))),
+        };
+      };
+
+      const placeShortcut = (element, position) => {
+        if (!position || !Number.isFinite(position.left) || !Number.isFinite(position.top)) return;
+        const next = clampPosition(element, position.left, position.top);
+        element.style.left = `${next.left}px`;
+        element.style.top = `${next.top}px`;
+        element.style.right = 'auto';
+      };
+
+      const applyStoredPositions = (root = document) => {
+        root.querySelectorAll?.('.lac-desktop-shortcut').forEach((element) => {
+          const position = positions[shortcutKey(element)];
+          if (position) placeShortcut(element, position);
+        });
+      };
+
+      document.addEventListener('pointerdown', (event) => {
+        const shortcut = event.target.closest?.('.lac-desktop-shortcut');
+        if (!shortcut || event.button !== 0) return;
+        const rect = shortcut.getBoundingClientRect();
+        activeDrag = {
+          element: shortcut,
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          startLeft: rect.left,
+          startTop: rect.top,
+          dragging: false,
+        };
+        shortcut.setPointerCapture?.(event.pointerId);
+      });
+
+      document.addEventListener('pointermove', (event) => {
+        const drag = activeDrag;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        const deltaX = event.clientX - drag.startX;
+        const deltaY = event.clientY - drag.startY;
+        if (!drag.dragging && Math.hypot(deltaX, deltaY) < DRAG_THRESHOLD) return;
+        drag.dragging = true;
+        event.preventDefault();
+        const next = clampPosition(drag.element, drag.startLeft + deltaX, drag.startTop + deltaY);
+        drag.element.style.left = `${next.left}px`;
+        drag.element.style.top = `${next.top}px`;
+        drag.element.style.right = 'auto';
+      }, { passive: false });
+
+      const finishDrag = (event) => {
+        const drag = activeDrag;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        if (drag.dragging) {
+          const rect = drag.element.getBoundingClientRect();
+          const next = clampPosition(drag.element, rect.left, rect.top);
+          positions = { ...positions, [shortcutKey(drag.element)]: next };
+          savePositions();
+          suppressUntil.set(drag.element, Date.now() + 400);
+        }
+        if (drag.element.hasPointerCapture?.(event.pointerId)) {
+          drag.element.releasePointerCapture?.(event.pointerId);
+        }
+        activeDrag = null;
+      };
+
+      document.addEventListener('pointerup', finishDrag);
+      document.addEventListener('pointercancel', finishDrag);
+
+      const suppressDraggedActivation = (event) => {
+        const shortcut = event.target.closest?.('.lac-desktop-shortcut');
+        if (!shortcut) return;
+        if ((suppressUntil.get(shortcut) || 0) > Date.now()) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      };
+      document.addEventListener('click', suppressDraggedActivation, true);
+      document.addEventListener('dblclick', suppressDraggedActivation, true);
+
+      const observer = new MutationObserver(() => applyStoredPositions());
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+      window.addEventListener('DOMContentLoaded', () => applyStoredPositions());
+      window.addEventListener('load', () => applyStoredPositions());
+      window.addEventListener('resize', () => {
+        document.querySelectorAll('.lac-desktop-shortcut').forEach((element) => {
+          const key = shortcutKey(element);
+          if (!positions[key]) return;
+          const next = clampPosition(element, positions[key].left, positions[key].top);
+          positions = { ...positions, [key]: next };
+          placeShortcut(element, next);
+        });
+        savePositions();
+      });
+    })();
+  </script>
 </head>
 <body>
   <noscript>You need to enable JavaScript to run Random Info OS.</noscript>
