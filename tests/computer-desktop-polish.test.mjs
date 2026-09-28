@@ -26,11 +26,13 @@ test('desktop launches apps directly from grouped desktop sections instead of ca
   assert.doesNotMatch(source, /React\.useEffect\(\(\) => \{ openFolder\('explorer'\); \}, \[openFolder\]\);/);
 });
 
-test('desktop shortcut layout adapts before fixed positions can overflow intermediate viewports', async () => {
+test('grouped desktop remains intact at intermediate widths and adapts only when it must', async () => {
   const source = await read('scripts/win95-overrides/src/components/os/Desktop.tsx');
   assert.match(source, /const desktopWidth\s*=\s*window\.visualViewport\?\.width\s*\|\|\s*window\.innerWidth/);
   assert.match(source, /const adaptiveColumns\s*=/);
-  assert.match(source, /desktopWidth\s*<\s*1180/);
+  assert.match(source, /const adaptiveContentColumns\s*=/);
+  assert.match(source, /desktopWidth\s*<\s*700/);
+  assert.match(source, /origin:\s*\{\s*left:\s*390,\s*top:\s*16\s*\}/);
   assert.doesNotMatch(source, /compactDesktop\s*=.*<=\s*600/);
 });
 
@@ -65,6 +67,7 @@ test('LACUNA system shortcuts join the System section and remain draggable', asy
   assert.match(source, /My Computer/);
   assert.match(source, /Recycle Bin/);
   assert.match(source, /defaultSystemPosition/);
+  assert.match(source, /window\.innerWidth\s*<\s*700/);
   assert.match(source, /\.lac-desktop-shortcut/);
   assert.match(source, /MutationObserver/);
   assert.match(source, /setPointerCapture/);
