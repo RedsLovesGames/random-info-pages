@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import Colors from '../../constants/colors';
 import Calculator from '../applications/core/Calculator';
 import Game2048 from '../applications/core/Game2048';
@@ -12,6 +12,7 @@ import Snake from '../applications/core/Snake';
 import StickyNotes from '../applications/core/StickyNotes';
 import TimerApp from '../applications/core/TimerApp';
 import WebampPlayer from '../applications/core/WebampPlayer';
+import { loadLocal, saveLocal } from '../applications/core/logic/storage';
 import {
     CORE_APPS,
     LEGACY_GAMES,
@@ -47,9 +48,16 @@ type ShortcutEntry = DesktopShortcutProps & {
     layoutKey: string;
 };
 
-const WINDOW_LAYER_BASE = 100;
+type ShortcutPosition = { left: number; top: number };
+type ShortcutPositions = Record<string, ShortcutPosition>;
 
-const DESKTOP_LAYOUT: Record<string, { left: number; top: number }> = {
+const WINDOW_LAYER_BASE = 100;
+const DESKTOP_POSITION_KEY = 'rip.desktop.shortcut-positions.v1';
+const SHORTCUT_WIDTH = 78;
+const SHORTCUT_HEIGHT = 84;
+const TOOLBAR_CLEARANCE = 34;
+
+const DESKTOP_LAYOUT: Record<string, ShortcutPosition> = {
     explorer: { left: 18, top: 16 },
     calculator: { left: 150, top: 42 },
     notepad: { left: 305, top: 18 },
@@ -93,11 +101,32 @@ const CORE_COMPONENTS: Record<CoreAppKey, React.ComponentType<WindowAppProps>> =
 const highestZIndex = (windows: DesktopWindows): number =>
     Object.keys(windows).reduce((highest, key) => Math.max(highest, windows[key]?.zIndex || 0), 0);
 
+const isShortcutPosition = (value: unknown): value is ShortcutPosition => {
+    if (!value || typeof value !== 'object') return false;
+    const position = value as ShortcutPosition;
+    return Number.isFinite(position.left) && Number.isFinite(position.top);
+};
+
+const clampShortcutPosition = (position: ShortcutPosition, desktopWidth: number, desktopHeight: number): ShortcutPosition => {
+    const maxLeft = Math.max(0, desktopWidth - SHORTCUT_WIDTH);
+    const maxTop = Math.max(0, desktopHeight - SHORTCUT_HEIGHT - TOOLBAR_CLEARANCE);
+    return {
+        left: Math.round(Math.min(Math.max(position.left, 0), maxLeft)),
+        top: Math.round(Math.min(Math.max(position.top, 0), maxTop)),
+    };
+};
+
 const Desktop: React.FC<DesktopProps> = () => {
     const [windows, setWindows] = useState<DesktopWindows>({});
     const [shutdown, setShutdown] = useState(false);
     const [numShutdowns, setNumShutdowns] = useState(1);
+    const [shortcutPositions, setShortcutPositions] = useState<ShortcutPositions>(() => {
+        const saved = loadLocal(DESKTOP_POSITION_KEY, {});
+        return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved as ShortcutPositions : {};
+    });
+    const shortcutPositionsRef = useRef<ShortcutPositions>(shortcutPositions);
     const desktopWidth = window.visualViewport?.width || window.innerWidth;
+    const desktopHeight = window.visualViewport?.height || window.innerHeight;
     const adaptiveDesktop = desktopWidth < 1180;
     const adaptiveColumns = Math.max(1, Math.floor(Math.max(desktopWidth - 16, 90) / 90));
 
@@ -210,6 +239,32 @@ const Desktop: React.FC<DesktopProps> = () => {
         })),
     ], [openCoreApp, openFolder, openLegacyGame]);
 
+    const moveShortcutBy = useCallback((
+        layoutKey: string,
+        fallbackPosition: ShortcutPosition,
+        deltaX: number,
+        deltaY: number
+    ) => {
+        const currentMap = shortcutPositionsRef.current;
+        const storedPosition = currentMap[layoutKey];
+        const currentPosition = clampShortcutPosition(
+            isShortcutPosition(storedPosition) ? storedPosition : fallbackPosition,
+            desktopWidth,
+            desktopHeight
+        );
+        const nextPosition = clampShortcutPosition({
+            left: currentPosition.left + deltaX,
+            top: currentPosition.top + deltaY,
+        }, desktopWidth, desktopHeight);
+        const nextMap = { ...currentMap, [layoutKey]: nextPosition };
+        shortcutPositionsRef.current = nextMap;
+        setShortcutPositions(nextMap);
+    }, [desktopHeight, desktopWidth]);
+
+    const persistShortcutPositions = useCallback(() => {
+        saveLocal(DESKTOP_POSITION_KEY, shortcutPositionsRef.current);
+    }, []);
+
     const startItems = useMemo<StartMenuItem[]>(() => {
         const launchCore = (key: CoreAppKey) => {
             const app = getCoreApp(key);
@@ -241,13 +296,27 @@ const Desktop: React.FC<DesktopProps> = () => {
         <div style={styles.desktop}>
             <div style={styles.shortcuts} aria-label="Desktop programs">
                 {shortcuts.map((shortcut, index) => {
-                    const position = adaptiveDesktop
+                    const defaultPosition = adaptiveDesktop
                         ? { left: 8 + (index % adaptiveColumns) * 90, top: 12 + Math.floor(index / adaptiveColumns) * 92 }
                         : (DESKTOP_LAYOUT[shortcut.layoutKey] || { left: 12, top: 12 });
+                    const savedPosition = shortcutPositions[shortcut.layoutKey];
+                    const position = clampShortcutPosition(
+                        isShortcutPosition(savedPosition) ? savedPosition : defaultPosition,
+                        desktopWidth,
+                        desktopHeight
+                    );
                     const { layoutKey, ...shortcutProps } = shortcut;
                     return (
-                        <div style={Object.assign({}, styles.shortcutContainer, position)} key={layoutKey}>
-                            <DesktopShortcut {...shortcutProps} />
+                        <div
+                            style={Object.assign({}, styles.shortcutContainer, position)}
+                            key={layoutKey}
+                            data-desktop-layout-key={layoutKey}
+                        >
+                            <DesktopShortcut
+                                {...shortcutProps}
+                                onDragDelta={(deltaX, deltaY) => moveShortcutBy(layoutKey, position, deltaX, deltaY)}
+                                onDragEnd={persistShortcutPositions}
+                            />
                         </div>
                     );
                 })}
