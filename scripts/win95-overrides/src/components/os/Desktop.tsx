@@ -37,6 +37,7 @@ import Toolbar, { StartMenuItem } from './Toolbar';
 export interface DesktopProps {}
 
 type FolderKey = 'explorer' | 'accessories' | 'games';
+type DesktopGroupKey = 'system' | 'accessories' | 'games';
 
 type FolderDefinition = {
     key: FolderKey;
@@ -51,31 +52,55 @@ type ShortcutEntry = DesktopShortcutProps & {
 type ShortcutPosition = { left: number; top: number };
 type ShortcutPositions = Record<string, ShortcutPosition>;
 
+type DesktopGroupDefinition = {
+    keys: string[];
+    origin: ShortcutPosition;
+    columns: number;
+};
+
 const WINDOW_LAYER_BASE = 100;
-const DESKTOP_POSITION_KEY = 'rip.desktop.shortcut-positions.v1';
+const DESKTOP_POSITION_KEY = 'rip.desktop.shortcut-positions.v2';
 const SHORTCUT_WIDTH = 78;
 const SHORTCUT_HEIGHT = 84;
 const TOOLBAR_CLEARANCE = 34;
+const GROUP_COLUMN_GAP = 96;
+const GROUP_ROW_GAP = 94;
 
-const DESKTOP_LAYOUT: Record<string, ShortcutPosition> = {
-    explorer: { left: 18, top: 16 },
-    calculator: { left: 150, top: 42 },
-    notepad: { left: 305, top: 18 },
-    paint: { left: 468, top: 72 },
-    winamp: { left: 660, top: 28 },
-    sticky: { left: 850, top: 82 },
-    timer: { left: 1040, top: 30 },
-    pixel: { left: 150, top: 200 },
-    minesweeper: { left: 345, top: 250 },
-    snake: { left: 550, top: 190 },
-    '2048': { left: 750, top: 255 },
-    reaction: { left: 945, top: 195 },
-    sand: { left: 1090, top: 275 },
-    doom: { left: 38, top: 390 },
-    trail: { left: 250, top: 430 },
-    scrabble: { left: 505, top: 385 },
-    wordle: { left: 775, top: 445 },
+const DESKTOP_GROUPS: Record<DesktopGroupKey, DesktopGroupDefinition> = {
+    system: {
+        keys: ['explorer'],
+        origin: { left: 18, top: 204 },
+        columns: 1,
+    },
+    accessories: {
+        keys: ['calculator', 'notepad', 'paint', 'winamp', 'sticky', 'timer', 'pixel'],
+        origin: { left: 160, top: 16 },
+        columns: 2,
+    },
+    games: {
+        keys: ['minesweeper', 'snake', '2048', 'reaction', 'sand', 'doom', 'trail', 'scrabble', 'wordle'],
+        origin: { left: 520, top: 16 },
+        columns: 3,
+    },
 };
+
+const buildGroupedDesktopLayout = (): Record<string, ShortcutPosition> => {
+    const layout: Record<string, ShortcutPosition> = {};
+    (Object.keys(DESKTOP_GROUPS) as DesktopGroupKey[]).forEach((groupKey) => {
+        const group = DESKTOP_GROUPS[groupKey];
+        group.keys.forEach((key, index) => {
+            const column = index % group.columns;
+            const row = Math.floor(index / group.columns);
+            layout[key] = {
+                left: group.origin.left + column * GROUP_COLUMN_GAP,
+                top: group.origin.top + row * GROUP_ROW_GAP,
+            };
+        });
+    });
+    return layout;
+};
+
+const DESKTOP_LAYOUT = buildGroupedDesktopLayout();
 
 const FOLDERS: FolderDefinition[] = [
     { key: 'explorer', name: 'Random Info Explorer', icon: 'showcaseIcon' },
