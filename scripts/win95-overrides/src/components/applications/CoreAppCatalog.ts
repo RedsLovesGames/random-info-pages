@@ -34,17 +34,17 @@ export interface LegacyGameDefinition {
 }
 
 export const CORE_APPS: CoreAppDefinition[] = [
-    { key: 'calculator', title: 'Calculator', description: 'Four-function calculator with keyboard support.', icon: 'windowExplorerIcon', category: 'Accessories' },
-    { key: 'notepad', title: 'Notepad', description: 'Plain-text notes with local autosave.', icon: 'windowExplorerIcon', category: 'Accessories' },
+    { key: 'calculator', title: 'Calculator', description: 'Four-function calculator with keyboard support.', icon: 'calculatorIcon', category: 'Accessories' },
+    { key: 'notepad', title: 'Notepad', description: 'Plain-text notes with local autosave.', icon: 'notepadIcon', category: 'Accessories' },
     { key: 'paint', title: 'Paint', description: 'Full JS Paint running inside the desktop.', icon: 'paintIcon', category: 'Accessories' },
     { key: 'winamp', title: 'Winamp', description: 'Webamp music player with local audio loading.', icon: 'winampIcon', category: 'Accessories' },
     { key: 'sticky', title: 'Sticky Notes', description: 'Persistent little notes stored on this device.', icon: 'stickyIcon', category: 'Accessories' },
     { key: 'timer', title: 'Timer / Stopwatch', description: 'Stopwatch and countdown timer in one window.', icon: 'timerIcon', category: 'Accessories' },
     { key: 'pixel', title: 'Pixel Editor', description: 'A tiny 16×16 pixel-art editor with PNG export.', icon: 'pixelIcon', category: 'Accessories' },
-    { key: 'minesweeper', title: 'Minesweeper', description: 'Classic 9×9 beginner Minesweeper.', icon: 'windowGameIcon', category: 'Games' },
-    { key: 'snake', title: 'Snake', description: 'Keyboard-controlled grid Snake with a local high score.', icon: 'windowGameIcon', category: 'Games' },
-    { key: '2048', title: '2048', description: 'Merge tiles to reach 2048.', icon: 'windowGameIcon', category: 'Games' },
-    { key: 'reaction', title: 'Reaction Test', description: 'Measure reaction time and keep a local best.', icon: 'windowGameIcon', category: 'Games' },
+    { key: 'minesweeper', title: 'Minesweeper', description: 'Classic 9×9 beginner Minesweeper.', icon: 'minesweeperIcon', category: 'Games' },
+    { key: 'snake', title: 'Snake', description: 'Keyboard-controlled grid Snake with a local high score.', icon: 'snakeIcon', category: 'Games' },
+    { key: '2048', title: '2048', description: 'Merge tiles to reach 2048.', icon: 'game2048Icon', category: 'Games' },
+    { key: 'reaction', title: 'Reaction Test', description: 'Measure reaction time and keep a local best.', icon: 'reactionIcon', category: 'Games' },
     { key: 'sand', title: 'Sand Simulator', description: 'Draw falling sand and watch it settle.', icon: 'sandIcon', category: 'Games' },
 ];
 
