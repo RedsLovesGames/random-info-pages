@@ -13,6 +13,7 @@ import StickyNotes from '../applications/core/StickyNotes';
 import TimerApp from '../applications/core/TimerApp';
 import WebampPlayer from '../applications/core/WebampPlayer';
 import {
+    CORE_APPS,
     LEGACY_GAMES,
     CoreAppDefinition,
     CoreAppKey,
@@ -40,6 +41,32 @@ type FolderDefinition = {
     key: FolderKey;
     name: string;
     icon: IconName;
+};
+
+type ShortcutEntry = DesktopShortcutProps & {
+    layoutKey: string;
+};
+
+const WINDOW_LAYER_BASE = 100;
+
+const DESKTOP_LAYOUT: Record<string, { left: number; top: number }> = {
+    explorer: { left: 18, top: 16 },
+    calculator: { left: 150, top: 42 },
+    notepad: { left: 305, top: 18 },
+    paint: { left: 468, top: 72 },
+    winamp: { left: 660, top: 28 },
+    sticky: { left: 850, top: 82 },
+    timer: { left: 1040, top: 30 },
+    pixel: { left: 150, top: 200 },
+    minesweeper: { left: 345, top: 250 },
+    snake: { left: 550, top: 190 },
+    '2048': { left: 750, top: 255 },
+    reaction: { left: 945, top: 195 },
+    sand: { left: 1090, top: 275 },
+    doom: { left: 38, top: 390 },
+    trail: { left: 250, top: 430 },
+    scrabble: { left: 505, top: 385 },
+    wordle: { left: 775, top: 445 },
 };
 
 const FOLDERS: FolderDefinition[] = [
@@ -70,6 +97,7 @@ const Desktop: React.FC<DesktopProps> = () => {
     const [windows, setWindows] = useState<DesktopWindows>({});
     const [shutdown, setShutdown] = useState(false);
     const [numShutdowns, setNumShutdowns] = useState(1);
+    const compactDesktop = (window.visualViewport?.width || window.innerWidth) <= 600;
 
     const removeWindow = useCallback((key: string) => {
         setTimeout(() => {
@@ -159,10 +187,26 @@ const Desktop: React.FC<DesktopProps> = () => {
         addWindow(key, folder.name, folder.icon, component);
     }, [addWindow, minimizeWindow, onWindowInteract, openCoreApp, openLegacyGame, openRandomInfoApp, removeWindow]);
 
-    const shortcuts = useMemo<DesktopShortcutProps[]>(() => [
-        ...FOLDERS.map((folder) => ({ shortcutName: folder.name, icon: folder.icon, onOpen: () => openFolder(folder.key) })),
-        { shortcutName: 'Doom', icon: 'doomIcon', onOpen: () => openLegacyGame('doom') },
-    ], [openFolder, openLegacyGame]);
+    const shortcuts = useMemo<ShortcutEntry[]>(() => [
+        {
+            layoutKey: 'explorer',
+            shortcutName: 'Random Info Explorer',
+            icon: 'showcaseIcon',
+            onOpen: () => openFolder('explorer'),
+        },
+        ...CORE_APPS.map((app) => ({
+            layoutKey: app.key,
+            shortcutName: app.title,
+            icon: app.icon,
+            onOpen: () => openCoreApp(app),
+        })),
+        ...LEGACY_GAMES.map((game) => ({
+            layoutKey: game.key,
+            shortcutName: game.title,
+            icon: game.icon,
+            onOpen: () => openLegacyGame(game.key),
+        })),
+    ], [openCoreApp, openFolder, openLegacyGame]);
 
     const startItems = useMemo<StartMenuItem[]>(() => {
         const launchCore = (key: CoreAppKey) => {
@@ -174,14 +218,12 @@ const Desktop: React.FC<DesktopProps> = () => {
             { label: 'Games', icon: 'folderGames', onOpen: () => openFolder('games') },
             { label: 'Paint', icon: 'paintIcon', onOpen: () => launchCore('paint') },
             { label: 'Winamp', icon: 'winampIcon', onOpen: () => launchCore('winamp') },
-            { label: 'Notepad', icon: 'windowExplorerIcon', onOpen: () => launchCore('notepad') },
+            { label: 'Notepad', icon: 'notepadIcon', onOpen: () => launchCore('notepad') },
             { label: 'Sticky Notes', icon: 'stickyIcon', onOpen: () => launchCore('sticky') },
             { label: 'Timer / Stopwatch', icon: 'timerIcon', onOpen: () => launchCore('timer') },
             { label: 'Doom', icon: 'doomIcon', onOpen: () => openLegacyGame('doom') },
         ];
     }, [openCoreApp, openFolder, openLegacyGame]);
-
-    React.useEffect(() => { openFolder('explorer'); }, [openFolder]);
 
     const startShutdown = useCallback(() => {
         setTimeout(() => {
@@ -195,31 +237,44 @@ const Desktop: React.FC<DesktopProps> = () => {
 
     return (
         <div style={styles.desktop}>
+            <div style={styles.shortcuts} aria-label="Desktop programs">
+                {shortcuts.map((shortcut, index) => {
+                    const position = compactDesktop
+                        ? { left: 8 + (index % 4) * 90, top: 12 + Math.floor(index / 4) * 92 }
+                        : (DESKTOP_LAYOUT[shortcut.layoutKey] || { left: 12, top: 12 });
+                    const { layoutKey, ...shortcutProps } = shortcut;
+                    return (
+                        <div style={Object.assign({}, styles.shortcutContainer, position)} key={layoutKey}>
+                            <DesktopShortcut {...shortcutProps} />
+                        </div>
+                    );
+                })}
+            </div>
             {Object.keys(windows).map((key) => {
                 const element = windows[key].component;
                 if (!element) return null;
                 return (
-                    <div key={`win-${key}`} style={Object.assign({}, { zIndex: windows[key].zIndex }, windows[key].minimized && styles.minimized)}>
+                    <div
+                        key={`win-${key}`}
+                        style={Object.assign(
+                            {},
+                            { zIndex: WINDOW_LAYER_BASE + windows[key].zIndex },
+                            windows[key].minimized && styles.minimized
+                        )}
+                    >
                         {React.cloneElement(element, { onInteract: () => onWindowInteract(key), onMinimize: () => minimizeWindow(key), onClose: () => removeWindow(key) })}
                     </div>
                 );
             })}
-            <div style={styles.shortcuts}>
-                {shortcuts.map((shortcut, index) => (
-                    <div style={Object.assign({}, styles.shortcutContainer, { top: index * 104 })} key={shortcut.shortcutName}>
-                        <DesktopShortcut {...shortcut} />
-                    </div>
-                ))}
-            </div>
             <Toolbar windows={windows} toggleMinimize={toggleMinimize} shutdown={startShutdown} startItems={startItems} />
         </div>
     );
 };
 
 const styles: StyleSheetCSS = {
-    desktop: { minHeight: '100%', flex: 1, backgroundColor: Colors.turquoise, overflow: 'hidden' },
+    desktop: { position: 'relative', minHeight: '100%', flex: 1, backgroundColor: Colors.turquoise, overflow: 'hidden' },
     shortcutContainer: { position: 'absolute' },
-    shortcuts: { position: 'absolute', top: 16, left: 6 },
+    shortcuts: { position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' },
     minimized: { pointerEvents: 'none', opacity: 0 },
 };
 
