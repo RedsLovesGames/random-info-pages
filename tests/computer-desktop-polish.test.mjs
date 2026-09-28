@@ -49,6 +49,8 @@ test('desktop shortcuts drag with pointer capture and persist custom positions',
   assert.match(shortcut, /setPointerCapture/);
   assert.match(shortcut, /onPointerMove/);
   assert.match(shortcut, /onDragDelta/);
+  assert.match(shortcut, /DRAG_THRESHOLD\s*=\s*4/);
+  assert.match(shortcut, /suppressOpenUntilRef/);
   assert.match(shortcut, /touchAction:\s*'none'/);
 });
 
@@ -58,6 +60,7 @@ test('LACUNA system shortcuts use the same movable desktop model', async () => {
   assert.match(source, /\.lac-desktop-shortcut/);
   assert.match(source, /MutationObserver/);
   assert.match(source, /setPointerCapture/);
+  assert.match(source, /suppressDraggedActivation/);
 });
 
 test('core app catalog uses distinct program icons instead of generic explorer/game icons', async () => {
@@ -71,7 +74,7 @@ test('core app catalog uses distinct program icons instead of generic explorer/g
 
 test('LACUNA desktop shortcuts are forced beneath normal application windows', async () => {
   const source = await read('scripts/lacuna-hotfix/win95-overrides/public/index.html');
-  assert.match(source, /\.lac-desktop-shortcut\s*\{\s*z-index:\s*10\s*!important;\s*\}/);
+  assert.match(source, /\.lac-desktop-shortcut\s*\{\s*z-index:\s*10\s*!important;\s*[^}]*\}/);
 });
 
 test('Webamp is pinned, contained, hotkey-enabled, and accepts local drops and playlists', async () => {
