@@ -256,9 +256,10 @@ const Desktop: React.FC<DesktopProps> = () => {
                 return (
                     <div
                         key={`win-${key}`}
+                        data-rip-window-layer={key}
                         style={Object.assign(
                             {},
-                            { zIndex: WINDOW_LAYER_BASE + windows[key].zIndex },
+                            { position: 'relative', zIndex: WINDOW_LAYER_BASE + windows[key].zIndex },
                             windows[key].minimized && styles.minimized
                         )}
                     >
