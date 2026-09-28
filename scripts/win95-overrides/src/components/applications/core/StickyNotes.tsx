@@ -5,6 +5,7 @@ import { loadLocal, saveLocal } from './logic/storage';
 type StickyNote = { id: string; text: string; color: string };
 
 const STORAGE_KEY = 'rip.core.sticky-notes';
+const SEED_MIGRATION_KEY = 'rip.core.sticky-notes.seed-v1';
 const COLORS = ['#fff28a', '#ffd1dc', '#ccecff', '#d9f7be', '#ead7ff'];
 
 const SEED_NOTES: StickyNote[] = [
@@ -31,12 +32,19 @@ const ensureSeedNotes = (notes: StickyNote[]): StickyNote[] => {
     return missing.length ? [...notes, ...missing] : notes;
 };
 
-const DEFAULT_NOTES = SEED_NOTES;
+const loadInitialNotes = (): StickyNote[] => {
+    const storedNotes = loadLocal(STORAGE_KEY, [] as StickyNote[]);
+    const seedMigrationComplete = loadLocal(SEED_MIGRATION_KEY, false);
+    if (seedMigrationComplete) return storedNotes;
+
+    const seededNotes = ensureSeedNotes(storedNotes);
+    saveLocal(STORAGE_KEY, seededNotes);
+    saveLocal(SEED_MIGRATION_KEY, true);
+    return seededNotes;
+};
 
 const StickyNotes: React.FC<WindowAppProps> = (props) => {
-    const [notes, setNotes] = useState<StickyNote[]>(() =>
-        ensureSeedNotes(loadLocal(STORAGE_KEY, DEFAULT_NOTES))
-    );
+    const [notes, setNotes] = useState<StickyNote[]>(loadInitialNotes);
 
     useEffect(() => {
         saveLocal(STORAGE_KEY, notes);
