@@ -22,6 +22,14 @@ test('desktop launches apps directly from a scattered layout instead of category
   assert.doesNotMatch(source, /React\.useEffect\(\(\) => \{ openFolder\('explorer'\); \}, \[openFolder\]\);/);
 });
 
+test('desktop shortcut layout adapts before fixed positions can overflow intermediate viewports', async () => {
+  const source = await read('scripts/win95-overrides/src/components/os/Desktop.tsx');
+  assert.match(source, /const desktopWidth\s*=\s*window\.visualViewport\?\.width\s*\|\|\s*window\.innerWidth/);
+  assert.match(source, /const adaptiveColumns\s*=/);
+  assert.match(source, /desktopWidth\s*<\s*1180/);
+  assert.doesNotMatch(source, /compactDesktop\s*=.*<=\s*600/);
+});
+
 test('desktop shortcut selection uses one stable id without the scaling position hack', async () => {
   const source = await read('scripts/win95-overrides/src/components/os/DesktopShortcut.tsx');
   const idUses = source.match(/id=\{shortcutId\}/g) || [];
@@ -61,4 +69,12 @@ test('Sticky Notes seeds non-spoiler LACUNA breadcrumbs for new and existing bro
   assert.match(source, /C:\\\\Temp\\\\lacuna\.log/);
   assert.match(source, /attrib -h C:\\\\Research/);
   assert.match(source, /ensureSeedNotes/);
+});
+
+test('Sticky Notes only seeds LACUNA breadcrumbs once so deleted seed notes stay deleted', async () => {
+  const source = await read('scripts/win95-overrides/src/components/applications/core/StickyNotes.tsx');
+  assert.match(source, /SEED_MIGRATION_KEY/);
+  assert.match(source, /loadInitialNotes/);
+  assert.match(source, /saveLocal\(SEED_MIGRATION_KEY, true\)/);
+  assert.doesNotMatch(source, /ensureSeedNotes\(loadLocal\(STORAGE_KEY, DEFAULT_NOTES\)\)/);
 });
