@@ -14,7 +14,10 @@ const DesktopShortcut: React.FC<DesktopShortcutProps> = ({ icon, shortcutName, i
     const [isSelected, setIsSelected] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const iconUrl = getIconByName(icon) as unknown as string;
-    const shortcutId = useMemo(() => `desktop-shortcut-${shortcutName.replace(/\s/g, '')}`, [shortcutName]);
+    const shortcutId = useMemo(
+        () => `desktop-shortcut-${shortcutName.replace(/[^A-Za-z0-9_-]/g, '')}`,
+        [shortcutName]
+    );
 
     const handleClickOutside = useCallback((event: MouseEvent) => {
         if (!containerRef.current?.contains(event.target as Node)) {
