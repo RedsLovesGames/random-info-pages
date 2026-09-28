@@ -39,10 +39,9 @@ test('core app catalog uses distinct program icons instead of generic explorer/g
   }
 });
 
-test('LACUNA desktop shortcuts stay beneath normal application windows', async () => {
-  const css = await read('scripts/lacuna-hotfix/lacuna-runtime/lacuna.css');
-  assert.match(css, /\.lac-desktop-shortcut\{[^}]*z-index:10;/);
-  assert.doesNotMatch(css, /\.lac-desktop-shortcut\{[^}]*z-index:3500;/);
+test('LACUNA desktop shortcuts are forced beneath normal application windows', async () => {
+  const source = await read('scripts/win95-overrides/public/index.html');
+  assert.match(source, /\.lac-desktop-shortcut\s*\{\s*z-index:\s*10\s*!important;\s*\}/);
 });
 
 test('Webamp is pinned, contained, hotkey-enabled, and accepts local drops and playlists', async () => {
