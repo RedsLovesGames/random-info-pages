@@ -60,13 +60,13 @@ test('JS Paint uses the documented embeddable web app', async () => {
   assert.match(source, /iframe/i);
 });
 
-test('Webamp wrapper uses the official browser module entrypoint', async () => {
+test('Webamp wrapper pins the official browser module and contains it inside the app window', async () => {
   const source = await readFile(
     sourcePath('scripts/win95-overrides/public/apps/webamp/index.html'),
     'utf8'
   );
-  assert.match(source, /webamp@\^2/);
-  assert.match(source, /renderWhenReady/);
+  assert.match(source, /webamp@2\.3\.1/);
+  assert.match(source, /renderInto/);
 });
 
 test('timer formatting is deterministic', async () => {
