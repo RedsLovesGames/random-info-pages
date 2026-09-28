@@ -74,12 +74,12 @@ const DESKTOP_GROUPS: Record<DesktopGroupKey, DesktopGroupDefinition> = {
     },
     accessories: {
         keys: ['calculator', 'notepad', 'paint', 'winamp', 'sticky', 'timer', 'pixel'],
-        origin: { left: 160, top: 16 },
+        origin: { left: 140, top: 16 },
         columns: 2,
     },
     games: {
         keys: ['minesweeper', 'snake', '2048', 'reaction', 'sand', 'doom', 'trail', 'scrabble', 'wordle'],
-        origin: { left: 520, top: 16 },
+        origin: { left: 390, top: 16 },
         columns: 3,
     },
 };
@@ -152,8 +152,9 @@ const Desktop: React.FC<DesktopProps> = () => {
     const shortcutPositionsRef = useRef<ShortcutPositions>(shortcutPositions);
     const desktopWidth = window.visualViewport?.width || window.innerWidth;
     const desktopHeight = window.visualViewport?.height || window.innerHeight;
-    const adaptiveDesktop = desktopWidth < 1180;
+    const adaptiveDesktop = desktopWidth < 700;
     const adaptiveColumns = Math.max(1, Math.floor(Math.max(desktopWidth - 16, 90) / 90));
+    const adaptiveContentColumns = Math.max(1, adaptiveColumns - 1);
 
     const removeWindow = useCallback((key: string) => {
         setTimeout(() => {
@@ -321,8 +322,15 @@ const Desktop: React.FC<DesktopProps> = () => {
         <div style={styles.desktop}>
             <div style={styles.shortcuts} aria-label="Desktop programs">
                 {shortcuts.map((shortcut, index) => {
+                    const adaptiveIndex = Math.max(0, index - 1);
+                    const adaptivePosition = shortcut.layoutKey === 'explorer'
+                        ? { left: 8, top: 196 }
+                        : {
+                            left: 8 + (1 + (adaptiveIndex % adaptiveContentColumns)) * 90,
+                            top: 12 + Math.floor(adaptiveIndex / adaptiveContentColumns) * 92,
+                        };
                     const defaultPosition = adaptiveDesktop
-                        ? { left: 8 + (index % adaptiveColumns) * 90, top: 12 + Math.floor(index / adaptiveColumns) * 92 }
+                        ? adaptivePosition
                         : (DESKTOP_LAYOUT[shortcut.layoutKey] || { left: 12, top: 12 });
                     const savedPosition = shortcutPositions[shortcut.layoutKey];
                     const position = clampShortcutPosition(
