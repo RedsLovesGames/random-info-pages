@@ -10,6 +10,10 @@
   <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" type="image/x-icon">
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
   <title>Random Info OS</title>
+  <style id="rip-desktop-layer-fix">
+    /* LACUNA system shortcuts are desktop items, not floating windows. */
+    .lac-desktop-shortcut { z-index: 10 !important; }
+  </style>
   <script>
     window.addEventListener('load', () => {
       addEventListener('mousemove', (event) => {
