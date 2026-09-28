@@ -34,9 +34,13 @@
   <script type="module" src="%PUBLIC_URL%/lacuna/lacuna-runtime/src/runtime.js"></script>
   <script>
     (() => {
-      const LACUNA_DESKTOP_POSITION_KEY = 'rip.lacuna.desktop.shortcut-positions.v1';
+      const LACUNA_DESKTOP_POSITION_KEY = 'rip.lacuna.desktop.shortcut-positions.v2';
       const DRAG_THRESHOLD = 4;
       const TOOLBAR_CLEARANCE = 34;
+      const DEFAULT_SYSTEM_SHORTCUTS = [
+        { label: 'My Computer', position: { left: 18, top: 16 } },
+        { label: 'Recycle Bin', position: { left: 18, top: 110 } },
+      ];
       let activeDrag = null;
       const suppressUntil = new WeakMap();
 
@@ -59,12 +63,20 @@
         }
       };
 
+      const shortcutLabel = (element) =>
+        (element.getAttribute('aria-label') || element.textContent || element.id || '').trim().replace(/\s+/g, ' ');
+
       const shortcutKey = (element) => {
         if (element.dataset.lacDragKey) return element.dataset.lacDragKey;
-        const label = element.id || element.getAttribute('aria-label') || element.textContent || 'system-shortcut';
-        const key = label.trim().replace(/\s+/g, ' ');
+        const key = shortcutLabel(element) || 'system-shortcut';
         element.dataset.lacDragKey = key;
         return key;
+      };
+
+      const defaultSystemPosition = (element) => {
+        const label = shortcutLabel(element).toLowerCase();
+        const match = DEFAULT_SYSTEM_SHORTCUTS.find((shortcut) => label.includes(shortcut.label.toLowerCase()));
+        return match ? match.position : null;
       };
 
       const clampPosition = (element, left, top) => {
@@ -86,7 +98,7 @@
 
       const applyStoredPositions = (root = document) => {
         root.querySelectorAll?.('.lac-desktop-shortcut').forEach((element) => {
-          const position = positions[shortcutKey(element)];
+          const position = positions[shortcutKey(element)] || defaultSystemPosition(element);
           if (position) placeShortcut(element, position);
         });
       };
@@ -158,9 +170,10 @@
       window.addEventListener('resize', () => {
         document.querySelectorAll('.lac-desktop-shortcut').forEach((element) => {
           const key = shortcutKey(element);
-          if (!positions[key]) return;
-          const next = clampPosition(element, positions[key].left, positions[key].top);
-          positions = { ...positions, [key]: next };
+          const position = positions[key] || defaultSystemPosition(element);
+          if (!position) return;
+          const next = clampPosition(element, position.left, position.top);
+          if (positions[key]) positions = { ...positions, [key]: next };
           placeShortcut(element, next);
         });
         savePositions();
