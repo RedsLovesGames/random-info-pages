@@ -13,9 +13,13 @@ test('outer CRT identifies the workstation as E Vale', async () => {
   assert.doesNotMatch(source, /const NAME_TEXT = 'Henry Heffernan';/);
 });
 
-test('desktop launches apps directly from a scattered layout instead of category folders', async () => {
+test('desktop launches apps directly from grouped desktop sections instead of category folders', async () => {
   const source = await read('scripts/win95-overrides/src/components/os/Desktop.tsx');
-  assert.match(source, /const DESKTOP_LAYOUT/);
+  assert.match(source, /const DESKTOP_GROUPS/);
+  assert.match(source, /buildGroupedDesktopLayout/);
+  assert.match(source, /system:\s*\{[^}]*keys:\s*\['explorer'\]/s);
+  assert.match(source, /accessories:\s*\{[^}]*'calculator'[^}]*'pixel'/s);
+  assert.match(source, /games:\s*\{[^}]*'minesweeper'[^}]*'wordle'/s);
   assert.match(source, /CORE_APPS\.map/);
   assert.match(source, /LEGACY_GAMES\.map/);
   assert.match(source, /WINDOW_LAYER_BASE\s*=\s*100/);
@@ -54,9 +58,13 @@ test('desktop shortcuts drag with pointer capture and persist custom positions',
   assert.match(shortcut, /touchAction:\s*'none'/);
 });
 
-test('LACUNA system shortcuts use the same movable desktop model', async () => {
+test('LACUNA system shortcuts join the System section and remain draggable', async () => {
   const source = await read('scripts/lacuna-hotfix/win95-overrides/public/index.html');
   assert.match(source, /LACUNA_DESKTOP_POSITION_KEY/);
+  assert.match(source, /DEFAULT_SYSTEM_SHORTCUTS/);
+  assert.match(source, /My Computer/);
+  assert.match(source, /Recycle Bin/);
+  assert.match(source, /defaultSystemPosition/);
   assert.match(source, /\.lac-desktop-shortcut/);
   assert.match(source, /MutationObserver/);
   assert.match(source, /setPointerCapture/);
