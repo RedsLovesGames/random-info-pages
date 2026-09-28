@@ -148,7 +148,7 @@ async function assertDesktopExperience(browser) {
     'Paint',
     'Winamp',
     'StickyNotes',
-    'Timer/Stopwatch',
+    'TimerStopwatch',
     'PixelEditor',
     'Minesweeper',
     'Snake',
