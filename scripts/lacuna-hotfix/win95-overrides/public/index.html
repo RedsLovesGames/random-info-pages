@@ -38,8 +38,16 @@
       const DRAG_THRESHOLD = 4;
       const TOOLBAR_CLEARANCE = 34;
       const DEFAULT_SYSTEM_SHORTCUTS = [
-        { label: 'My Computer', position: { left: 18, top: 16 } },
-        { label: 'Recycle Bin', position: { left: 18, top: 110 } },
+        {
+          label: 'My Computer',
+          desktop: { left: 18, top: 16 },
+          compact: { left: 8, top: 12 },
+        },
+        {
+          label: 'Recycle Bin',
+          desktop: { left: 18, top: 110 },
+          compact: { left: 8, top: 104 },
+        },
       ];
       let activeDrag = null;
       const suppressUntil = new WeakMap();
@@ -76,7 +84,8 @@
       const defaultSystemPosition = (element) => {
         const label = shortcutLabel(element).toLowerCase();
         const match = DEFAULT_SYSTEM_SHORTCUTS.find((shortcut) => label.includes(shortcut.label.toLowerCase()));
-        return match ? match.position : null;
+        if (!match) return null;
+        return window.innerWidth < 700 ? match.compact : match.desktop;
       };
 
       const clampPosition = (element, left, top) => {
