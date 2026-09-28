@@ -33,6 +33,8 @@ test('grouped desktop remains intact at intermediate widths and adapts only when
   assert.match(source, /const adaptiveContentColumns\s*=/);
   assert.match(source, /desktopWidth\s*<\s*700/);
   assert.match(source, /origin:\s*\{\s*left:\s*390,\s*top:\s*16\s*\}/);
+  assert.match(source, /getAdaptiveDesktopPosition/);
+  assert.match(source, /accessoryRows\s*\+\s*1/);
   assert.doesNotMatch(source, /compactDesktop\s*=.*<=\s*600/);
 });
 
