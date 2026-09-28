@@ -10,10 +10,6 @@
   <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" type="image/x-icon">
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
   <title>Random Info OS</title>
-  <style id="rip-desktop-layer-fix">
-    /* LACUNA system shortcuts are desktop items, not floating windows. */
-    .lac-desktop-shortcut { z-index: 10 !important; }
-  </style>
   <script>
     window.addEventListener('load', () => {
       addEventListener('mousemove', (event) => {
@@ -30,6 +26,12 @@
   <script>
     emulators.pathPrefix = "%PUBLIC_URL%/js-dos/";
   </script>
+  <link rel="stylesheet" href="%PUBLIC_URL%/lacuna/lacuna.css">
+  <style id="rip-desktop-layer-fix">
+    /* System shortcuts belong to the desktop layer, never above app windows. */
+    .lac-desktop-shortcut { z-index: 10 !important; }
+  </style>
+  <script type="module" src="%PUBLIC_URL%/lacuna/lacuna-runtime/src/runtime.js"></script>
 </head>
 <body>
   <noscript>You need to enable JavaScript to run Random Info OS.</noscript>

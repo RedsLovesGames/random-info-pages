@@ -85,7 +85,21 @@ const Toolbar: React.FC<ToolbarProps> = ({ windows, toggleMinimize, shutdown, st
                     </div>
                     <div style={styles.toolbarTabsContainer}>
                         {Object.keys(windows).map((key) => (
-                            <div key={key} style={Object.assign({}, styles.tabContainerOuter, lastActive === key && !windows[key].minimized && styles.activeTabOuter)} onMouseDown={() => toggleMinimize(key)}>
+                            <div
+                                key={key}
+                                data-rip-window-task={key}
+                                aria-label={`Toggle ${windows[key].name}`}
+                                role="button"
+                                tabIndex={0}
+                                style={Object.assign({}, styles.tabContainerOuter, lastActive === key && !windows[key].minimized && styles.activeTabOuter)}
+                                onMouseDown={() => toggleMinimize(key)}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter' || event.key === ' ') {
+                                        event.preventDefault();
+                                        toggleMinimize(key);
+                                    }
+                                }}
+                            >
                                 <div style={Object.assign({}, styles.tabContainer, lastActive === key && !windows[key].minimized && styles.activeTabInner)}>
                                     <Icon size={18} icon={windows[key].icon} style={styles.tabIcon} />
                                     <p style={styles.tabText}>{windows[key].name}</p>

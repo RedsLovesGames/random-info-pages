@@ -6,32 +6,105 @@
   <title>Webamp</title>
   <style>
     html,body,#app{width:100%;height:100%;margin:0;overflow:hidden;background:#111;color:#ddd;font-family:Arial,sans-serif}
-    #app{position:relative}
-    #controls{position:absolute;z-index:100000;left:8px;bottom:8px;display:flex;align-items:center;gap:8px;padding:6px;background:#c0c0c0;color:#000;border:2px outset #fff;font-size:11px}
-    #status{max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    label{cursor:pointer;padding:3px 7px;border:2px outset #fff;background:#c0c0c0}
+    body{position:relative}
+    #app{position:absolute;inset:0;overflow:hidden}
+    #controls{position:absolute;z-index:100000;left:8px;bottom:8px;display:flex;align-items:center;gap:6px;max-width:calc(100% - 28px);padding:6px;background:#c0c0c0;color:#000;border:2px outset #fff;font-size:11px}
+    #status{min-width:0;max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    label{cursor:pointer;padding:3px 7px;border:2px outset #fff;background:#c0c0c0;white-space:nowrap}
+    label:active{border-style:inset}
     input{display:none}
+    #drop-hint{position:absolute;z-index:99999;inset:8px;display:none;place-items:center;border:2px dashed #ddd;background:rgba(0,0,0,.72);color:#fff;font:14px Arial,sans-serif;pointer-events:none}
+    body.dragging #drop-hint{display:grid}
   </style>
 </head>
 <body>
   <div id="app"></div>
-  <div id="controls"><label>Load audio<input id="audio-files" type="file" accept="audio/*" multiple></label><span id="status">Loading Webamp…</span></div>
+  <div id="drop-hint">Drop audio files to add them to Winamp</div>
+  <div id="controls">
+    <label>Play files<input id="replace-files" type="file" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.opus,.weba" multiple></label>
+    <label>Add files<input id="append-files" type="file" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.opus,.weba" multiple></label>
+    <span id="status" aria-live="polite">Loading Webamp…</span>
+  </div>
   <script type="module">
     const status = document.getElementById('status');
+    const app = document.getElementById('app');
+    const toTrack = (file) => ({ blob: file, defaultName: file.name });
+    const plural = (count) => `${count} local track${count === 1 ? '' : 's'}`;
+
+    function getFiles(input) {
+      return Array.from(input.files || []).filter((file) => file.size > 0);
+    }
+
     try {
-      const { default: Webamp } = await import('https://unpkg.com/webamp@^2');
-      const webamp = new Webamp({});
-      await webamp.renderWhenReady(document.getElementById('app'));
-      status.textContent = 'Drop files on Webamp or use Load audio.';
-      document.getElementById('audio-files').addEventListener('change', (event) => {
-        const files = Array.from(event.target.files || []);
+      const { default: Webamp } = await import('https://unpkg.com/webamp@2.3.1');
+      if (typeof Webamp.browserIsSupported === 'function' && !Webamp.browserIsSupported()) {
+        throw new Error('This browser does not expose the audio features Webamp needs.');
+      }
+
+      const webamp = new Webamp({
+        enableHotkeys: true,
+        enableMediaSession: true,
+        zIndex: 10,
+        handleTrackDropEvent: async (event) => {
+          const files = Array.from(event.dataTransfer?.files || []).filter((file) => file.size > 0);
+          document.body.classList.remove('dragging');
+          if (!files.length) {
+            status.textContent = 'No playable local files were dropped.';
+            return null;
+          }
+          status.textContent = `${plural(files.length)} dropped`;
+          return files.map(toTrack);
+        },
+      });
+
+      await webamp.renderInto(app);
+      status.textContent = 'Ready • local files stay local • drag and drop supported';
+
+      document.getElementById('replace-files').addEventListener('change', async (event) => {
+        const files = getFiles(event.target);
         if (!files.length) return;
-        webamp.setTracksToPlay(files.map((file) => ({ blob: file, defaultName: file.name })));
-        status.textContent = `${files.length} local track${files.length === 1 ? '' : 's'} loaded`;
-        event.target.value = '';
+        try {
+          await webamp.setTracksToPlay(files.map(toTrack));
+          status.textContent = `${plural(files.length)} loaded and ready to play`;
+        } catch (error) {
+          console.error(error);
+          status.textContent = 'Could not load one or more selected audio files.';
+        } finally {
+          event.target.value = '';
+        }
+      });
+
+      document.getElementById('append-files').addEventListener('change', async (event) => {
+        const files = getFiles(event.target);
+        if (!files.length) return;
+        try {
+          await webamp.appendTracks(files.map(toTrack));
+          status.textContent = `${plural(files.length)} added to the playlist`;
+        } catch (error) {
+          console.error(error);
+          status.textContent = 'Could not add one or more selected audio files.';
+        } finally {
+          event.target.value = '';
+        }
+      });
+
+      let dragDepth = 0;
+      document.addEventListener('dragenter', (event) => {
+        if (event.dataTransfer?.types?.includes('Files')) {
+          dragDepth += 1;
+          document.body.classList.add('dragging');
+        }
+      });
+      document.addEventListener('dragleave', () => {
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (!dragDepth) document.body.classList.remove('dragging');
+      });
+      document.addEventListener('drop', () => {
+        dragDepth = 0;
+        document.body.classList.remove('dragging');
       });
     } catch (error) {
-      status.textContent = 'Webamp could not load. Check the network connection.';
+      status.textContent = `Webamp could not start: ${error?.message || 'unknown error'}`;
       console.error(error);
     }
   </script>

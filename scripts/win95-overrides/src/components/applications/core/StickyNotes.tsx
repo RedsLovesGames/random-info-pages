@@ -5,11 +5,46 @@ import { loadLocal, saveLocal } from './logic/storage';
 type StickyNote = { id: string; text: string; color: string };
 
 const STORAGE_KEY = 'rip.core.sticky-notes';
+const SEED_MIGRATION_KEY = 'rip.core.sticky-notes.seed-v1';
 const COLORS = ['#fff28a', '#ffd1dc', '#ccecff', '#d9f7be', '#ead7ff'];
-const DEFAULT_NOTES: StickyNote[] = [{ id: 'welcome', text: 'Random Info OS sticky note', color: COLORS[0] }];
+
+const SEED_NOTES: StickyNote[] = [
+    {
+        id: 'vale-recycle-hint',
+        text: 'clean the Recycle Bin later. todo-old.txt is still in there.',
+        color: COLORS[0],
+    },
+    {
+        id: 'vale-temp-hint',
+        text: 'Temp is filling up again. Check C:\\Temp\\lacuna.log before clearing it.',
+        color: COLORS[2],
+    },
+    {
+        id: 'vale-research-hint',
+        text: 'Research folder vanished again. attrib -h C:\\Research should bring it back.',
+        color: COLORS[3],
+    },
+];
+
+const ensureSeedNotes = (notes: StickyNote[]): StickyNote[] => {
+    const ids = new Set(notes.map((note) => note.id));
+    const missing = SEED_NOTES.filter((note) => !ids.has(note.id));
+    return missing.length ? [...notes, ...missing] : notes;
+};
+
+const loadInitialNotes = (): StickyNote[] => {
+    const storedNotes = loadLocal(STORAGE_KEY, [] as StickyNote[]);
+    const seedMigrationComplete = loadLocal(SEED_MIGRATION_KEY, false);
+    if (seedMigrationComplete) return storedNotes;
+
+    const seededNotes = ensureSeedNotes(storedNotes);
+    saveLocal(STORAGE_KEY, seededNotes);
+    saveLocal(SEED_MIGRATION_KEY, true);
+    return seededNotes;
+};
 
 const StickyNotes: React.FC<WindowAppProps> = (props) => {
-    const [notes, setNotes] = useState<StickyNote[]>(() => loadLocal(STORAGE_KEY, DEFAULT_NOTES));
+    const [notes, setNotes] = useState<StickyNote[]>(loadInitialNotes);
 
     useEffect(() => {
         saveLocal(STORAGE_KEY, notes);

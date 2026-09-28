@@ -69,6 +69,10 @@ async function assertDesktopExperience(browser) {
 
   const osStartButton = frame.locator('#random-info-start-button');
   await osStartButton.waitFor({ state: 'visible', timeout: 15000 });
+
+  const explorerShortcut = frame.locator('#desktop-shortcut-RandomInfoExplorer').first();
+  await explorerShortcut.waitFor({ state: 'visible', timeout: 15000 });
+  await explorerShortcut.dblclick({ timeout: 10000 });
   await frame.getByRole('button', { name: /Tools$/ }).waitFor({ state: 'visible', timeout: 15000 });
 
   const requiredFolders = ['Tools', 'School', 'Friends', 'Games', 'Data', 'Experiments'];
@@ -138,24 +142,51 @@ async function assertDesktopExperience(browser) {
     await page.waitForFunction(() => window.__ripBridgeKeydown === true, { timeout: 5000 });
   }
 
-  const accessoriesShortcut = frame.locator('#desktop-shortcut-Accessories').first();
-  const gamesShortcut = frame.locator('#desktop-shortcut-Games').first();
-  const doomShortcut = frame.locator('#desktop-shortcut-Doom').first();
-  await accessoriesShortcut.waitFor({ state: 'visible', timeout: 10000 });
-  assert.ok(await gamesShortcut.count(), 'desktop must expose the Games folder');
-  assert.ok(await doomShortcut.count(), 'desktop must retain the working Doom shortcut');
+  // The desktop layer must remain behind open app windows. Minimize the windows
+  // used above before exercising the scattered desktop shortcuts with real clicks.
+  const toolboxTask = frame.locator('[data-rip-window-task="rip:toolbox"]');
+  await toolboxTask.click({ timeout: 10000 });
+  await frame.waitForFunction(() => {
+    const layer = document.querySelector('[data-rip-window-layer="rip:toolbox"]');
+    return Boolean(layer && getComputedStyle(layer).pointerEvents === 'none');
+  });
 
-  await accessoriesShortcut.dblclick({ timeout: 10000 });
-  const accessoryApps = ['Calculator', 'Notepad', 'Paint', 'Winamp', 'Sticky Notes', 'Timer / Stopwatch', 'Pixel Editor'];
-  for (const appName of accessoryApps) {
+  const explorerTask = frame.locator('[data-rip-window-task="folder:explorer"]');
+  await explorerTask.click({ timeout: 10000 });
+  await frame.waitForTimeout(75);
+  await explorerTask.click({ timeout: 10000 });
+  await frame.waitForFunction(() => {
+    const layer = document.querySelector('[data-rip-window-layer="folder:explorer"]');
+    return Boolean(layer && getComputedStyle(layer).pointerEvents === 'none');
+  });
+
+  const desktopApps = [
+    'Calculator',
+    'Notepad',
+    'Paint',
+    'Winamp',
+    'StickyNotes',
+    'TimerStopwatch',
+    'PixelEditor',
+    'Minesweeper',
+    'Snake',
+    '2048',
+    'ReactionTest',
+    'SandSimulator',
+    'Doom',
+    'TheOregonTrail',
+    'Scrabble',
+    'RIPWordle',
+  ];
+  for (const idSuffix of desktopApps) {
     assert.ok(
-      await frame.getByRole('button', { name: `Open ${appName}`, exact: true }).count(),
-      `Accessories must expose ${appName}`
+      await frame.locator(`#desktop-shortcut-${idSuffix}`).count(),
+      `desktop must expose ${idSuffix} directly`
     );
   }
 
-  const calculatorLauncher = frame.getByRole('button', { name: 'Open Calculator', exact: true });
-  await calculatorLauncher.click();
+  const calculatorShortcut = frame.locator('#desktop-shortcut-Calculator').first();
+  await calculatorShortcut.dblclick({ timeout: 10000 });
   const calculatorDisplay = frame.locator('output[aria-label="Calculator display"]');
   await calculatorDisplay.waitFor({ state: 'visible', timeout: 10000 });
   await frame.getByRole('button', { name: '7', exact: true }).click();
@@ -183,6 +214,9 @@ async function assertDesktopExperience(browser) {
       `Games must expose ${gameName}`
     );
   }
+
+  const systemShortcutZ = await frame.locator('.lac-desktop-shortcut').first().evaluate((element) => getComputedStyle(element).zIndex);
+  assert.equal(systemShortcutZ, '10', 'system desktop shortcuts must stay beneath normal application windows');
 
   await page.waitForTimeout(500);
   assert.deepEqual(diagnostics.criticalFailures, [], `critical assets failed: ${diagnostics.criticalFailures.join(', ')}`);
@@ -215,7 +249,7 @@ async function assertDirectOsNarrowExperience(browser) {
   const diagnostics = attachDiagnostics(page);
   await page.goto(osURL, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.locator('#random-info-start-button').waitFor({ state: 'visible', timeout: 15000 });
-  await page.getByRole('button', { name: /Tools$/ }).waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('#desktop-shortcut-RandomInfoExplorer').waitFor({ state: 'visible', timeout: 15000 });
 
   const sizes = await page.evaluate(() => {
     const clientWidth = document.documentElement.clientWidth;
