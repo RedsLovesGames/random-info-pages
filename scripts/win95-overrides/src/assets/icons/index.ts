@@ -26,6 +26,12 @@ import stickyIcon from './stickyIcon.svg';
 import timerIcon from './timerIcon.svg';
 import sandIcon from './sandIcon.svg';
 import pixelIcon from './pixelIcon.svg';
+import calculatorIcon from './calculatorIcon.svg';
+import notepadIcon from './notepadIcon.svg';
+import minesweeperIcon from './minesweeperIcon.svg';
+import snakeIcon from './snakeIcon.svg';
+import game2048Icon from './game2048Icon.svg';
+import reactionIcon from './reactionIcon.svg';
 
 const icons = {
     windowResize,
@@ -54,6 +60,12 @@ const icons = {
     timerIcon,
     sandIcon,
     pixelIcon,
+    calculatorIcon,
+    notepadIcon,
+    minesweeperIcon,
+    snakeIcon,
+    game2048Icon,
+    reactionIcon,
 };
 
 export type IconName = keyof typeof icons;
