@@ -1,3 +1,4 @@
+import '../finaleArchive.js';
 import { executeTerminalCommand, parseTerminalLine } from '../../../win95-overrides/src/arg/engine/terminal.js';
 import { ArgRuntimeStore } from '../state.js';
 import { createWindow, escapeHtml } from './windowing.js';
