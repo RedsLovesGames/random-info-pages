@@ -10,6 +10,7 @@ on:
       - 'scripts/win95-overrides/**'
       - 'scripts/import-henry-win95.ps1'
       - 'scripts/lacuna_browser_smoke.mjs'
+      - 'scripts/lacuna_finale_browser_smoke.mjs'
       - 'scripts/lacuna_local_verify.ps1'
       - 'docs/lacuna-arg-*.md'
       - '.github/workflows/computer-ci.yml'
@@ -62,4 +63,5 @@ jobs:
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           for attempt in {1..20}; do curl --fail --silent http://127.0.0.1:4173/random-info-pages/os/ >/dev/null && break; sleep 0.25; done
           node scripts/lacuna_browser_smoke.mjs
+          node scripts/lacuna_finale_browser_smoke.mjs
           node scripts/computer_browser_smoke.mjs
