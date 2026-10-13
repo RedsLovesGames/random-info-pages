@@ -7,7 +7,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const routes = [
   './tools/', './wheel/', './whenwemeet/', './school-schedule/', './friends/',
   './tideborne/', './tide2/', './vct-scout/', './oldasspolitic/',
-  './heatmap/', './political-grid/', './wanuiv2/', './nerdcore-prompts/'
+  './heatmap/', './political-grid/', './infrastructure-atlas/', './wanuiv2/', './nerdcore-prompts/'
 ];
 
 test('homepage uses the archive folder interface', () => {
@@ -30,8 +30,15 @@ test('toolbox appears in the Tools folder and search index', () => {
 });
 
 test('political grid is listed in the data folder and searchable', () => {
-  assert.match(html, /data-folder="data"[\s\S]*?<span class="folder-count">03 files<\/span>/);
+  assert.match(html, /data-folder="data"[\s\S]*?<span class="folder-count">04 files<\/span>/);
   assert.match(html, /href="\.\/political-grid\/"/);
   assert.match(html, /\{n:'Political Grid',p:'\.\/political-grid\/'/);
-  assert.match(html, /id="searchLabel">13 files/);
+  assert.match(html, /id="searchLabel">14 files/);
+});
+
+
+test('infrastructure atlas is linked, categorized under Data, and searchable', () => {
+  assert.match(html, /href="\.\/infrastructure-atlas\/"/);
+  assert.match(html, /\{n:'Infrastructure Atlas',p:'\.\/infrastructure-atlas\/',c:'Data'/);
+  assert.match(html, /data-folder="data"[\s\S]*?Infrastructure Atlas[\s\S]*?data-folder="experiments"/);
 });
