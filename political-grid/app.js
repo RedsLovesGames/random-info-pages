@@ -84,6 +84,7 @@ const state = {
   name: typeof (savedDraft && savedDraft.name) === "string" ? savedDraft.name : "",
   token: typeof (savedDraft && savedDraft.token) === "string" ? savedDraft.token : "",
   dirty: !!(savedDraft && savedDraft.dirty),
+  visible: !!(savedDraft && savedDraft.visible),
   stats: null,
   showAll: false,
   saving: false
@@ -93,7 +94,7 @@ function saveDraft() {
   try {
     localStorage.setItem(DRAFT_KEY, JSON.stringify({
       picks: [...state.picks].sort((a, b) => a - b),
-      name: state.name, token: state.token, dirty: state.dirty
+      name: state.name, token: state.token, visible: state.visible, dirty: state.dirty
     }));
   } catch { /* Non-persistent mode; submission still works */ }
 }
@@ -158,6 +159,7 @@ function buildBoard() {
         markDirty();
         updateBoard();
         renderStats();
+        window.PoliticalGridOverlap?.render();
       });
       tileMap.set(id, { tile, x, percent });
       grid.append(tile);
@@ -237,6 +239,7 @@ async function refreshStats() {
     $("refresh-button").disabled = false;
     updateBoard();
     renderStats();
+    window.PoliticalGridOverlap?.render();
   }
 }
 
@@ -251,10 +254,13 @@ async function restoreSubmission() {
     if (!state.dirty) {
       state.picks = new Set((record.picks || []).filter((id) => Number.isInteger(id) && id >= 0 && id < 100));
       state.name = record.name || state.name;
+      state.visible = record.public_visible === true;
+      $("public-visible").checked = state.visible;
       $("participant-name").value = state.name;
       updateBoard();
       renderStats();
     }
+    window.PoliticalGridOverlap?.render();
     $("save-button").innerHTML = "Update answers <span aria-hidden='true'>↗</span>";
     setSaveStatus(state.dirty ? "Unsaved edits • submit to update" : "Previously saved • edits can be updated");
     saveDraft();
@@ -279,6 +285,7 @@ async function submit() {
     state.token = crypto.randomUUID();
   }
   const submittedName = state.name;
+  const submittedVisible = state.visible;
   const submittedPicks = [...state.picks].sort((a, b) => a - b);
   state.saving = true;
   state.dirty = true;
@@ -287,13 +294,14 @@ async function submit() {
   setSaveStatus("Saving your selections…");
   try {
     await rpc("political_grid_submit", {
-      p_name: submittedName, p_token: state.token, p_picks: submittedPicks
+      p_name: submittedName, p_token: state.token, p_picks: submittedPicks, p_visible: submittedVisible
     });
-    state.dirty = state.name !== submittedName || state.picks.size !== submittedPicks.length || submittedPicks.some((id) => !state.picks.has(id));
+    state.dirty = state.visible !== submittedVisible || state.name !== submittedName || state.picks.size !== submittedPicks.length || submittedPicks.some((id) => !state.picks.has(id));
     saveDraft();
     $("save-button").innerHTML = "Update answers <span aria-hidden='true'>↗</span>";
     setSaveStatus(state.dirty ? "Saved earlier selections • newer edits are unsaved" : "Saved to the shared database ✓");
     await refreshStats();
+    window.PoliticalGridOverlap?.reload();
   } catch (error) {
     setSaveStatus("Could not save: " + error.message, true);
   } finally {
@@ -428,6 +436,8 @@ function exportCsv() {
 
 function setup() {
   $("participant-name").value = state.name;
+  $("public-visible").checked = state.visible;
+  $("public-visible").addEventListener("change", (event) => { state.visible = event.target.checked; markDirty(); });
   buildBoard();
   $("participant-name").addEventListener("input", (event) => {
     state.name = event.target.value;
@@ -461,6 +471,7 @@ function clearMarks() {
   markDirty();
   updateBoard();
   renderStats();
+  window.PoliticalGridOverlap?.render();
 }
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", setup);
