@@ -39,6 +39,8 @@ jobs:
           node --test tests/home-index.test.mjs
           node --test tests/political-grid.test.mjs
           node --check political-grid/app.js
+          node --check political-grid/overlap.js
+          test -f political-grid/comparisons-schema.sql
           test -f political-grid/schema.sql
           grep -Fq 'data-archive-home' index.html
           grep -Fq 'id="searchDialog"' index.html
@@ -156,6 +158,11 @@ jobs:
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid-app.js "$base/political-grid/app.js"
           grep -Fq 'id="statement-board"' /tmp/political-grid.html
           grep -Fq 'political_grid_stats' /tmp/political-grid-app.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid-overlap.js "$base/political-grid/overlap.js"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid-overlap.css "$base/political-grid/overlap.css"
+          grep -Fq 'id="overlap-canvas"' /tmp/political-grid.html
+          grep -Fq 'id="public-visible"' /tmp/political-grid.html
+          grep -Fq 'political_grid_visible' /tmp/political-grid-overlap.js
           grep -Fq './wheel/' /tmp/home.html
           grep -Fq './friends/' /tmp/home.html
 
