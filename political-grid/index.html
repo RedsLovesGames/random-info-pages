@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101114">
+<meta name="description" content="An interactive 100-statement political grid with optional named submissions and live anonymous aggregate statistics.">
+<title>Political Grid · Random Info Pages</title>
+<link rel="stylesheet" href="./styles.css">
+<script src="./app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#grid">Skip to statements</a>
+<header class="site-header"><div class="shell nav">
+  <a class="brand" href="../">RIP<span class="brand-slash">/</span>26</a>
+  <span class="nav-separator" aria-hidden="true"></span>
+  <span class="nav-title">Political Grid</span>
+  <nav aria-label="Page navigation"><a href="#grid">The grid</a><a href="#statistics">Statistics</a><a href="../">Archive ↗</a></nav>
+</div></header>
+<main class="shell">
+<section class="hero">
+  <div class="eyebrow"><span class="eyebrow-dot"></span> COMMUNITY CHECKLIST <span class="hero-code">100 STATEMENTS / 4 GROUPS</span></div>
+  <h1>Where do you <em>stand?</em></h1>
+  <p class="intro">An interactive version of the four-color political grid. Mark an <strong>X</strong> on every statement you agree with, save under a name, and compare your selections against everyone else's.</p>
+  <div class="hero-tags"><span>100 selectable statements</span><span>Live aggregate results</span><span>Editable submissions</span></div>
+</section>
+<div class="content-warning" role="note"><span class="warning-symbol" aria-hidden="true">!</span><p><strong>Content notice.</strong> This grid reproduces provocative, discriminatory, violent, and extremist statements from the supplied image for survey purposes. Inclusion is not an endorsement. The categories are visual groupings, not a validated political assessment.</p></div>
+<section class="identity-panel" aria-labelledby="identity-title">
+  <div class="identity-info"><span class="section-index">01 / PARTICIPATE</span><h2 id="identity-title">Make your mark.</h2><p>Selections stay on your device while you work. Enter a name to save one editable response to the shared database.</p></div>
+  <div class="identity-controls">
+    <label for="participant-name">YOUR NAME / NICKNAME</label>
+    <div class="name-entry"><input id="participant-name" type="text" maxlength="40" minlength="2" autocomplete="off" placeholder="Enter a name…" spellcheck="false"><button id="save-button" type="button" class="primary-button">Submit answers <span aria-hidden="true">↗</span></button></div>
+    <div class="identity-foot"><span id="save-status" role="status" aria-live="polite">Not submitted</span><span>Not shown publicly • Avoid real names if preferred</span></div>
+  </div>
+</section>
+<section id="grid" class="grid-section" aria-labelledby="grid-heading">
+  <div class="section-heading"><div><span class="section-index">02 / THE GRID</span><h2 id="grid-heading">Select what you agree with.</h2><p>Click a tile to place an X. Click it again to remove the X. Unmarked statements count as not selected, not necessarily disagreed.</p></div><div class="counter"><strong id="selection-count">0<span> / 100</span></strong><small>SELECTED</small></div></div>
+  <div class="toolbar">
+    <div class="search-wrap"><label class="visually-hidden" for="statement-search">Find a statement</label><span aria-hidden="true">⌕</span><input id="statement-search" type="search" placeholder="Find a statement…" autocomplete="off"></div>
+    <div class="toolbar-right"><label class="stats-toggle"><input type="checkbox" id="overlay-toggle"> <span>Show community %</span></label><button id="clear-button" class="quiet-button" type="button">Clear marks</button><a href="#statistics" class="jump-button">View statistics ↓</a></div>
+  </div>
+  <div class="grid-legend" aria-label="The original image's color groups"><span><i class="legend-dot rose"></i>Upper left</span><span><i class="legend-dot blue"></i>Upper right</span><span><i class="legend-dot green"></i>Lower left</span><span><i class="legend-dot yellow"></i>Lower right</span></div>
+  <div class="board" id="statement-board" aria-label="100 selectable statements arranged in four quadrants"></div>
+  <div class="board-foot"><span><kbd>Click</kbd> or <kbd>Enter</kbd> to toggle</span><span>Selections are only saved online when you submit.</span></div>
+</section>
+<section id="statistics" class="stats-section" aria-labelledby="stats-heading">
+  <div class="section-heading stats-heading"><div><span class="section-index">03 / COMMUNITY DATA</span><h2 id="stats-heading">The bigger picture.</h2><p>Real submissions, not simulated data. Percentages mean the share of saved responses that selected each statement.</p></div><button type="button" class="quiet-button refresh" id="refresh-button">↻ Refresh data</button></div>
+  <div class="stats-status" id="stats-status" aria-live="polite">Connecting to community results…</div>
+  <div class="stat-cards">
+    <article class="stat-card"><span>RESPONSES</span><strong id="respondents-stat">—</strong><small>Saved entries, not verified unique people</small></article>
+    <article class="stat-card"><span>TOTAL X MARKS</span><strong id="marks-stat">—</strong><small>Across all saved entries</small></article>
+    <article class="stat-card"><span>AVERAGE MARKS</span><strong id="average-stat">—</strong><small>Of 100 statements per entry</small></article>
+    <article class="stat-card featured"><span>YOUR AVERAGE MATCH</span><strong id="match-stat">—</strong><small>Average agreement on checked / unchecked items</small></article>
+  </div>
+  <div class="insights-layout">
+    <article class="panel"><div class="panel-head"><div><span class="section-index">A / QUADRANT BREAKDOWN</span><h3>Color group frequencies</h3></div></div><div id="group-bars" class="group-bars"></div><p class="footnote">The four colors simply reproduce the original grid layout. They are not political spectrum scores.</p></article>
+    <article class="panel"><div class="panel-head"><div><span class="section-index">B / YOUR PROFILE</span><h3>Your selections</h3></div></div><div id="personal-bars" class="group-bars"></div><p class="footnote">Your marks are compared descriptively, without assigning an ideology.</p></article>
+  </div>
+  <div class="ranking-header"><div><span class="section-index">C / STATEMENT RANKINGS</span><h3>Most commonly selected</h3></div><button class="quiet-button" id="export-button" type="button">↓ Export aggregate CSV</button></div>
+  <div class="rankings" id="ranking-list"></div>
+  <p class="privacy-note"><strong>About the data:</strong> Responses can be edited from the original browser. Names and individual records are not publicly listed. Aggregate counts may reveal individual selections when very few people have participated, and multiple devices can submit separate entries. Treat these results as a voluntary, nonrepresentative sample, not a scientific poll.</p>
+</section>
+</main>
+<footer class="site-footer"><div class="shell"><span>RANDOM INFO PAGES / POLITICAL GRID</span><a href="../">← Back to the archive</a><span>Independent community experiment</span></div></footer>
+<dialog id="clear-dialog" class="confirmation"><form method="dialog"><h2>Clear all your X marks?</h2><p>This clears the current grid on this device. It won't delete an already saved entry until you submit the cleared answers.</p><div class="dialog-actions"><button value="cancel" class="quiet-button">Cancel</button><button value="confirm" class="primary-button">Clear selections</button></div></form></dialog>
+</body></html>
