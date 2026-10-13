@@ -58,7 +58,7 @@ test('SQL isolates named responses and exposes only limited aggregate RPCs', () 
 });
 
 
-test('circular heatmap retains every original image position without treating position as political data', () => {
+test('statement box heatmap retains every original image position without treating position as political data', () => {
   const context = {
     localStorage: { getItem: () => null },
     document: { readyState: 'loading', addEventListener() {} },
@@ -108,7 +108,7 @@ test('overlap uses exact selected checks, not jointly unchecked statements', () 
 test('public comparisons are explicitly opt-in and named read is limited', () => {
   assert.match(html, /id="public-visible"/);
   assert.doesNotMatch(html, /id="public-visible"[^>]*checked/);
-  for (const id of ['overlap-canvas','mode-community','mode-people','overlap-presets',
+  for (const id of ['overlap-box-grid','mode-community','mode-people','overlap-presets',
     'exact-combo','overlap-pairs','overlap-combinations','overlap-common','overlap-group-profile']) {
     assert.match(html, new RegExp('id="' + id + '"'));
   }
@@ -121,4 +121,19 @@ test('public comparisons are explicitly opt-in and named read is limited', () =>
   assert.match(comparisonSchema, /limit 200/i);
   assert.doesNotMatch(comparisonSchema, /grant select on public\.political_grid_responses/i);
   assert.match(comparisonCss, /@media\(max-width:770px\)/);
+});
+
+
+test('comparison view uses labeled colored boxes, not a numbered canvas', () => {
+  assert.match(html, /id="overlap-box-grid"/);
+  assert.doesNotMatch(html, /id="overlap-canvas"/);
+  assert.match(html, /Scroll horizontally/);
+  assert.match(extension, /function renderTiles\(\)/);
+  assert.match(extension, /statement\.label/);
+  assert.match(extension, /style\.backgroundColor/);
+  assert.match(extension, /gridColumn/);
+  assert.match(extension, /aria-pressed/);
+  assert.doesNotMatch(extension, /canvasDraw\(|getContext\(/);
+  assert.match(comparisonCss, /grid-template-columns:repeat\(10,minmax\(92px,1fr\)\)/);
+  assert.match(comparisonCss, /overflow-x:auto/);
 });
