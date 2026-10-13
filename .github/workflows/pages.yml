@@ -161,7 +161,11 @@ jobs:
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid-overlap.js "$base/political-grid/overlap.js"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid-overlap.css "$base/political-grid/overlap.css"
           grep -Fq 'id="overlap-box-grid"' /tmp/political-grid.html
-          grep -Fq 'id="public-visible"' /tmp/political-grid.html
+          if grep -Fq 'id="public-visible"' /tmp/political-grid.html; then
+            echo 'Obsolete public/private switch is still rendered'
+            exit 1
+          fi
+          grep -Fq 'Saved names and X marks are visible to anyone with this page link' /tmp/political-grid.html
           grep -Fq 'political_grid_visible' /tmp/political-grid-overlap.js
           grep -Fq './wheel/' /tmp/home.html
           grep -Fq './friends/' /tmp/home.html
