@@ -52,7 +52,7 @@
     <section class="panel overlap-controls" aria-label="Heatmap controls">
       <div class="panel-head"><div><span class="section-index">A / DISPLAY MODE</span><h3>Build your comparison.</h3></div></div>
       <div class="map-tabs" role="group" aria-label="Heatmap view"><button type="button" id="mode-community" class="active" aria-pressed="true">Community density</button><button type="button" id="mode-people" aria-pressed="false">Person overlaps</button></div>
-      <p id="overlap-mode-hint" class="overlap-helper">Brighter circles mean a larger share of saved submissions selected that statement.</p>
+      <p id="overlap-mode-hint" class="overlap-helper">Brighter boxes mean a larger share of saved submissions selected that statement.</p>
       <div id="overlap-person-panel" class="person-panel" hidden>
         <div class="control-label">PEOPLE <span id="overlap-selected-count">0 / 4</span></div><p class="mini-hint">Choose up to four people. Your live marks remain private even when selected here.</p>
         <div id="overlap-selected-chips" class="selected-chips"></div>
@@ -68,11 +68,13 @@
     </section>
     <div class="overlap-visual">
       <div class="panel heatmap-panel"><div class="heatmap-header"><div><span class="section-index">B / THE 100-STATEMENT FIELD</span><h3 id="heatmap-title">Community selection density</h3></div><span class="heatmap-badge" id="heatmap-badge">All submissions</span></div>
-        <div class="heatmap-canvas-wrap"><canvas id="overlap-canvas" width="1100" height="1100" role="img" aria-label="Ten-by-ten circular heatmap in the original image's grid positions. Numeric values are provided in the detail panel and lists."></canvas></div>
+        <div class="heatmap-tiles-wrap" role="region" aria-label="Scroll horizontally to inspect the full ten-column statement grid" tabindex="0">
+          <div id="overlap-box-grid" class="overlap-box-grid" role="group" aria-label="100 statement comparison heatmap"></div>
+        </div>
         <div class="heatmap-legend" id="heatmap-legend"></div>
-        <p class="heatmap-caption">The 10 × 10 positions reproduce the original image layout. They are <strong>not</strong> ideological coordinates. Click or hover over a circle for details.</p>
+        <p class="heatmap-caption">The original four quadrants and all statement wording are preserved. Box colors show community selection frequency or exact person overlaps, <strong>not</strong> ideology. Select a box to inspect it. Scroll sideways on narrow screens. A small dot means your local grid has an X.</p>
       </div>
-      <div class="panel inspect-panel"><span class="section-index" id="inspect-index">SELECT A CIRCLE</span><h3 id="inspect-statement">Hover or click a statement to inspect it.</h3><div id="inspect-details" class="inspect-details">Selection counts and exact participant matches appear here.</div></div>
+      <div class="panel inspect-panel"><span class="section-index" id="inspect-index">SELECT A BOX</span><h3 id="inspect-statement">Hover over or select a statement box to inspect it.</h3><div id="inspect-details" class="inspect-details">Selection counts and exact participant matches appear here.</div></div>
     </div>
   </div>
   <div class="overlap-analytics">
