@@ -339,13 +339,10 @@ function renderStats() {
   $("respondents-stat").textContent = stats ? n.toLocaleString() : "—";
   $("marks-stat").textContent = stats ? Number(stats.total_selections).toLocaleString() : "—";
   $("average-stat").textContent = n ? (stats.total_selections / n).toFixed(1) : (stats ? "0" : "—");
-  if (n) {
-    let matches = 0;
-    for (const statement of STATEMENTS) {
-      const count = counts[statement.id];
-      matches += state.picks.has(statement.id) ? count : n - count;
-    }
-    $("match-stat").textContent = (100 * matches / (100 * n)).toFixed(1) + "%";
+  if (n && state.picks.size) {
+    let shared = 0;
+    for (const id of state.picks) shared += counts[id];
+    $("match-stat").textContent = (100 * shared / (n * state.picks.size)).toFixed(1) + "%";
   } else {
     $("match-stat").textContent = "—";
   }
