@@ -8,6 +8,7 @@
 <title>Political Grid · Random Info Pages</title>
 <link rel="stylesheet" href="./styles.css">
 <script src="./app.js" defer></script>
+<script src="./overlap.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#grid">Skip to statements</a>
@@ -15,14 +16,14 @@
   <a class="brand" href="../">RIP<span class="brand-slash">/</span>26</a>
   <span class="nav-separator" aria-hidden="true"></span>
   <span class="nav-title">Political Grid</span>
-  <nav aria-label="Page navigation"><a href="#grid">The grid</a><a href="#statistics">Statistics</a><a href="../">Archive ↗</a></nav>
+  <nav aria-label="Page navigation"><a href="#grid">The grid</a><a href="#overlap-lab">Heatmap</a><a href="#statistics">Statistics</a><a href="../">Archive ↗</a></nav>
 </div></header>
 <main class="shell">
 <section class="hero">
   <div class="eyebrow"><span class="eyebrow-dot"></span> COMMUNITY CHECKLIST <span class="hero-code">100 STATEMENTS / 4 GROUPS</span></div>
   <h1>Where do you <em>stand?</em></h1>
   <p class="intro">An interactive version of the four-color political grid. Mark an <strong>X</strong> on every statement you agree with, save under a name, and compare your selections against everyone else's.</p>
-  <div class="hero-tags"><span>100 selectable statements</span><span>Live aggregate results</span><span>Editable submissions</span></div>
+  <div class="hero-tags"><span>100 selectable statements</span><span>Multi-person heatmap</span><span>Editable submissions</span></div>
 </section>
 <div class="content-warning" role="note"><span class="warning-symbol" aria-hidden="true">!</span><p><strong>Content notice.</strong> This grid reproduces provocative, discriminatory, violent, and extremist statements from the supplied image for survey purposes. Inclusion is not an endorsement. The categories are visual groupings, not a validated political assessment.</p></div>
 <section class="identity-panel" aria-labelledby="identity-title">
@@ -30,6 +31,7 @@
   <div class="identity-controls">
     <label for="participant-name">YOUR NAME / NICKNAME</label>
     <div class="name-entry"><input id="participant-name" type="text" maxlength="40" minlength="2" autocomplete="off" placeholder="Enter a name…" spellcheck="false"><button id="save-button" type="button" class="primary-button">Submit answers <span aria-hidden="true">↗</span></button></div>
+    <label class="public-optin"><input type="checkbox" id="public-visible"><span><strong>Show me in public comparisons</strong><small>Optional. Allows anyone to see your nickname and each selected statement. Off by default. Uncheck and submit again to unpublish.</small></span></label>
     <div class="identity-foot"><span id="save-status" role="status" aria-live="polite">Not submitted</span><span>Not shown publicly • Avoid real names if preferred</span></div>
   </div>
 </section>
@@ -43,8 +45,45 @@
   <div class="board" id="statement-board" aria-label="100 selectable statements arranged in four quadrants"></div>
   <div class="board-foot"><span><kbd>Click</kbd> or <kbd>Enter</kbd> to toggle</span><span>Selections are only saved online when you submit.</span></div>
 </section>
+<section id="overlap-lab" class="overlap-section" aria-labelledby="overlap-heading">
+  <div class="section-heading"><div><span class="section-index">03 / MULTI-PERSON HEATMAP</span><h2 id="overlap-heading">Shared ground.</h2><p>Inspired by the 10Groups heatmap. Toggle people, filter exact overlap combinations, and compare your grid with opt-in community profiles.</p></div><a class="jump-button" href="#statistics">Community statistics ↓</a></div>
+  <div class="overlap-layout">
+    <section class="panel overlap-controls" aria-label="Heatmap controls">
+      <div class="panel-head"><div><span class="section-index">A / DISPLAY MODE</span><h3>Build your comparison.</h3></div></div>
+      <div class="map-tabs" role="group" aria-label="Heatmap view"><button type="button" id="mode-community" class="active" aria-pressed="true">Community density</button><button type="button" id="mode-people" aria-pressed="false">Person overlaps</button></div>
+      <p id="overlap-mode-hint" class="overlap-helper">Brighter circles mean a larger share of saved submissions selected that statement.</p>
+      <div id="overlap-person-panel" class="person-panel" hidden>
+        <div class="control-label">PEOPLE <span id="overlap-selected-count">0 / 4</span></div><p class="mini-hint">Choose up to four people. Your live marks remain private even when selected here.</p>
+        <div id="overlap-selected-chips" class="selected-chips"></div>
+        <label class="visually-hidden" for="overlap-search">Find opted-in profiles</label><input type="search" id="overlap-search" class="people-search" placeholder="Find a public nickname…" autocomplete="off">
+        <div id="overlap-people-list" class="people-list"></div><div id="overlap-browser-note" class="mini-hint">Only profiles that opted in appear here.</div>
+        <div class="control-label">OVERLAP PRESETS</div>
+        <div id="overlap-presets" class="overlap-presets" role="group" aria-label="Overlap filters">
+          <button type="button" data-filter="any">Any marked</button><button type="button" data-filter="shared">Shared by 2+</button><button type="button" data-filter="all">All selected people</button><button type="button" data-filter="single">Exactly one</button><button type="button" data-filter="exact">Exact combination</button>
+        </div>
+        <div id="exact-controls" class="exact-controls" hidden><label for="exact-combo">MATCH ONLY THIS EXACT SET</label><select id="exact-combo"></select></div>
+        <div class="map-actions"><button type="button" class="quiet-button" id="overlap-only-me">Only my marks</button><button type="button" class="quiet-button" id="overlap-refresh">↻ Reload profiles</button></div>
+      </div>
+    </section>
+    <div class="overlap-visual">
+      <div class="panel heatmap-panel"><div class="heatmap-header"><div><span class="section-index">B / THE 100-STATEMENT FIELD</span><h3 id="heatmap-title">Community selection density</h3></div><span class="heatmap-badge" id="heatmap-badge">All submissions</span></div>
+        <div class="heatmap-canvas-wrap"><canvas id="overlap-canvas" width="1100" height="1100" role="img" aria-label="Ten-by-ten circular heatmap in the original image's grid positions. Numeric values are provided in the detail panel and lists."></canvas></div>
+        <div class="heatmap-legend" id="heatmap-legend"></div>
+        <p class="heatmap-caption">The 10 × 10 positions reproduce the original image layout. They are <strong>not</strong> ideological coordinates. Click or hover over a circle for details.</p>
+      </div>
+      <div class="panel inspect-panel"><span class="section-index" id="inspect-index">SELECT A CIRCLE</span><h3 id="inspect-statement">Hover or click a statement to inspect it.</h3><div id="inspect-details" class="inspect-details">Selection counts and exact participant matches appear here.</div></div>
+    </div>
+  </div>
+  <div class="overlap-analytics">
+    <article class="panel"><div class="panel-head"><div><span class="section-index">C / EXACT COMBINATIONS</span><h3>Who overlaps with whom?</h3></div></div><div id="overlap-combinations" class="combination-breakdown"><p class="empty">Choose people to explore overlap.</p></div></article>
+    <article class="panel"><div class="panel-head"><div><span class="section-index">D / PAIRWISE ANALYSIS</span><h3>Similarity matrix</h3></div></div><div id="overlap-pairs" class="pairwise-matrix"><p class="empty">Choose two or more people.</p></div><p class="footnote">Jaccard = jointly checked statements ÷ statements checked by either person. Unmarked statements are excluded rather than treated as disagreement.</p></article>
+    <article class="panel"><div class="panel-head"><div><span class="section-index">E / GROUP PROFILES</span><h3>Marks by color group</h3></div></div><div id="overlap-group-profile" class="overlap-group-profile"><p class="empty">Choose people to compare.</p></div></article>
+    <article class="panel"><div class="panel-head"><div><span class="section-index">F / SHARED STATEMENTS</span><h3>Most shared statements</h3></div></div><div id="overlap-common" class="overlap-common"><p class="empty">Choose people to see the overlap.</p></div></article>
+  </div>
+  <p class="privacy-note">Only participants who opted in appear in named comparisons (up to the 200 most recently updated public profiles). The local “You” comparison does not publish anything. Uncheck the opt-in box and update your submission to hide your profile. Overall community statistics include private submissions. The tool compares checkmarks and is not a validated political classification.</p>
+</section>
 <section id="statistics" class="stats-section" aria-labelledby="stats-heading">
-  <div class="section-heading stats-heading"><div><span class="section-index">03 / COMMUNITY DATA</span><h2 id="stats-heading">The bigger picture.</h2><p>Real submissions, not simulated data. Percentages mean the share of saved responses that selected each statement.</p></div><button type="button" class="quiet-button refresh" id="refresh-button">↻ Refresh data</button></div>
+  <div class="section-heading stats-heading"><div><span class="section-index">04 / COMMUNITY DATA</span><h2 id="stats-heading">The bigger picture.</h2><p>Real submissions, not simulated data. Percentages mean the share of saved responses that selected each statement.</p></div><button type="button" class="quiet-button refresh" id="refresh-button">↻ Refresh data</button></div>
   <div class="stats-status" id="stats-status" aria-live="polite">Connecting to community results…</div>
   <div class="stat-cards">
     <article class="stat-card"><span>RESPONSES</span><strong id="respondents-stat">—</strong><small>Saved entries, not verified unique people</small></article>
