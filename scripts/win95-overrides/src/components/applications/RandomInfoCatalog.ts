@@ -81,6 +81,13 @@ export const RANDOM_INFO_APPS: RandomInfoApp[] = [
         description: 'Interactive heatmap and data visualization work.',
     },
     {
+        key: 'political-grid',
+        title: 'Political Grid',
+        path: '/political-grid/',
+        folder: 'Data',
+        description: 'Interactive political checklist and aggregate community results.',
+    },
+    {
         key: 'tide2',
         title: 'Tide 2',
         path: '/tide2/',
