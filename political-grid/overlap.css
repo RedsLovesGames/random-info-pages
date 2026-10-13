@@ -1,0 +1,62 @@
+
+/* Heatmap extension. Mirrors the controls + circular overlap language of 10Groups. */
+.public-optin{display:flex!important;gap:11px;align-items:flex-start;margin:15px 0 0!important;padding:14px;border-radius:9px;background:#262b27;border:1px solid #536246;font-family:var(--font)!important;letter-spacing:normal!important;cursor:pointer}
+.public-optin input{margin:4px 0 0;flex:0 0 auto;width:17px;height:17px;accent-color:var(--lime)}
+.public-optin span{display:flex;flex-direction:column;gap:5px}.public-optin strong{font-size:13px;color:#eaffc2;font-weight:800}.public-optin small{font-size:11px;color:#aeb7a6;line-height:1.5}
+.overlap-section{margin:115px 0 105px;scroll-margin-top:80px}.overlap-section .section-heading{margin-bottom:25px}
+.overlap-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px;align-items:start}
+.overlap-controls{padding:22px;position:sticky;top:82px}.overlap-controls .panel-head h3{margin-bottom:16px}
+.map-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;border-radius:10px;background:#101318;border:1px solid #40454d}
+.map-tabs button{border:0;border-radius:7px;background:transparent;color:#a5acba;padding:12px 9px;font-size:12px;font-weight:800;line-height:1.25}
+.map-tabs button.active{background:#d4ff7f;color:#162016}.map-tabs button:not(.active):hover{color:white;background:#272e35}
+.overlap-helper{margin:13px 0;font-size:12px;color:#a8b5c1;line-height:1.55}
+.control-label{display:flex;justify-content:space-between;font:800 10px var(--mono);letter-spacing:.09em;color:#e0e5ee;margin:21px 0 10px}
+.control-label span{color:#d4ff7f}
+.mini-hint{font-size:11px;line-height:1.5;color:#96a2b0;margin:5px 0 13px}
+.selected-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px}
+.person-chip{border-radius:8px;padding:8px 10px;border:1px solid var(--person-color,#72797e);background:#171e24;color:#f2f7ff;font-size:11px;font-weight:750;max-width:100%;overflow-wrap:anywhere}
+.person-chip:hover{filter:brightness(1.25)}
+.people-search{height:41px;width:100%;border:1px solid #45505a;border-radius:8px;background:#141920;padding:0 12px;color:#eef1f5;outline:0;font-size:12px}
+.people-search:focus{border-color:#d4ff7f}
+.people-list{margin:10px 0 8px;max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;overscroll-behavior:contain}
+.person-option{width:100%;min-height:46px;padding:7px 10px;border:1px solid #323b45;border-radius:8px;background:#171e26;color:#e7e9ef;display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;gap:0 10px;text-align:left;align-items:center}
+.person-option:hover:not(:disabled){background:#293443}.person-option.chosen{border-color:#bfd98c;background:#253028}
+.person-option>span{font-size:12px;font-weight:750;grid-column:1}.person-option>small{font-size:10px;color:#97a2af;grid-column:1}
+.person-option>b{grid-column:2;grid-row:1/3;font-size:20px;font-weight:700;color:#d4ff7f}.person-option:disabled{opacity:.35;cursor:default}
+.overlap-presets{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.overlap-presets button{border:1px solid #444d55;background:#1a222b;color:#ccd6df;border-radius:7px;padding:9px 7px;min-height:39px;font-size:11px;font-weight:750;line-height:1.25}
+.overlap-presets button:hover{background:#293541}.overlap-presets button.active{border-color:#d4ff7f;background:#324326;color:#eaffc4}
+.exact-controls{margin-top:13px}.exact-controls label{display:block;color:#aab6c2;font:750 10px var(--mono);margin-bottom:6px}
+.exact-controls select{width:100%;padding:9px 8px;border-radius:8px;border:1px solid #55606a;background:#202a34;color:white;font-size:12px}
+.map-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}.map-actions .quiet-button{font-size:10px;padding:8px 9px}
+.overlap-visual{min-width:0;display:grid;gap:13px}.heatmap-panel{padding:17px;background:#18212b}
+.heatmap-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 14px}
+.heatmap-header h3{margin:5px 0 0;font-size:21px;letter-spacing:-.045em}
+.heatmap-badge{border:1px solid #556374;border-radius:8px;padding:6px 9px;color:#c0cdd9;font:750 10px var(--mono)}
+.heatmap-canvas-wrap{width:100%;max-width:1100px;aspect-ratio:1;background:#121d27;border:1px solid #4c5663;border-radius:12px;overflow:hidden;touch-action:pan-y}
+#overlap-canvas{display:block;width:100%;height:auto;aspect-ratio:1}
+.heatmap-legend{display:flex;flex-wrap:wrap;align-items:center;gap:12px;color:#b8c5d0;font-size:11px;margin:13px 0 0;min-height:20px}
+.density-scale{width:130px;height:10px;background:linear-gradient(90deg,#26323c,#86d1f0,#f6ef99);border:1px solid #607080;border-radius:20px}
+.legend-person{display:flex;align-items:center;gap:6px}.legend-person i{display:block;width:11px;height:11px;border-radius:50%;box-shadow:0 0 0 2px #ffffff22}
+.heatmap-caption{font-size:11px;line-height:1.55;color:#9daebb;margin:12px 0 0}.heatmap-caption strong{color:#cbd6df}
+.inspect-panel{padding:19px 22px;background:#22282f}.inspect-panel h3{font-size:20px;letter-spacing:-.04em;line-height:1.25;margin:10px 0}
+.inspect-details p{margin:7px 0;color:#b8c4cf;font-size:12px}.inspect-details p.inspect-small{font-size:11px;color:#95a4b4}
+.inspect-tags{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.inspect-tags span{border:1px solid #aab6c3;border-radius:40px;padding:5px 9px;color:white;font-size:11px}
+.overlap-analytics{margin-top:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.overlap-analytics>.panel{min-width:0;padding:22px;overflow:auto}.overlap-analytics .panel-head h3{margin:8px 0 17px}
+.combination-breakdown,.overlap-common{display:flex;flex-direction:column;gap:6px}
+.overlap-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(60px,.5fr) auto;align-items:center;gap:10px;min-height:43px;width:100%;text-align:left;padding:9px 10px;border:1px solid #353b42;border-radius:8px;background:#202730;color:#dee6ed}
+button.overlap-row:hover{border-color:#a3abb5;background:#293541}
+.overlap-row-title{font-size:11px;font-weight:700;overflow-wrap:anywhere;line-height:1.32}
+.overlap-row-track{display:block;height:8px;background:#343d45;border-radius:3px;overflow:hidden;min-width:50px}
+.overlap-row-track i{display:block;height:100%;border-radius:3px}
+.overlap-row-value{font:750 11px var(--mono);white-space:nowrap}
+.pair-table,.group-profile-table{border-collapse:separate;border-spacing:4px;width:100%;font-size:11px;table-layout:fixed;min-width:330px}
+.pair-table th,.group-profile-table th{font-weight:750;color:#adb9c4;text-align:left;word-break:break-word;padding:8px 5px;font-size:10px}
+.pair-table td{padding:13px 6px;border-radius:6px;text-align:center;font:750 12px var(--mono);color:#f3f5f9;border:1px solid #ffffff16}
+.group-profile-table td{padding:8px 5px;font:700 12px var(--mono);text-align:center;color:#dde4e9}
+.group-profile-track{height:7px;border-radius:4px;background:#343a43;overflow:hidden;margin-top:6px}.group-profile-track i{display:block;height:100%}
+.overlap-analytics .footnote{line-height:1.55}
+@media(max-width:990px){.overlap-layout{grid-template-columns:260px minmax(0,1fr)}.overlap-controls{padding:16px}.overlap-analytics>.panel{padding:17px}}
+@media(max-width:770px){.overlap-section{margin-top:80px}.overlap-layout{grid-template-columns:1fr}.overlap-controls{position:static}.people-list{max-height:180px}.overlap-analytics{grid-template-columns:1fr}.overlap-analytics>.panel{padding:17px}.nav nav{gap:12px}}
+@media(max-width:460px){.overlap-section .section-heading{flex-wrap:wrap}.overlap-layout{gap:9px}.heatmap-panel{padding:8px}.heatmap-header{padding:8px 8px 0}.heatmap-header h3{font-size:17px}.heatmap-caption{margin:10px;padding:0 7px 6px}.heatmap-legend{padding:0 7px}.overlap-row{grid-template-columns:minmax(0,1fr) 55px auto;gap:6px;padding:9px 6px}.overlap-row-title{font-size:10px}.overlap-row-value{font-size:10px}.nav nav a[href="#statistics"]{display:none}}
