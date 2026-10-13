@@ -7,7 +7,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const routes = [
   './tools/', './wheel/', './whenwemeet/', './school-schedule/', './friends/',
   './tideborne/', './tide2/', './vct-scout/', './oldasspolitic/',
-  './heatmap/', './wanuiv2/', './nerdcore-prompts/'
+  './heatmap/', './political-grid/', './wanuiv2/', './nerdcore-prompts/'
 ];
 
 test('homepage uses the archive folder interface', () => {
@@ -27,4 +27,11 @@ test('toolbox appears in the Tools folder and search index', () => {
   assert.match(html, /href="\.\/tools\/"/);
   assert.match(html, /<span class="folder-count">03 files<\/span>/);
   assert.match(html, /\{n:'Toolbox',p:'\.\/tools\/'/);
+});
+
+test('political grid is listed in the data folder and searchable', () => {
+  assert.match(html, /data-folder="data"[\s\S]*?<span class="folder-count">03 files<\/span>/);
+  assert.match(html, /href="\.\/political-grid\/"/);
+  assert.match(html, /\{n:'Political Grid',p:'\.\/political-grid\/'/);
+  assert.match(html, /id="searchLabel">13 files/);
 });
