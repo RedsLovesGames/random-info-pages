@@ -278,6 +278,8 @@ async function submit() {
     }
     state.token = crypto.randomUUID();
   }
+  const submittedName = state.name;
+  const submittedPicks = [...state.picks].sort((a, b) => a - b);
   state.saving = true;
   state.dirty = true;
   saveDraft();
@@ -285,12 +287,12 @@ async function submit() {
   setSaveStatus("Saving your selections…");
   try {
     await rpc("political_grid_submit", {
-      p_name: state.name, p_token: state.token, p_picks: [...state.picks].sort((a, b) => a - b)
+      p_name: submittedName, p_token: state.token, p_picks: submittedPicks
     });
-    state.dirty = false;
+    state.dirty = state.name !== submittedName || state.picks.size !== submittedPicks.length || submittedPicks.some((id) => !state.picks.has(id));
     saveDraft();
     $("save-button").innerHTML = "Update answers <span aria-hidden='true'>↗</span>";
-    setSaveStatus("Saved to the shared database ✓");
+    setSaveStatus(state.dirty ? "Saved earlier selections • newer edits are unsaved" : "Saved to the shared database ✓");
     await refreshStats();
   } catch (error) {
     setSaveStatus("Could not save: " + error.message, true);
@@ -441,7 +443,10 @@ function setup() {
   $("export-button").addEventListener("click", exportCsv);
   $("clear-button").addEventListener("click", () => {
     const dialog = $("clear-dialog");
-    if (typeof dialog.showModal === "function") dialog.showModal();
+    if (typeof dialog.showModal === "function") {
+      dialog.returnValue = "cancel";
+      dialog.showModal();
+    }
     else if (confirm("Clear your selections?")) clearMarks();
   });
   $("clear-dialog").addEventListener("close", () => {
