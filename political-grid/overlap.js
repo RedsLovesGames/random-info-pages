@@ -35,70 +35,121 @@
     e.textContent=String(text);parent.append(e);return e;
   }
   function reset(el){el.replaceChildren();}
-  function canvasDraw(){
-    const canvas=$h("overlap-canvas");if(!canvas)return;
-    const ctx=canvas.getContext("2d");if(!ctx)return;
-    const selected=people(),n=selected.length,globalN=state.stats?.respondents||0;
-    ctx.fillStyle="#111a25";ctx.fillRect(0,0,SIZE,SIZE);
-    GROUPS.forEach((g,i)=>{
-      ctx.fillStyle=toHex(g.color,.07);
-      ctx.fillRect(EDGE+(i%2)*5*STEP,EDGE+Math.floor(i/2)*5*STEP,5*STEP,5*STEP);
+
+  // Reuse the same DOM nodes to avoid losing hover/focus while people and filters change.
+  const tiles = new Map();
+  function blended(rgbHex, amount) {
+    const base=[23,32,42], target=[1,3,5].map(i=>parseInt(rgbHex.slice(i,i+2),16));
+    return base.map((v,i)=>Math.round(v+(target[i]-v)*Math.min(1,Math.max(0,amount))));
+  }
+  function contrastText(rgb) {
+    const linear = rgb.map(v => {
+      const s=v/255;
+      return s<=.04045?s/12.92:Math.pow((s+.055)/1.055,2.4);
     });
-    ctx.strokeStyle="#dbe2fa1a";ctx.lineWidth=1;
-    for(let j=0;j<=10;j++){
-      const c=EDGE+j*STEP;
-      ctx.beginPath();ctx.moveTo(EDGE,c);ctx.lineTo(EDGE+10*STEP,c);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(c,EDGE);ctx.lineTo(c,EDGE+10*STEP);ctx.stroke();
+    const lum=.2126*linear[0]+.7152*linear[1]+.0722*linear[2];
+    return (1.05/(lum+.05) > (lum+.05)/.018) ? "#f4f7fa" : "#101820";
+  }
+  function highlight() {
+    for (const [id, cell] of tiles) {
+      cell.button.classList.toggle("inspected", id===view.pinned || id===view.hover);
+      cell.button.setAttribute("aria-pressed", String(id===view.pinned));
     }
-    ctx.strokeStyle="#ffffff66";ctx.lineWidth=6;ctx.beginPath();
-    ctx.moveTo(EDGE+5*STEP,EDGE);ctx.lineTo(EDGE+5*STEP,EDGE+10*STEP);
-    ctx.moveTo(EDGE,EDGE+5*STEP);ctx.lineTo(EDGE+10*STEP,EDGE+5*STEP);ctx.stroke();
-    for(const s of STATEMENTS){
-      const pos=coords(s.id),cx=EDGE+(pos.x+.5)*STEP,cy=EDGE+(pos.y+.5)*STEP;
-      const m=mask(s.id,selected);
-      const p=view.mode==="community"&&globalN?state.stats.counts[s.id]/globalN:0;
-      const intensity=view.mode==="community"?(globalN?.13+p*.82:.07):(shown(m,n)?(.4+.12*bits(m)):0);
-      const paint=view.mode==="community"?s.color:color(m);
-      if(intensity>0){
-        const gradient=ctx.createRadialGradient(cx,cy,2,cx,cy,R+10);
-        gradient.addColorStop(0,toHex(paint,Math.min(1,intensity+.25)));
-        gradient.addColorStop(.5,toHex(paint,intensity));
-        gradient.addColorStop(1,toHex(paint,.01));
-        ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(cx,cy,R+10,0,Math.PI*2);ctx.fill();
-      }else{ctx.fillStyle="#25303b";ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fill();}
-      ctx.strokeStyle=intensity?toHex(paint,.3+intensity*.65):"#ffffff2a";
-      ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.stroke();
-      if(state.picks.has(s.id)){
-        ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(cx+R-5,cy-R+6,5,0,Math.PI*2);ctx.fill();
-      }
-      ctx.fillStyle=intensity>.5?"#071019":"#e9eef5";
-      ctx.textAlign="center";ctx.textBaseline="middle";ctx.font="bold 21px Consolas,monospace";
-      ctx.fillText(String(s.id+1).padStart(2,"0"),cx,cy+1);
-      if(view.hover===s.id||view.pinned===s.id){
-        ctx.strokeStyle="white";ctx.lineWidth=5;ctx.beginPath();ctx.arc(cx,cy,R+8,0,Math.PI*2);ctx.stroke();
-      }
+  }
+  function setHovered(id) {
+    if(view.hover===id) return;
+    view.hover=id;
+    highlight();
+    inspect();
+  }
+  function ensureTiles() {
+    const grid=$h("overlap-box-grid");
+    if (!grid || tiles.size) return;
+    const ordered=[...STATEMENTS].sort((a,b)=>{
+      const aa=coords(a.id),bb=coords(b.id);
+      return aa.y-bb.y || aa.x-bb.x;
+    });
+    for(const statement of ordered) {
+      const pos=coords(statement.id),button=document.createElement("button");
+      button.type="button";
+      button.className="overlap-tile";
+      button.dataset.id=String(statement.id);
+      button.style.gridColumn=String(pos.x+1);
+      button.style.gridRow=String(pos.y+1);
+      if(pos.x===5)button.classList.add("boundary-left");
+      if(pos.y===5)button.classList.add("boundary-top");
+      button.setAttribute("aria-label", String(statement.id+1)+". "+statement.label+". Inspect comparison details");
+      button.title=statement.label;
+      const index=node(button,"span",String(statement.id+1).padStart(2,"0"),"overlap-tile-index");
+      const label=node(button,"span",statement.label,"overlap-tile-label");
+      const value=node(button,"span","","overlap-tile-value");
+      const local=node(button,"span","","overlap-tile-local");
+      local.setAttribute("aria-hidden","true");
+      button.addEventListener("mouseenter",()=>setHovered(statement.id));
+      button.addEventListener("mouseleave",()=>setHovered(-1));
+      button.addEventListener("focus",()=>setHovered(statement.id));
+      button.addEventListener("blur",()=>setHovered(-1));
+      button.addEventListener("click",()=>{
+        view.pinned=view.pinned===statement.id?-1:statement.id;
+        highlight();
+        inspect();
+      });
+      grid.append(button);
+      tiles.set(statement.id,{button,index,label,value,local});
     }
+  }
+  function renderTiles() {
+    ensureTiles();
+    const selected=people(),n=selected.length,globalN=state.stats?.respondents||0;
+    for(const statement of STATEMENTS) {
+      const cell=tiles.get(statement.id);
+      if(!cell) continue;
+      let fraction=0, paint=statement.color, active=false, intensity=.14, summary="No saved responses yet";
+      if(view.mode==="community") {
+        fraction=globalN?state.stats.counts[statement.id]/globalN:0;
+        intensity=globalN ? .20+.80*fraction : .14;
+        active=globalN>0 && fraction>0;
+        summary=globalN ? Math.round(fraction*100)+"% of "+globalN+" submissions" : "No saved responses";
+        cell.value.textContent=globalN?Math.round(fraction*100)+"%":"";
+      }else{
+        const matched=mask(statement.id,selected);
+        active=shown(matched,n);
+        paint=active?color(matched):statement.color;
+        intensity=active?.91:.09;
+        summary=active?bits(matched)+" of "+n+" selected: "+combo(matched,selected):"No match for current overlap filter";
+        cell.value.textContent=active?bits(matched)+" / "+n:"";
+      }
+      const rgb=blended(paint,intensity);
+      cell.button.style.backgroundColor="rgb("+rgb.join(",")+")";
+      cell.button.style.color=contrastText(rgb);
+      cell.button.classList.toggle("overlap-tile-selected",active);
+      cell.button.classList.toggle("overlap-tile-muted",!active);
+      cell.button.classList.toggle("overlap-tile-local-marked",state.picks.has(statement.id));
+      cell.local.hidden=!state.picks.has(statement.id);
+      cell.button.setAttribute("aria-description",summary);
+      cell.value.hidden=!cell.value.textContent;
+    }
+    highlight();
     const legend=$h("heatmap-legend");reset(legend);
     if(view.mode==="community"){
       node(legend,"span",globalN+" saved responses");
       node(legend,"div","","density-scale");
       node(legend,"span","0% selected → 100% selected");
-    }else{
+    }else {
       selected.forEach(p=>{
         const chip=node(legend,"span","","legend-person");
         const dot=node(chip,"i","");dot.style.background=p.color;
         node(chip,"span",p.name);
       });
-      if(!selected.length)node(legend,"span","Select up to four people");
-      else node(legend,"span","Combination colors indicate exactly who marked each statement");
+      node(legend,"span",selected.length?"Solid box colors indicate who marked each statement":"Select people to see their X marks");
     }
   }
   function inspect(){
     const id=view.hover>=0?view.hover:view.pinned;
     const title=$h("inspect-statement"),detail=$h("inspect-details");reset(detail);
     if(id<0){
-      $h("inspect-index").textContent="SELECT A CIRCLE";
-      title.textContent="Hover or click a statement to inspect it.";
+       $h("inspect-index").textContent="SELECT A BOX";
+      title.textContent="Hover over or select a statement box to inspect it.";
       node(detail,"p","Selection counts and exact participant matches appear here.");
       return;
     }
@@ -127,8 +178,8 @@
     $h("mode-people").setAttribute("aria-pressed",String(isPeople));
     $h("overlap-person-panel").hidden=!isPeople;
     $h("overlap-mode-hint").textContent=isPeople?
-      "Each circle combines selected people's X marks. Colors identify exact overlaps.":
-      "Brighter circles mean a higher percentage of all saved responses selected them.";
+      "Each colored box shows which selected people marked that statement. Shared statements use combination colors.":
+      "Brighter boxes mean a higher percentage of all saved responses selected them.";
     $h("heatmap-title").textContent=isPeople?"Multi-person intersection heatmap":"Community selection density";
     $h("heatmap-badge").textContent=isPeople?people().length+" people":"All saved responses";
     for(const b of $h("overlap-presets").querySelectorAll("[data-filter]")){
@@ -198,7 +249,7 @@
     [...dist].filter(([m])=>m!==0).sort((a,b)=>b[1]-a[1]).forEach(([m,quantity])=>{
       barRow(comboPanel,combo(m,selected),quantity+" / 100",quantity,color(m),()=>{
         view.mode="people";view.filter="exact";view.exact=m;picker();render();
-        $h("overlap-canvas").scrollIntoView({block:"center",behavior:"smooth"});
+        $h("overlap-box-grid").scrollIntoView({block:"center",behavior:"smooth"});
       });
     });
     if(n<2)node(pairPanel,"p","Choose at least two people for pairwise Jaccard similarity.","empty");
@@ -237,10 +288,10 @@
     if(!shared.length)node(commonPanel,"p","No statement is marked by two or more selected people.","empty");
     shared.forEach(s=>barRow(commonPanel,String(s.id+1).padStart(2,"0")+". "+s.label,s.total+" / "+n,100*s.total/n,s.color,()=>{
       view.pinned=s.id;view.hover=-1;render();
-      $h("overlap-canvas").scrollIntoView({block:"center",behavior:"smooth"});
+      $h("overlap-box-grid").scrollIntoView({block:"center",behavior:"smooth"});
     }));
   }
-  function render(){if(!$h("overlap-canvas"))return;presetUi();canvasDraw();inspect();analytics();}
+  function render(){if(!$h("overlap-box-grid"))return;presetUi();renderTiles();inspect();analytics();}
   async function reload(){
     if(view.loading)return;
     view.loading=true;view.error="";picker();
@@ -258,7 +309,6 @@
     finally{view.loading=false;picker();render();}
   }
   function setup(){
-    const canvas=$h("overlap-canvas");
     $h("mode-community").addEventListener("click",()=>{view.mode="community";picker();render();});
     $h("mode-people").addEventListener("click",()=>{view.mode="people";picker();render();});
     $h("overlap-search").addEventListener("input",picker);
@@ -270,20 +320,6 @@
       picker();render();
     });
     $h("exact-combo").addEventListener("change",e=>{view.exact=Number(e.target.value);render();});
-    const locate=(e)=>{
-      const rect=canvas.getBoundingClientRect();
-      const x=(e.clientX-rect.left)*SIZE/rect.width,y=(e.clientY-rect.top)*SIZE/rect.height;
-      const gx=Math.floor((x-EDGE)/STEP),gy=Math.floor((y-EDGE)/STEP);
-      if(gx<0||gy<0||gx>=10||gy>=10)return -1;
-      if(Math.hypot(x-EDGE-(gx+.5)*STEP,y-EDGE-(gy+.5)*STEP)>STEP*.51)return -1;
-      return at(gx,gy);
-    };
-    canvas.addEventListener("pointermove",e=>{
-      const id=locate(e);canvas.style.cursor=id===-1?"default":"pointer";
-      if(view.hover!==id){view.hover=id;canvasDraw();inspect();}
-    });
-    canvas.addEventListener("pointerleave",()=>{view.hover=-1;canvasDraw();inspect();});
-    canvas.addEventListener("click",e=>{const id=locate(e);view.pinned=view.pinned===id?-1:id;view.hover=-1;render();});
     picker();render();reload();
   }
   window.PoliticalGridOverlap={render,reload,coords,at,mask,bits,shown};
