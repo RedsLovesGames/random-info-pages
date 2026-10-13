@@ -10,6 +10,7 @@ const css = readFileSync(new URL('styles.css', root), 'utf8');
 const schema = readFileSync(new URL('schema.sql', root), 'utf8');
 const extension = readFileSync(new URL('overlap.js', root), 'utf8');
 const comparisonSchema = readFileSync(new URL('comparisons-schema.sql', root), 'utf8');
+const allResponsesSchema = readFileSync(new URL('all-responses-schema.sql', root), 'utf8');
 const comparisonCss = readFileSync(new URL('overlap.css', root), 'utf8');
 
 function loadDefinitions() {
@@ -105,24 +106,24 @@ test('overlap uses exact selected checks, not jointly unchecked statements', () 
   assert.equal(shown(5, 3), true);
 });
 
-test('public comparisons are explicitly opt-in and named read is limited', () => {
-  assert.match(html, /id="public-visible"/);
-  assert.doesNotMatch(html, /id="public-visible"[^>]*checked/);
-  for (const id of ['overlap-box-grid','mode-community','mode-people','overlap-presets',
-    'exact-combo','overlap-pairs','overlap-combinations','overlap-common','overlap-group-profile']) {
+test('all saved profiles can be compared with no public-private switch', () => {
+  assert.doesNotMatch(html, /id="public-visible"|class="public-optin"/);
+  assert.doesNotMatch(script, /p_visible: submittedVisible|state\.visible|\$\("public-visible"\)/);
+  for(const id of ['overlap-box-grid','mode-community','mode-people','overlap-presets',
+    'exact-combo','overlap-pairs','overlap-combinations','overlap-common','overlap-group-profile']){
     assert.match(html, new RegExp('id="' + id + '"'));
   }
+  assert.match(html, /Names and selected statements are visible to anyone with the page link/);
   assert.match(html, /src="\.\/overlap\.js"/);
   assert.match(html, /href="\.\/overlap\.css"/);
   assert.match(extension, /political_grid_visible/);
-  assert.match(script, /p_visible: submittedVisible/);
-  assert.match(comparisonSchema, /public_visible boolean not null default false/i);
-  assert.match(comparisonSchema, /where public_visible = true/i);
-  assert.match(comparisonSchema, /limit 200/i);
-  assert.doesNotMatch(comparisonSchema, /grant select on public\.political_grid_responses/i);
+  assert.match(allResponsesSchema, /set default true/);
+  assert.match(allResponsesSchema, /where public_visible = false/);
+  assert.match(allResponsesSchema, /limit 200/);
+  assert.doesNotMatch(allResponsesSchema, /where public_visible = true/i);
+  assert.doesNotMatch(allResponsesSchema, /grant select on public\.political_grid_responses/i);
   assert.match(comparisonCss, /@media\(max-width:770px\)/);
 });
-
 
 test('comparison view uses labeled colored boxes, not a numbered canvas', () => {
   assert.match(html, /id="overlap-box-grid"/);
