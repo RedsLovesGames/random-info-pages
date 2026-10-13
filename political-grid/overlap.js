@@ -216,9 +216,9 @@
       b.addEventListener("click",()=>toggle(p.id));
     }
     $h("overlap-browser-note").textContent=view.error?"Profile lookup failed: "+view.error:view.loading?
-      "Loading public profiles…":view.profiles.length?
-      view.profiles.length+" public profiles loaded (latest 200 maximum). If your own saved name is visible, avoid comparing it with “You (live)” as two separate people.":
-      "No opt-in profiles yet. You can inspect your local marks or community density.";
+      "Loading saved profiles…":view.profiles.length?
+      view.profiles.length+" saved profiles loaded (latest 200 maximum). If your own saved name is visible, avoid comparing it with “You (live)” as two separate people.":
+      "No saved profiles yet. You can inspect your local marks or community density.";
     const select=$h("exact-combo");reset(select);
     for(let m=1;m<(1<<selected.length);m++){
       const opt=node(select,"option",bits(m)+" · "+combo(m,selected));opt.value=String(m);
