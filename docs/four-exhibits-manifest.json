@@ -1,0 +1,172 @@
+[
+    {
+        "path":  "algorithm-arena/app.js",
+        "bytes":  30753,
+        "sha256":  "e2e1af87fa5ad727a6f688003ddcc93a908c952c2fba05e2489db7f7c2904e21"
+    },
+    {
+        "path":  "algorithm-arena/audio.mjs",
+        "bytes":  4484,
+        "sha256":  "13b8fec70657b849f450228c751b03a716af6ad34b8d8a201c3cfbafaaa5b130"
+    },
+    {
+        "path":  "algorithm-arena/engine.mjs",
+        "bytes":  14320,
+        "sha256":  "3d425c572220d336fcf12cb0b7e989afd9fc82eab3eebfa55986637795a70f4a"
+    },
+    {
+        "path":  "algorithm-arena/index.html",
+        "bytes":  10111,
+        "sha256":  "04ae8c596a0f7afd0ce9fb3e6358bf6318020744b18a8f63041c34546300b86c"
+    },
+    {
+        "path":  "algorithm-arena/styles.css",
+        "bytes":  12779,
+        "sha256":  "177fa7720cf458ccd7ad647867334d5893fbf4e428127769c08b741c8e0dd21a"
+    },
+    {
+        "path":  "cryptography-museum/app.js",
+        "bytes":  33408,
+        "sha256":  "911c9b9ad8a521f9373f234249409eccc740ef62a11a4cad57863f09ff349e82"
+    },
+    {
+        "path":  "cryptography-museum/engine.mjs",
+        "bytes":  7641,
+        "sha256":  "0590a98869878897f370e2cbd4abb364beb9ef4ddf7334fad7fb0c3d80082509"
+    },
+    {
+        "path":  "cryptography-museum/index.html",
+        "bytes":  2615,
+        "sha256":  "1228a36e23b586404b99fd827cc97546eaeb0a411f25e5534151f0f005fff8f0"
+    },
+    {
+        "path":  "cryptography-museum/styles.css",
+        "bytes":  12321,
+        "sha256":  "7c41db409dbd4c7d7fd97878aca000b949522084ba121ad6f2d4bb7449211dc7"
+    },
+    {
+        "path":  "docs/four-exhibits-handoff.md",
+        "bytes":  2994,
+        "sha256":  "e8939be1552258da0107b1b0b05ee1078f51e240a5fb3f454d39ad01608e5953"
+    },
+    {
+        "path":  "docs/four-exhibits-plan.md",
+        "bytes":  5282,
+        "sha256":  "84712fad8f60719f27d8db7b8a8563fbbab0c55d24068819527a04f7bdc4718f"
+    },
+    {
+        "path":  "docs/four-exhibits-requirements.md",
+        "bytes":  22927,
+        "sha256":  "15033ed21ea00c79fbff7332902571efa8acd760d56f5e83e2e9f4429f259067"
+    },
+    {
+        "path":  "index.html",
+        "bytes":  25369,
+        "sha256":  "3a3f44582422e156dda57d82770c46bab46e3bd07c0d9571bcdfc24066cb4507"
+    },
+    {
+        "path":  "music-microscope/analysis.mjs",
+        "bytes":  21968,
+        "sha256":  "17d25a400f1c3d4d8586e26266f24ede2d7e18437507800c85404f14dbcaddb4"
+    },
+    {
+        "path":  "music-microscope/analysis-worker.js",
+        "bytes":  1369,
+        "sha256":  "cf0110f4982981152e85a1cf7c1deee9274ec7e45d5be2d8bf495fd9b42ab97f"
+    },
+    {
+        "path":  "music-microscope/app.js",
+        "bytes":  38706,
+        "sha256":  "8682c48577dcc7b74552f983f1dcb65a331a1da8f32c6efc17cbeca229362511"
+    },
+    {
+        "path":  "music-microscope/index.html",
+        "bytes":  8950,
+        "sha256":  "106d2abac92a9101477f1e4360261b38b48e3857390bcda1806cf7ee95c74275"
+    },
+    {
+        "path":  "music-microscope/styles.css",
+        "bytes":  13986,
+        "sha256":  "e76ff5443ec513af5e13adcab4ae95574210af6521a638523fad85f09ccc7e1c"
+    },
+    {
+        "path":  "one-million/app.js",
+        "bytes":  25580,
+        "sha256":  "b5582a19d7e70cd8f40cf31bc3f942fdeb2a2a8f2e004229cfa578bf3b055876"
+    },
+    {
+        "path":  "one-million/engine.mjs",
+        "bytes":  7737,
+        "sha256":  "2b3edeeab0d45baba44065230ca584c3f54811d635e99bee351f4db3b725ef30"
+    },
+    {
+        "path":  "one-million/index.html",
+        "bytes":  8969,
+        "sha256":  "ab264b29621a1d3d547dd1eb6f436452e802b79ff5c5f7d57504fcd3730d395f"
+    },
+    {
+        "path":  "one-million/styles.css",
+        "bytes":  12464,
+        "sha256":  "983a3505a48078afbc9425987d5b1ccd793776715f380cbd402a8d7b01b488ce"
+    },
+    {
+        "path":  "scripts/exhibits-browser-smoke.mjs",
+        "bytes":  3446,
+        "sha256":  "d86c3d8918031870757c8bac9174aa4235938fddfd0f5f80b206044d9b201953"
+    },
+    {
+        "path":  "scripts/exhibits-interactions.mjs",
+        "bytes":  22103,
+        "sha256":  "0e1a9cc59f6f522680d6011208d1386c85fa466d93e810fc3ec83d041dc88094"
+    },
+    {
+        "path":  "scripts/exhibits-server.mjs",
+        "bytes":  2040,
+        "sha256":  "292fb5ffef7564bfc1d65ae9a70bc5951cd3600aae038c7560e259aca5bcb21b"
+    },
+    {
+        "path":  "scripts/package-exhibits.ps1",
+        "bytes":  3282,
+        "sha256":  "b545ff97a78a5230f1f863dae46324f17973ff3a073cd5758753d00ebdeda6de"
+    },
+    {
+        "path":  "scripts/test-exhibits.mjs",
+        "bytes":  471,
+        "sha256":  "a45ab2619148228f70f2ff474bed5bd0d8cb98a0393124c9e2217d95f0f5a9d4"
+    },
+    {
+        "path":  "tests/algorithm-arena.test.mjs",
+        "bytes":  7328,
+        "sha256":  "760a839c938681e77a4517cbafac5f6034d6528d22362c8abedcec5a50c48c24"
+    },
+    {
+        "path":  "tests/cryptography-museum.browser.test.mjs",
+        "bytes":  4821,
+        "sha256":  "317121b213682d90a35cb011888f50686c700e57b723269e79cee8525a2f7fea"
+    },
+    {
+        "path":  "tests/cryptography-museum.test.mjs",
+        "bytes":  3977,
+        "sha256":  "8c1569609524637e0325b67664c8689babad18c955290c001981a68cf383eb3c"
+    },
+    {
+        "path":  "tests/exhibits-integration.test.mjs",
+        "bytes":  1810,
+        "sha256":  "1ebc777e18ee40f9a1e8d676219105f8a0cef73d751b6a0f66494858d69e281e"
+    },
+    {
+        "path":  "tests/home-index.test.mjs",
+        "bytes":  3747,
+        "sha256":  "3fb0e209931671aefbba9a68023ff4f07fd99dc28e8d8f5ca48dcdebf8005c09"
+    },
+    {
+        "path":  "tests/music-microscope.test.mjs",
+        "bytes":  6454,
+        "sha256":  "a94b0cece4def7a18740e85246e1b89a2ce37cbb63047c438558b8c4d9359f62"
+    },
+    {
+        "path":  "tests/one-million.test.mjs",
+        "bytes":  4286,
+        "sha256":  "277cb4fc3e1b7204e951ab39f2d464d43889ceee8af644204e1b0eed523333b0"
+    }
+]

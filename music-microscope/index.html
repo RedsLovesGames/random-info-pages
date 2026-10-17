@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111819">
+  <meta name="description" content="A local audio analysis instrument with waveform, spectrogram, spectrum, filters, stereo view, and cautious tempo estimates.">
+  <title>Music Microscope — local audio lab</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="masthead"><a href="../">← Random Info Pages</a><span>MUSIC MICROSCOPE <b>LOCAL LAB / 01</b></span><span class="privacy-mark"><i></i> AUDIO STAYS ON THIS DEVICE</span></header>
+  <main>
+    <section class="intro"><div><p class="eyebrow">SIGNAL ANALYSIS / BROWSER INSTRUMENT</p><h1>Music<br><em>Microscope.</em></h1><p class="intro-copy">Look closer at sound. Read its shape, frequency and level; test what a filter changes. All audio processing stays in this browser.</p></div><div class="track-summary"><span class="summary-label">CURRENT RECORDING</span><h2 id="trackName">No recording loaded</h2><p id="trackStatus" role="status" aria-live="polite">Choose a local file or generate the example recording.</p></div></section>
+
+    <section class="source-row" aria-label="Audio input">
+      <label class="dropzone" id="dropzone" for="audioFile"><span class="upload-icon">↑</span><span><b>Drop an audio file here</b><small>Or browse your device · audio remains local</small></span><span class="file-types">WAV · MP3 · AAC · OGG · FLAC*<br><small>*browser decoding varies</small></span><input id="audioFile" type="file" accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac,.aiff,.webm"></label>
+      <button id="exampleButton" class="example-button" type="button"><span>∿</span><b>Load original example</b><small>12 seconds · generated here</small></button>
+      <div class="track-facts" id="trackFacts" aria-label="Recording properties"><span><b id="durationFact">—</b>DURATION</span><span><b id="sampleRateFact">—</b>SAMPLE RATE</span><span><b id="channelsFact">—</b>CHANNELS</span><span><b id="formatFact">—</b>FORMAT</span></div>
+    </section>
+    <p class="import-error" id="importError" role="alert" hidden></p>
+
+    <section class="transport-panel" aria-label="Audio transport">
+      <div class="transport-buttons"><button id="playButton" type="button" disabled aria-label="Play">▶</button><button id="stopButton" type="button" disabled aria-label="Stop and return to beginning">■</button><span class="timecode"><b id="currentTime">00:00.000</b> / <span id="totalTime">00:00.000</span></span></div>
+      <input id="timeline" type="range" min="0" max="10000" value="0" aria-label="Playback position" disabled>
+      <label class="volume-label" for="volume">VOL <input id="volume" type="range" min="0" max="100" value="75" aria-label="Playback volume"></label>
+      <label class="loop-toggle"><input id="loopSelection" type="checkbox" disabled> LOOP REGION</label>
+    </section>
+    <p class="keyboard-help">KEYBOARD <kbd>SPACE</kbd> play/pause <kbd>←</kbd><kbd>→</kbd> seek 1s <kbd>L</kbd> loop selection</p>
+
+    <section class="visual-section" aria-labelledby="wave-title">
+      <div class="panel-heading"><div><span class="panel-index">01</span><h2 id="wave-title">Waveform</h2><span class="panel-desc">AMPLITUDE OVER TIME · DRAG TO SELECT A REGION</span></div><div class="zoom-tools"><label for="waveZoom">ZOOM <output id="waveZoomLabel">1×</output></label><input id="waveZoom" type="range" min="1" max="12" step="0.5" value="1" disabled><label for="wavePan">POSITION</label><input id="wavePan" type="range" min="0" max="100" value="0" disabled></div></div>
+      <div class="chart-frame waveform-frame"><canvas id="waveform" tabindex="0" role="img" aria-label="Audio waveform. Drag to select a region; hold Shift and drag to pan."></canvas><div class="chart-axis" id="waveAxis"></div></div>
+      <div class="selection-row"><span>SELECTION <b id="selectionReadout">—</b></span><span id="selectionResult" aria-live="polite"></span><button id="analyzeSelection" type="button" disabled>Analyze selected region →</button></div>
+    </section>
+
+    <section class="visual-section" aria-labelledby="spectrogram-title">
+      <div class="panel-heading"><div><span class="panel-index">02</span><h2 id="spectrogram-title">Spectrogram</h2><span class="panel-desc">FREQUENCY CONTENT THROUGH TIME</span></div><div class="spectro-tools"><label for="palette">PALETTE</label><select id="palette"><option value="thermal">Thermal</option><option value="ice">Ice</option><option value="mono">Monochrome</option></select><label class="check-control"><input id="logFrequency" type="checkbox" checked> LOG FREQUENCY</label></div></div>
+      <div class="chart-frame spectrogram-frame"><canvas id="spectrogram" role="img" aria-label="Spectrogram: vertical frequency bins over recording time."></canvas><div class="frequency-axis"><span>NYQUIST</span><span>1 kHz</span><span>100 Hz</span><span>20 Hz</span></div><div class="chart-axis" id="spectrogramAxis"></div></div>
+      <p class="small-note" id="spectrogramNote">The worker summarizes frequency content into bounded time and frequency bins. Use the logarithmic option to give low frequencies more vertical space.</p>
+    </section>
+
+    <section class="analysis-grid" aria-label="Live analysis">
+      <article class="visual-section live-panel"><div class="panel-heading"><div><span class="panel-index">03</span><h2>Live spectrum</h2><span class="panel-desc">CURRENT PLAYBACK WINDOW</span></div></div><div class="live-chart"><canvas id="spectrum" role="img" aria-label="Live frequency spectrum during playback."></canvas></div><div class="peak-readout"><span>PEAK <b id="peakValue">—</b></span><span>RMS <b id="rmsValue">—</b></span></div></article>
+      <article class="visual-section live-panel"><div class="panel-heading"><div><span class="panel-index">04</span><h2>Frequency bands</h2><span class="panel-desc">LIVE ENERGY DISTRIBUTION</span></div></div><div id="bands" class="bands"></div><p class="small-note">Band levels are relative to the live spectrum; they are not loudness measurements.</p></article>
+      <article class="visual-section live-panel stereo-panel"><div class="panel-heading"><div><span class="panel-index">05</span><h2>Stereo field</h2><span class="panel-desc">LEFT AND RIGHT CHANNELS</span></div></div><canvas id="stereo" role="img" aria-label="Comparison of left and right channel levels."></canvas><div class="stereo-values"><span>L <b id="leftLevel">—</b></span><span>R <b id="rightLevel">—</b></span></div></article>
+    </section>
+
+    <section class="experiment-section" aria-labelledby="filter-title">
+      <div class="experiment-copy"><p class="eyebrow">LISTEN FOR THE DIFFERENCE</p><h2 id="filter-title">A filter changes<br><em>what gets through.</em></h2><p>Compare the unfiltered recording with a browser-native biquad filter. Cutoff and resonance act on playback only; the source audio is never rewritten.</p><label class="filter-toggle"><input id="filterEnabled" type="checkbox" disabled> ENABLE FILTER</label></div>
+      <div class="filter-controls"><label>FILTER<select id="filterType"><option value="lowpass">Low-pass</option><option value="highpass">High-pass</option><option value="bandpass">Band-pass</option></select></label><label>CUTOFF <output id="cutoffLabel">2,000 Hz</output><input id="cutoff" type="range" min="20" max="18000" step="10" value="2000" aria-label="Filter cutoff frequency" disabled></label><label>RESONANCE <output id="resonanceLabel">0.7 Q</output><input id="resonance" type="range" min="0.1" max="12" step="0.1" value="0.7" aria-label="Filter resonance" disabled></label><div id="filterStatus" role="status">Load a recording to start a filter experiment.</div></div>
+    </section>
+
+    <section class="insights" aria-labelledby="insights-title"><div class="panel-heading"><div><span class="panel-index">06</span><h2 id="insights-title">A few careful estimates</h2><span class="panel-desc">ANALYSIS IS EVIDENCE, NOT CERTAINTY</span></div><span id="analysisStatus" role="status" aria-live="polite">Waiting for a recording.</span></div><div class="insight-grid"><article><span>ATTACKS / ONSETS</span><strong id="onsetCount">—</strong><p id="onsetNote">No analysis yet.</p></article><article><span>TEMPO CANDIDATES</span><strong id="tempoCandidates">—</strong><p id="tempoNote">Candidates can be half-time or double-time; a steady estimate is not guaranteed.</p></article><article><span>PROMINENT FREQUENCY</span><strong id="frequencyEstimate">—</strong><p id="frequencyNote">A strongest spectral peak is not necessarily the musical pitch.</p></article></div></section>
+  </main>
+  <footer><a href="../">← BACK TO THE ARCHIVE</a><span>NO UPLOAD · NO EXTERNAL SERVICE · LOCAL WEB AUDIO</span><span>PLAY / PAUSE <kbd>SPACE</kbd></span></footer>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

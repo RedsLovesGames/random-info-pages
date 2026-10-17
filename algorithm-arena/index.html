@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#141b1a">
+  <meta name="description" content="An interactive algorithm laboratory: compare sorting methods, search weighted grids, explore graphs, and hear real operations as they happen.">
+  <title>Algorithm Arena — compare the work</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar"><a href="../">← Random Info Pages</a><span>COMPUTATION LAB · 03</span><a href="#sound">SOUND ENGINE ↓</a></header>
+  <main>
+    <section class="hero"><div><p class="kicker"><i></i> LIVE SYSTEMS / 01—03</p><h1>Algorithm<br><em>Arena.</em></h1><p class="hero-dek">Same inputs. Different strategies. Watch the work, count the operations, and hear each algorithm make its choices.</p></div><aside><span>THE RULE</span><p>Animation time is not execution time. Each lab reports the calculation separately from its playback.</p></aside></section>
+
+    <nav class="lab-tabs" aria-label="Laboratories"><a href="#sorting" aria-current="page">01 Sorting <span>06 methods</span></a><a href="#pathfinding">02 Pathfinding <span>04 searches</span></a><a href="#graphs">03 Graphs <span>01 network</span></a></nav>
+
+    <section id="sorting" class="lab-section" aria-labelledby="sorting-title">
+      <div class="section-head"><div><p class="kicker">LAB 01 / SORTING</p><h2 id="sorting-title">Six ways to put things in order.</h2></div><p class="section-note">All six methods receive the same generated array. Their bars share one scale.</p></div>
+      <div class="control-strip">
+        <label>Array size <output id="arraySizeLabel">32</output><input id="arraySize" type="range" min="8" max="64" step="4" value="32" aria-label="Array size"></label>
+        <label>Starting order<select id="distribution"><option value="random">Random</option><option value="sorted">Already sorted</option><option value="reversed">Reversed</option><option value="nearly">Nearly sorted</option><option value="duplicates">Duplicate heavy</option></select></label>
+        <label>Playback speed <output id="speedLabel">8 steps/s</output><input id="playbackSpeed" type="range" min="1" max="60" value="8" aria-label="Playback speed"></label>
+        <div class="control-actions"><button id="generateArray" class="button quiet" type="button">New array</button><button id="runSorts" class="button primary" type="button">Run six sorts <span>→</span></button></div>
+      </div>
+      <div class="transport" aria-label="Sorting playback controls"><button id="sortPlay" type="button" disabled>Pause</button><button id="sortStep" type="button">Step</button><button id="sortRestart" type="button">Restart same input</button><span id="sortPlaybackTime">Playback 0.00 s</span><span id="sortStatus" role="status" aria-live="polite">Ready. Generate an array, then run the race.</span></div>
+      <div class="sort-grid" id="sortGrid"></div>
+      <p class="method-note"><b>Counts:</b> comparisons test a pair; swaps exchange positions; writes place a value. <b>Measured run:</b> one compute-only pass, excluding trace construction and playback. Small runs may read as 0.00 ms.</p>
+    </section>
+
+    <section id="pathfinding" class="lab-section path-lab" aria-labelledby="path-title">
+      <div class="section-head"><div><p class="kicker">LAB 02 / PATHFINDING</p><h2 id="path-title">A grid with somewhere to go.</h2></div><p class="section-note">Place walls and weighted ground. Then compare how a search explores the same map.</p></div>
+      <div class="control-strip path-controls">
+        <label>Search<select id="pathAlgorithm"><option value="astar">A* search</option><option value="dijkstra">Dijkstra</option><option value="bfs">Breadth-first</option><option value="dfs">Depth-first</option></select></label>
+        <label>Edit mode<select id="editMode"><option value="wall">Draw walls</option><option value="weight">Weighted ground</option><option value="start">Move start</option><option value="goal">Move goal</option></select></label>
+        <label>Grid width <output id="gridWidthLabel">24</output><input id="gridWidth" type="range" min="12" max="36" step="2" value="24" aria-label="Grid width"></label>
+        <label>Grid height <output id="gridHeightLabel">14</output><input id="gridHeight" type="range" min="8" max="24" step="2" value="14" aria-label="Grid height"></label>
+        <div class="control-actions"><button id="makeMaze" class="button quiet" type="button">Generate maze</button><button id="clearGrid" class="button quiet" type="button">Clear walls</button><button id="runPath" class="button primary" type="button">Search grid →</button></div>
+      </div>
+      <div class="transport"><button id="pathPlay" type="button" disabled>Pause</button><button id="pathStep" type="button">Step</button><button id="pathReset" type="button">Reset search</button><span id="pathStatus" role="status" aria-live="polite">Use the edit mode to shape the grid.</span></div>
+      <div class="path-layout"><div class="grid-frame"><div id="pathGrid" class="path-grid" role="grid" aria-label="Editable pathfinding grid"></div><div class="grid-legend"><span><i class="start-key">S</i>start</span><span><i class="goal-key">G</i>goal</span><span><i class="wall-key"></i>wall</span><span><i class="weight-key">×</i>weighted</span><span><i class="visited-key"></i>visited</span><span><i class="path-key"></i>path</span></div></div><aside class="metrics"><span class="metric-label">SEARCH RESULT</span><strong id="pathCost">—</strong><span>path cost</span><strong id="pathVisited">—</strong><span>cells visited</span><p id="optimalityNote">A* and Dijkstra account for weighted cells. Breadth-first and depth-first search treat every step equally.</p></aside></div>
+    </section>
+
+    <section id="graphs" class="lab-section graph-lab" aria-labelledby="graph-title">
+      <div class="section-head"><div><p class="kicker">LAB 03 / GRAPH EXPLORER</p><h2 id="graph-title">Connections change the route.</h2></div><p class="section-note">Move nodes, add or remove links, then trace a traversal or weighted route.</p></div>
+      <div class="control-strip graph-controls">
+        <label>Method<select id="graphAlgorithm"><option value="dijkstra">Dijkstra shortest path</option><option value="bfs">Breadth-first</option><option value="dfs">Depth-first</option><option value="prim">Prim minimum spanning tree</option></select></label>
+        <label>Start<select id="graphStart"></select></label><label>Destination<select id="graphGoal"></select></label>
+        <div class="control-actions"><button id="addNode" class="button quiet" type="button">Add node</button><button id="connectNodes" class="button quiet" type="button">Connect selected</button><button id="runGraph" class="button primary" type="button">Run graph →</button></div>
+      </div>
+      <div class="edge-editor"><label for="edgeFrom">Connect</label><select id="edgeFrom"></select><label for="edgeTo">to</label><select id="edgeTo"></select><label for="edgeWeight">weight</label><input id="edgeWeight" type="number" min="1" max="99" value="1"><button id="addEdge" type="button">Add link</button><button id="deleteEdge" type="button">Delete selected link</button><span id="graphHint" role="status">Select a link to remove it. Drag nodes to rearrange.</span></div>
+      <div class="graph-layout"><div class="graph-frame"><canvas id="graphCanvas" tabindex="0" role="img" aria-label="Editable weighted graph. Drag nodes to rearrange; select edges to remove them."></canvas></div><aside class="metrics"><span class="metric-label">GRAPH RESULT</span><strong id="graphValue">—</strong><span id="graphValueLabel">path cost / tree weight</span><strong id="graphVisited">—</strong><span>nodes visited</span><p id="graphExplanation">Dijkstra minimizes total edge weight. Breadth-first and depth-first ignore weights. Prim builds a minimum spanning tree over connected components.</p><div id="edgeList" class="edge-list" aria-label="Graph links"></div></aside></div>
+      <div class="transport"><button id="graphPlay" type="button" disabled>Pause</button><button id="graphStep" type="button">Step</button><button id="graphReset" type="button">Reset view</button><span id="graphStatus" role="status" aria-live="polite">A connected example network is ready.</span></div>
+    </section>
+
+    <section id="sound" class="sound-panel" aria-labelledby="sound-title">
+      <div class="sound-copy"><p class="kicker">LOCAL WEB AUDIO / USER CONTROLLED</p><h2 id="sound-title">Hear the work happen.</h2><p>Every note comes from a real comparison, write, swap, visit, or path choice. Audio is synthesized on this device and begins only after you enable it.</p><button id="soundEnable" class="button sound-button" type="button">Enable sound</button><span id="soundStatus" role="status" aria-live="polite">Sound is off.</span></div>
+      <div class="sound-controls">
+        <label>Sound mode<select id="soundMode"><option value="melodic">Melodic</option><option value="percussive">Percussive</option><option value="minimal">Minimal</option></select></label>
+        <label>Synth preset<select id="soundPreset"><option value="triangle">Soft triangle</option><option value="sine">Pure sine</option><option value="square">Pulse square</option><option value="sawtooth">Bright saw</option></select></label>
+        <label>Scale<select id="soundScale"><option value="pentatonic">Pentatonic</option><option value="major">Major</option><option value="minor">Minor</option></select></label>
+        <label class="volume-control">Volume <output id="volumeLabel">28%</output><input id="soundVolume" type="range" min="0" max="100" value="28" aria-label="Sound volume"></label>
+        <button id="muteSound" class="button quiet" type="button" aria-pressed="true">Unmute</button>
+      </div>
+    </section>
+  </main>
+  <footer><span>ALGORITHM ARENA / A LOCAL, BUILDLESS LABORATORY</span><a href="../">BACK TO THE ARCHIVE ↑</a></footer>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

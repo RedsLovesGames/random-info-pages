@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f0eee6">
+  <meta name="description" content="Explore numerical scale by zooming from one unit to one million. Compare proportions, inspect individual units, and share your view.">
+  <title>One Million, Actually — a scale explorer</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="masthead">
+    <a class="back-link" href="../">← Random Info Pages</a>
+    <p class="issue">A FIELD GUIDE TO SCALE <span>№ 01</span></p>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <div class="intro-copy">
+        <p class="eyebrow">A million marks. One at a time.</p>
+        <h1 id="page-title">One Million,<br><em>Actually.</em></h1>
+        <p class="dek">Numbers describe scale. Seeing each unit gives it shape. Move from one mark to one million, then put any proportion in its place.</p>
+      </div>
+      <aside class="intro-note"><span class="note-index">01 / METHOD</span><p>Every mark has a unique address. Zoomed out, the drawing groups marks into counted regions; it never samples them.</p></aside>
+    </section>
+
+    <section class="stories" aria-labelledby="stories-title">
+      <div class="section-label"><span id="stories-title">Short stories in scale</span><span>CHOOSE A STARTING POINT</span></div>
+      <div class="story-list" role="group" aria-label="Guided visual stories">
+        <button class="story-button is-active" data-story="one" type="button"><b>01</b><span>One against a million</span><i>→</i></button>
+        <button class="story-button" data-story="seconds" type="button"><b>02</b><span>Seconds become years</span><i>→</i></button>
+        <button class="story-button" data-story="chance" type="button"><b>03</b><span>One chance in a million</span><i>→</i></button>
+        <button class="story-button" data-story="small" type="button"><b>04</b><span>A small share, a large crowd</span><i>→</i></button>
+        <button class="story-button" data-story="scale" type="button"><b>05</b><span>When scales mislead</span><i>→</i></button>
+      </div>
+      <div class="story-caption" aria-live="polite"><p id="storyText">One mark is easy to lose in a field of a million. Zoom all the way in, then step back until the whole count is visible.</p><span id="storySource">A mathematical illustration · 1 of 1,000,000</span></div>
+    </section>
+
+    <section class="explorer" aria-labelledby="explorer-title">
+      <div class="explorer-heading">
+        <div><p class="eyebrow">The scale explorer</p><h2 id="explorer-title">How many can you hold in view?</h2></div>
+        <div class="count-readout"><span id="scaleLabel">ONE UNIT</span><strong id="scaleCount">1</strong><span>visible in this step</span></div>
+      </div>
+      <nav class="scale-steps" aria-label="Powers of ten">
+        <span class="scale-line" aria-hidden="true"></span>
+        <button type="button" data-exponent="0" aria-label="Show 1 unit" aria-current="step"><span>1</span><small>one</small></button>
+        <button type="button" data-exponent="1" aria-label="Show 10 units"><span>10</span><small>ten</small></button>
+        <button type="button" data-exponent="2" aria-label="Show 100 units"><span>100</span><small>hundred</small></button>
+        <button type="button" data-exponent="3" aria-label="Show 1,000 units"><span>1,000</span><small>thousand</small></button>
+        <button type="button" data-exponent="4" aria-label="Show 10,000 units"><span>10,000</span><small>ten thousand</small></button>
+        <button type="button" data-exponent="5" aria-label="Show 100,000 units"><span>100,000</span><small>hundred thousand</small></button>
+        <button type="button" data-exponent="6" aria-label="Show 1,000,000 units"><span>1,000,000</span><small>million</small></button>
+      </nav>
+
+      <div class="workbench">
+        <div class="visual-panel">
+          <div class="visual-toolbar">
+            <div class="style-switch" role="group" aria-label="Visualization style">
+              <button type="button" data-style="field" aria-pressed="true">Field</button>
+              <button type="button" data-style="bars" aria-pressed="false">Bars</button>
+              <button type="button" data-style="area" aria-pressed="false">Area</button>
+            </div>
+            <div class="view-actions"><button id="fitButton" type="button" title="Fit the current scale to view">Fit view</button><button id="shareButton" type="button">Copy link</button><span id="shareStatus" aria-live="polite"></span></div>
+          </div>
+          <div class="canvas-wrap" id="canvasWrap">
+            <canvas id="scaleCanvas" tabindex="0" role="img" aria-label="One unit in the scale explorer. Use arrow keys to change scale, plus and minus to zoom, and drag to pan."></canvas>
+            <div class="canvas-hint" id="canvasHint"><span>DRAG TO MOVE</span><span>SCROLL TO ZOOM</span><span>SELECT A UNIT WHEN CLOSE</span></div>
+            <div class="unit-tooltip" id="unitTooltip" hidden></div>
+            <div class="zoom-controls" aria-label="Zoom controls"><button type="button" id="zoomIn" aria-label="Zoom in">+</button><button type="button" id="zoomOut" aria-label="Zoom out">−</button></div>
+          </div>
+          <p class="render-note" id="renderNote">1 mark shown individually. The visual field represents a power of ten.</p>
+          <div class="selected-unit" id="selectedUnit" aria-live="polite">Choose a mark at close zoom to inspect its place in the count.</div>
+        </div>
+
+        <aside class="controls-panel" aria-labelledby="compare-title">
+          <p class="eyebrow">Make it comparable</p>
+          <h3 id="compare-title">A part of a whole</h3>
+          <label class="denominator-label" for="denominator">Total population <span>the denominator</span></label>
+          <input id="denominator" type="text" inputmode="numeric" value="1000000" autocomplete="off" aria-describedby="denominatorHelp">
+          <small id="denominatorHelp">Enter a whole number up to 9,007,199,254,740,991.</small>
+          <div class="quantity-list" id="quantityList">
+            <div class="quantity-row" data-index="0"><button class="comparison-select is-selected" type="button" aria-pressed="true"><span class="swatch swatch-a"></span>Comparison A</button><label class="visually-hidden" for="quantity0">Quantity for comparison A</label><input id="quantity0" type="text" inputmode="numeric" value="1" autocomplete="off"><output id="percent0">0.0001%</output></div>
+            <div class="quantity-row" data-index="1"><button class="comparison-select" type="button" aria-pressed="false"><span class="swatch swatch-b"></span>Comparison B</button><label class="visually-hidden" for="quantity1">Quantity for comparison B</label><input id="quantity1" type="text" inputmode="numeric" value="1000" autocomplete="off"><output id="percent1">0.1%</output></div>
+            <div class="quantity-row" data-index="2"><button class="comparison-select" type="button" aria-pressed="false"><span class="swatch swatch-c"></span>Comparison C</button><label class="visually-hidden" for="quantity2">Quantity for comparison C</label><input id="quantity2" type="text" inputmode="numeric" value="100000" autocomplete="off"><output id="percent2">10%</output></div>
+          </div>
+          <p class="form-error" id="formError" role="alert" hidden></p>
+          <p class="comparison-explain" id="comparisonExplain">The field shows Comparison A. The table below keeps all three values available for comparison.</p>
+          <div class="accessible-table-wrap">
+            <table><caption>Comparison summary</caption><thead><tr><th scope="col">Value</th><th scope="col">Share</th></tr></thead><tbody id="comparisonTable"></tbody></table>
+          </div>
+          <button class="link-button" id="resetButton" type="button">Reset comparisons and view <span>↺</span></button>
+        </aside>
+      </div>
+    </section>
+
+    <section class="reading-note" aria-label="How to read this view">
+      <div class="note-number">02</div><div><h2>Grouped for legibility.<br><em>Never sampled.</em></h2><p>At wide views, a tile stands for many equal-sized marks. Its label tells you how many. Tint shows the selected share; at close zoom, the marks separate into individual units. Every count is retained through each view.</p></div>
+      <div class="legend"><span><i class="legend-full"></i>outside the selected share</span><span><i class="legend-part"></i>inside the selected share</span><span><i class="legend-group"></i>a counted group</span></div>
+    </section>
+    <footer><p>ONE MILLION, ACTUALLY <span>·</span> A FIELD GUIDE TO SCALE</p><p>All marks are generated locally. No personal data or comparison values leave this page.</p></footer>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
