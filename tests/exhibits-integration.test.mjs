@@ -15,6 +15,7 @@ test('four exhibits load their bundled entry assets under the GitHub Pages prefi
     const html=await response.text();
     assert.match(html,/<html[^>]*lang="en"/i);
     assert.match(html,/name="viewport"/);
+    assert.match(html,/<link rel="icon" href="data:,">/);
     assert.match(html,/<h1[\s>]/);
     assert.match(html,/<script[^>]*type="module"/);
     const assets=[...html.matchAll(/(?:src|href)="([^"#]+\.(?:js|mjs|css|svg|wav))"/g)].map(m=>m[1]);

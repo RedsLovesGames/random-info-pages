@@ -16,8 +16,8 @@
     },
     {
         "path":  "algorithm-arena/index.html",
-        "bytes":  10111,
-        "sha256":  "04ae8c596a0f7afd0ce9fb3e6358bf6318020744b18a8f63041c34546300b86c"
+        "bytes":  10142,
+        "sha256":  "97c31b9f3534ffa9c2a2860f89351a6272276673d6ccc76de47a269e3b1e0cb1"
     },
     {
         "path":  "algorithm-arena/styles.css",
@@ -36,8 +36,8 @@
     },
     {
         "path":  "cryptography-museum/index.html",
-        "bytes":  2615,
-        "sha256":  "1228a36e23b586404b99fd827cc97546eaeb0a411f25e5534151f0f005fff8f0"
+        "bytes":  2646,
+        "sha256":  "586174124c9aa98dea2bae11fe6f40a040f0a2eddef506d4beb9a67a2e77664f"
     },
     {
         "path":  "cryptography-museum/styles.css",
@@ -61,8 +61,8 @@
     },
     {
         "path":  "index.html",
-        "bytes":  25369,
-        "sha256":  "3a3f44582422e156dda57d82770c46bab46e3bd07c0d9571bcdfc24066cb4507"
+        "bytes":  25400,
+        "sha256":  "efdb884986fcf54eda6725883009c7781e206103f4b6e965ba92f0e3a14c8293"
     },
     {
         "path":  "music-microscope/analysis.mjs",
@@ -81,8 +81,8 @@
     },
     {
         "path":  "music-microscope/index.html",
-        "bytes":  8950,
-        "sha256":  "106d2abac92a9101477f1e4360261b38b48e3857390bcda1806cf7ee95c74275"
+        "bytes":  8981,
+        "sha256":  "7888fc7342b4128cfdfd913a62dc3c8fe2de470ddab39c31df45467908bcfb56"
     },
     {
         "path":  "music-microscope/styles.css",
@@ -101,8 +101,8 @@
     },
     {
         "path":  "one-million/index.html",
-        "bytes":  8969,
-        "sha256":  "ab264b29621a1d3d547dd1eb6f436452e802b79ff5c5f7d57504fcd3730d395f"
+        "bytes":  9000,
+        "sha256":  "6e4ab8fd765608dc880ca608ed391829b8dde94aace05d883c96d71fdd38fe06"
     },
     {
         "path":  "one-million/styles.css",
@@ -151,13 +151,13 @@
     },
     {
         "path":  "tests/exhibits-integration.test.mjs",
-        "bytes":  1810,
-        "sha256":  "1ebc777e18ee40f9a1e8d676219105f8a0cef73d751b6a0f66494858d69e281e"
+        "bytes":  1868,
+        "sha256":  "7fa2117ce9f2f3e731d6bddacf314c6e59288017f6e0e1cc5e74fdc28a78ca81"
     },
     {
         "path":  "tests/home-index.test.mjs",
-        "bytes":  3747,
-        "sha256":  "3fb0e209931671aefbba9a68023ff4f07fd99dc28e8d8f5ca48dcdebf8005c09"
+        "bytes":  3805,
+        "sha256":  "c04e1eab549596b44ec19de3a32d08ea48272c8be776040dea4fc4b6f243acf4"
     },
     {
         "path":  "tests/music-microscope.test.mjs",

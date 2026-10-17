@@ -13,6 +13,7 @@ const routes = [
 ];
 
 test('homepage uses the archive folder interface', () => {
+  assert.match(html, /<link rel="icon" href="data:,">/);
   assert.match(html, /data-archive-home/);
   assert.match(html, /id="searchDialog"/);
   for (const folder of ['tools','school','friends','games','data','experiments']) {
