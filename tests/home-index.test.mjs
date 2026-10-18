@@ -9,7 +9,7 @@ const routes = [
   './tools/', './fiction-workspace/', './wheel/', './whenwemeet/', './school-schedule/', './friends/',
   './tideborne/', './tide2/', './vct-scout/', './oldasspolitic/',
   './heatmap/', './political-grid/', './infrastructure-atlas/', './wanuiv2/', './nerdcore-prompts/',
-  './music-microscope/', './one-million/', './algorithm-arena/', './cryptography-museum/'
+  './music-microscope/', './one-million/', './algorithm-arena/', './cryptography-museum/', './9-11-timeline/'
 ];
 
 test('homepage uses the archive folder interface', () => {
@@ -33,16 +33,16 @@ test('toolbox appears in the Tools folder and search index', () => {
 });
 
 test('political grid is listed in the data folder and searchable', () => {
-  assert.match(html, /data-folder="data"[\s\S]*?<span class="folder-count">05 files<\/span>/);
+  assert.match(html, /data-folder="data"[\s\S]*?<span class="folder-count">06 files<\/span>/);
   assert.match(html, /href="\.\/political-grid\/"/);
   assert.match(html, /\{n:'Political Grid',p:'\.\/political-grid\/'/);
-  assert.match(html, /id="searchLabel">19 files/);
+  assert.match(html, /id="searchLabel">20 files/);
 });
 
-test('folder counts, total and search metadata agree with all 19 archive links', () => {
+test('folder counts, total and search metadata agree with all 20 archive links', () => {
   const index = runInNewContext(html.match(/const projects=(\[[\s\S]*?\]);/)[1]);
-  assert.equal(index.length, 19);
-  assert.equal(new Set(index.map(p=>p.p)).size, 19);
+  assert.equal(index.length, 20);
+  assert.equal(new Set(index.map(p=>p.p)).size, 20);
   let total=0;
   for (const folder of html.matchAll(/<details class="folder" data-folder="([^"]+)"[\s\S]*?<\/details>/g)) {
     const links=[...folder[0].matchAll(/class="file" href="([^"]+)"/g)].map(m=>m[1]);
@@ -57,8 +57,8 @@ test('folder counts, total and search metadata agree with all 19 archive links',
     }
     total+=count;
   }
-  assert.equal(total,19);
-  assert.match(html,/<b>19<\/b><span>Files<\/span>/);
+  assert.equal(total,20);
+  assert.match(html,/<b>20<\/b><span>Files<\/span>/);
 });
 
 test('four exhibits are searchable in their requested folders', () => {
@@ -81,4 +81,9 @@ test('infrastructure atlas is linked, categorized under Data, and searchable', (
   assert.match(html, /href="\.\/infrastructure-atlas\/"/);
   assert.match(html, /\{n:'Infrastructure Atlas',p:'\.\/infrastructure-atlas\/',c:'Data'/);
   assert.match(html, /data-folder="data"[\s\S]*?Infrastructure Atlas[\s\S]*?data-folder="experiments"/);
+});
+
+test('9/11 timeline is categorized, linked, and searchable', () => {
+  assert.match(html, /href="\.\/9-11-timeline\/"/);
+  assert.match(html, /\{n:'A Day in Messages',p:'\.\/9-11-timeline\/',c:'Data'/);
 });
