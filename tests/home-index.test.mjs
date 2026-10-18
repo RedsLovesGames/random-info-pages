@@ -6,7 +6,7 @@ import { runInNewContext } from 'node:vm';
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
 const routes = [
-  './tools/', './wheel/', './whenwemeet/', './school-schedule/', './friends/',
+  './tools/', './fiction-workspace/', './wheel/', './whenwemeet/', './school-schedule/', './friends/',
   './tideborne/', './tide2/', './vct-scout/', './oldasspolitic/',
   './heatmap/', './political-grid/', './infrastructure-atlas/', './wanuiv2/', './nerdcore-prompts/',
   './music-microscope/', './one-million/', './algorithm-arena/', './cryptography-museum/'
@@ -28,7 +28,7 @@ test('every public project route remains linked', () => {
 
 test('toolbox appears in the Tools folder and search index', () => {
   assert.match(html, /href="\.\/tools\/"/);
-  assert.match(html, /<span class="folder-count">03 files<\/span>/);
+  assert.match(html, /<span class="folder-count">04 files<\/span>/);
   assert.match(html, /\{n:'Toolbox',p:'\.\/tools\/'/);
 });
 
@@ -36,13 +36,13 @@ test('political grid is listed in the data folder and searchable', () => {
   assert.match(html, /data-folder="data"[\s\S]*?<span class="folder-count">05 files<\/span>/);
   assert.match(html, /href="\.\/political-grid\/"/);
   assert.match(html, /\{n:'Political Grid',p:'\.\/political-grid\/'/);
-  assert.match(html, /id="searchLabel">18 files/);
+  assert.match(html, /id="searchLabel">19 files/);
 });
 
-test('folder counts, total and search metadata agree with all 18 archive links', () => {
+test('folder counts, total and search metadata agree with all 19 archive links', () => {
   const index = runInNewContext(html.match(/const projects=(\[[\s\S]*?\]);/)[1]);
-  assert.equal(index.length, 18);
-  assert.equal(new Set(index.map(p=>p.p)).size, 18);
+  assert.equal(index.length, 19);
+  assert.equal(new Set(index.map(p=>p.p)).size, 19);
   let total=0;
   for (const folder of html.matchAll(/<details class="folder" data-folder="([^"]+)"[\s\S]*?<\/details>/g)) {
     const links=[...folder[0].matchAll(/class="file" href="([^"]+)"/g)].map(m=>m[1]);
@@ -57,8 +57,8 @@ test('folder counts, total and search metadata agree with all 18 archive links',
     }
     total+=count;
   }
-  assert.equal(total,18);
-  assert.match(html,/<b>18<\/b><span>Files<\/span>/);
+  assert.equal(total,19);
+  assert.match(html,/<b>19<\/b><span>Files<\/span>/);
 });
 
 test('four exhibits are searchable in their requested folders', () => {
