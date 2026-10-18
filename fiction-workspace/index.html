@@ -7,7 +7,7 @@
 <title>Draftroom | Random Info Pages</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="./styles.css">
-<script defer src="./templates.js"></script><script defer src="./app.js"></script>
+<script defer src="./templates.js"></script><script defer src="./rodion-seed.js"></script><script defer src="./app.js"></script>
 </head>
 <body>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -15,8 +15,8 @@
   <div class="auth-art"><a class="small-link" href="../">← Random Info Pages</a><div class="auth-big"><span>Words.</span><span>Work.</span><em>Worth revising.</em></div><p>A place for the drafts, decisions, weak chapters, and small improvements that eventually become a book.</p><span class="vertical-stamp">DRAFTROOM / A WRITER'S WORKSPACE</span></div>
   <section class="auth-panel" aria-labelledby="loginTitle"><div class="eyebrow">Your writing desk / 001</div><h1 id="loginTitle">Pick up where you left off.</h1><p class="subtle">A simple local profile for your projects, chapters, and checklists.</p>
     <div class="seg" role="group" aria-label="Account mode"><button type="button" id="modeSignIn" class="active" aria-pressed="true">Sign in</button><button type="button" id="modeCreate" aria-pressed="false">Create profile</button></div>
-    <form id="authForm"><label for="username">Username</label><input id="username" name="username" autocomplete="username" maxlength="40" required placeholder="Your name"><label for="password">Password</label><input type="password" id="password" name="password" autocomplete="current-password" required placeholder="Anything you can remember"><button type="submit" class="primary" id="authSubmit">Open workspace <span aria-hidden="true">↗</span></button><p id="authMessage" class="error-text" role="alert"></p></form>
-    <div class="privacy-note"><b>Device-only by design.</b> Profiles, passwords, and writing are saved in this browser, not in an online account. A password here is a convenience gate, <strong>not real security</strong>. Use Export backup to move work to another device. Clearing browser data can delete unsaved work.</div>
+    <form id="authForm"><label for="username">Username</label><input id="username" name="username" autocomplete="username" maxlength="40" required value="Rodion" placeholder="Your name"><label for="password">Password</label><input type="password" id="password" name="password" autocomplete="current-password" required value="Rodion" placeholder="Anything you can remember"><button type="submit" class="primary" id="authSubmit">Open workspace <span aria-hidden="true">↗</span></button><p id="authMessage" class="error-text" role="alert"></p></form>
+    <div class="privacy-note"><b>Device-only by design.</b> Profiles, passwords, and writing are saved in this browser, not in an online account. The prefilled Rodion / Rodion login is public and shared across visitors, but each visitor stores a different local copy of the workspace. A password here is a convenience gate, <strong>not real security</strong>. Use Export backup to move work to another device. Clearing browser data can delete unsaved work.</div>
   </section>
 </div>
 <div id="workspace" class="workspace is-hidden">
