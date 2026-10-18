@@ -37,6 +37,9 @@ jobs:
       - name: Verify archive home
         run: |
           node --test tests/home-index.test.mjs
+          node --test tests/fiction-workspace.test.mjs
+          node --check fiction-workspace/app.js
+          node --check fiction-workspace/templates.js
           node --test tests/political-grid.test.mjs
           node --check political-grid/app.js
           node --check political-grid/overlap.js
