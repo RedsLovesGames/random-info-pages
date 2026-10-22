@@ -50,3 +50,9 @@ Sources: [Spenn channel](https://www.youtube.com/@Spenntf2), [community characte
 ## Image provenance
 
 The reference URLs were taken from the individual image links on [Spenn/Characters](https://www.namu.moe/w/Spenn/%EB%93%B1%EC%9E%A5%EC%9D%B8%EB%AC%BC). That site's page text is licensed CC BY-NC-SA 2.0 KR, but that does not establish the rights to third-party source photographs. The assets are therefore not checked into this repository. The custom file controls make it possible to supply personally obtained images and sounds without redistributing them.
+
+## Local asset pack import
+
+The setup screen now includes **Import Many Files** for batch loading photographs and sound clips from your own collection. Use descriptive filenames like `Boxing Guy.png`, `Suspicious Cactus.webp`, `Chef Guy hit.wav`, or `Guy with No Name.mp3`. The importer matches the most specific fighter name, rejects ambiguous names, and reports unmatched filenames instead of silently assigning the wrong fighter. Files under 20 MB are stored in the browser's IndexedDB, not localStorage or a remote server. Imported photos take priority over linked community references and earlier single-image overrides. Imported sounds take priority over synthesized effects. Files can be reset individually in the fighter dossier. This avoids localStorage's small quota for large character packs.
+
+This is a fan recreation, not a source extraction; external wiki image references may still be inaccessible. If a reference image is blocked, import its corresponding local cutout. Synchronized animations, font measurements, particle timings, and actual creator audio require frame-by-frame access to source footage and original assets before they can be claimed as exact.

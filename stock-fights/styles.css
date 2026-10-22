@@ -21,3 +21,5 @@
 .stage-panel:fullscreen .arena-wrap{min-height:0;margin:auto;width:min(95vw,calc((100vh - 190px)*760/620))}
 .stage-panel:fullscreen .battle-top,.stage-panel:fullscreen .combatants,.stage-panel:fullscreen .playback,.stage-panel:fullscreen .statusbar{width:min(95vw,calc((100vh - 190px)*760/620));margin-left:auto;margin-right:auto;flex-shrink:0}
 @media(max-width:670px){.battle-top{font-size:9px;gap:7px}.battle-top button{font-size:9px;padding:5px}.portrait-actions .upload{min-width:90px}.roster-image{width:27px;height:33px;min-width:27px}}
+
+.asset-pack{padding:14px 10px;margin:14px 0;border:1px solid #51574c;background:#20231d}.asset-pack-head{display:flex;justify-content:space-between;gap:8px;font:800 9px/1.6 monospace;color:#e1e9da}.asset-pack-head span{color:var(--lime)}.asset-pack .upload.full{display:block;margin-top:12px;text-align:center;background:#343c2d;border-color:#879b72}.asset-pack p{font:10px/1.5 monospace;color:#b3b8ad}.asset-pack code{color:var(--lime)}.asset-pack output{display:block;white-space:normal;overflow-wrap:anywhere;font:10px/1.5 monospace;color:#d5eead;margin-top:9px}

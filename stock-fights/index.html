@@ -35,7 +35,13 @@
    <label class="check"><input id="shrink" type="checkbox"><span>Shrinking Box</span></label>
    <label class="check"><input id="hotWalls" type="checkbox"><span>Hot Walls (experimental)</span></label>
    <label class="check"><input id="referencePhotos" type="checkbox" checked><span>REFERENCE PHOTOGRAPHS</span></label>
-   <div class="asset-note" id="assetNote">Loading photos when fighters enter. Images come from external community references; unavailable images use stand-ins.</div>
+   <div class="asset-note" id="assetNote">Reference photos load when fighters enter; unavailable images use stand-ins.</div>
+   <div class="asset-pack">
+     <div class="asset-pack-head"><strong>ASSET PACK / ORIGINAL IMAGES & SOUNDS</strong><span id="packCount">0 CUSTOM</span></div>
+     <label class="upload full">IMPORT MANY FILES<input type="file" id="bulkAssets" accept="image/png,image/webp,image/jpeg,image/avif,audio/*,.mp3,.wav,.ogg,.m4a" multiple></label>
+     <p>Choose multiple cutouts and audio clips named after fighters, such as <code>Boxing Guy.png</code> or <code>Chef Guy hit.wav</code>. They are stored in this browser, not uploaded.</p>
+     <output id="bulkStatus" aria-live="polite"></output>
+   </div>
    <button id="start" class="primary" type="button">START FIGHT <span>→</span></button>
    <div class="setup-note">All fights are autonomous. The seed reproduces the same matchup. Selecting a preset fills all three team slots.</div>
   </aside>
