@@ -12,7 +12,7 @@ const templates=context.window.FICTION_TEMPLATES;
 test('Draftroom is linked in the archive search index',()=>{
  const home=readFileSync(new URL('index.html',root),'utf8');
  assert.match(home,/const projects=\[/);
- assert.match(home,/\{n:'Draftroom',p:'\.\/fiction-workspace\/',c:'Tools'/);
+ assert.match(home,/\{n:'Draftroom',d:'Novel Writing & Revision',p:'\.\/fiction-workspace\/',c:'Tools'/);
 });
 test('source workbook rubric stays at fourteen categories and 100 weighted points',()=>{
  const rubric=templates.find(x=>x.id==='rubric');

@@ -39,7 +39,7 @@ Date: October 22, 2026
 
 ## Toolbox: internal tool families
 
-| Former heading | Plain-language title |
+| Former heading | Plain-language title (implemented) |
 |---|---|
 | Time & Scheduling | Time Zones & Meeting Planner |
 | Image Studio | Image Editor & Converter |
@@ -59,7 +59,7 @@ Date: October 22, 2026
 
 The game terms are established names and should not be replaced with generic substitutes. Organize these pages around user questions:
 
-| Existing route | Suggested human-readable browser title | Finding |
+| Existing route | New human-readable browser title (implemented) | Finding |
 |---|---|---|
 | `/tideborne/getting-started/` | Getting Started with Tideborne Fishing | Clear workflow, title improved |
 | `/tideborne/fish/` | Tideborne Fish Encyclopedia | Search and filter fish |
@@ -109,3 +109,7 @@ Existing internal category identifiers stay unchanged for compatibility. Public 
 ## Notes / limitations
 
 The root homepage renders its project index from JavaScript and retains original internal `n` names for existing tests and aliases; the human-readable `d` field is shown to visitors. Folder names are intentionally not changed.
+
+## Application status
+
+The new display labels are live in the homepage source registry and retain legacy names for search. The primary project titles, Toolbox family headings and browser titles, Tideborne nested browser titles, and additional congressional, 10Groups, and desktop titles were updated in the same rename series. Public URL slugs and storage keys remain unchanged.

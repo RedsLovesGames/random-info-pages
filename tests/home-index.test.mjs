@@ -102,3 +102,21 @@ test('key project descriptions are specific and searchable', () => {
     assert.ok(p.k.length > 15, name + ' has keywords');
   }
 });
+
+test('human-facing project labels are clear, unique, and backwards searchable', () => {
+  assert.equal(new Set(projects.map(p => p.d)).size, projects.length);
+  for (const p of projects) {
+    assert.ok(p.d && p.d.length >= 10, p.n + ' has a human-readable public label');
+    assert.ok(p.n && p.k, p.d + ' retains original name and search keywords');
+  }
+  for (const term of ['Novel Writing & Revision','Group Availability Planner',
+      'U.S. Congress Age Explorer','Stock Image Fight Simulator']) {
+    assert.ok(projects.some(p => p.d === term), term + ' is listed');
+  }
+  assert.match(html, /name\.textContent=p\.d\|\|p\.n/);
+  assert.match(html, /title\.textContent=p\.d\|\|p\.n/);
+  for (const label of ['Utilities','School & Planning','Friends & Social',
+      'Games & Guides','Data & Research','Interactive Labs']) {
+    assert.ok(html.includes('>'+label+'</button>'), label + ' is exposed in category filters');
+  }
+});
