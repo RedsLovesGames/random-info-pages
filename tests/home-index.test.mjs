@@ -60,8 +60,8 @@ test('category controls and project metadata remain in sync', () => {
   for (const category of categories) {
     assert.match(html, new RegExp('data-filter="' + category + '"'));
   }
-  assert.match(html, /new Set\(projects\.map\(p=>p\.c\)\)\.size/);
-  assert.match(html, /projects\.length/);
+  assert.match(html, /new Set\(activeProjects\.map\(p=>p\.c\)\)\.size/);
+  assert.match(html, /activeProjects\.length/);
   assert.match(html, /currentFilter==='All'\|\|p\.c===currentFilter/);
 });
 
