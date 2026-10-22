@@ -1,0 +1,67 @@
+/* Random Info Pages / Project-sensitive polish
+   Active projects only. Each project retains its own theme, controls and logic. */
+body[data-rip-page]{
+ text-rendering:optimizeLegibility;
+}
+body[data-rip-page] :where(button,a,input,select,textarea):focus-visible{outline-offset:3px}
+body[data-rip-page] :where(button,a){-webkit-tap-highlight-color:transparent}
+body[data-rip-page="tools"] .tb-hero{padding-block:clamp(43px,5vw,75px) 28px}
+body[data-rip-page="tools"] .tb-title{font-size:clamp(3.5rem,8.2vw,8rem);line-height:.91;letter-spacing:-.082em;text-transform:none}
+body[data-rip-page="tools"] .tb-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+body[data-rip-page="tools"] .tb-card{min-height:240px;padding:23px;border-radius:7px;background:#121310;border-color:rgba(240,238,230,.20);transition:transform .24s cubic-bezier(.2,.8,.2,1),background .2s,border-color .2s}
+body[data-rip-page="tools"] .tb-card h2{font-size:clamp(1.65rem,2.7vw,3.2rem);letter-spacing:-.055em;line-height:.95;text-transform:none}
+body[data-rip-page="tools"] .tb-card p{font-size:.83rem;line-height:1.55;color:#aaa9a1}
+body[data-rip-page="tools"] .tb-card:hover{transform:translateY(-4px);background:#1b1e17;border-color:#bfd4ae}
+body[data-rip-page="tools"] .tb-search{border-radius:4px;height:64px;font-size:16px}
+body[data-rip-page="school-schedule"] .hero h1{letter-spacing:-.075em;font-size:clamp(2.8rem,6vw,5.4rem)}
+body[data-rip-page="school-schedule"] .day{border-radius:9px;box-shadow:none}
+body[data-rip-page="school-schedule"] .stat{border-radius:7px}
+body[data-rip-page="school-schedule"] .focus{border-radius:11px;box-shadow:none}
+body[data-rip-page="school-schedule"] .sectionhead h2{font-size:1.55rem;letter-spacing:-.05em}
+body[data-rip-page="school-schedule"] :where(.day,.stat,.focus){transition:border-color .2s,background .2s}
+body[data-rip-page="stock-fights"] .heading h1{font-size:clamp(58px,7.1vw,125px);line-height:.83}
+body[data-rip-page="stock-fights"] .stage-panel{border-color:#5a6449;box-shadow:0 0 0 1px rgba(218,255,98,.05)}
+body[data-rip-page="stock-fights"] .workspace{grid-template-columns:minmax(255px,285px) minmax(410px,1fr) minmax(250px,305px);gap:13px}
+body[data-rip-page="stock-fights"] .panel{background:#161815}
+body[data-rip-page="stock-fights"] .arena-wrap{min-height:360px}
+body[data-rip-page="stock-fights"] .panel-title{margin-bottom:17px}
+body[data-rip-page="infrastructure-atlas"] .hero h1{letter-spacing:-.075em;line-height:.94}
+body[data-rip-page="infrastructure-atlas"] .stat-grid{gap:12px}
+body[data-rip-page="infrastructure-atlas"] .panel{box-shadow:none}
+body[data-rip-page="infrastructure-atlas"] .national-callout{box-shadow:none}
+body[data-rip-page="infrastructure-atlas"] :where(.map-panel,.panel){scroll-margin-top:80px}
+body[data-rip-page="political-grid"] .hero h1{letter-spacing:-.075em}
+body[data-rip-page="political-grid"] .grid-section{scroll-margin-top:90px}
+body[data-rip-page="music-microscope"] .intro h1{letter-spacing:-.065em}
+body[data-rip-page="music-microscope"] .source-row{gap:14px}
+body[data-rip-page="algorithm-arena"] :where(.intro h1,.hero h1){letter-spacing:-.07em}
+body[data-rip-page="fiction-workspace"] :where(h1,h2){letter-spacing:-.07em}
+body[data-rip-page="fiction-workspace"] .auth-panel{max-width:470px}
+body[data-rip-page="one-million"] :where(h1,h2){text-wrap:balance}
+body[data-rip-page="9-11-timeline"] :where(h1,h2){text-wrap:balance}
+body[data-rip-page="cryptography-museum"] :where(h1,h2){text-wrap:balance}
+body[data-rip-page="oldasspolitic"] .hero h1{letter-spacing:-.085em}
+body[data-rip-page="oldasspolitic"] .panel{box-shadow:none}
+body[data-rip-page="whenwemeet"] .create-card{box-shadow:none}
+body[data-rip-page="friends"] .action{transition:transform .22s cubic-bezier(.2,.8,.2,1),border-color .2s,background .2s}
+body[data-rip-page="friends"] .action:hover{transform:translateY(-3px)}
+body[data-rip-page="nerdcore-prompts"] :where(h1,h2){text-wrap:balance}
+body[data-rip-page="wheel"] :where(h1,h2){letter-spacing:-.06em}
+body[data-rip-page="wanuiv2"] .topbar{box-shadow:none}
+@media(min-width:1700px){
+ body[data-rip-page="tools"] .tb-shell{width:min(1380px,calc(100% - 48px))}
+}
+@media(max-width:1100px){
+ body[data-rip-page="tools"] .tb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-rip-page="stock-fights"] .workspace{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)}
+}
+@media(max-width:720px){
+ body[data-rip-page="tools"] .tb-grid{grid-template-columns:1fr}
+ body[data-rip-page="tools"] .tb-card{min-height:205px}
+ body[data-rip-page="tools"] .tb-card h2{font-size:clamp(2rem,8vw,3.6rem)}
+ body[data-rip-page="stock-fights"] .workspace{grid-template-columns:1fr}
+ body[data-rip-page="stock-fights"] .arena-wrap{min-height:260px}
+}
+@media(prefers-reduced-motion:reduce){
+ body[data-rip-page] :where(button,a,.tb-card,.action){transition:none!important;animation:none!important}
+}
