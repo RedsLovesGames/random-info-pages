@@ -151,3 +151,10 @@ test('archive notices preserve the original project interfaces', () => {
   assert.match(tide,/Fishing Luck/);
   assert.match(wiki,/function header\(\)/);
 });
+
+test('the nested Fishing System 2.0 reference is also visibly archived', () => {
+  const ref=readFileSync(new URL('../tide2/mechanics-reference.html',import.meta.url),'utf8');
+  assert.match(ref,/rip-archive-notice/);
+  assert.match(ref,/href="\.\.\/archive\/"/);
+  assert.match(ref,/Fishing 2\.0/);
+});
