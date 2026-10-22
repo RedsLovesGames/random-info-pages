@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10110f">
+<meta name="description" content="Unofficial browser recreation of the stock-image fighter simulations inspired by Spenn.">
+<title>Stock Fights · Random Info Pages</title>
+<link rel="icon" href="data:,"><link rel="stylesheet" href="./styles.css">
+<script type="module" src="./app.js"></script>
+</head>
+<body>
+<header class="mast">
+ <div><a class="back" href="../">← RANDOM INFO PAGES</a><div class="overline">GAMES / EXPERIMENTAL COMBAT ENGINE</div></div>
+ <a class="reference" href="https://www.youtube.com/@Spenntf2" target="_blank" rel="noopener noreferrer">Inspired by Spenn ↗</a>
+</header>
+<main>
+ <section class="heading"><div><h1>STOCK<span>FIGHTS</span><sup>01</sup></h1><p>Watch absurd stock-image characters settle it in a bouncing physics box.</p></div><div class="heading-meta"><strong>43</strong><span>FIGHTERS<br>12 TEAMS<br>5 MATCH MODES</span></div></section>
+ <div class="workspace">
+  <aside class="panel setup">
+   <div class="panel-title"><h2>01 / Match setup</h2><span>SIMULATED · LOCAL</span></div>
+   <label class="field">Fight format<select id="mode">
+    <option value="duel">1 vs 1</option><option value="teams">Team 3 vs 3</option>
+    <option value="time">20-second Time Battle</option><option value="challenge">30 Henchmen Challenge</option>
+    <option value="endless">Endless Henchmen</option>
+   </select></label>
+   <div class="roster-side"><div class="side-label"><span class="tag left">A</span> LEFT SIDE</div>
+    <label class="field preset" id="leftPresetWrap">Team preset<select id="leftPreset"></select></label>
+    <div class="fighter-slots" id="leftSlots"><label>Fighter 1<select id="left0"></select></label><label class="extra">Fighter 2<select id="left1"></select></label><label class="extra">Fighter 3<select id="left2"></select></label></div>
+   </div>
+   <div class="roster-side" id="rightSide"><div class="side-label"><span class="tag right">B</span> RIGHT SIDE</div>
+    <label class="field preset" id="rightPresetWrap">Team preset<select id="rightPreset"></select></label>
+    <div class="fighter-slots" id="rightSlots"><label>Fighter 1<select id="right0"></select></label><label class="extra">Fighter 2<select id="right1"></select></label><label class="extra">Fighter 3<select id="right2"></select></label></div>
+   </div>
+   <div class="row-fields"><label class="field">Seed<input type="number" id="seed" min="1" max="4294967295" value="2026" step="1"></label><button class="icon-button" id="randomSeed" type="button" title="Generate random seed" aria-label="Random seed">↻</button></div>
+   <label class="check"><input id="shrink" type="checkbox"><span>Shrinking Box</span></label>
+   <label class="check"><input id="hotWalls" type="checkbox"><span>Hot Walls (experimental)</span></label>
+   <button id="start" class="primary" type="button">START FIGHT <span>→</span></button>
+   <div class="setup-note">All fights are autonomous. The seed reproduces the same matchup. Selecting a preset fills all three team slots.</div>
+  </aside>
+  <section class="stage-panel" aria-label="Battle arena">
+   <div class="battle-top"><span id="modeBadge">1 VS 1</span><span id="battleStatus" aria-live="polite">READY FOR COMBAT</span><span id="roundTime">00:00.0</span></div>
+   <div class="combatants">
+     <div class="combatant"><div class="combat-name"><span id="leftName">Boxing Guy</span><b id="leftHpText">1000 HP</b></div><div class="health-track"><div id="leftBar" class="health-fill team-a"></div></div><small id="leftTeam">LEFT / 01</small></div>
+     <span class="versus">VS</span>
+     <div class="combatant"><div class="combat-name"><span id="rightName">Chef Guy</span><b id="rightHpText">1000 HP</b></div><div class="health-track"><div id="rightBar" class="health-fill team-b"></div></div><small id="rightTeam">RIGHT / 01</small></div>
+   </div>
+   <div class="arena-wrap"><canvas id="arena" width="760" height="620" aria-label="Autonomous stock-fighter battle simulation"></canvas>
+      <div class="overlay-result" id="result" hidden><small>MATCH COMPLETE</small><strong id="resultTitle">LEFT WINS</strong><p id="resultText"></p><button type="button" id="rematch">REPLAY SAME SEED ↺</button></div>
+   </div>
+   <div class="playback">
+     <button type="button" id="pause" disabled>Ⅱ PAUSE</button><button type="button" id="step" disabled>STEP +1</button>
+     <label class="speed">SPEED <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label>
+     <button type="button" id="finish">FAST-FORWARD »</button><label class="check sound"><input type="checkbox" id="sound">SOUND</label>
+   </div>
+   <div class="statusbar"><span id="damageStats">DAMAGE 0 : 0</span><span id="challengeStats">AUTO BATTLE</span><button type="button" id="share">COPY MATCH LINK ↗</button></div>
+  </section>
+  <aside class="panel intel">
+   <div class="panel-title"><h2>02 / Fighter file</h2><span>ROSTER INDEX</span></div>
+   <input type="search" placeholder="Search 43 fighters..." id="search" aria-label="Search fighters">
+   <div id="roster" class="roster" role="list"></div>
+   <article class="dossier" id="dossier" aria-live="polite">
+    <div class="dossier-avatar" id="dossierAvatar">🥊</div>
+    <h3 id="dossierName">Boxing Guy</h3><p id="dossierDesc"></p>
+    <div class="dossier-stats"><span>BASE DAMAGE <strong id="dossierDamage">45</strong></span><span>COOLDOWN <strong id="dossierCooldown">0.38s</strong></span></div>
+    <div class="portrait-actions"><label class="upload">UPLOAD CUTOUT<input type="file" id="portraitUpload" accept="image/png,image/webp,image/jpeg"></label><button id="portraitClear" type="button">RESET</button></div><p class="fine">Custom portraits are resized and saved in this browser. No image is uploaded to a server.</p>
+   </article>
+   <div class="panel-title log-title"><h2>03 / Battle log</h2><span id="eventCount">00</span></div>
+   <ol class="battle-log" id="battleLog" aria-live="off"></ol>
+  </aside>
+ </div>
+ <footer class="foot"><span>Unofficial fan recreation. Original Stock Image Fights by Spenn. Physics, damage tuning, and default stand-in portraits are independently recreated, not extracted from Spenn's game.</span><a href="https://spenn.fandom.com/wiki/Spenn_Wiki" target="_blank" rel="noopener noreferrer">Reference wiki ↗</a></footer>
+</main>
+</body>
+</html>
