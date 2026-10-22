@@ -1,94 +1,104 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { runInNewContext } from 'node:vm';
+import { readFileSync, existsSync } from 'node:fs';
+import { Script, runInNewContext } from 'node:vm';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+const classic = readFileSync(new URL('../classic.html', import.meta.url), 'utf8');
+const registryMatch = html.match(/const projects=(\[[\s\S]*?\]);/);
+assert.ok(registryMatch, 'homepage must contain the search/project registry');
+const projects = runInNewContext(registryMatch[1]);
 
-const routes = [
-  './tools/', './fiction-workspace/', './wheel/', './whenwemeet/', './school-schedule/', './friends/',
-  './tideborne/', './tide2/', './vct-scout/', './stock-fights/', './oldasspolitic/',
-  './heatmap/', './political-grid/', './infrastructure-atlas/', './wanuiv2/', './nerdcore-prompts/',
-  './music-microscope/', './one-million/', './algorithm-arena/', './cryptography-museum/', './9-11-timeline/'
+const requiredRoutes = [
+  'tools', 'fiction-workspace', 'wheel', 'whenwemeet',
+  'school-schedule', 'friends', 'tideborne', 'tide2',
+  'vct-scout', 'stock-fights', 'oldasspolitic', 'heatmap',
+  'political-grid', 'infrastructure-atlas', 'wanuiv2',
+  'nerdcore-prompts', 'music-microscope', 'one-million',
+  'algorithm-arena', 'cryptography-museum', '9-11-timeline',
+  'belief-atlas'
 ];
 
-test('homepage uses the archive folder interface', () => {
-  assert.match(html, /<link rel="icon" href="data:,">/);
-  assert.match(html, /data-archive-home/);
-  assert.match(html, /id="searchDialog"/);
-  for (const folder of ['tools','school','friends','games','data','experiments']) {
-    assert.match(html, new RegExp(`data-folder="${folder}"`));
+test('new homepage has the intended editorial interface', () => {
+  for (const id of ['main', 'fluidCanvas', 'featured', 'index', 'projectList', 'filters', 'about', 'searchDialog', 'dialogInput', 'randomProject']) {
+    assert.match(html, new RegExp('id="' + id + '"'), id + ' exists');
   }
-  assert.doesNotMatch(html, /class="card(?:\s|\")/);
+  assert.match(html, /class="hero-heading"/);
+  assert.match(html, /class="featured-grid"/);
+  assert.match(html, /prefers-reduced-motion/);
+  assert.match(html, /href="\.\/classic\.html"/);
+  assert.match(html, /aria-label="Search projects"/);
 });
 
-test('every public project route remains linked', () => {
-  for (const route of routes) assert.match(html, new RegExp(`href="${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
-});
-
-test('toolbox appears in the Tools folder and search index', () => {
-  assert.match(html, /href="\.\/tools\/"/);
-  assert.match(html, /<span class="folder-count">04 files<\/span>/);
-  assert.match(html, /\{n:'Toolbox',p:'\.\/tools\/'/);
-});
-
-test('political grid is listed in the data folder and searchable', () => {
-  assert.match(html, /data-folder="data"[\s\S]*?<span class="folder-count">06 files<\/span>/);
-  assert.match(html, /href="\.\/political-grid\/"/);
-  assert.match(html, /\{n:'Political Grid',p:'\.\/political-grid\/'/);
-  assert.match(html, /id="searchLabel">21 files/);
-});
-
-test('folder counts, total and search metadata agree with all 21 archive links', () => {
-  const index = runInNewContext(html.match(/const projects=(\[[\s\S]*?\]);/)[1]);
-  assert.equal(index.length, 21);
-  assert.equal(new Set(index.map(p=>p.p)).size, 21);
-  let total=0;
-  for (const folder of html.matchAll(/<details class="folder" data-folder="([^"]+)"[\s\S]*?<\/details>/g)) {
-    const links=[...folder[0].matchAll(/class="file" href="([^"]+)"/g)].map(m=>m[1]);
-    const count=Number(folder[0].match(/class="folder-count">(\d+)/)[1]);
-    assert.equal(count,links.length,`${folder[1]} count`);
-    const category=folder[1][0].toUpperCase()+folder[1].slice(1);
-    for(const link of links) {
-      const item=index.find(p=>p.p===link);
-      assert.ok(item,`${link} searchable`);
-      assert.equal(item.c,category);
-      assert.ok(item.k.length>15,`${link} search keywords`);
-    }
-    total+=count;
+test('classic homepage is preserved as a separate functional page', () => {
+  assert.match(classic, /data-archive-home/);
+  assert.match(classic, /data-folder="tools"/);
+  assert.match(classic, /data-folder="experiments"/);
+  assert.match(classic, /id="searchDialog"/);
+  for (const route of requiredRoutes) {
+    assert.ok(classic.includes('href="./' + route + '/"'), route + ' stays linked from classic');
   }
-  assert.equal(total,21);
-  assert.match(html,/<b>21<\/b><span>Files<\/span>/);
 });
 
-test('four exhibits are searchable in their requested folders', () => {
-  for(const [name,route,category] of [
+test('all public project routes remain in the new index without duplicates', () => {
+  assert.equal(projects.length, 22);
+  assert.equal(new Set(projects.map(p => p.p)).size, projects.length);
+  assert.equal(new Set(projects.map(p => p.n)).size, projects.length);
+  for (const route of requiredRoutes) {
+    const path = './' + route + '/';
+    assert.ok(projects.some(p => p.p === path), path + ' stays indexed');
+    assert.ok(existsSync(new URL('../' + route + '/index.html', import.meta.url)), path + ' exists');
+  }
+  for (const p of projects) {
+    assert.ok(p.n && p.c && p.k.length > 10, p.n + ' has searchable metadata');
+  }
+});
+
+test('category controls and project metadata remain in sync', () => {
+  const categories = new Set(projects.map(p => p.c));
+  assert.deepEqual([...categories].sort(), ['Data','Experiments','Friends','Games','School','Tools']);
+  for (const category of categories) {
+    assert.match(html, new RegExp('data-filter="' + category + '"'));
+  }
+  assert.match(html, /new Set\(projects\.map\(p=>p\.c\)\)\.size/);
+  assert.match(html, /projects\.length/);
+  assert.match(html, /currentFilter==='All'\|\|p\.c===currentFilter/);
+});
+
+test('search, random navigation, previews, and keyboard access are wired', () => {
+  assert.match(html, /function renderIndex\(\)/);
+  assert.match(html, /function renderSearch\(\)/);
+  assert.match(html, /function randomProject\(\)/);
+  assert.match(html, /function openSearch\(\)/);
+  assert.match(html, /e\.key==='ArrowDown'/);
+  assert.match(html, /e\.key==='Enter'/);
+  for (const preview of ['infrastructure-atlas', 'music-microscope', 'stock-fights']) {
+    assert.ok(html.includes('data-src="./' + preview + '/"'));
+  }
+  assert.match(html, /IntersectionObserver/);
+  assert.match(html, /ResizeObserver/);
+});
+
+test('new homepage JavaScript parses', () => {
+  const match = html.match(/<script>([\s\S]*?)<\/script>/);
+  assert.ok(match, 'inline script present');
+  assert.doesNotThrow(() => new Script(match[1]));
+});
+
+test('key project descriptions are specific and searchable', () => {
+  for (const [name, route, category] of [
+    ['Belief Atlas','belief-atlas','Data'],
+    ['Stock Fights','stock-fights','Games'],
+    ['Political Grid','political-grid','Data'],
+    ['Infrastructure Atlas','infrastructure-atlas','Data'],
     ['Music Microscope','music-microscope','Experiments'],
-    ['One Million, Actually','one-million','Data'],
-    ['Algorithm Arena','algorithm-arena','Experiments'],
-    ['Cryptography Museum','cryptography-museum','Experiments']
+    ['A Day in Messages','9-11-timeline','Data'],
+    ['School Schedule','school-schedule','School']
   ]) {
-    const index = runInNewContext(html.match(/const projects=(\[[\s\S]*?\]);/)[1]);
-    const item=index.find(p=>p.p===`./${route}/`);
-    assert.ok(item,`${name} indexed`);
-    assert.equal(item.n,name);
-    assert.equal(item.c,category);
+    const p = projects.find(item => item.p === './' + route + '/');
+    assert.ok(p, name + ' indexed');
+    assert.equal(p.n, name);
+    assert.equal(p.c, category);
+    assert.ok(p.k.length > 15, name + ' has keywords');
   }
-});
-
-
-test('infrastructure atlas is linked, categorized under Data, and searchable', () => {
-  assert.match(html, /href="\.\/infrastructure-atlas\/"/);
-  assert.match(html, /\{n:'Infrastructure Atlas',p:'\.\/infrastructure-atlas\/',c:'Data'/);
-  assert.match(html, /data-folder="data"[\s\S]*?Infrastructure Atlas[\s\S]*?data-folder="experiments"/);
-});
-
-test('9/11 timeline is categorized, linked, and searchable', () => {
-  assert.match(html, /href="\.\/9-11-timeline\/"/);
-  assert.match(html, /\{n:'A Day in Messages',p:'\.\/9-11-timeline\/',c:'Data'/);
-});
-
-test('Stock Fights is in Games and indexed', () => {
-  assert.match(html,/href="\.\/stock-fights\/"/);
-  assert.match(html,/\{n:'Stock Fights',p:'\.\/stock-fights\/',c:'Games'/);
 });
