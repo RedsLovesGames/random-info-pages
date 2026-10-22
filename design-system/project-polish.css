@@ -65,3 +65,101 @@ body[data-rip-page="wanuiv2"] .topbar{box-shadow:none}
 @media(prefers-reduced-motion:reduce){
  body[data-rip-page] :where(button,a,.tb-card,.action){transition:none!important;animation:none!important}
 }
+
+/* Second-pass art direction: purposeful hierarchy by app family.
+   Preserve canvas dimensions, datasets, charts, storage, and all JS selectors. */
+
+/* Editorial and evidence-driven experiences */
+body[data-rip-page="belief-atlas"] .hero{padding-top:clamp(35px,5vw,80px)}
+body[data-rip-page="belief-atlas"] .hero h1{letter-spacing:-.075em;line-height:.94;text-wrap:balance}
+body[data-rip-page="belief-atlas"] :where(.panel,.identity-panel){box-shadow:none;border-color:#34445b}
+body[data-rip-page="belief-atlas"] .sectionhead{padding-bottom:12px;border-bottom:1px solid #34445b}
+body[data-rip-page="belief-atlas"] .sectionhead h2{letter-spacing:-.045em}
+body[data-rip-page="9-11-timeline"] .hero h1{letter-spacing:-.075em;line-height:.94}
+body[data-rip-page="9-11-timeline"] .workspace{gap:clamp(18px,2.5vw,38px)}
+body[data-rip-page="9-11-timeline"] .panel{box-shadow:none}
+body[data-rip-page="9-11-timeline"] .track{scroll-margin-top:30px}
+body[data-rip-page="one-million"] .intro h1{letter-spacing:-.07em;line-height:.94}
+body[data-rip-page="one-million"] .visual-panel{box-shadow:none;isolation:isolate}
+body[data-rip-page="one-million"] .controls-panel{box-shadow:none}
+body[data-rip-page="oldasspolitic"] .hero{padding-bottom:clamp(26px,4vw,50px)}
+body[data-rip-page="oldasspolitic"] .controls{gap:10px}
+body[data-rip-page="oldasspolitic"] .member{transition:transform .2s ease,border-color .2s ease}
+body[data-rip-page="oldasspolitic"] .member:hover{transform:translateY(-2px)}
+body[data-rip-page="oldasspolitic-member"] :where(.panel,.default-company-card){box-shadow:none}
+body[data-rip-page="heatmap"] :where(.panel,.single-circle-card){box-shadow:none}
+body[data-rip-page="heatmap-compare"] .panel{box-shadow:none}
+body[data-rip-page="infrastructure-atlas"] .hero{padding-block:clamp(35px,4vw,60px)}
+body[data-rip-page="infrastructure-atlas"] .hero .lede{max-width:740px}
+body[data-rip-page="infrastructure-atlas"] :where(.panel,.stat,.national-callout){box-shadow:none}
+body[data-rip-page="infrastructure-atlas"] :where(.panel-title,.section-title){letter-spacing:-.045em}
+body[data-rip-page="political-grid"] .intro{max-width:740px}
+body[data-rip-page="political-grid"] :where(.panel,.identity-panel){box-shadow:none}
+body[data-rip-page="political-grid"] .board{scroll-margin-top:100px}
+
+/* Interactive laboratories retain their individual instrument language. */
+body[data-rip-page="music-microscope"] .visual-section{padding-block:clamp(24px,3vw,55px)}
+body[data-rip-page="music-microscope"] .intro{gap:clamp(26px,4vw,75px)}
+body[data-rip-page="music-microscope"] .intro-copy{line-height:1.55}
+body[data-rip-page="music-microscope"] .track-summary{padding-top:16px}
+body[data-rip-page="music-microscope"] .panel-heading{letter-spacing:-.035em}
+body[data-rip-page="algorithm-arena"] .hero{padding-bottom:clamp(25px,5vw,65px)}
+body[data-rip-page="algorithm-arena"] :where(.lab-section,.sound-panel){scroll-margin-top:35px}
+body[data-rip-page="algorithm-arena"] .section-head{padding-bottom:14px}
+body[data-rip-page="algorithm-arena"] .section-note{line-height:1.55}
+body[data-rip-page="cryptography-museum"] .introduction{padding-top:clamp(30px,4vw,65px)}
+body[data-rip-page="cryptography-museum"] .introduction h1{letter-spacing:-.055em;line-height:.96}
+body[data-rip-page="cryptography-museum"] .masthead{border-bottom:1px solid var(--line)}
+body[data-rip-page="nerdcore-prompts"] .layout{gap:clamp(14px,2.2vw,32px)}
+body[data-rip-page="nerdcore-prompts"] :where(.panel,.panelbody){box-shadow:none}
+body[data-rip-page="nerdcore-prompts"] .panelhead{letter-spacing:-.03em}
+body[data-rip-page="wanuiv2"] .topbar{border-bottom-color:rgba(255,255,255,.15)}
+body[data-rip-page="wanuiv2"] :where(.panel,.inspector){box-shadow:none}
+
+/* Tools and productivity: source first, controls second, output always legible. */
+body[data-rip-page="fiction-workspace"] .auth-art{box-shadow:none}
+body[data-rip-page="fiction-workspace"] :where(.panel,.card){box-shadow:none}
+body[data-rip-page="whenwemeet"] .hero-copy{max-width:860px}
+body[data-rip-page="whenwemeet"] .create-card{border-radius:11px}
+body[data-rip-page="whenwemeet"] :where(.planner-panel,.join-card,.best-card,.insight-card){box-shadow:none}
+body[data-rip-page="whenwemeet"] .grid-scroll{overscroll-behavior-x:contain}
+body[data-rip-page="school-schedule"] .hero p{max-width:640px}
+body[data-rip-page="school-schedule"] .section{scroll-margin-top:25px}
+body[data-rip-page="school-schedule"] .day.today{border-color:#8da9e9}
+body[data-rip-page="wheel"] .workspace{gap:clamp(8px,1.4vw,18px)}
+body[data-rip-page="wheel"] :where(.wheel-stage,.side-panel,.winner-panel){box-shadow:none}
+body[data-rip-page="wheel"] .wheel-stage{border-color:rgba(255,255,255,.2)}
+body[data-rip-page="wheel"] .stage-head{letter-spacing:-.03em}
+
+/* Content-oriented tools: each utility uses the shared visual rhythm
+   without inheriting any styling from the Toolbox landing-page cards. */
+body[data-rip-page^="tools-"] :where(h1,h2){letter-spacing:-.065em}
+body[data-rip-page^="tools-"] :where(button,input,textarea,select){font-variant-numeric:tabular-nums}
+body[data-rip-page^="tools-"] :where(.tb-hero,.tb-workspace,.tb-main){scroll-margin-top:20px}
+body[data-rip-page^="tools-"] :where(.tb-panel,.tb-card){box-shadow:none}
+body[data-rip-page="tools-image"] :where(.workspace,.queue){scroll-margin-top:20px}
+body[data-rip-page="tools-math"] :where(.stat,.panel){box-shadow:none}
+body[data-rip-page="tools-data"] :where(.panel,.table-wrap){box-shadow:none}
+body[data-rip-page="tools-pdf"] :where(.panel,.workspace){box-shadow:none}
+
+/* Experiences: deliberate accents, minimal arbitrary panel shine. */
+body[data-rip-page="friends"] .hero h1{letter-spacing:-.085em}
+body[data-rip-page="friends"] .actions{gap:clamp(12px,2vw,26px)}
+body[data-rip-page="friends"] .action{box-shadow:none}
+body[data-rip-page="stock-fights"] .heading{padding-top:clamp(24px,3.5vw,55px)}
+body[data-rip-page="stock-fights"] .heading p{line-height:1.55;max-width:520px}
+body[data-rip-page="stock-fights"] .stage-panel{position:relative}
+body[data-rip-page="stock-fights"] .stage-panel::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--blue),var(--lime),var(--red));pointer-events:none;z-index:1}
+body[data-rip-page="stock-fights"] .battle-log{overscroll-behavior:contain}
+
+/* Surface changes gracefully; low-performance/reduced-motion users get still UI. */
+@media(max-width:750px){
+ body[data-rip-page="9-11-timeline"] .workspace{gap:16px}
+ body[data-rip-page="infrastructure-atlas"] .hero{padding-block:28px}
+ body[data-rip-page="music-microscope"] .intro{gap:20px}
+ body[data-rip-page="algorithm-arena"] .section-head{gap:14px}
+ body[data-rip-page="friends"] .actions{gap:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ body[data-rip-page] :where(.member,.action,.tb-card){transition:none!important}
+}
