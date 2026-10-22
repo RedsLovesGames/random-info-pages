@@ -192,13 +192,30 @@ export class Battle {
         }
       }
       if(p.type==='gravity'&&owner?.hp>0){const a=Math.atan2(owner.y-p.y,owner.x-p.x);p.vx+=Math.cos(a)*75*dt;p.vy+=Math.sin(a)*75*dt;}
+      for(const g of this.actors){
+        if(g.hp<=0||g.ability!=='gravity'||g.side===p.side||p.type==='burst'||p.type==='tape')continue;
+        const d=dist(g,p);
+        if(d<145){
+          const angle=Math.atan2(p.y-g.y,p.x-g.x);
+          p.vx+=-Math.sin(angle)*220*dt;p.vy+=Math.cos(angle)*220*dt;
+          if(d<64){p.side=g.side;p.owner=g.uid;p.vx*=-1;p.vy*=-1;p.hit.clear();this.effect(g.x,g.y,'GRAVITY','#815ec4');}
+        }
+      }
       p.x+=p.vx*dt;p.y+=p.vy*dt;
       let bounced=false;
       if(p.x-p.radius<this.bounds.left || p.x+p.radius>this.bounds.right){p.x=clamp(p.x,this.bounds.left+p.radius,this.bounds.right-p.radius);bounced=true;p.vx*=-1;}
       if(p.y-p.radius<this.bounds.top || p.y+p.radius>this.bounds.bottom){p.y=clamp(p.y,this.bounds.top+p.radius,this.bounds.bottom-p.radius);bounced=true;p.vy*=-1;}
       if(bounced){
-        if(p.type==='briefcase'&&owner){for(let i=0;i<10;i++)this.shot(owner,{x:owner.x+Math.cos(i*Math.PI/5)*200,y:owner.y+Math.sin(i*Math.PI/5)*200},20,'paper',{angle:i*Math.PI/5,speed:235,life:1.7});p.life=0;}
-        else if(p.type==='cleaver'){p.vx=p.vy=0;p.life=20;p.type='stuck-knife';}
+        if(p.type==='briefcase'&&owner){
+          for(let i=0;i<10;i++){const a=i*Math.PI/5;
+            this.projectiles.push({uid:this.nextId++,side:p.side,owner:p.owner,x:p.x,y:p.y,
+              vx:Math.cos(a)*245,vy:Math.sin(a)*245,damage:20,type:'paper',life:1.7,
+              bounce:0,radius:9,stun:0,source:'projectile',pierce:0,friendly:false,hit:new Set()});
+          }
+          p.life=0;
+        }
+        else if(p.type==='cleaver'){p.vx=p.vy=0;p.life=20;p.type='stuck-knife';p.damage=50;}
+        else if(p.type==='spike'){p.vx=p.vy=0;p.life=10;p.type='stuck-spike';p.damage=48;}
         else if(p.type==='glasses'){p.type='burst';p.radius=54;p.vx=p.vy=0;p.damage+=55;p.life=.28;p.pierce=99;}
         else if(p.type==='firework'){p.type='burst';p.vx=p.vy=0;p.radius=62;p.life=.36;p.pierce=99;}
         else if(p.bounce>0){p.bounce--;if(p.type==='pong')p.damage=Math.min(100,p.damage+1);}
