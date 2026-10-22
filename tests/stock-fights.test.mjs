@@ -5,6 +5,7 @@ import {fighters,teams,byId,labelForMode} from '../stock-fights/roster.mjs';
 import {Battle,ARENA,WIDTH,HEIGHT} from '../stock-fights/engine.mjs';
 import {referencePortraits,referencePage} from '../stock-fights/reference-portraits.mjs';
 import {createCombatAudio} from '../stock-fights/audio.mjs';
+import {identifyAsset,fileKind} from '../stock-fights/assets.mjs';
 
 test('complete fighter and preset-team catalog',()=>{
  assert.equal(fighters.length,43);
@@ -137,4 +138,11 @@ test('web page exposes replacement photos, sound samples, and fullscreen theater
  for(const id of ['referencePhotos','portraitUpload','soundUpload','soundClear','theater','arena'])
     assert.match(html,new RegExp('id="'+id+'"'));
  assert.match(html,/REFERENCE PHOTOGRAPHS/);
+});
+
+test('filename-matched bulk assets identify known fighters unambiguously',()=>{
+ for(const [filename,id] of [['Boxing Guy.png','boxing'],['Chef Guy hit.wav','chef'],['Guy with No Name.mp3','cowboy'],['Suspicious Cactus.webp','cactus'],['Ping Pong Guy.png','pong'],['Dr. Guy.jpeg','doctor']])assert.equal(identifyAsset(filename),id,filename);
+ assert.equal(identifyAsset('unknown1234.png'),null);
+ assert.equal(fileKind({name:'chef.wav',type:''}),'sound');
+ assert.equal(fileKind({name:'fighter.webp',type:''}),'image');
 });
