@@ -28,6 +28,8 @@ jobs:
           node --check stock-fights/app.js
           node --check stock-fights/engine.mjs
           node --check stock-fights/roster.mjs
+          node --check stock-fights/audio.mjs
+          node --check stock-fights/reference-portraits.mjs
           test -f stock-fights/index.html
           test -f stock-fights/styles.css
       - name: Regression tests
