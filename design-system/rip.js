@@ -4,25 +4,25 @@
 'use strict';
 if(window.self!==window.top)return; // Don't put site navigation in project preview iframes.
 const catalog=[
- ['belief-atlas','Public Figure Beliefs & Claims','Data & Research','belief claims evidence people'],
- ['9-11-timeline','September 11: Message Timeline','Data & Research','historical messages 9/11 timeline'],
- ['fiction-workspace','Novel Writing & Revision','Utilities','draftroom fiction chapters'],
- ['algorithm-arena','Algorithm Visualizer','Interactive Labs','sort graphs pathfinding'],
- ['cryptography-museum','Interactive Cryptography Museum','Interactive Labs','ciphers encoding encryption'],
- ['music-microscope','Music & Audio Analyzer','Interactive Labs','waveforms frequencies spectrogram'],
- ['one-million','Visualizing One Million','Data & Research','million quantities scale'],
- ['infrastructure-atlas','U.S. Infrastructure Report Cards','Data & Research','map states ASCE bridges'],
- ['political-grid','100-Statement Political Survey','Data & Research','political community grid'],
- ['tools','Everyday Web Tools','Utilities','image pdf money text converters'],
- ['wheel','Random Choice Wheel','Utilities','spin random picker'],
- ['whenwemeet','Group Availability Planner','Utilities','meeting schedule when we meet'],
- ['school-schedule','Class & Assignment Planner','School & Planning','classes due dates'],
- ['friends','Friend Quotes & Games','Friends & Social','discord patch notes guess who'],
- ['stock-fights','Stock Image Fight Simulator','Games & Experiences','fighters Spenn game'],
- ['oldasspolitic','U.S. Congress Age Explorer','Data & Research','senate house congress members'],
- ['heatmap','10Groups Comparison Heatmap','Data & Research','people coordinate comparison'],
- ['wanuiv2','AI Video Scene Director','Interactive Labs','Emperor Director WAN'],
- ['nerdcore-prompts','Nerdcore Song Prompt Builder','Interactive Labs','lyrics songs prompts']
+ ['belief-atlas','Public Figure Beliefs & Claims','Data & Research','belief claims evidence people Belief Atlas'],
+ ['9-11-timeline','September 11: Message Timeline','Data & Research','historical messages 9/11 timeline A Day in Messages'],
+ ['fiction-workspace','Novel Writing & Revision','Utilities','draftroom fiction chapters Draftroom'],
+ ['algorithm-arena','Algorithm Visualizer','Interactive Labs','sort graphs pathfinding Algorithm Arena'],
+ ['cryptography-museum','Interactive Cryptography Museum','Interactive Labs','ciphers encoding encryption Cryptography Museum'],
+ ['music-microscope','Music & Audio Analyzer','Interactive Labs','waveforms frequencies spectrogram Music Microscope'],
+ ['one-million','Visualizing One Million','Data & Research','million quantities scale One Million Actually'],
+ ['infrastructure-atlas','U.S. Infrastructure Report Cards','Data & Research','map states ASCE bridges Infrastructure Atlas'],
+ ['political-grid','100-Statement Political Survey','Data & Research','political community grid Political Grid'],
+ ['tools','Everyday Web Tools','Utilities','image pdf money text converters Toolbox'],
+ ['wheel','Random Choice Wheel','Utilities','spin random picker Wheel'],
+ ['whenwemeet','Group Availability Planner','Utilities','meeting schedule when we meet WhenWeMeet When We Meet'],
+ ['school-schedule','Class & Assignment Planner','School & Planning','classes due dates School Schedule'],
+ ['friends','Friend Quotes & Games','Friends & Social','discord patch notes guess who Friend Group Hub'],
+ ['stock-fights','Stock Image Fight Simulator','Games & Experiences','fighters Spenn game Stock Fights'],
+ ['oldasspolitic','U.S. Congress Age Explorer','Data & Research','senate house congress members Old Ass Politic'],
+ ['heatmap','10Groups Comparison Heatmap','Data & Research','people coordinate comparison 10Groups Heatmap'],
+ ['wanuiv2','AI Video Scene Director','Interactive Labs','Emperor Director WAN Emperor Director'],
+ ['nerdcore-prompts','Nerdcore Song Prompt Builder','Interactive Labs','lyrics songs prompts Nerdcore Prompts']
 ];
 const toolNames={time:'Time Zones & Meeting Planner',image:'Image Editor & Converter',money:'Money Calculators',text:'Text Tools',pdf:'PDF & Document Tools',files:'File & ZIP Tools',media:'Audio & Video Tools',data:'Data Tools & Converters',developer:'Developer Tools',math:'Math & Science Calculators',random:'Random Pickers & Team Generator',codes:'QR Codes, Barcodes & Passwords',network:'Network & Storage Calculators'};
 const rootPath=location.pathname.startsWith('/random-info-pages/')?'/random-info-pages/':'/';
