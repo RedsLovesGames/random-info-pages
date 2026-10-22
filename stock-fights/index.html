@@ -34,11 +34,13 @@
    <div class="row-fields"><label class="field">Seed<input type="number" id="seed" min="1" max="4294967295" value="2026" step="1"></label><button class="icon-button" id="randomSeed" type="button" title="Generate random seed" aria-label="Random seed">↻</button></div>
    <label class="check"><input id="shrink" type="checkbox"><span>Shrinking Box</span></label>
    <label class="check"><input id="hotWalls" type="checkbox"><span>Hot Walls (experimental)</span></label>
+   <label class="check"><input id="referencePhotos" type="checkbox" checked><span>REFERENCE PHOTOGRAPHS</span></label>
+   <div class="asset-note" id="assetNote">Loading photos when fighters enter. Images come from external community references; unavailable images use stand-ins.</div>
    <button id="start" class="primary" type="button">START FIGHT <span>→</span></button>
    <div class="setup-note">All fights are autonomous. The seed reproduces the same matchup. Selecting a preset fills all three team slots.</div>
   </aside>
   <section class="stage-panel" aria-label="Battle arena">
-   <div class="battle-top"><span id="modeBadge">1 VS 1</span><span id="battleStatus" aria-live="polite">READY FOR COMBAT</span><span id="roundTime">00:00.0</span></div>
+   <div class="battle-top"><span id="modeBadge">1 VS 1</span><span id="battleStatus" aria-live="polite">READY FOR COMBAT</span><span id="roundTime">00:00.0</span><button id="theater" type="button" title="Expand the fight arena">EXPAND ⛶</button></div>
    <div class="combatants">
      <div class="combatant"><div class="combat-name"><span id="leftName">Boxing Guy</span><b id="leftHpText">1000 HP</b></div><div class="health-track"><div id="leftBar" class="health-fill team-a"></div></div><small id="leftTeam">LEFT / 01</small></div>
      <span class="versus">VS</span>
@@ -62,13 +64,16 @@
     <div class="dossier-avatar" id="dossierAvatar">🥊</div>
     <h3 id="dossierName">Boxing Guy</h3><p id="dossierDesc"></p>
     <div class="dossier-stats"><span>BASE DAMAGE <strong id="dossierDamage">45</strong></span><span>COOLDOWN <strong id="dossierCooldown">0.38s</strong></span></div>
-    <div class="portrait-actions"><label class="upload">UPLOAD CUTOUT<input type="file" id="portraitUpload" accept="image/png,image/webp,image/jpeg"></label><button id="portraitClear" type="button">RESET</button></div><p class="fine">Custom portraits are resized and saved in this browser. No image is uploaded to a server.</p>
+    <div class="portrait-actions"><label class="upload">REPLACE PHOTO<input type="file" id="portraitUpload" accept="image/png,image/webp,image/jpeg"></label><button id="portraitClear" type="button">RESET</button></div>
+    <div class="portrait-actions"><label class="upload">CUSTOM VOICE / ATTACK SFX<input type="file" id="soundUpload" accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/webm"></label><button id="soundClear" type="button">RESET</button></div>
+    <p id="photoStatus" class="fine"></p>
+    <p class="fine">Photos and sounds you add are saved locally in your browser. External references can fail to load. <a href="https://www.namu.moe/w/Spenn/%EB%93%B1%EC%9E%A5%EC%9D%B8%EB%AC%BC" target="_blank" rel="noopener noreferrer">Image reference ↗</a></p>
    </article>
    <div class="panel-title log-title"><h2>03 / Battle log</h2><span id="eventCount">00</span></div>
    <ol class="battle-log" id="battleLog" aria-live="off"></ol>
   </aside>
  </div>
- <footer class="foot"><span>Unofficial fan recreation. Original Stock Image Fights by Spenn. Physics, damage tuning, and default stand-in portraits are independently recreated, not extracted from Spenn's game.</span><a href="https://spenn.fandom.com/wiki/Spenn_Wiki" target="_blank" rel="noopener noreferrer">Reference wiki ↗</a></footer>
+ <footer class="foot"><span>Unofficial fan recreation. Original Stock Image Fights by Spenn. Linked reference photos are credited to the community reference. Simulation physics and synthesized sound effects remain independently reconstructed.</span><a href="https://spenn.fandom.com/wiki/Spenn_Wiki" target="_blank" rel="noopener noreferrer">Reference wiki ↗</a></footer>
 </main>
 </body>
 </html>
