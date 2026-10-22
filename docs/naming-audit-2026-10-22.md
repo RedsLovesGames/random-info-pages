@@ -113,3 +113,12 @@ The root homepage renders its project index from JavaScript and retains original
 ## Application status
 
 The new display labels are live in the homepage source registry and retain legacy names for search. The primary project titles, Toolbox family headings and browser titles, Tideborne nested browser titles, and additional congressional, 10Groups, and desktop titles were updated in the same rename series. Public URL slugs and storage keys remain unchanged.
+
+## Archival scope (October 22, 2026)
+
+The following three project entries were retired from the active homepage directory:
+- `/vct-scout/` (Valorant Team Scout & Strategy).
+- `/tideborne/` and every nested Tideborne wiki page (Tideborne Fishing Guide).
+- `/tide2/` including its technical mechanics reference (Fishing Mechanics & Calculators).
+
+A separate `/archive/` index lists their original links. All original routes, project files, records, and saved formats remain intact. The homepage shows 19 active projects and excludes archived entries from default browsing, category filters, and the random-project button. Explicit search queries can still find the three legacy names, labeled ARCHIVED. Archival notices appear on the VCT page, Fishing System 2.0 page, and all Tideborne wiki pages through their shared header script. These projects are excluded from the planned design overhaul.

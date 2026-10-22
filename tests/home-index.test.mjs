@@ -120,3 +120,34 @@ test('human-facing project labels are clear, unique, and backwards searchable', 
     assert.ok(html.includes('>'+label+'</button>'), label + ' is exposed in category filters');
   }
 });
+
+
+test('VCT and Tideborne are archived, remain available, and are excluded from the active project index', () => {
+  const archived=projects.filter(p=>p.a);
+  assert.deepEqual(Array.from(archived,p=>p.p).sort(),['./tide2/','./tideborne/','./vct-scout/'].sort());
+  assert.equal(projects.filter(p=>!p.a).length,19);
+  assert.match(html,/const activeProjects=projects\.filter\(p=>!p\.a\)/);
+  assert.match(html,/const shown=activeProjects\.filter/);
+  assert.match(html,/const p=activeProjects\[Math\.floor\(Math\.random\(\)\*activeProjects\.length\)\]/);
+  assert.match(html,/:activeProjects}/);
+  assert.match(html,/p\.a\?' · ARCHIVED'/);
+  assert.match(html,/href="\.\/archive\/"/);
+  const archive=readFileSync(new URL('../archive/index.html',import.meta.url),'utf8');
+  for(const slug of ['vct-scout','tideborne','tide2']){
+    assert.ok(archive.includes('href="../'+slug+'/"'),slug+' linked from archive');
+    assert.ok(existsSync(new URL('../'+slug+'/index.html',import.meta.url)));
+  }
+  assert.match(archive,/Retained for reference/);
+});
+test('archive notices preserve the original project interfaces', () => {
+  const vct=readFileSync(new URL('../vct-scout/index.html',import.meta.url),'utf8');
+  const tide=readFileSync(new URL('../tide2/index.html',import.meta.url),'utf8');
+  const wiki=readFileSync(new URL('../tideborne/assets/site.js',import.meta.url),'utf8');
+  for(const page of [vct,tide,wiki]){
+    assert.match(page,/rip-archive-notice/);
+    assert.match(page,/archive\/archive-notice\.css/);
+  }
+  assert.match(vct,/Recommended Play/);
+  assert.match(tide,/Fishing Luck/);
+  assert.match(wiki,/function header\(\)/);
+});

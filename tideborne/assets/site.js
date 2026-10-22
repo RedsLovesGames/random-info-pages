@@ -121,6 +121,19 @@
   ensureThemeStyles();
   initialTheme();
   header();
+  // Shared banner covers the entire preserved Tideborne wiki.
+  const archiveStyle=document.createElement('link');
+  archiveStyle.rel='stylesheet';
+  archiveStyle.href='/random-info-pages/archive/archive-notice.css';
+  document.head.append(archiveStyle);
+  const archiveHeader=document.querySelector('[data-site-header]');
+  if(archiveHeader){
+    const notice=document.createElement('aside');
+    notice.className='rip-archive-notice';
+    notice.setAttribute('aria-label','Archived project');
+    notice.innerHTML='<span><strong>Archived</strong> Retained for reference; information may be outdated.</span><a href="/random-info-pages/archive/">Browse archive ↗</a>';
+    archiveHeader.append(notice);
+  }
   sidebar();
   footer();
   bindTheme();
