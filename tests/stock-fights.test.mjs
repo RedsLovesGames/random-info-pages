@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {fighters,teams,byId,labelForMode} from '../stock-fights/roster.mjs';
 import {Battle,ARENA,WIDTH,HEIGHT} from '../stock-fights/engine.mjs';
+import {referencePortraits,referencePage} from '../stock-fights/reference-portraits.mjs';
+import {createCombatAudio} from '../stock-fights/audio.mjs';
 
 test('complete fighter and preset-team catalog',()=>{
  assert.equal(fighters.length,43);
@@ -108,4 +111,30 @@ test('all 43 fighter abilities execute without NaNs or exceptions',()=>{
 test('invalid format rejected rather than silently changed',()=>{
  assert.throws(()=>new Battle({mode:'wrong'}),RangeError);
  assert.ok(WIDTH>ARENA.right&&HEIGHT>ARENA.bottom);
+});
+
+test('external reference photos are exact source links, not emoji or invented image IDs',()=>{
+ assert.equal(Object.keys(referencePortraits).length,29);
+ for(const [id,url] of Object.entries(referencePortraits)){
+   assert.ok(byId[id],id);
+   assert.match(url,/^https:\/\/file\.namu\.moe\/file\/[0-9a-f]{64,}$/);
+ }
+ assert.match(referencePage,/namu\.moe\/w\/Spenn/);
+});
+
+test('audio module is inert until user opts in and supports custom sample replacement',()=>{
+ const audio=createCombatAudio();
+ assert.equal(audio.enabled,false);
+ audio.setSample('boxing','data:audio/wav;base64,AAAA');
+ audio.setSample('boxing',null);
+ audio.setVolume(.25);
+ audio.play('punch');
+ assert.equal(audio.enabled,false);
+});
+
+test('web page exposes replacement photos, sound samples, and fullscreen theater',()=>{
+ const html=readFileSync(new URL('../stock-fights/index.html',import.meta.url),'utf8');
+ for(const id of ['referencePhotos','portraitUpload','soundUpload','soundClear','theater','arena'])
+    assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(html,/REFERENCE PHOTOGRAPHS/);
 });
