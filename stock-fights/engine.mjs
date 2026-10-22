@@ -5,12 +5,12 @@ const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 const dist = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
 export class Battle {
   constructor(options={}) {
-    const {mode='duel',left=['boxing'],right=['chef'],seed=1,shrink=false}=options;
+    const {mode='duel',left=['boxing'],right=['chef'],seed=1,shrink=false,hotWalls=false}=options;
     if(!modes.includes(mode)) throw new RangeError('Unknown battle mode');
     this.mode=mode;
     this.seed=(Number(seed)>>>0)||1;
     this.randomState=this.seed;
-    this.shrink=Boolean(shrink);
+    this.shrink=Boolean(shrink);this.hotWalls=Boolean(hotWalls);
     this.bounds={...ARENA};
     this.time=0;this.ticks=0;this.done=false;this.winner=null;this.reason='';
     this.damageDone={left:0,right:0};this.defeated=0;this.spawned=0;this.nextId=1;
@@ -35,12 +35,12 @@ export class Battle {
     const count=this.actors.filter(a=>a.side===side&&a.hp>0).length;
     const x=side==='left'?this.bounds.left+92+count*36:this.bounds.right-92-count*36;
     const a={uid:this.nextId++,id,side,name:f.name,icon:f.icon,ability:f.ability,
-      x,y:this.between(this.bounds.top+110,this.bounds.bottom-100),
+      x:x,y:this.between(this.bounds.top+110,this.bounds.bottom-100),
       vx:(side==='left'?1:-1)*f.speed*.64,vy:this.between(-f.speed*.6,f.speed*.6),
       hp:id==='henchman'?100:1000,maxHp:id==='henchman'?100:1000,
       cooldown:this.between(.2,.8),status:0,statusType:'',phase:0,armor:id==='knight'?2:0,
       reflectCooldown:0,level:0,combo:0,fuse:-1,ammo:2,damage:0,attackCount:0,shield:0,
-      direction:side==='left'?1:-1};
+      direction:side==='left'?1:-1,contactCooldown:0,wallCooldown:0};
     this.actors.push(a);this.log(f.name+' enters the box.', 'spawn');return a;
   }
   refillHenchmen(){
@@ -179,8 +179,9 @@ export class Battle {
     fire(n);
   }
   updateProjectiles(dt) {
-    const keep=[];
-    for(const p of this.projectiles){
+    const current=this.projectiles;
+    this.projectiles=[];
+    for(const p of current){
       p.life-=dt;if(p.life<=0)continue;
       const owner=this.actors.find(a=>a.uid===p.owner);
       if(p.type==='skeleton'){
@@ -209,7 +210,7 @@ export class Battle {
         // Persist across team members, damaging anyone that touches the embedded cleaver.
       }
       for(const target of this.actors){
-        if(target.hp<=0||(!p.friendly&&target.side===p.side)||p.hit.has(target.uid))continue;
+        if(target.hp<=0||(!p.friendly&&target.side===p.side)||p.hit.has(target.uid)||((p.hitCooldown||{})[target.uid]||0)>this.time)continue;
         if(dist(p,target)>(p.radius+(target.id==='henchman'?23:35)))continue;
         if(target.ability==='reflect'&&target.reflectCooldown<=0&&p.type!=='burst'&&p.type!=='tape'){
           p.side=target.side;p.owner=target.uid;p.vx*=-1;p.vy*=-1;p.hit.clear();target.reflectCooldown=2;this.effect(target.x,target.y,'RETURN!','#558fb9');break;
@@ -223,17 +224,19 @@ export class Battle {
         const attacker=this.actors.find(a=>a.uid===p.owner);
         this.hit(target,p.damage,attacker,p.source,p.stun);
         p.hit.add(target.uid);
-        if(p.pierce>0){p.pierce--;if(p.type==='tape'||p.type==='pong')p.hit.delete(target.uid);}
+        if(p.pierce>0){p.pierce--;if(p.type==='tape'||p.type==='pong'){
+          p.hit.delete(target.uid);p.hitCooldown=p.hitCooldown||{};p.hitCooldown[target.uid]=this.time+.4;
+        }}
         else{p.life=0;break;}
       }
-      if(p.life>0)keep.push(p);
+      if(p.life>0)this.projectiles.push(p);
     }
-    this.projectiles=keep;
   }
   updateActors(dt) {
     for(const a of this.actors){
       if(a.hp<=0)continue;
       a.cooldown-=dt;a.reflectCooldown=Math.max(0,a.reflectCooldown-dt);
+      a.contactCooldown=Math.max(0,a.contactCooldown-dt);a.wallCooldown=Math.max(0,a.wallCooldown-dt);
       a.phase=Math.max(0,a.phase-dt);a.shield=Math.max(0,a.shield-dt);
       a.status=Math.max(0,a.status-dt);
       if(a.fuse>=0){a.fuse-=dt;
@@ -256,10 +259,12 @@ export class Battle {
         a.x+=a.vx*dt;a.y+=a.vy*dt;
       }
       const r=a.id==='henchman'?22:37;
-      if(a.x-r<this.bounds.left){a.x=this.bounds.left+r;a.vx=Math.abs(a.vx);}
-      if(a.x+r>this.bounds.right){a.x=this.bounds.right-r;a.vx=-Math.abs(a.vx);}
-      if(a.y-r<this.bounds.top){a.y=this.bounds.top+r;a.vy=Math.abs(a.vy);}
-      if(a.y+r>this.bounds.bottom){a.y=this.bounds.bottom-r;a.vy=-Math.abs(a.vy);}
+      let wallHit=false;
+      if(a.x-r<this.bounds.left){a.x=this.bounds.left+r;a.vx=Math.abs(a.vx);wallHit=true;}
+      if(a.x+r>this.bounds.right){a.x=this.bounds.right-r;a.vx=-Math.abs(a.vx);wallHit=true;}
+      if(a.y-r<this.bounds.top){a.y=this.bounds.top+r;a.vy=Math.abs(a.vy);wallHit=true;}
+      if(a.y+r>this.bounds.bottom){a.y=this.bounds.bottom-r;a.vy=-Math.abs(a.vy);wallHit=true;}
+      if(wallHit&&this.hotWalls&&a.wallCooldown<=0){this.hit(a,Math.min(60,Math.floor(this.time/10)*15),null,'wall');a.wallCooldown=.5;}
       if(a.cooldown<=0&&a.status<=0&&b){
         a.cooldown=byId[a.id].cooldown*this.between(.82,1.18);this.attack(a,b);
       }
@@ -276,8 +281,8 @@ export class Battle {
         if(a.ability!=='ghost'&&b.ability!=='ghost'){const push=(63-d)*.5;a.x-=nx*push;b.x+=nx*push;a.vx-=nx*25;b.vx+=nx*25;}
         if(a.ability==='ghost')this.hit(b,15,a,'melee');
         if(b.ability==='ghost')this.hit(a,15,b,'melee');
-        if(a.ability==='football'||a.ability==='bowling')this.hit(b,a.ability==='football'?155:85+Math.min(a.combo*15,150),a,'melee');
-        if(b.ability==='football'||b.ability==='bowling')this.hit(a,b.ability==='football'?155:85+Math.min(b.combo*15,150),b,'melee');
+        if((a.ability==='football'||a.ability==='bowling')&&a.contactCooldown<=0){this.hit(b,a.ability==='football'?155:85+Math.min(a.combo*15,150),a,'melee');a.contactCooldown=.65;}
+        if((b.ability==='football'||b.ability==='bowling')&&b.contactCooldown<=0){this.hit(a,b.ability==='football'?155:85+Math.min(b.combo*15,150),b,'melee');b.contactCooldown=.65;}
       }
     }
   }
