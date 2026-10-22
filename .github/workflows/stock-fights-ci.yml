@@ -1,0 +1,34 @@
+name: Stock Fights regression checks
+on:
+  pull_request:
+    paths:
+      - 'stock-fights/**'
+      - 'tests/stock-fights.test.mjs'
+      - 'tests/home-index.test.mjs'
+      - 'index.html'
+      - '.github/workflows/stock-fights-ci.yml'
+  push:
+    branches: [main, stock-fights-remake-20261022]
+    paths:
+      - 'stock-fights/**'
+      - 'tests/stock-fights.test.mjs'
+      - 'tests/home-index.test.mjs'
+      - 'index.html'
+      - '.github/workflows/stock-fights-ci.yml'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Syntax checks
+        run: |
+          node --check stock-fights/app.js
+          node --check stock-fights/engine.mjs
+          node --check stock-fights/roster.mjs
+          test -f stock-fights/index.html
+          test -f stock-fights/styles.css
+      - name: Regression tests
+        run: node --test tests/home-index.test.mjs tests/stock-fights.test.mjs
