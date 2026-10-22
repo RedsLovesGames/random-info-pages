@@ -58,7 +58,7 @@ test('folder counts, total and search metadata agree with all 21 archive links',
     total+=count;
   }
   assert.equal(total,21);
-  assert.match(html,/<b>20<\/b><span>Files<\/span>/);
+  assert.match(html,/<b>21<\/b><span>Files<\/span>/);
 });
 
 test('four exhibits are searchable in their requested folders', () => {
