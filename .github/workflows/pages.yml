@@ -51,6 +51,11 @@ jobs:
           grep -Fq 'id="searchDialog"' index.html
           grep -Fq 'href="./classic.html"' index.html
           grep -Fq 'data-archive-home' classic.html
+          test -f archive/index.html
+          test -f archive/archive-notice.css
+          grep -Fq 'href="../vct-scout/"' archive/index.html
+          grep -Fq 'href="../tideborne/"' archive/index.html
+          grep -Fq 'href="../tide2/"' archive/index.html
 
       - name: Verify VCT comp lab and tactical planner
         run: |
@@ -162,6 +167,9 @@ jobs:
           grep -Fq 'id="searchDialog"' /tmp/home.html
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/classic-home.html "$base/classic.html"
           grep -Fq 'data-archive-home' /tmp/classic-home.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/archive-home.html "$base/archive/"
+          grep -Fq 'href="../tideborne/"' /tmp/archive-home.html
+          grep -Fq 'href="../vct-scout/"' /tmp/archive-home.html
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid.html "$base/political-grid/"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid-app.js "$base/political-grid/app.js"
           grep -Fq 'id="statement-board"' /tmp/political-grid.html
@@ -198,7 +206,7 @@ jobs:
         run: |
           base="${SITE_URL%/}"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/school.html "$base/school-schedule/"
-          grep -Fq 'Fall 2026 School Schedule' /tmp/school.html
+          grep -Fq 'Class & Assignment Planner' /tmp/school.html
 
       - name: Check wheel
         env:
