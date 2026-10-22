@@ -7,7 +7,7 @@ let battle=null,playing=false,fastForward=false,accum=0,last=0,recorded=false,se
 let portraits={},images={},soundCtx=null,lastSound=0;
 try{portraits=JSON.parse(localStorage.getItem(portraitKey)||'{}')||{};}catch{portraits={};}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function portrait(id){if(!portraits[id])return null;if(!images[id]){const img=new Image();img.src=portraits[id];images[id]=img;}return images[id].complete&&images[id].naturalWidth?images[id]:null;}
+function portrait(id){if(!portraits[id])return null;if(!images[id]){const img=new Image();images[id]=img;img.onload=()=>{if(selected===id)chooseFighter(id);draw();};img.src=portraits[id];}return images[id].complete&&images[id].naturalWidth?images[id]:null;}
 function fillSelect(sel,choice){
   sel.replaceChildren();
   for(const f of fighters){const o=document.createElement('option');o.value=f.id;o.textContent=f.icon+' '+f.name;sel.append(o);}
@@ -84,6 +84,7 @@ function finishMatch(){
  $('result').hidden=false;
  $('resultTitle').textContent=battle.winner==='draw'?'DRAW':battle.winner==='left'?'LEFT WINS':'RIGHT WINS';
  $('resultText').textContent=battle.reason+'. Duration '+battle.time.toFixed(1)+'s'+(['challenge','endless'].includes(battle.mode)?'; Henchmen defeated: '+battle.defeated:'')+'.';
+ draw();showState(true);
  if(recorded)return;
  recorded=true;
  try{
@@ -114,7 +115,7 @@ function drawBackground(){
 }
 function glyph(p){
  const icons={spike:'🌵',emoji:'🖕',sleep:'💤',glasses:'🕶️',briefcase:'💼',paper:'📄',cleaver:'🔪',
- 'stuck-knife':'🔪',nail:'💅',card:'🃏',bottle:'🍾',rabbit:'🐇',gravity:'🪐',pong:'🏓',watermark:'@',
+ 'stuck-knife':'🔪','stuck-spike':'🌵',nail:'💅',card:'🃏',bottle:'🍾',rabbit:'🐇',gravity:'🪐',pong:'🏓',watermark:'@',
  clock:'🕒',bullet:'•',finger:'👉',car:'🚗',sound:'♫',pawn:'♟️',bishop:'♗',rook:'♜',queen:'♛',
  knightpiece:'♞',skeleton:'💀',hammer:'🔨',tape:'〰',pellet:'•',rocket:'🚀',firework:'🎆',
  syringe:'💉',note:'♫',cursor:'➤',rain:'💧',hail:'❄️',wind:'〰',burst:'✸'};
