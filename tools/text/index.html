@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#0b0b0a">
 <meta name="color-scheme" content="dark">
 <meta name="description" content="Clean, transform, analyze, compare and preview text locally.">
-<title>Text Studio · Toolbox</title>
+<title>Text Tools | Random Info Pages</title>
 <link rel="stylesheet" href="../shared/toolbox.css">
 <link rel="stylesheet" href="./text.css">
 </head>
 <body>
 <main class="text-shell">
-  <header class="text-head"><div><a class="tb-back" href="../">← Toolbox</a><div class="tb-kicker">04 / Text · Local input workspace</div><h1>Text Studio</h1><p><strong>Text Tools</strong> for cleanup, lists, find/replace, analysis, comparison and Markdown. One persistent input stays local while outputs and history remain available.</p></div><span class="text-badge">LOCAL ONLY</span></header>
+  <header class="text-head"><div><a class="tb-back" href="../">← Toolbox</a><div class="tb-kicker">04 / Text · Local input workspace</div><h1>Text Tools</h1><p><strong>Text Tools</strong> for cleanup, lists, find/replace, analysis, comparison and Markdown. One persistent input stays local while outputs and history remain available.</p></div><span class="text-badge">LOCAL ONLY</span></header>
   <section class="text-launcher" aria-label="Text tools"><button class="tb-toolicon text-launch active" type="button" data-mode="cleaner"><span class="tb-toolicon-icon">Aa</span><span class="tb-toolicon-label">Clean & Case</span></button><button id="listMode" class="tb-toolicon text-launch" type="button" data-mode="list"><span class="tb-toolicon-icon">≡</span><span class="tb-toolicon-label">Lists</span></button><button id="findReplaceTool" class="tb-toolicon text-launch" type="button" data-text-tool="find"><span class="tb-toolicon-icon">↔</span><span class="tb-toolicon-label">Find / Replace</span></button><button id="analyzeTool" class="tb-toolicon text-launch" type="button" data-text-tool="analyze"><span class="tb-toolicon-icon">Σ</span><span class="tb-toolicon-label">Analyze</span></button><button id="compareTool" class="tb-toolicon text-launch" type="button" data-text-tool="compare"><span class="tb-toolicon-icon">±</span><span class="tb-toolicon-label">Compare</span></button><button id="markdownMode" class="tb-toolicon text-launch" type="button" data-mode="markdown"><span class="tb-toolicon-icon">MD</span><span class="tb-toolicon-label">Markdown</span></button></section>
   <section id="cleanerPanel" class="text-panel">
     <div class="text-stats" aria-live="polite"><div class="text-stat"><strong id="wordCount">0</strong><span>Words</span></div><div class="text-stat"><strong id="characterCount">0</strong><span>Characters</span></div><div class="text-stat"><strong id="characterNoSpaceCount">0</strong><span>No spaces</span></div><div class="text-stat"><strong id="lineCount">0</strong><span>Lines</span></div></div>
