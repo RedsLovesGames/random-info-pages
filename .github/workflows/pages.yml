@@ -37,6 +37,7 @@ jobs:
       - name: Verify archive home
         run: |
           node --test tests/home-index.test.mjs
+          node --test tests/subpage-design.test.mjs
           node --test tests/fiction-workspace.test.mjs
           node --test tests/rodion-starter.test.mjs
           node --check fiction-workspace/app.js
@@ -216,7 +217,7 @@ jobs:
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wheel.html "$base/wheel/"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wheel-app.js "$base/wheel/app.js"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wheel-css.css "$base/wheel/styles.css"
-          grep -Fq 'Wheel · Random Info Pages' /tmp/wheel.html
+          grep -Fq 'Random Choice Wheel | Random Info Pages' /tmp/wheel.html
           grep -Fq 'id="entriesInput"' /tmp/wheel.html
           grep -Fq 'pickWeightedEntry' /tmp/wheel-app.js
           grep -Fq '.wheel-stage' /tmp/wheel-css.css
