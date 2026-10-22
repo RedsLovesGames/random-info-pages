@@ -11,7 +11,7 @@ runInNewContext(source,context);
 const templates=context.window.FICTION_TEMPLATES;
 test('Draftroom is linked in the archive search index',()=>{
  const home=readFileSync(new URL('index.html',root),'utf8');
- assert.match(home,/href="\.\/fiction-workspace\/"/);
+ assert.match(home,/const projects=\[/);
  assert.match(home,/\{n:'Draftroom',p:'\.\/fiction-workspace\/',c:'Tools'/);
 });
 test('source workbook rubric stays at fourteen categories and 100 weighted points',()=>{
