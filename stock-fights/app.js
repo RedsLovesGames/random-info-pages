@@ -2,11 +2,13 @@ import {fighters,byId,teams,labelForMode} from './roster.mjs';
 import {Battle,WIDTH,HEIGHT,ARENA} from './engine.mjs';
 import {referencePortraits} from './reference-portraits.mjs';
 import {createCombatAudio} from './audio.mjs';
+import {importFiles,readAssets,deleteAsset} from './assets.mjs';
 const $=id=>document.getElementById(id);
 const canvas=$('arena'),ctx=canvas.getContext('2d');
 const keys=Object.keys(teams), portraitKey='rip-stock-fights-portraits-v1',statsKey='rip-stock-fights-stats-v1';
 let battle=null,playing=false,fastForward=false,accum=0,last=0,recorded=false,selected='boxing';
 let portraits={},images={},failedImages=new Set(),soundFiles={},lastSound=0;
+const indexedPortraits={},indexedSounds={},assetObjectUrls=new Map();
 const audio=createCombatAudio();
 let heardProjectiles=new WeakSet(),heardEffects=new WeakSet();
 try{portraits=JSON.parse(localStorage.getItem(portraitKey)||'{}')||{};}catch{portraits={};}
@@ -14,6 +16,7 @@ try{soundFiles=JSON.parse(localStorage.getItem('rip-stock-fights-voices-v1')||'{
 for(const [id,url] of Object.entries(soundFiles))audio.setSample(id,url);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function portraitUrl(id){
+ if(indexedPortraits[id])return indexedPortraits[id];
  if(portraits[id])return portraits[id];
  return $('referencePhotos')?.checked ? (referencePortraits[id]||null) : null;
 }
@@ -30,6 +33,7 @@ function portrait(id){
  return images[id].complete&&images[id].naturalWidth>0?images[id]:null;
 }
 function imageState(id){
+ if(indexedPortraits[id])return 'Locally imported cutout (persistent)';
  if(portraits[id])return 'Local custom portrait';
  if(referencePortraits[id]&&$('referencePhotos').checked)
    return failedImages.has(id+'|'+referencePortraits[id])?'Reference image unavailable from remote host':'External source photo (loading or loaded)';
@@ -340,6 +344,11 @@ $('portraitUpload').addEventListener('change',event=>{
 });
 $('portraitClear').addEventListener('click',()=>{
  delete portraits[selected];delete images[selected];
+ if(indexedPortraits[selected]){
+   const id=selected,url=assetObjectUrls.get('image:'+id);
+   delete indexedPortraits[id];if(url)URL.revokeObjectURL(url);assetObjectUrls.delete('image:'+id);
+   deleteAsset(id,'image').catch(()=>{});
+ }
  try{localStorage.setItem(portraitKey,JSON.stringify(portraits));}catch{}
  chooseFighter(selected);draw();
 });
@@ -351,6 +360,32 @@ $('share').addEventListener('click',async()=>{
  catch{window.prompt('Copy the match link',url);}
  setTimeout(()=>$('share').textContent='COPY MATCH LINK ↗',1800);
 });
+async function restoreAssets(){
+ try{
+   const saved=await readAssets();
+   for(const kind of ['image','sound'])for(const [id,blob] of Object.entries(saved[kind])){
+     const key=kind+':'+id,previous=assetObjectUrls.get(key);
+     if(previous)URL.revokeObjectURL(previous);
+     const url=URL.createObjectURL(blob);assetObjectUrls.set(key,url);
+     if(kind==='image'){indexedPortraits[id]=url;delete images[id];}
+     else{indexedSounds[id]=url;audio.setSample(id,url);}
+   }
+   $('packCount').textContent=(Object.keys(indexedPortraits).length+Object.keys(indexedSounds).length)+' CUSTOM';
+   chooseFighter(selected);renderRoster();draw();
+ }catch(e){$('bulkStatus').textContent='Asset storage unavailable: '+String(e.message||e);}
+}
+$('bulkAssets').addEventListener('change',async e=>{
+ const files=[...(e.target.files||[])];e.target.value='';if(!files.length)return;
+ $('bulkStatus').textContent='Importing '+files.length+' assets...';
+ try{
+   const r=await importFiles(files,progress=>{$('bulkStatus').textContent='Saved '+progress.images+' images, '+progress.sounds+' sounds so far.';});
+   await restoreAssets();
+   $('bulkStatus').textContent='Imported '+r.images+' portraits, '+r.sounds+' sounds.'+
+      (r.unmatched.length?' Unmatched filenames: '+r.unmatched.slice(0,8).join(', ')+(r.unmatched.length>8?'…':'')+'.':'')+
+      (r.failed.length?' Errors: '+r.failed.slice(0,3).join('; '):'');
+ }catch(e){$('bulkStatus').textContent='Import failed: '+String(e.message||e);}
+});
+restoreAssets();
 renderRoster();
 modeSelect.dispatchEvent(new Event('change'));
 requestAnimationFrame(frame);
@@ -374,6 +409,11 @@ $('soundUpload').addEventListener('change',e=>{
 });
 $('soundClear').addEventListener('click',()=>{
  delete soundFiles[selected];audio.setSample(selected,null);
+ if(indexedSounds[selected]){
+   const id=selected,url=assetObjectUrls.get('sound:'+id);
+   delete indexedSounds[id];if(url)URL.revokeObjectURL(url);assetObjectUrls.delete('sound:'+id);
+   deleteAsset(id,'sound').catch(()=>{});
+ }
  try{localStorage.setItem('rip-stock-fights-voices-v1',JSON.stringify(soundFiles));}catch{}
  chooseFighter(selected);
 });
