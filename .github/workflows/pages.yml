@@ -46,10 +46,11 @@ jobs:
           node --check political-grid/overlap.js
           test -f political-grid/comparisons-schema.sql
           test -f political-grid/schema.sql
-          grep -Fq 'data-archive-home' index.html
+          grep -Fq 'id="fluidCanvas"' index.html
+          grep -Fq 'id="projectList"' index.html
           grep -Fq 'id="searchDialog"' index.html
-          grep -Fq 'data-folder="tools"' index.html
-          grep -Fq 'data-folder="experiments"' index.html
+          grep -Fq 'href="./classic.html"' index.html
+          grep -Fq 'data-archive-home' classic.html
 
       - name: Verify VCT comp lab and tactical planner
         run: |
@@ -156,8 +157,11 @@ jobs:
         run: |
           base="${SITE_URL%/}"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/home.html "$base/"
-          grep -Fq 'data-archive-home' /tmp/home.html
+          grep -Fq 'id="fluidCanvas"' /tmp/home.html
+          grep -Fq 'id="projectList"' /tmp/home.html
           grep -Fq 'id="searchDialog"' /tmp/home.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/classic-home.html "$base/classic.html"
+          grep -Fq 'data-archive-home' /tmp/classic-home.html
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid.html "$base/political-grid/"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid-app.js "$base/political-grid/app.js"
           grep -Fq 'id="statement-board"' /tmp/political-grid.html
