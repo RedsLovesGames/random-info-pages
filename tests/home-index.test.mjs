@@ -7,7 +7,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
 const routes = [
   './tools/', './fiction-workspace/', './wheel/', './whenwemeet/', './school-schedule/', './friends/',
-  './tideborne/', './tide2/', './vct-scout/', './oldasspolitic/',
+  './tideborne/', './tide2/', './vct-scout/', './stock-fights/', './oldasspolitic/',
   './heatmap/', './political-grid/', './infrastructure-atlas/', './wanuiv2/', './nerdcore-prompts/',
   './music-microscope/', './one-million/', './algorithm-arena/', './cryptography-museum/', './9-11-timeline/'
 ];
@@ -36,13 +36,13 @@ test('political grid is listed in the data folder and searchable', () => {
   assert.match(html, /data-folder="data"[\s\S]*?<span class="folder-count">06 files<\/span>/);
   assert.match(html, /href="\.\/political-grid\/"/);
   assert.match(html, /\{n:'Political Grid',p:'\.\/political-grid\/'/);
-  assert.match(html, /id="searchLabel">20 files/);
+  assert.match(html, /id="searchLabel">21 files/);
 });
 
-test('folder counts, total and search metadata agree with all 20 archive links', () => {
+test('folder counts, total and search metadata agree with all 21 archive links', () => {
   const index = runInNewContext(html.match(/const projects=(\[[\s\S]*?\]);/)[1]);
-  assert.equal(index.length, 20);
-  assert.equal(new Set(index.map(p=>p.p)).size, 20);
+  assert.equal(index.length, 21);
+  assert.equal(new Set(index.map(p=>p.p)).size, 21);
   let total=0;
   for (const folder of html.matchAll(/<details class="folder" data-folder="([^"]+)"[\s\S]*?<\/details>/g)) {
     const links=[...folder[0].matchAll(/class="file" href="([^"]+)"/g)].map(m=>m[1]);
@@ -57,7 +57,7 @@ test('folder counts, total and search metadata agree with all 20 archive links',
     }
     total+=count;
   }
-  assert.equal(total,20);
+  assert.equal(total,21);
   assert.match(html,/<b>20<\/b><span>Files<\/span>/);
 });
 
@@ -86,4 +86,9 @@ test('infrastructure atlas is linked, categorized under Data, and searchable', (
 test('9/11 timeline is categorized, linked, and searchable', () => {
   assert.match(html, /href="\.\/9-11-timeline\/"/);
   assert.match(html, /\{n:'A Day in Messages',p:'\.\/9-11-timeline\/',c:'Data'/);
+});
+
+test('Stock Fights is in Games and indexed', () => {
+  assert.match(html,/href="\.\/stock-fights\/"/);
+  assert.match(html,/\{n:'Stock Fights',p:'\.\/stock-fights\/',c:'Games'/);
 });
