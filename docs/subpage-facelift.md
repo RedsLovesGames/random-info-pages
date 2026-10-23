@@ -69,3 +69,13 @@ Five additional active applications have unique, use-case-specific improvements:
 Regression checks: `tests/fourth-pass-redesign.test.mjs`; deployed through the existing GitHub Pages workflow. All legacy app data and archive routes remain intact.
 
 Remaining bespoke projects: Novel Writing & Revision, AI Video Scene Director, and Nerdcore Song Prompt Builder. Rendered interaction and mobile QA are still needed across the collection.
+
+## Fifth pass: manuscript, songwriting and director workspaces
+
+* **Novel Writing & Revision (Draftroom)** — sticky workspace bar with optional focus mode that hides library navigation, plus one-click chapter creation and device-local JSON backup export. Existing auth, local work, and library controls are untouched.
+* **Nerdcore Song Prompt Builder** — meaning-first writer guide linking subject, thesis, and the actual live prompt, with a visible two-field completion meter; reference-corpus and prompt-generation logic remain unchanged.
+* **AI Video Scene Director (Emperor Director)** — native accessible workflow dialog with scene, reference, inspector and command-palette shortcuts. Explicitly explains that GitHub Pages simulates backend generation when disconnected; no video generation or queue code is altered.
+
+This completes an initial **bespoke design and interaction pass for all 19 active main projects**, in addition to the shared visual system and Toolbox utility navigation. Archived VCT Scout and the two Tideborne projects are excluded. Source-level regression coverage now includes `tests/fifth-pass-redesign.test.mjs`.
+
+**Still not complete:** real browser render verification at multiple device sizes, interaction playthroughs, screen reader review, and further quality tuning. Passing static and Node tests does not guarantee absence of CSS clipping or browser-only errors.
