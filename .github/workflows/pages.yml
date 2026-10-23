@@ -38,6 +38,7 @@ jobs:
         run: |
           node --test tests/home-index.test.mjs
           node --test tests/subpage-design.test.mjs
+          node --test tests/deep-redesign.test.mjs
           node --test tests/fiction-workspace.test.mjs
           node --test tests/rodion-starter.test.mjs
           node --check fiction-workspace/app.js
