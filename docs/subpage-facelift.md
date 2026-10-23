@@ -43,3 +43,14 @@ Deep-redesign regression tests: `tests/deep-redesign.test.mjs`. The Pages workfl
 * Accessibility testing with a screen reader and keyboard-only playthrough.
 
 * **U.S. Congress Age Explorer**: task-focused quick filters (all members, House, Senate, youngest, oldest), reset, clearer frozen-snapshot wording. The sourced congressional roster and profile links are unchanged.
+
+
+## Third pass: guided workflows in five more active applications
+
+* **Algorithm Visualizer** – three experiment launchers use the existing sorting and pathfinding engines without changing algorithms, data, or run metrics.
+* **100-Statement Political Survey** – explanation-first participation guide, clearly labeled X-selection progress, and selected-only statement review; no changes to question text or submission/storage models.
+* **Group Availability Planner** – optional study/dinner/hangout templates prefill a few schedule fields but never create or share an event automatically. Date selection and confirmation remain manual.
+* **September 11: Message Timeline** – restrained documentary chapter navigation to source-linked events already present in the chronology; no additional historical events, pager counts, or private messages are generated.
+* **Random Choice Wheel** – prominent touch-friendly Spin button delegates to original canvas logic; stage rows resize to retain the complete wheel and the existing presentation mode.
+
+Regression tests: `tests/third-pass-redesign.test.mjs`, invoked by the existing Pages workflow. Browser-rendered QA still required for exact sizing and focus order at all device widths.
