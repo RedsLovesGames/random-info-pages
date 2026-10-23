@@ -10,3 +10,11 @@ body[data-rip-page="wheel"] .spin-primary[disabled]{opacity:.6;cursor:progress;t
 .spin-cta .spin-primary span{font-size:23px;color:#17191d}
 @media(max-width:650px){body[data-rip-page="wheel"] .spin-cta{align-items:stretch;flex-direction:column;gap:11px;padding:15px}.spin-cta small{display:none}body[data-rip-page="wheel"] .spin-primary{width:100%;min-height:45px}}
 @media(prefers-reduced-motion:reduce){body[data-rip-page="wheel"] .spin-primary{transition:none}}
+
+/* Four explicit stage rows: heading, responsive wheel, status, primary action. */
+body[data-rip-page="wheel"] .wheel-stage{grid-template-rows:auto minmax(0,1fr) auto auto}
+@media(min-width:981px){
+ body[data-rip-page="wheel"] .wheel-shell canvas{width:min(calc(100dvh - 335px),calc(100vw - 430px),760px);max-width:94%;max-height:100%;object-fit:contain}
+}
+body[data-rip-page="wheel"].presentation .spin-cta{display:none}
+body[data-rip-page="wheel"].presentation .workspace{height:calc(100dvh - 111px)}
