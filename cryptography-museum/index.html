@@ -3,11 +3,20 @@
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
-</head>
+<link rel="stylesheet" href="./visitor-route.css"><script src="./visitor-route.js" defer></script></head>
 <body data-rip-page="cryptography-museum"><a class="skip" href="#exhibit">Skip to the exhibit</a>
 <header class="masthead"><a class="identity" href="#caesar"><span class="seal" aria-hidden="true">C<span>✳</span>M</span><span>THE CRYPTOGRAPHY<br><strong>MUSEUM</strong></span></a><div class="header-note">A collection of secrets.<br><span>Open to the curious.</span></div><a href="../" class="archive-link">← All projects</a></header>
 <div class="museum-shell"><aside><p class="eyebrow">The permanent collection</p><nav id="navigation" aria-label="Exhibits"></nav><div class="passport"><div class="eyebrow">Your visitor’s passport</div><p><strong id="progress-count">0 / 7</strong> exhibits explored</p><progress id="progress" max="7" value="0" aria-label="Exhibits explored"></progress><p id="challenge-progress">0 challenges solved</p><button class="text-button" id="reset-progress">Reset passport</button><p class="tiny" id="storage-note">Saved only on this device.</p></div><div class="aside-foot">EST. IN CURIOSITY<br>NO SECRETS LEAVE YOUR BROWSER</div></aside>
 <main><section class="introduction"><p class="eyebrow">Mathematics · Machines · Human ingenuity</p><h1>The art of<br><em>keeping secrets.</em></h1><p>Turn the wheels. Trace the wires. Break a code.<br>Explore the ideas that changed how we trust one another.</p><div class="intro-rule"><span>SEVEN WORKING EXHIBITS</span><span>AN INTERACTIVE COLLECTION ↘</span></div></section>
+<section class="museum-paths" aria-labelledby="museumPathsTitle">
+  <div class="museum-paths-intro"><div><p class="museum-eyebrow">VISITOR GUIDE / YOUR ROUTE</p><h2 id="museumPathsTitle">A museum you can <em>touch.</em></h2></div><p>Choose an exhibit to begin. The experiments run locally, and your visitor passport remembers which rooms you explore on this device.</p></div>
+  <div class="museum-path-cards" role="group" aria-label="Choose a starting exhibition">
+   <a href="#caesar"><span>01 / ANCIENT IDEAS</span><strong>Shift the alphabet.</strong><small>Begin with the Caesar cipher and the idea of a shared secret.</small><b aria-hidden="true">↗</b></a>
+   <a href="#enigma"><span>02 / MECHANICAL CODES</span><strong>Turn a rotor.</strong><small>Follow letters through a model of the Enigma mechanism.</small><b aria-hidden="true">↗</b></a>
+   <a href="#hashing"><span>03 / DIGITAL TRUST</span><strong>See the avalanche.</strong><small>Change one character and inspect how its hash changes.</small><b aria-hidden="true">↗</b></a>
+  </div>
+  <div class="museum-continue"><span>YOUR PROGRESS / <strong id="museumTourProgress">0 of 7 visited</strong></span><a id="museumTourNext" href="#caesar">Continue to the next unvisited exhibit ↗</a></div>
+</section>
 <div class="timeline" aria-label="Historical timeline"><a href="#caesar"><small>ANCIENT ROME</small>Shift a letter</a><a href="#substitution"><small>9TH CENTURY</small>Count a pattern</a><a href="#vigenere"><small>16TH CENTURY</small>Repeat a key</a><a href="#enigma"><small>20TH CENTURY</small>Turn a rotor</a><a href="#public-key"><small>1970s → TODAY</small>Share the trust</a></div>
 <article id="exhibit" tabindex="-1"></article><footer><span>THE CRYPTOGRAPHY MUSEUM</span><span>A local, interactive collection. Historical ciphers are educational.</span></footer></main></div>
 <noscript><p>This interactive collection needs JavaScript enabled. No account or network service is required.</p></noscript><script type="module" src="./app.js"></script></body></html>

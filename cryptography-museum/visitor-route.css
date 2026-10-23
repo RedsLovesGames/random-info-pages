@@ -1,0 +1,19 @@
+/* Cryptography Museum / distinct visitor journeys and gallery-scale editorial spacing */
+.museum-paths{margin:25px 0 32px;background:#e7eadf;border:1px solid #b5c3aa;padding:clamp(18px,2.5vw,34px);color:#183b35}
+.museum-paths-intro{display:grid;grid-template-columns:1.1fr .9fr;align-items:end;gap:22px;padding-bottom:22px;border-bottom:1px solid #b8c5b2}
+.museum-eyebrow,.museum-path-cards a>span{font:750 10px/1.5 ui-monospace,Consolas,monospace;color:#7a6130;letter-spacing:.07em}
+.museum-paths h2{font:400 clamp(29px,3.6vw,55px)/.99 Georgia,serif;letter-spacing:-.055em;margin:9px 0 0}
+.museum-paths h2 em{color:#97753e}
+.museum-paths-intro p:not(.museum-eyebrow){margin:0;color:#4f645b;font:13px/1.65 system-ui,sans-serif;max-width:49ch}
+.museum-path-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:19px 0}
+.museum-path-cards a{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:21px 28px 21px 17px;min-height:177px;border:1px solid #bbc6b7;text-decoration:none;color:#183b35;background:#f6f4ea;transition:transform .22s,background .22s,border-color .22s}
+.museum-path-cards a:hover{background:#dbe5d7;border-color:#749279;transform:translateY(-2px)}
+.museum-path-cards a:focus-visible,.museum-continue a:focus-visible{outline:3px solid #8d7047;outline-offset:3px}
+.museum-path-cards a strong{font:400 clamp(21px,2.3vw,32px)/1.08 Georgia,serif;letter-spacing:-.05em}
+.museum-path-cards a small{font:12px/1.55 system-ui,sans-serif;color:#596d62}
+.museum-path-cards a b{position:absolute;right:12px;top:17px;font:23px Georgia,serif;color:#997840}
+.museum-continue{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px 0 0;border-top:1px solid #b8c5b2;font:750 11px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.02em;color:#596d62}
+.museum-continue strong{color:#183b35}
+.museum-continue a{color:#183b35;text-decoration:underline;text-underline-offset:4px}
+@media(max-width:800px){.museum-paths-intro{grid-template-columns:1fr}.museum-path-cards{grid-template-columns:1fr}.museum-path-cards a{min-height:0;gap:7px}}
+@media(prefers-reduced-motion:reduce){.museum-path-cards a{transition:none}}
