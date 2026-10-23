@@ -11,12 +11,22 @@
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
+<link rel="stylesheet" href="./learning-path.css">
+<script src="./learning-path.js" defer></script>
 </head>
 <body data-rip-page="algorithm-arena">
   <header class="topbar"><a href="../">← Random Info Pages</a><span>COMPUTATION LAB · 03</span><a href="#sound">SOUND ENGINE ↓</a></header>
   <main>
     <section class="hero"><div><p class="kicker"><i></i> LIVE SYSTEMS / 01—03</p><h1>Algorithm<br><em>Arena.</em></h1><p class="hero-dek">Same inputs. Different strategies. Watch the work, count the operations, and hear each algorithm make its choices.</p></div><aside><span>THE RULE</span><p>Animation time is not execution time. Each lab reports the calculation separately from its playback.</p></aside></section>
 
+    <section class="learning-path" aria-labelledby="learningPathTitle">
+      <div class="learning-header"><div><span class="learning-index">BEGIN HERE / INTERACTIVE LESSONS</span><h2 id="learningPathTitle">Choose a question, <em>watch the answer.</em></h2></div><p>Start with an experiment. Controls below remain fully adjustable, and every run uses the real algorithms.</p></div>
+      <div class="learning-cards">
+        <button type="button" data-learning="sort-random"><span class="learning-number">01 / SORTING</span><strong>What makes a sort slow?</strong><small>Run six algorithms on the same randomly ordered array.</small><span class="learning-arrow">Start experiment ↗</span></button>
+        <button type="button" data-learning="sort-reverse"><span class="learning-number">02 / SORTING</span><strong>What if the list starts backward?</strong><small>See which methods struggle when the input is reversed.</small><span class="learning-arrow">Run comparison ↗</span></button>
+        <button type="button" data-learning="path-weight"><span class="learning-number">03 / PATHFINDING</span><strong>Does the shortest route cost less?</strong><small>Compare weighted pathfinding strategies using the editable grid.</small><span class="learning-arrow">Explore paths ↗</span></button>
+      </div>
+    </section>
     <nav class="lab-tabs" aria-label="Laboratories"><a href="#sorting" aria-current="page">01 Sorting <span>06 methods</span></a><a href="#pathfinding">02 Pathfinding <span>04 searches</span></a><a href="#graphs">03 Graphs <span>01 network</span></a></nav>
 
     <section id="sorting" class="lab-section" aria-labelledby="sorting-title">

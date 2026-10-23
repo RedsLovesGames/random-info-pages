@@ -1,0 +1,17 @@
+/* Algorithm Visualizer / editorial learning entry without touching compute engine */
+body[data-rip-page="algorithm-arena"] .learning-path{margin:0 0 35px;border:1px solid rgba(191,226,215,.24);background:#182623;padding:clamp(18px,2.4vw,34px);color:#f3f7f0}
+.learning-header{display:grid;grid-template-columns:1.25fr 1fr;align-items:end;gap:25px;padding-bottom:22px;border-bottom:1px solid rgba(191,226,215,.24)}
+.learning-index,.learning-number{font:700 10px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.07em;color:#9cdec6}
+.learning-header h2{font-size:clamp(31px,3.8vw,60px);letter-spacing:-.075em;line-height:.97;margin:12px 0 0;font-weight:650}
+.learning-header h2 em{font-weight:400;font-family:Georgia,serif}
+.learning-header p{font-size:13px;line-height:1.6;color:#b6c9c2;margin:0;max-width:43ch}
+.learning-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:20px}
+.learning-cards button{display:flex;flex-direction:column;align-items:flex-start;gap:13px;text-align:left;min-height:206px;border:1px solid #435b50;background:#1e302b;color:#f3f7f0;padding:20px;cursor:pointer;transition:background .2s,transform .2s,border-color .2s}
+.learning-cards button:hover{background:#2b463d;border-color:#9cdec6;transform:translateY(-3px)}
+.learning-cards button:focus-visible{outline:3px solid #9cdec6;outline-offset:3px}
+.learning-cards strong{font-size:clamp(18px,2.2vw,29px);line-height:1.09;letter-spacing:-.055em;font-weight:600}
+.learning-cards small{font-size:12px;line-height:1.55;color:#acc4ba;max-width:30ch}
+.learning-cards .learning-arrow{margin-top:auto;color:#9cdec6;font-size:11px;font-weight:750}
+#sorting,#pathfinding,#graphs{scroll-margin-top:85px}
+@media(max-width:900px){.learning-header{grid-template-columns:1fr}.learning-cards{grid-template-columns:1fr}.learning-cards button{min-height:0;gap:8px}}
+@media(prefers-reduced-motion:reduce){.learning-cards button{transition:none}}
