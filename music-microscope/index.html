@@ -11,13 +11,27 @@
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
+<link rel="stylesheet" href="./listening-guide.css">
 </head>
 <body data-rip-page="music-microscope">
   <header class="masthead"><a href="../">← Random Info Pages</a><span>MUSIC MICROSCOPE <b>LOCAL LAB / 01</b></span><span class="privacy-mark"><i></i> AUDIO STAYS ON THIS DEVICE</span></header>
   <main>
     <section class="intro"><div><p class="eyebrow">SIGNAL ANALYSIS / BROWSER INSTRUMENT</p><h1>Music<br><em>Microscope.</em></h1><p class="intro-copy">Look closer at sound. Read its shape, frequency and level; test what a filter changes. All audio processing stays in this browser.</p></div><div class="track-summary"><span class="summary-label">CURRENT RECORDING</span><h2 id="trackName">No recording loaded</h2><p id="trackStatus" role="status" aria-live="polite">Choose a local file or generate the example recording.</p></div></section>
 
-    <section class="source-row" aria-label="Audio input">
+    <section class="instrument-start" aria-label="Getting started">
+  <div class="instrument-start-header"><span>HOW TO USE THIS INSTRUMENT</span><strong>01 / Load &nbsp; 02 / Look &nbsp; 03 / Experiment</strong></div>
+  <div class="instrument-start-steps">
+   <a href="#audioInputSection"><span>01 / SOURCE</span><strong>Load a recording</strong><small>Use an audio file or the generated example.</small><b aria-hidden="true">↗</b></a>
+   <a href="#wave-title"><span>02 / ANALYSIS</span><strong>Read the signal</strong><small>Inspect amplitude, frequency, and stereo information.</small><b aria-hidden="true">↗</b></a>
+   <a href="#filter-title"><span>03 / EXPERIENCE</span><strong>Hear the difference</strong><small>Change the playback filter without altering the file.</small><b aria-hidden="true">↗</b></a>
+  </div>
+  <details class="instrument-help"><summary>What do the displays actually mean? <span aria-hidden="true">⌄</span></summary><div class="instrument-help-grid">
+   <p><strong>Waveform</strong>The height of the wave shows changes in audio amplitude through time. It does not identify individual notes.</p>
+   <p><strong>Spectrogram</strong>Brightness shows how much energy appears at each frequency over time. Harmonics can appear above a note's fundamental frequency.</p>
+   <p><strong>Live spectrum</strong>The spectrum summarizes the frequency content around the current playback position. It changes as the music plays.</p>
+  </div></details>
+ </section>
+    <section class="source-row" id="audioInputSection" aria-label="Audio input">
       <label class="dropzone" id="dropzone" for="audioFile"><span class="upload-icon">↑</span><span><b>Drop an audio file here</b><small>Or browse your device · audio remains local</small></span><span class="file-types">WAV · MP3 · AAC · OGG · FLAC*<br><small>*browser decoding varies</small></span><input id="audioFile" type="file" accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac,.aiff,.webm"></label>
       <button id="exampleButton" class="example-button" type="button"><span>∿</span><b>Load original example</b><small>12 seconds · generated here</small></button>
       <div class="track-facts" id="trackFacts" aria-label="Recording properties"><span><b id="durationFact">—</b>DURATION</span><span><b id="sampleRateFact">—</b>SAMPLE RATE</span><span><b id="channelsFact">—</b>CHANNELS</span><span><b id="formatFact">—</b>FORMAT</span></div>

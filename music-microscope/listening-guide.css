@@ -1,0 +1,24 @@
+/* Music Microscope / quiet Swiss-style instrument onboarding */
+.instrument-start{margin:0 0 25px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#142021}
+.instrument-start-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:14px 17px;border-bottom:1px solid var(--line);font:700 10px/1.5 var(--mono);letter-spacing:.09em;color:var(--teal)}
+.instrument-start-header strong{color:#b6c7c2;font:500 10px var(--mono)}
+.instrument-start-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.instrument-start-steps a{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-decoration:none;min-height:141px;padding:20px 35px 20px 18px;border-right:1px solid var(--line);background:transparent;transition:background .2s,border-color .2s}
+.instrument-start-steps a:last-child{border-right:0}
+.instrument-start-steps a:hover{background:#213233;color:var(--ink)}
+.instrument-start-steps a:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
+.instrument-start-steps a span{font:700 9px/1.4 var(--mono);letter-spacing:.07em;color:var(--teal)}
+.instrument-start-steps a strong{font:500 clamp(18px,2vw,28px)/1.07 var(--serif);letter-spacing:-.04em;color:#eef5ec}
+.instrument-start-steps a small{max-width:32ch;font:12px/1.5 var(--sans);color:#a9b8b3}
+.instrument-start-steps a b{position:absolute;right:16px;top:19px;font:22px var(--serif);color:var(--teal)}
+.instrument-help{border-top:1px solid var(--line);color:var(--muted)}
+.instrument-help summary{display:flex;align-items:center;justify-content:space-between;gap:15px;cursor:pointer;padding:14px 18px;font:650 12px var(--sans);color:#d2e0db;list-style:none}
+.instrument-help summary::-webkit-details-marker{display:none}
+.instrument-help summary span{font-size:21px;color:var(--teal);transition:transform .2s}
+.instrument-help[open] summary span{transform:rotate(180deg)}
+.instrument-help-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;border-top:1px solid var(--line);padding:19px}
+.instrument-help-grid p{margin:0;font:12px/1.65 var(--sans)}
+.instrument-help-grid strong{display:block;color:#e1e8e2;margin-bottom:5px;font-size:13px}
+#audioInputSection,.visual-section,.experiment-section{scroll-margin-top:75px}
+@media(max-width:740px){.instrument-start-steps{grid-template-columns:1fr}.instrument-start-steps a{min-height:105px;border-right:0;border-bottom:1px solid var(--line);padding:18px 40px 17px 18px}.instrument-start-steps a:last-child{border-bottom:0}.instrument-help-grid{grid-template-columns:1fr;gap:14px}.instrument-start-header strong{display:none}}
+@media(prefers-reduced-motion:reduce){.instrument-start-steps a,.instrument-help summary span{transition:none}}
