@@ -43,13 +43,14 @@ svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.7;fill:none;stroke
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
-</head>
+<link rel="stylesheet" href="./director-guide.css"><script src="./director-guide.js" defer></script></head>
 <body data-rip-page="wanuiv2">
 <div class="app" id="app">
   <header class="topbar">
     <div class="brand"><span class="brand-mark"><i>E</i></span><span>EMPEROR <small>DIRECTOR</small></span></div>
     <div class="top-center"><button class="project-switcher" id="projectSwitcher"><span>PROJECT</span><b>TEST FILM / SCENE 04</b><span>⌄</span></button></div>
     <div class="top-actions">
+      <button class="director-help-trigger" id="directorHelpBtn" type="button" aria-haspopup="dialog">Workflow <span aria-hidden="true">?</span></button>
       <button class="ghost-btn" id="cmdBtn"><span>⌕</span> Command <span class="key">Ctrl K</span></button>
       <button class="icon-btn" id="chatToggle" title="Director chat"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></button>
       <button class="icon-btn" id="inspectorToggle" title="Inspector"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM14 4v16"/></svg></button>
@@ -156,6 +157,16 @@ svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.7;fill:none;stroke
   <div class="toast-stack" id="toasts"></div>
   <div class="demo-banner hidden" id="demoBanner">● PREVIEW MODE · backend calls are simulated on GitHub Pages</div>
 </div>
+<dialog class="director-help" id="directorHelpDialog" aria-labelledby="directorHelpTitle">
+ <div class="director-help-head"><div><span class="director-help-index">EMPEROR DIRECTOR / OPERATOR GUIDE</span><h2 id="directorHelpTitle">Direct the shot,<br><em>not the interface.</em></h2></div><button id="directorHelpClose" type="button" aria-label="Close workflow guide">Close ×</button></div>
+ <div class="director-help-steps">
+  <button type="button" data-director-jump="scene"><span>01 / DEFINE</span><strong>Write the scene brief</strong><small>Describe subject, setting, camera movement and continuity constraints.</small></button>
+  <button type="button" data-director-jump="references"><span>02 / GROUND</span><strong>Add visual references</strong><small>Bring in reference imagery before planning a shot.</small></button>
+  <button type="button" data-director-jump="inspector"><span>03 / INSPECT</span><strong>Review shot details</strong><small>Check the shot plan, prompt, camera motion and QA indicators.</small></button>
+  <button type="button" data-director-jump="commands"><span>04 / OPERATE</span><strong>Open the command palette</strong><small>Find actions without searching through panels.</small></button>
+ </div>
+ <p class="director-help-note"><strong>Preview on GitHub Pages:</strong> Backend-dependent generation is simulated when a compatible service is not connected. A demo render is not an actual generated video. The existing app indicates its active connection mode.</p>
+</dialog>
 <script>
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 let references = [], history = [], selectedReference = null, liveApi = false, chatOpen = true;
