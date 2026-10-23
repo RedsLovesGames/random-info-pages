@@ -1,0 +1,18 @@
+/* Draftroom / deliberate manuscript-focused workspace controls */
+.writing-desk-bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);background:rgba(245,244,237,.96);backdrop-filter:blur(10px);padding:13px clamp(22px,5vw,74px)}
+.writing-desk-label{display:flex;flex-direction:column;gap:3px}
+.writing-desk-label span{font:750 9px/1.5 ui-monospace,Consolas,monospace;color:#527651;letter-spacing:.08em}
+.writing-desk-label strong{font-size:13px;letter-spacing:-.045em;color:#344737;font-weight:650}
+.writing-desk-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.writing-desk-actions button{border:1px solid #bccbb1;padding:10px 12px;background:#fdfdf8;color:#23412c;font:750 11px/1.3 var(--sans);cursor:pointer;transition:background .2s,border-color .2s}
+.writing-desk-actions button:hover{background:#e4eddb;border-color:#66835e}
+.writing-desk-actions #focusWriter{background:#223b2a;color:#e6f4dc;border-color:#223b2a}
+.writing-desk-actions #focusWriter[aria-pressed="true"]{background:#c7f277;border-color:#c7f277;color:#203221}
+.writing-desk-actions button:focus-visible{outline:2px solid #315b47;outline-offset:3px}
+body[data-rip-page="fiction-workspace"] .workspace.writer-focus{grid-template-columns:minmax(0,1fr)}
+body[data-rip-page="fiction-workspace"] .workspace.writer-focus>.sidebar{display:none}
+body[data-rip-page="fiction-workspace"] .workspace.writer-focus .main-inner{max-width:890px}
+body[data-rip-page="fiction-workspace"] .workspace.writer-focus .writing-desk-bar{justify-content:space-between}
+@media(max-width:800px){.writing-desk-bar{position:relative;gap:8px;padding:12px 18px}.writing-desk-actions{width:100%}.writing-desk-actions button{flex:1;min-height:43px}body[data-rip-page="fiction-workspace"] .workspace.writer-focus>.sidebar{display:none}}
+@media(max-width:530px){.writing-desk-actions{display:grid;grid-template-columns:1fr 1fr}.writing-desk-actions #backupQuick{grid-column:1/-1}}
+@media(prefers-reduced-motion:reduce){.writing-desk-actions button{transition:none}}

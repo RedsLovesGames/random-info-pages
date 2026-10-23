@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
-</head>
+<link rel="stylesheet" href="./writing-desk.css"><script src="./writing-desk.js" defer></script></head>
 <body data-rip-page="fiction-workspace">
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="loginScreen" class="auth-layout">
@@ -30,7 +30,10 @@
   <div class="side-group chapter-group"><div class="group-heading"><span>Chapters</span><button type="button" id="addChapter" title="New chapter" aria-label="Add chapter">+</button></div><label for="chapterSort" class="sr-only">Sort chapters</label><select id="chapterSort" class="side-select"><option value="order">Manuscript order</option><option value="updated">Recently edited</option><option value="title">A to Z</option><option value="status">Status</option></select><div id="chapterList" class="chapter-list"></div></div>
   <div class="side-bottom"><div class="account-caption">Local profile <b id="accountName"></b></div><button class="side-action" type="button" id="exportBtn">↗ &nbsp; Export backup</button><button class="side-action" type="button" id="importBtn">↓ &nbsp; Import backup</button><button class="side-action" type="button" id="signoutBtn">⇥ &nbsp; Lock workspace</button><p>Saved to this browser only. Export regularly.</p></div>
 </aside>
-<main id="main" class="main"><div id="mainContent" class="main-inner"></div></main>
+<main id="main" class="main"><div class="writing-desk-bar" aria-label="Writing desk actions">
+ <div class="writing-desk-label"><span>YOUR WRITING DESK / DEVICE-LOCAL</span><strong>Keep the page, lose the clutter.</strong></div>
+ <div class="writing-desk-actions"><button id="focusWriter" type="button" aria-pressed="false">Focus mode ↗</button><button id="newChapterQuick" type="button">+ New chapter</button><button id="backupQuick" type="button">Export backup ↗</button></div>
+</div><div id="mainContent" class="main-inner"></div></main>
 </div>
 <input id="backupFile" type="file" accept=".json,application/json" hidden>
 <dialog id="newReviewDialog" class="modal"><form id="reviewForm"><div class="eyebrow">NEW CHECKLIST</div><h2>Choose a review.</h2><p class="subtle">Add as many separate reviews as you need. They each keep their own scores and notes.</p><label for="newReviewType">Template</label><select id="newReviewType"></select><label for="newReviewName">Name</label><input type="text" id="newReviewName" maxlength="100" placeholder="First pass / scene 2 / final review"><div class="dialog-actions"><button class="ghost" type="button" id="cancelReview">Cancel</button><button class="primary" type="submit">Add checklist</button></div></form></dialog>
