@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
+<link rel="stylesheet" href="./spin-experience.css">
+<script src="./spin-experience.js" defer></script>
 </head>
 <body data-rip-page="wheel">
 <header class="topbar">
@@ -34,7 +36,7 @@
       <div class="spin-hint" aria-hidden="true"><strong>Click to spin</strong><span>Press Space or Enter</span></div>
       <img class="center-image hidden" id="centerImageOverlay" alt="Wheel center image">
     </div>
-    <div class="status" id="status" aria-live="polite"></div>
+    <div class="status" id="status" aria-live="polite"></div><div class="spin-cta"><div><span>RANDOM CHOICE / LOCAL</span><strong>Ready when you are.</strong><small>Your entries are editable in the panel. Previous winners are kept under Results.</small></div><button type="button" id="spinPrimary" class="spin-primary">Spin the wheel <span aria-hidden="true">↗</span></button></div>
   </section>
 
   <aside class="side-panel">
