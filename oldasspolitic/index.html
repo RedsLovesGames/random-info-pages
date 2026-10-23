@@ -14,12 +14,25 @@
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
+<link rel="stylesheet" href="./explore-controls.css">
+<script src="./explore-controls.js" defer></script>
 </head>
 <body data-rip-page="oldasspolitic">
 <div class="shell">
 <div class="top"><a class="brand" href="../">← Random Info Pages</a><div class="status" id="topStatus">loading frozen roster</div></div>
-<section class="hero"><div class="eyebrow">U.S. Congress explorer</div><h1>Congress<br>Age Explorer.</h1><p>Search the current House and Senate by member, state, party, chamber, and age. Every card opens a full profile page. The congressional roster is intentionally frozen to one verified snapshot and will not change until the repo is manually refreshed.</p><div class="snapshot">Snapshot: Sep 24, 2026 · source revision 577ca04282d1</div></section>
-<div class="controls">
+<section class="hero"><div class="eyebrow">U.S. Congress explorer</div><h1>Congress<br>Age Explorer.</h1><p>Explore a frozen congressional roster by member, state, party, chamber, and age. Open a profile to inspect each member. The roster reflects the September 24, 2026 snapshot, not continuously updated membership.</p><div class="snapshot">Snapshot: Sep 24, 2026 · source revision 577ca04282d1</div></section>
+<div class="congress-explore" aria-label="Quick Congressional views">
+   <div><span class="congress-kicker">EXPLORE THE SNAPSHOT</span><strong>Find a perspective.</strong></div>
+   <div class="congress-presets" role="group" aria-label="Quick filters">
+     <button type="button" data-congress-preset="all" aria-pressed="true">All members</button>
+     <button type="button" data-congress-preset="House" aria-pressed="false">House</button>
+     <button type="button" data-congress-preset="Senate" aria-pressed="false">Senate</button>
+     <button type="button" data-congress-preset="ageAsc" aria-pressed="false">Youngest first</button>
+     <button type="button" data-congress-preset="ageDesc" aria-pressed="true">Oldest first</button>
+   </div>
+   <button type="button" id="clearCongressFilters" class="congress-clear">Reset filters ↗</button>
+ </div>
+ <div class="controls">
 <input class="field" id="search" type="search" placeholder="Search name, state, district..." aria-label="Search members">
 <select class="field" id="chamber"><option value="all">House + Senate</option><option value="House">House</option><option value="Senate">Senate</option></select>
 <select class="field" id="party"><option value="all">All parties</option><option value="Democrat">Democrat</option><option value="Republican">Republican</option><option value="Independent">Independent</option></select>

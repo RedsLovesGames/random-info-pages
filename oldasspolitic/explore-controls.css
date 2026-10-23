@@ -1,0 +1,18 @@
+/* Congress Age Explorer / navigation that complements existing precise filters */
+.congress-explore{margin-top:18px;display:grid;grid-template-columns:minmax(160px,.8fr) minmax(0,2fr) auto;align-items:center;gap:14px;padding:17px 20px;background:#121b27;border:1px solid rgba(255,255,255,.14);border-radius:10px}
+.congress-explore>div:first-child{display:grid;gap:4px}
+.congress-kicker{font:500 10px/1.5 "DM Mono",monospace;color:#dbeea1;letter-spacing:.06em}
+.congress-explore strong{font-size:clamp(16px,1.9vw,25px);line-height:1.05;font-weight:650;letter-spacing:-.055em}
+.congress-presets{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.congress-presets button,.congress-clear{border:1px solid #39485b;background:#0c131c;color:#d2dce9;padding:9px 11px;min-height:39px;border-radius:4px;font:650 11px/1.2 "Manrope",system-ui,sans-serif;cursor:pointer;transition:color .18s,border-color .18s,background .18s}
+.congress-presets button:hover,.congress-clear:hover{border-color:#e6ff62}
+.congress-presets button[aria-pressed="true"]{border-color:#e6ff62;color:#e6ff62;background:#2a3323}
+.congress-clear{white-space:nowrap;background:transparent}
+.congress-explore button:focus-visible{outline:2px solid #e6ff62;outline-offset:3px}
+body[data-rip-page="oldasspolitic"] .controls{margin-top:11px}
+body[data-rip-page="oldasspolitic"] .hero{border-radius:11px;box-shadow:none}
+body[data-rip-page="oldasspolitic"] :where(.stat,.panel,.member){border-radius:7px}
+body[data-rip-page="oldasspolitic"] .stat strong{font-size:clamp(25px,2.7vw,40px);letter-spacing:-.06em}
+@media(max-width:1000px){.congress-explore{grid-template-columns:1fr auto}.congress-presets{grid-column:1/-1;grid-row:2}.congress-clear{grid-column:2;grid-row:1}}
+@media(max-width:620px){.congress-explore{display:flex;flex-direction:column;align-items:stretch;padding:15px}.congress-presets{gap:6px}.congress-presets button{flex:1 1 auto}.congress-clear{align-self:flex-start}}
+@media(prefers-reduced-motion:reduce){.congress-presets button,.congress-clear{transition:none}}
