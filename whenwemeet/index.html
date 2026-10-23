@@ -7,10 +7,19 @@
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
-</head><body data-rip-page="whenwemeet">
+<link rel="stylesheet" href="./event-presets.css"><script src="./event-presets.js" defer></script></head><body data-rip-page="whenwemeet">
 <header class="site-header"><a class="brand" href="./"><span class="brand-mark"><span></span><span></span><span></span></span><span>WhenWeMeet</span></a><nav class="header-actions"><button class="button ghost compact" id="new-event-button" type="button" hidden>New event</button></nav></header>
 <main>
 <section id="create-view" class="create-view"><div class="hero-copy"><p class="eyebrow">Group scheduling</p><h1>Find a time that works.</h1><p class="hero-lead">Create an event or open an active one below.</p></div>
+<section class="event-start" aria-labelledby="eventStartTitle">
+ <div class="event-start-intro"><span>START SIMPLE / CHOOSE A FORMAT</span><h2 id="eventStartTitle">What kind of time are we finding?</h2><p>Pick a starting point, then edit the details below. Nothing gets shared until you create an event.</p></div>
+ <div class="event-start-options" role="group" aria-label="Event setup suggestions">
+  <button type="button" data-event-preset="study" aria-pressed="false"><span class="event-option-index">01 / WEEKDAY</span><strong>Study session</strong><small>One hour, after classes.</small><span class="event-option-arrow" aria-hidden="true">↗</span></button>
+  <button type="button" data-event-preset="dinner" aria-pressed="false"><span class="event-option-index">02 / EVENING</span><strong>Dinner plans</strong><small>90 minutes in the evening.</small><span class="event-option-arrow" aria-hidden="true">↗</span></button>
+  <button type="button" data-event-preset="hangout" aria-pressed="false"><span class="event-option-index">03 / FLEXIBLE</span><strong>Group hangout</strong><small>Two-hour afternoon or evening.</small><span class="event-option-arrow" aria-hidden="true">↗</span></button>
+ </div>
+ <p id="eventPresetStatus" class="event-preset-status" role="status" aria-live="polite">Choose a template or fill the event form manually.</p>
+</section>
 <form id="create-form" class="create-card" novalidate><div class="card-heading"><div><p class="step-label">Create an event</p><h2>What are you planning?</h2></div></div>
 <div class="field full"><label for="event-title">Event name</label><input id="event-title" maxlength="80" placeholder="D&D, dinner, study…" required></div>
 <div class="field full"><label for="event-description">Note <span class="optional">optional</span></label><input id="event-description" maxlength="160" placeholder="Anything the group should know"></div>
