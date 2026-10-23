@@ -11,3 +11,10 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 @media(max-width:700px){.tb-shell{width:min(100% - 24px,1180px)}.tb-nav{min-height:56px}.tb-hero{padding:44px 0 26px}.tb-title{font-size:clamp(3.5rem,18vw,6rem)}.tb-grid{grid-template-columns:1fr;padding-bottom:50px}.tb-card{min-height:210px}.tb-recent{width:100%;margin-left:0}.tb-workspace{padding-top:24px}.tb-toolgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.tb-toolicon{min-height:92px}.tb-exportbar{bottom:8px}.tb-command-foot{align-items:flex-start;flex-direction:column}.tb-command-inline-row code,.tb-command-row code{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
+
+/* Task-oriented navigation in the Toolbox landing page */
+.tb-workflows{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 0 17px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tb-workflow{display:inline-flex;align-items:center;gap:12px;padding:10px 13px;border:1px solid var(--line);border-radius:3px;background:transparent;color:var(--paper);font:600 12px/1.2 var(--sans);text-align:left;cursor:pointer;transition:border-color .2s,background .2s,color .2s}
+.tb-workflow span{color:var(--muted);font:500 10px var(--mono)}.tb-workflow:hover{border-color:var(--acid)}.tb-workflow.active{background:var(--acid);border-color:var(--acid);color:var(--ink)}.tb-workflow.active span{color:#404b20}.tb-toolbar-start{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.tb-result-count{font:500 10px var(--mono);color:var(--muted)}.tb-clear{background:transparent;border:0;color:var(--acid);font:700 12px var(--sans);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:8px}.tb-clear:hover{color:var(--paper)}
+.tb-card-shell[hidden]{display:none!important}
+@media(max-width:700px){.tb-workflows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.tb-workflow{justify-content:space-between;min-height:42px}.tb-toolbar-start{width:100%;justify-content:space-between}}
