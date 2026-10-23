@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
-</head>
+<link rel="stylesheet" href="./comparison-presets.css"><script src="./comparison-presets.js" defer></script></head>
 <body data-rip-page="one-million">
   <header class="masthead">
     <a class="back-link" href="../">← Random Info Pages</a>
@@ -79,6 +79,15 @@
         <aside class="controls-panel" aria-labelledby="compare-title">
           <p class="eyebrow">Make it comparable</p>
           <h3 id="compare-title">A part of a whole</h3>
+          <div class="scale-examples" aria-label="Quick mathematical comparisons">
+            <div class="scale-examples-head"><span>QUICK COMPARISONS</span><small>Illustrations · not measured population statistics</small></div>
+            <div class="scale-example-buttons" role="group" aria-label="Example proportions">
+              <button type="button" data-scale-example="percents"><strong>10% → 1% → 0.1%</strong><small>Percentages in context</small></button>
+              <button type="button" data-scale-example="million"><strong>1 in a million</strong><small>See rarity at true scale</small></button>
+              <button type="button" data-scale-example="group"><strong>250 in 10,000</strong><small>Smaller groups in proportion</small></button>
+            </div>
+            <p id="scaleExampleStatus" class="scale-example-status" role="status">Select an example or enter your own values below.</p>
+          </div>
           <label class="denominator-label" for="denominator">Total population <span>the denominator</span></label>
           <input id="denominator" type="text" inputmode="numeric" value="1000000" autocomplete="off" aria-describedby="denominatorHelp">
           <small id="denominatorHelp">Enter a whole number up to 9,007,199,254,740,991.</small>

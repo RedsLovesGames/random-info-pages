@@ -1,0 +1,15 @@
+/* One Million / reader-friendly comparison presets; inputs remain authoritative */
+.scale-examples{margin:20px 0 22px;padding:0 0 17px;border-bottom:1px solid var(--line)}
+.scale-examples-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:12px}
+.scale-examples-head span{font:750 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.06em;color:var(--green)}
+.scale-examples-head small{font:10px/1.5 var(--sans);color:var(--muted)}
+.scale-example-buttons{display:grid;grid-template-columns:1fr;gap:6px}
+.scale-example-buttons button{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:#e6e8db;border:1px solid #b8c6ae;padding:11px 12px;cursor:pointer;color:#202c25;transition:transform .18s,background .18s,border-color .18s}
+.scale-example-buttons button:hover{background:#d2e0c5;border-color:#547259;transform:translateX(2px)}
+.scale-example-buttons button:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.scale-example-buttons button[aria-pressed="true"]{background:#cadfb7;border-color:#315b47;box-shadow:inset 3px 0 #315b47}
+.scale-example-buttons button strong{font-size:12px;letter-spacing:-.02em;font-weight:750}
+.scale-example-buttons button small{font:11px/1.4 var(--sans);color:#607268}
+.scale-example-status{margin:12px 0 0;color:var(--muted);font:11px/1.55 var(--sans)}
+@media(max-width:530px){.scale-example-buttons button{align-items:flex-start;flex-direction:column;gap:3px}}
+@media(prefers-reduced-motion:reduce){.scale-example-buttons button{transition:none}}
