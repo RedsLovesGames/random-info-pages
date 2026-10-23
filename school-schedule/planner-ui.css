@@ -1,0 +1,22 @@
+/* Class & Assignment Planner / focus and filtering */
+.planner-controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;padding:15px 16px;margin:15px 0 20px;background:#101626;border:1px solid #31425e;border-radius:10px}
+.planner-controls .planner-left{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.planner-controls label{font-size:12px;font-weight:700;color:#aebdd2}
+.planner-controls select{min-height:40px;padding:8px 28px 8px 12px;max-width:260px;background:#0d1525;border:1px solid #435474;color:#f5f8ff;font:600 13px system-ui,sans-serif;border-radius:5px}
+.planner-toggle{min-height:40px;padding:8px 12px;background:#0d1525;color:#ced8e9;border:1px solid #435474;border-radius:5px;font:600 13px system-ui,sans-serif;cursor:pointer}
+.planner-toggle[aria-pressed="true"]{background:#c9ddff;border-color:#c9ddff;color:#182d4b}
+.planner-toggle:hover:not([aria-pressed="true"]){border-color:#8fb2ef}
+.planner-controls :is(button,select):focus-visible{outline:3px solid #90b7ff;outline-offset:2px}
+.planner-progress{display:flex;align-items:center;gap:10px;color:#b8c8dc;font-size:12px}
+.planner-meter{height:7px;width:110px;overflow:hidden;background:#2c3a51;border-radius:8px}
+.planner-meter span{display:block;width:0;height:100%;background:#65d69e;border-radius:8px;transition:width .2s ease}
+.planner-count{min-width:86px;text-align:right;font-variant-numeric:tabular-nums}
+.planner-no-results{padding:28px;border:1px dashed #435474;border-radius:9px;color:var(--muted);font-size:14px}
+#weekPlanner .day[hidden],#upcomingPlanner .major[hidden],#weekPlanner .task[hidden],#upcomingPlanner .task[hidden]{display:none!important}
+#weekPlanner .day{box-shadow:none;border-radius:10px}
+#weekPlanner .dayhead{background:#151f33}
+#upcomingPlanner .major{border-radius:10px;box-shadow:none}
+#weekPlanner .task label,#upcomingPlanner .task label{line-height:1.48}
+#weekPlanner .task:has(input:checked) strong,#upcomingPlanner .task:has(input:checked) strong{opacity:.8}
+@media(max-width:640px){.planner-controls{align-items:stretch}.planner-controls .planner-left{flex:1}.planner-controls select{max-width:none;flex:1}.planner-progress{width:100%;justify-content:space-between}.planner-meter{flex:1}.planner-count{text-align:right}}
+@media(prefers-reduced-motion:reduce){.planner-meter span{transition:none}}
