@@ -24,9 +24,19 @@ header{display:flex;justify-content:space-between;align-items:center;border-bott
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
+<link rel="stylesheet" href="./archive-reader.css">
+<script src="./archive-reader.js" defer></script>
 </head><body data-rip-page="9-11-timeline"><div class="shell">
 <nav aria-label="Back to archive" style="padding:8px 0 18px;font:700 11px ui-monospace,monospace;letter-spacing:.08em"><a href="../">← RANDOM INFO PAGES</a></nav><header><span class="wordmark">A DAY IN MESSAGES <span style="color:var(--accent)">/ 2001</span></span><span class="submark">Historical data documentary<br/>September 11–12 · Eastern Daylight Time</span></header>
 <section class="hero"><div><div class="eyebrow">The United States · Tuesday, September 11, 2001</div><h1>Before the world<br/>knew.</h1><p>Explore the unfolding chronology of September 11, alongside intercepted pager traffic. A record of what was transmitted, not a complete record of what was known.</p></div><div class="edition">HISTORICAL TIMELINE<br/>18 SOURCE-LINKED MILESTONES<br/>PAGER COUNTS: PENDING<br/>NO PRIVATE MESSAGES SHOWN</div></section>
+<section class="timeline-reader" aria-labelledby="timelineReaderTitle">
+ <div class="timeline-reader-intro"><div><span class="reader-index">A GUIDE TO THE RECORD / 01—03</span><h2 id="timelineReaderTitle">Follow the <em>chronology.</em></h2></div><p>The chronology is independently sourced. Pager counts have not been loaded, and this page does not display private communications.</p></div>
+ <div class="reader-jumps" aria-label="Jump to a type of verified historical milestone">
+  <button type="button" data-timeline-category="aviation"><span>01 / EARLY EVENTS</span><strong>Departures</strong><small>Begin with the morning flights</small><b aria-hidden="true">↗</b></button>
+  <button type="button" data-timeline-category="attack"><span>02 / KEY EVENTS</span><strong>Attacks</strong><small>Move to the documented attack chronology</small><b aria-hidden="true">↗</b></button>
+  <button type="button" data-timeline-category="response"><span>03 / RESPONSE</span><strong>National response</strong><small>Review later documented events</small><b aria-hidden="true">↗</b></button>
+ </div>
+</section>
 <div class="workspace"><main class="main"><section class="panel"><div class="label">Playback timeline / Local historical time (EDT)</div><div class="clockrow"><div class="clock" id="clock">03:00:00</div><div class="date"><span id="currentDate">SEP 11, 2001</span><br/><span id="counter">00:00 into archive</span></div></div>
 <div class="chartwrap"><div class="chartlabel"><span><span class="legend"></span> Intercepted pager log rows / minute</span><span id="volumeStatus">Awaiting local archive processing</span></div><canvas id="chart" role="img" aria-label="Pager activity timeline; chart is empty until data is processed"></canvas><div class="chartlabel"><span>03:00</span><span>09:00</span><span>15:00</span><span>21:00</span><span>03:00 +1 day</span></div></div>
 <div class="track"><label class="label" for="scrub">Jump to any point in 24 hours</label><input id="scrub" type="range" min="0" max="1440" step="1" value="0"/><div class="tracklabels"><span>START · 03:00</span><span>END · 03:00</span></div></div>
