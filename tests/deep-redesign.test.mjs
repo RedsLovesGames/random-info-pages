@@ -101,6 +101,25 @@ test('Music Microscope provides an explanation-first workflow without changing a
   assert.match(css,/prefers-reduced-motion:reduce/);
 });
 
+test('Congress explorer quick views reuse its original controls and frozen snapshot',()=>{
+  const html=read('oldasspolitic/index.html');
+  assert.match(html,/explore-controls\.css/);
+  assert.match(html,/explore-controls\.js/);
+  for(const id of ['search','chamber','party','sort','members','resultLabel','clearCongressFilters']){
+    assert.ok(html.includes('id="'+id+'"'),id+' remains present');
+  }
+  for(const preset of ['all','House','Senate','ageAsc','ageDesc']){
+    assert.ok(html.includes('data-congress-preset="'+preset+'"'),preset+' is a preset');
+  }
+  assert.match(html,/frozen congressional roster/);
+  assert.match(html,/September 24, 2026 snapshot/);
+  script('oldasspolitic/explore-controls.js');
+  const code=read('oldasspolitic/explore-controls.js');
+  assert.match(code,/dispatchEvent\(new Event\('change'/);
+  assert.match(code,/aria-pressed/);
+  assert.doesNotMatch(code,/localStorage|sessionStorage/);
+});
+
 test('Archived projects and classic homepage are never redesign targets',()=>{
  for(const name of ['vct-scout','tideborne','tide2']){
    const html=read(name+'/index.html');

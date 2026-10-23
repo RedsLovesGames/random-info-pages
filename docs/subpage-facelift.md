@@ -41,3 +41,5 @@ Deep-redesign regression tests: `tests/deep-redesign.test.mjs`. The Pages workfl
 * Full rendered desktop/mobile QA in a browser, especially very narrow screen widths and full-screen simulations.
 * Bespoke interaction/layout work in the other active apps beyond the shared site layer.
 * Accessibility testing with a screen reader and keyboard-only playthrough.
+
+* **U.S. Congress Age Explorer**: task-focused quick filters (all members, House, Senate, youngest, oldest), reset, clearer frozen-snapshot wording. The sourced congressional roster and profile links are unchanged.
