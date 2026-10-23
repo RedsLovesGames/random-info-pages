@@ -63,7 +63,7 @@ test('Stock Fights has game-first layout without modifying engine or controls',(
  const ux=read('stock-fights/experience.js');
  assert.match(ux,/aria-pressed/);
  assert.match(ux,/\.click\(\)/);
- assert.match(ux,/e\.target\.closest\('input,textarea,select,button,a,summary/);
+ assert.match(ux,/el\.closest\('input,textarea,select,button,a,summary/);
  assert.match(read('stock-fights/experience.css'),/\.arena-focus/);
  assert.match(read('stock-fights/experience.css'),/prefers-reduced-motion/);
 });
@@ -83,6 +83,22 @@ test('Infrastructure wayfinder activates real existing panels and explains deriv
  script('infrastructure-atlas/wayfinder.js');
  assert.match(read('infrastructure-atlas/wayfinder.js'),/tab\.click\(\)/);
  assert.match(read('infrastructure-atlas/wayfinder.js'),/details\.open=true/);
+});
+
+test('Music Microscope provides an explanation-first workflow without changing audio transport',()=>{
+  const html=read('music-microscope/index.html');
+  const css=read('music-microscope/listening-guide.css');
+  assert.match(html,/listening-guide\.css/);
+  assert.match(html,/class="instrument-start"/);
+  assert.match(html,/class="instrument-help"/);
+  assert.match(html,/id="audioInputSection"/);
+  assert.match(html,/href="#wave-title"/);
+  assert.match(html,/href="#filter-title"/);
+  for(const id of ['audioFile','exampleButton','waveform','spectrogram','spectrum','filterEnabled','playButton']){
+    assert.ok(html.includes('id="'+id+'"'),id+' remains functional');
+  }
+  assert.match(css,/\.instrument-start-steps/);
+  assert.match(css,/prefers-reduced-motion:reduce/);
 });
 
 test('Archived projects and classic homepage are never redesign targets',()=>{
