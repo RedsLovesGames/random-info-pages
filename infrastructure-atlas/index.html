@@ -50,10 +50,22 @@
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
+<link rel="stylesheet" href="./wayfinder.css">
+<script src="./wayfinder.js" defer></script>
 </head><body data-rip-page="infrastructure-atlas"><div class="shell">
 <header class="topbar"><div class="branding"><div class="logo" aria-hidden="true">A</div><div class="brand">INFRASTRUCTURE ATLAS <span style="color:#f6d48d">V3.2</span><small>ASCE GRADES / PEER-RELATIVE A–F</small></div></div><div class="top-right">Research dashboard <strong>ASCE report cards · as of Oct 12, 2026</strong></div></header>
 <div class="archive-home-link"><a href="../">← Random Info Pages / Data</a></div>
 <section class="hero"><div><div class="eyebrow">United States infrastructure intelligence</div><h1>How does your state<br>compare?</h1><p class="lede">Explore published ASCE grades, see where each state stands among its peers, and compare infrastructure systems. Relative A–F labels are calculated for this dashboard, not issued by ASCE.</p><a class="jump-map" href="#view-map">Explore the map <span aria-hidden="true">↓</span></a></div><div class="national-callout"><strong>C</strong><span><b>National infrastructure</b>2025 ASCE overall grade</span></div></section>
+<section class="atlas-wayfinder" aria-labelledby="atlas-wayfinder-heading">
+  <div class="atlas-wayfinder-intro"><span>START EXPLORING / 01—04</span><h2 id="atlas-wayfinder-heading">What do you want to find out?</h2></div>
+  <div class="atlas-journeys" role="group" aria-label="Choose an infrastructure research view">
+    <button type="button" data-atlas-view="map"><strong>01 · Explore a state</strong><span>Choose a state and see its published grades ↗</span></button>
+    <button type="button" data-atlas-view="rank"><strong>02 · Rank the states</strong><span>Compare reported sectors and years ↗</span></button>
+    <button type="button" data-atlas-view="compare"><strong>03 · Compare two states</strong><span>Inspect grades side by side ↗</span></button>
+    <button type="button" data-atlas-view="insights"><strong>04 · See national patterns</strong><span>Explore coverage and distributions ↗</span></button>
+  </div>
+  <div class="atlas-context"><div><span class="atlas-key official">ASCE GRADE</span><span>Grades reported by the American Society of Civil Engineers</span></div><div><span class="atlas-key modeled">RELATIVE A–F</span><span>Calculated here; not an ASCE grade</span></div><button id="atlasMethodJump" type="button">How grading works ↗</button></div>
+</section>
 <div class="stat-grid"><div class="stat"><div class="slabel">States with overall grades</div><div class="value" id="stat-graded">42 / 50</div><div class="explain">8 have no overall grade</div></div><div class="stat"><div class="slabel">Highest reported grade</div><div class="value">C+</div><div class="explain">Shared by five states</div></div><div class="stat"><div class="slabel">State reports span</div><div class="value">2017–2026</div><div class="explain">Not all grades are same-year</div></div><div class="stat"><div class="slabel">Complete sector breakdowns</div><div class="value" id="stat-complete">—</div><div class="explain">Others retain partial/no data</div></div></div>
 <nav class="nav" role="tablist" aria-label="Dashboard sections"><button class="tab" data-tab="map" role="tab" aria-selected="true">Geographic map</button><button class="tab" data-tab="rank" role="tab" aria-selected="false">State rankings</button><button class="tab" data-tab="compare" role="tab" aria-selected="false">Compare states</button><button class="tab" data-tab="insights" role="tab" aria-selected="false">National & insights</button></nav>
 <main>

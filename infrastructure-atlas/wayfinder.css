@@ -1,0 +1,20 @@
+/* Infrastructure Atlas / clear entry choices before the dense dataset */
+body[data-rip-page="infrastructure-atlas"] .atlas-wayfinder{margin:12px 0 25px;border:1px solid #375369;background:#0c2034;padding:clamp(18px,2.4vw,34px);color:#eaf6ff}
+.atlas-wayfinder-intro{display:flex;align-items:baseline;justify-content:space-between;gap:18px;flex-wrap:wrap;border-bottom:1px solid rgba(170,203,221,.25);padding:0 0 18px}
+.atlas-wayfinder-intro>span{font:700 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.06em;color:#8bddf2}
+.atlas-wayfinder-intro h2{font-size:clamp(23px,3.3vw,46px);line-height:1;letter-spacing:-.075em;font-weight:650;margin:0}
+.atlas-journeys{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;padding:21px 0}
+.atlas-journeys button{min-height:121px;display:flex;flex-direction:column;justify-content:space-between;gap:14px;text-align:left;background:#122e45;color:#f1f7fa;border:1px solid #365773;padding:16px 15px;cursor:pointer;transition:background .2s,transform .2s,border-color .2s}
+.atlas-journeys button:hover{background:#204459;border-color:#8bddf2;transform:translateY(-2px)}
+.atlas-journeys button:focus-visible,.atlas-context button:focus-visible{outline:3px solid #8bddf2;outline-offset:3px}
+.atlas-journeys button strong{font-size:clamp(15px,1.35vw,20px);line-height:1.1;letter-spacing:-.045em}
+.atlas-journeys button span{font:500 12px/1.5 system-ui,sans-serif;color:#b6cbdc}
+.atlas-context{display:flex;align-items:center;gap:15px 28px;flex-wrap:wrap;padding-top:17px;border-top:1px solid rgba(170,203,221,.25)}
+.atlas-context>div{display:flex;align-items:center;gap:8px;color:#b7c8d7;font-size:11px;line-height:1.4}
+.atlas-key{font:800 9px/1.1 ui-monospace,Consolas,monospace;letter-spacing:.04em;white-space:nowrap;padding:6px 7px;border:1px solid #61768a}
+.atlas-key.official{background:#f4ca74;color:#102335;border-color:#f4ca74}
+.atlas-key.modeled{background:transparent;color:#8bddf2;border-color:#8bddf2}
+.atlas-context button{background:transparent;color:#f1f7fa;border:0;text-decoration:underline;text-underline-offset:4px;font:700 11px system-ui;cursor:pointer;margin-left:auto}
+@media(max-width:1150px){.atlas-journeys{grid-template-columns:repeat(2,minmax(0,1fr))}.atlas-journeys button{min-height:105px}}
+@media(max-width:620px){.atlas-wayfinder-intro h2{font-size:28px}.atlas-journeys{gap:7px}.atlas-journeys button{padding:13px 11px;min-height:125px}.atlas-journeys button strong{font-size:15px}.atlas-context>div{width:100%}.atlas-context button{margin-left:0}}
+@media(prefers-reduced-motion:reduce){.atlas-journeys button{transition:none}}
