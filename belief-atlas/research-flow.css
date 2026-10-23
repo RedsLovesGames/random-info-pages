@@ -1,0 +1,19 @@
+/* Belief Atlas / evidence-first wayfinding, isolated from the data grid */
+.research-flow{margin:20px 0 30px;background:#101c29;border:1px solid #375166;padding:clamp(18px,2.4vw,33px)}
+.research-flow-head{display:grid;grid-template-columns:1fr minmax(230px,.7fr);align-items:end;gap:20px;padding-bottom:22px;border-bottom:1px solid #345066}
+.research-flow-kicker,.research-flow-grid button>span{font:700 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.07em;color:#b9ff65}
+.research-flow-head h2{font-size:clamp(31px,4vw,57px);line-height:1;font-weight:650;letter-spacing:-.08em;margin:10px 0 0}
+.research-flow-head em{font:400 1.03em Georgia,serif;color:#b9ff65}
+.research-flow-head p{font-size:13px;line-height:1.65;color:#b9c7d4;max-width:47ch;margin:0}
+.research-flow-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:20px 0}
+.research-flow-grid button{display:flex;position:relative;flex-direction:column;align-items:flex-start;gap:11px;text-align:left;min-height:162px;border:1px solid #35536b;background:#17283a;color:#f2f5fa;padding:17px 28px 17px 16px;cursor:pointer;transition:transform .2s,border-color .2s,background .2s}
+.research-flow-grid button:hover{transform:translateY(-2px);background:#213b4c;border-color:#b9ff65}
+.research-flow-grid button:focus-visible{outline:2px solid #b9ff65;outline-offset:3px}
+.research-flow-grid button strong{font-size:clamp(18px,1.8vw,26px);letter-spacing:-.055em;line-height:1.15}
+.research-flow-grid button small{font-size:12px;line-height:1.5;color:#b8c6d2}
+.research-flow-grid button b{position:absolute;right:12px;top:16px;color:#b9ff65;font-size:21px}
+.research-flow-note{display:flex;justify-content:space-between;gap:12px 30px;flex-wrap:wrap;padding-top:15px;border-top:1px solid #345066;font:600 11px/1.5 ui-monospace,Consolas,monospace;color:#bbc8d4}
+.research-flow-status{color:#b9ff65}
+@media(max-width:1080px){.research-flow-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.research-flow-grid button{min-height:136px}}
+@media(max-width:650px){.research-flow-head{grid-template-columns:1fr}.research-flow-grid{grid-template-columns:1fr}.research-flow-grid button{min-height:0;gap:7px}}
+@media(prefers-reduced-motion:reduce){.research-flow-grid button{transition:none}}
