@@ -54,3 +54,18 @@ Deep-redesign regression tests: `tests/deep-redesign.test.mjs`. The Pages workfl
 * **Random Choice Wheel** – prominent touch-friendly Spin button delegates to original canvas logic; stage rows resize to retain the complete wheel and the existing presentation mode.
 
 Regression tests: `tests/third-pass-redesign.test.mjs`, invoked by the existing Pages workflow. Browser-rendered QA still required for exact sizing and focus order at all device widths.
+
+
+## Fourth pass: evidence, exhibits, exact-scale stories, and social play
+
+Five additional active applications have unique, use-case-specific improvements:
+
+* **Belief Atlas** — four action paths for research gaps, local evidence, person lookup, and methodology. Live evidence-record count reflects the original browser-local research storage. No belief claims or public-figure evidence are added or altered.
+* **Cryptography Museum** — three gallery starting routes and an adaptive continue-your-visit link based on the existing local passport. The seven cryptographic exhibits, demonstrations, challenges, and historic material remain unchanged.
+* **One Million** — exact numerical examples (10%/1%/0.1%; one in a million; 250 in 10,000), fed through the existing validated comparisons and renderer. These are explicitly mathematical illustrations.
+* **10Groups Heatmap** — top-of-page wayfinding between full heatmap, one circle, and coordinate table, with a short interpretation guide; original circle geometry and color logic are untouched.
+* **Friend Group Hub** — magazine-style spotlight selecting a real quote from the existing quote JSON, a link to find that quote in the archive, and optional number keys for the Guess Who game. No new or synthesized quotes.
+
+Regression checks: `tests/fourth-pass-redesign.test.mjs`; deployed through the existing GitHub Pages workflow. All legacy app data and archive routes remain intact.
+
+Remaining bespoke projects: Novel Writing & Revision, AI Video Scene Director, and Nerdcore Song Prompt Builder. Rendered interaction and mobile QA are still needed across the collection.
