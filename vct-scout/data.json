@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-22T14:31:39+00:00",
+  "generated_at": "2026-10-23T00:00:17+00:00",
   "window_start": "2026-07-01",
-  "window_end": "2026-10-22",
+  "window_end": "2026-10-23",
   "status": "live",
   "source_note": "Public VLR match data, filtered to 2026 top-level VCT events. Team-side map observations are used for composition and agent rates.",
   "map_pool": [
@@ -1799,7 +1799,7 @@
           "attack_round_win_rate": 49.5,
           "defense_round_win_rate": 51.9,
           "latest": {
-            "date": "2026-10-17",
+            "date": "2026-10-18",
             "agents": [
               "Chamber",
               "Neon",
@@ -1994,10 +1994,10 @@
               "wins": 3,
               "losses": 0,
               "win_rate": 100.0,
-              "last_used": "2026-10-17",
+              "last_used": "2026-10-18",
               "matches": [
                 {
-                  "date": "2026-10-17",
+                  "date": "2026-10-18",
                   "series_id": 754737,
                   "opponent": "Team Vitality",
                   "opponent_tag": "VIT",
@@ -2013,7 +2013,7 @@
                   "defense_rounds_lost": 6
                 },
                 {
-                  "date": "2026-10-15",
+                  "date": "2026-10-16",
                   "series_id": 754736,
                   "opponent": "Team Vitality",
                   "opponent_tag": "VIT",
@@ -2521,7 +2521,7 @@
           "attack_round_win_rate": 51.5,
           "defense_round_win_rate": 48.7,
           "latest": {
-            "date": "2026-10-17",
+            "date": "2026-10-18",
             "agents": [
               "Fade",
               "Neon",
@@ -2555,10 +2555,10 @@
             "wins": 4,
             "losses": 2,
             "win_rate": 66.7,
-            "last_used": "2026-10-15",
+            "last_used": "2026-10-16",
             "matches": [
               {
-                "date": "2026-10-15",
+                "date": "2026-10-16",
                 "series_id": 754736,
                 "opponent": "Team Vitality",
                 "opponent_tag": "VIT",
@@ -2668,10 +2668,10 @@
               "wins": 4,
               "losses": 2,
               "win_rate": 66.7,
-              "last_used": "2026-10-15",
+              "last_used": "2026-10-16",
               "matches": [
                 {
-                  "date": "2026-10-15",
+                  "date": "2026-10-16",
                   "series_id": 754736,
                   "opponent": "Team Vitality",
                   "opponent_tag": "VIT",
@@ -2828,10 +2828,10 @@
               "wins": 0,
               "losses": 1,
               "win_rate": 0.0,
-              "last_used": "2026-10-17",
+              "last_used": "2026-10-18",
               "matches": [
                 {
-                  "date": "2026-10-17",
+                  "date": "2026-10-18",
                   "series_id": 754737,
                   "opponent": "Team Vitality",
                   "opponent_tag": "VIT",
@@ -2895,7 +2895,7 @@
           "attack_round_win_rate": 57.5,
           "defense_round_win_rate": 55.8,
           "latest": {
-            "date": "2026-10-17",
+            "date": "2026-10-18",
             "agents": [
               "Chamber",
               "Neon",
@@ -2929,10 +2929,10 @@
             "wins": 8,
             "losses": 2,
             "win_rate": 80.0,
-            "last_used": "2026-10-17",
+            "last_used": "2026-10-18",
             "matches": [
               {
-                "date": "2026-10-17",
+                "date": "2026-10-18",
                 "series_id": 754737,
                 "opponent": "Team Vitality",
                 "opponent_tag": "VIT",
@@ -3106,10 +3106,10 @@
               "wins": 8,
               "losses": 2,
               "win_rate": 80.0,
-              "last_used": "2026-10-17",
+              "last_used": "2026-10-18",
               "matches": [
                 {
-                  "date": "2026-10-17",
+                  "date": "2026-10-18",
                   "series_id": 754737,
                   "opponent": "Team Vitality",
                   "opponent_tag": "VIT",
@@ -3495,7 +3495,7 @@
           "attack_round_win_rate": 58.7,
           "defense_round_win_rate": 63.4,
           "latest": {
-            "date": "2026-10-17",
+            "date": "2026-10-18",
             "agents": [
               "Chamber",
               "Fade",
@@ -3529,10 +3529,10 @@
             "wins": 8,
             "losses": 3,
             "win_rate": 72.7,
-            "last_used": "2026-10-17",
+            "last_used": "2026-10-18",
             "matches": [
               {
-                "date": "2026-10-17",
+                "date": "2026-10-18",
                 "series_id": 754737,
                 "opponent": "Team Vitality",
                 "opponent_tag": "VIT",
@@ -3548,7 +3548,7 @@
                 "defense_rounds_lost": 2
               },
               {
-                "date": "2026-10-15",
+                "date": "2026-10-16",
                 "series_id": 754736,
                 "opponent": "Team Vitality",
                 "opponent_tag": "VIT",
@@ -3706,10 +3706,10 @@
               "wins": 8,
               "losses": 3,
               "win_rate": 72.7,
-              "last_used": "2026-10-17",
+              "last_used": "2026-10-18",
               "matches": [
                 {
-                  "date": "2026-10-17",
+                  "date": "2026-10-18",
                   "series_id": 754737,
                   "opponent": "Team Vitality",
                   "opponent_tag": "VIT",
@@ -3725,7 +3725,7 @@
                   "defense_rounds_lost": 2
                 },
                 {
-                  "date": "2026-10-15",
+                  "date": "2026-10-16",
                   "series_id": 754736,
                   "opponent": "Team Vitality",
                   "opponent_tag": "VIT",
@@ -18470,7 +18470,7 @@
           "attack_round_win_rate": 59.5,
           "defense_round_win_rate": 41.0,
           "latest": {
-            "date": "2026-10-17",
+            "date": "2026-10-18",
             "agents": [
               "Astra",
               "Chamber",
@@ -18504,10 +18504,10 @@
             "wins": 1,
             "losses": 2,
             "win_rate": 33.3,
-            "last_used": "2026-10-17",
+            "last_used": "2026-10-18",
             "matches": [
               {
-                "date": "2026-10-17",
+                "date": "2026-10-18",
                 "series_id": 754737,
                 "opponent": "LOUD",
                 "opponent_tag": "LOUD",
@@ -18523,7 +18523,7 @@
                 "defense_rounds_lost": 7
               },
               {
-                "date": "2026-10-15",
+                "date": "2026-10-16",
                 "series_id": 754736,
                 "opponent": "LOUD",
                 "opponent_tag": "LOUD",
@@ -18569,10 +18569,10 @@
               "wins": 1,
               "losses": 2,
               "win_rate": 33.3,
-              "last_used": "2026-10-17",
+              "last_used": "2026-10-18",
               "matches": [
                 {
-                  "date": "2026-10-17",
+                  "date": "2026-10-18",
                   "series_id": 754737,
                   "opponent": "LOUD",
                   "opponent_tag": "LOUD",
@@ -18588,7 +18588,7 @@
                   "defense_rounds_lost": 7
                 },
                 {
-                  "date": "2026-10-15",
+                  "date": "2026-10-16",
                   "series_id": 754736,
                   "opponent": "LOUD",
                   "opponent_tag": "LOUD",
@@ -19336,7 +19336,7 @@
           "attack_round_win_rate": 50.0,
           "defense_round_win_rate": 59.6,
           "latest": {
-            "date": "2026-10-17",
+            "date": "2026-10-18",
             "agents": [
               "Chamber",
               "Fade",
@@ -19370,10 +19370,10 @@
             "wins": 3,
             "losses": 0,
             "win_rate": 100.0,
-            "last_used": "2026-10-17",
+            "last_used": "2026-10-18",
             "matches": [
               {
-                "date": "2026-10-17",
+                "date": "2026-10-18",
                 "series_id": 754737,
                 "opponent": "LOUD",
                 "opponent_tag": "LOUD",
@@ -19405,7 +19405,7 @@
                 "defense_rounds_lost": 5
               },
               {
-                "date": "2026-10-15",
+                "date": "2026-10-16",
                 "series_id": 754736,
                 "opponent": "LOUD",
                 "opponent_tag": "LOUD",
@@ -19435,10 +19435,10 @@
               "wins": 3,
               "losses": 0,
               "win_rate": 100.0,
-              "last_used": "2026-10-17",
+              "last_used": "2026-10-18",
               "matches": [
                 {
-                  "date": "2026-10-17",
+                  "date": "2026-10-18",
                   "series_id": 754737,
                   "opponent": "LOUD",
                   "opponent_tag": "LOUD",
@@ -19470,7 +19470,7 @@
                   "defense_rounds_lost": 5
                 },
                 {
-                  "date": "2026-10-15",
+                  "date": "2026-10-16",
                   "series_id": 754736,
                   "opponent": "LOUD",
                   "opponent_tag": "LOUD",
@@ -19577,7 +19577,7 @@
           "attack_round_win_rate": 47.1,
           "defense_round_win_rate": 42.3,
           "latest": {
-            "date": "2026-10-17",
+            "date": "2026-10-18",
             "agents": [
               "Chamber",
               "Fade",
@@ -19611,10 +19611,10 @@
             "wins": 0,
             "losses": 1,
             "win_rate": 0.0,
-            "last_used": "2026-10-17",
+            "last_used": "2026-10-18",
             "matches": [
               {
-                "date": "2026-10-17",
+                "date": "2026-10-18",
                 "series_id": 754737,
                 "opponent": "LOUD",
                 "opponent_tag": "LOUD",
@@ -19644,10 +19644,10 @@
               "wins": 0,
               "losses": 1,
               "win_rate": 0.0,
-              "last_used": "2026-10-17",
+              "last_used": "2026-10-18",
               "matches": [
                 {
-                  "date": "2026-10-17",
+                  "date": "2026-10-18",
                   "series_id": 754737,
                   "opponent": "LOUD",
                   "opponent_tag": "LOUD",
@@ -20047,7 +20047,7 @@
           "attack_round_win_rate": 33.3,
           "defense_round_win_rate": 65.3,
           "latest": {
-            "date": "2026-10-17",
+            "date": "2026-10-18",
             "agents": [
               "Chamber",
               "Fade",
@@ -20081,10 +20081,10 @@
             "wins": 2,
             "losses": 2,
             "win_rate": 50.0,
-            "last_used": "2026-10-17",
+            "last_used": "2026-10-18",
             "matches": [
               {
-                "date": "2026-10-17",
+                "date": "2026-10-18",
                 "series_id": 754737,
                 "opponent": "LOUD",
                 "opponent_tag": "LOUD",
@@ -20116,7 +20116,7 @@
                 "defense_rounds_lost": 5
               },
               {
-                "date": "2026-10-15",
+                "date": "2026-10-16",
                 "series_id": 754736,
                 "opponent": "LOUD",
                 "opponent_tag": "LOUD",
@@ -20162,10 +20162,10 @@
               "wins": 2,
               "losses": 2,
               "win_rate": 50.0,
-              "last_used": "2026-10-17",
+              "last_used": "2026-10-18",
               "matches": [
                 {
-                  "date": "2026-10-17",
+                  "date": "2026-10-18",
                   "series_id": 754737,
                   "opponent": "LOUD",
                   "opponent_tag": "LOUD",
@@ -20197,7 +20197,7 @@
                   "defense_rounds_lost": 5
                 },
                 {
-                  "date": "2026-10-15",
+                  "date": "2026-10-16",
                   "series_id": 754736,
                   "opponent": "LOUD",
                   "opponent_tag": "LOUD",
@@ -27932,7 +27932,7 @@
     },
     "Haven": {
       "team_side_maps": 75,
-      "latest_date": "2026-10-17",
+      "latest_date": "2026-10-18",
       "agent_pick_rates": [
         {
           "agent": "Sova",
@@ -28150,7 +28150,7 @@
     },
     "Lotus": {
       "team_side_maps": 94,
-      "latest_date": "2026-10-17",
+      "latest_date": "2026-10-18",
       "agent_pick_rates": [
         {
           "agent": "Omen",
@@ -28566,7 +28566,7 @@
     },
     "Summit": {
       "team_side_maps": 86,
-      "latest_date": "2026-10-17",
+      "latest_date": "2026-10-18",
       "agent_pick_rates": [
         {
           "agent": "Fade",
@@ -28819,7 +28819,7 @@
     },
     "Sunset": {
       "team_side_maps": 82,
-      "latest_date": "2026-10-17",
+      "latest_date": "2026-10-18",
       "agent_pick_rates": [
         {
           "agent": "Omen",
