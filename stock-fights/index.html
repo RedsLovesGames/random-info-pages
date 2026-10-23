@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
+<link rel="stylesheet" href="./experience.css">
+<script src="./experience.js" defer></script>
 </head>
 <body data-rip-page="stock-fights">
 <header class="mast">
@@ -19,8 +21,12 @@
 </header>
 <main>
  <section class="heading"><div><h1>STOCK<span>FIGHTS</span><sup>01</sup></h1><p>Watch absurd stock-image characters settle it in a bouncing physics box.</p></div><div class="heading-meta"><strong>43</strong><span>FIGHTERS<br>12 TEAMS<br>5 MATCH MODES</span></div></section>
+ <div class="experience-nav" aria-label="Page sections">
+   <div class="experience-steps"><a href="#matchSetup">01 / Set up a fight ↗</a><a href="#battleArena">02 / Watch the match ↗</a><a href="#fighterIndex">03 / Explore fighters ↗</a></div>
+   <button class="experience-help-btn" id="controlsHelp" type="button">Controls & shortcuts <span aria-hidden="true">?</span></button>
+ </div>
  <div class="workspace">
-  <aside class="panel setup">
+  <aside class="panel setup" id="matchSetup">
    <div class="panel-title"><h2>01 / Match setup</h2><span>SIMULATED · LOCAL</span></div>
    <label class="field">Fight format<select id="mode">
     <option value="duel">1 vs 1</option><option value="teams">Team 3 vs 3</option>
@@ -49,8 +55,8 @@
    <button id="start" class="primary" type="button">START FIGHT <span>→</span></button>
    <div class="setup-note">All fights are autonomous. The seed reproduces the same matchup. Selecting a preset fills all three team slots.</div>
   </aside>
-  <section class="stage-panel" aria-label="Battle arena">
-   <div class="battle-top"><span id="modeBadge">1 VS 1</span><span id="battleStatus" aria-live="polite">READY FOR COMBAT</span><span id="roundTime">00:00.0</span><button id="theater" type="button" title="Expand the fight arena">EXPAND ⛶</button></div>
+  <section class="stage-panel" id="battleArena" aria-label="Battle arena">
+   <div class="battle-top"><span id="modeBadge">1 VS 1</span><span id="battleStatus" aria-live="polite">READY FOR COMBAT</span><span id="roundTime">00:00.0</span><button id="focusArena" type="button" aria-pressed="false" title="Show only the fight arena">FOCUS ◫</button><button id="theater" type="button" title="Expand the fight arena">EXPAND ⛶</button></div>
    <div class="combatants">
      <div class="combatant"><div class="combat-name"><span id="leftName">Boxing Guy</span><b id="leftHpText">1000 HP</b></div><div class="health-track"><div id="leftBar" class="health-fill team-a"></div></div><small id="leftTeam">LEFT / 01</small></div>
      <span class="versus">VS</span>
@@ -66,7 +72,7 @@
    </div>
    <div class="statusbar"><span id="damageStats">DAMAGE 0 : 0</span><span id="challengeStats">AUTO BATTLE</span><button type="button" id="share">COPY MATCH LINK ↗</button></div>
   </section>
-  <aside class="panel intel">
+  <aside class="panel intel" id="fighterIndex">
    <div class="panel-title"><h2>02 / Fighter file</h2><span>ROSTER INDEX</span></div>
    <input type="search" placeholder="Search 43 fighters..." id="search" aria-label="Search fighters">
    <div id="roster" class="roster" role="list"></div>
@@ -83,7 +89,10 @@
    <ol class="battle-log" id="battleLog" aria-live="off"></ol>
   </aside>
  </div>
- <footer class="foot"><span>Unofficial fan recreation. Original Stock Image Fights by Spenn. Linked reference photos are credited to the community reference. Simulation physics and synthesized sound effects remain independently reconstructed.</span><a href="https://spenn.fandom.com/wiki/Spenn_Wiki" target="_blank" rel="noopener noreferrer">Reference wiki ↗</a></footer>
+ <dialog class="experience-dialog" id="experienceHelp" aria-labelledby="experienceHelpTitle"><div class="experience-dialog-head"><div><span class="experience-caption">A QUICK GUIDE</span><h2 id="experienceHelpTitle">Run the arena.</h2></div><button id="closeExperienceHelp" type="button" aria-label="Close controls">Close ×</button></div>
+<div class="experience-guide"><div><strong>1. Choose a fight</strong><p>Select the mode, fighters and any optional arena modifiers. You can import your own images or sounds.</p></div><div><strong>2. Start & follow along</strong><p>Start Fight launches an autonomous simulation. Pause to inspect, Step to advance one tick, or Fast-forward to finish.</p></div><div><strong>3. Recreate a result</strong><p>Reusing a seed reproduces the same matchup. Share generates a link carrying the current setup.</p></div></div>
+<div class="experience-shortcuts"><h3>Keyboard controls</h3><div><kbd>N</kbd> New fight <kbd>Space</kbd> Pause / resume <kbd>→</kbd> Step <kbd>F</kbd> Fullscreen <kbd>T</kbd> Focus arena <kbd>?</kbd> This guide</div><p>Shortcuts are disabled while typing or interacting with a form control.</p></div></dialog>
+<footer class="foot"><span>Unofficial fan recreation. Original Stock Image Fights by Spenn. Linked reference photos are credited to the community reference. Simulation physics and synthesized sound effects remain independently reconstructed.</span><a href="https://spenn.fandom.com/wiki/Spenn_Wiki" target="_blank" rel="noopener noreferrer">Reference wiki ↗</a></footer>
 </main>
 </body>
 </html>

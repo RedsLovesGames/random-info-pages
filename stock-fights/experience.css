@@ -1,0 +1,33 @@
+/* Stock Fights / true game-first optional presentation */
+.experience-nav{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:0 0 22px;padding:0 0 14px;border-bottom:1px solid var(--line)}
+.experience-steps{display:flex;gap:8px;flex-wrap:wrap}
+.experience-steps a{text-decoration:none;display:inline-flex;padding:9px 12px;border:1px solid var(--line);background:#171915;color:#c2c6b9;font:700 10px/1.4 monospace;letter-spacing:.02em;transition:background .2s,border-color .2s,color .2s}
+.experience-steps a:hover{background:#272d23;border-color:var(--lime);color:var(--paper)}
+.experience-help-btn{display:flex;align-items:center;gap:10px;background:transparent;color:var(--paper);border:1px solid var(--line);padding:10px 13px;font:750 11px monospace;cursor:pointer}
+.experience-help-btn:hover{border-color:var(--lime)}
+.experience-help-btn span{width:19px;height:19px;display:grid;place-items:center;background:var(--lime);color:#111;font-weight:900}
+body[data-rip-page="stock-fights"] .stage-panel{scroll-margin-top:24px}
+body[data-rip-page="stock-fights"] .workspace>aside{scroll-margin-top:24px}
+#focusArena[aria-pressed="true"]{background:var(--lime);border-color:var(--lime);color:#10110f}
+body[data-rip-page="stock-fights"].arena-focus .workspace{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+body[data-rip-page="stock-fights"].arena-focus .workspace>.setup,
+body[data-rip-page="stock-fights"].arena-focus .workspace>.intel{display:none!important}
+body[data-rip-page="stock-fights"].arena-focus .stage-panel{width:min(100%,1300px);justify-self:center}
+body[data-rip-page="stock-fights"].arena-focus .arena-wrap{width:min(100%,1020px);margin-inline:auto;min-height:0}
+body[data-rip-page="stock-fights"].arena-focus .arena-wrap canvas{width:100%;height:auto;max-height:calc(100vh - 220px);object-fit:contain}
+.experience-dialog{width:min(690px,calc(100vw - 24px));max-height:85dvh;overflow:auto;background:#141814;border:1px solid #515d43;padding:25px;color:var(--paper);box-shadow:0 25px 100px #000a}
+.experience-dialog::backdrop{background:#050704cc;backdrop-filter:blur(4px)}
+.experience-dialog-head{display:flex;justify-content:space-between;align-items:start;gap:18px;border-bottom:1px solid var(--line);padding-bottom:20px}
+.experience-dialog-head h2{font-size:clamp(36px,7vw,59px);font-weight:850;letter-spacing:-.075em;line-height:1;margin:8px 0 0}
+.experience-caption{font:750 10px monospace;color:var(--lime);letter-spacing:.07em}
+#closeExperienceHelp{border:1px solid var(--line);background:transparent;color:var(--paper);padding:10px;font:700 11px monospace}
+.experience-guide{display:grid;gap:18px;padding:22px 0;border-bottom:1px solid var(--line)}
+.experience-guide strong{font-size:18px;letter-spacing:-.04em}
+.experience-guide p{font:14px/1.55 Inter,Arial,sans-serif;color:#abb3a5;margin:6px 0 0}
+.experience-shortcuts{padding-top:20px}
+.experience-shortcuts h3{font:750 11px monospace;letter-spacing:.06em;text-transform:uppercase;margin:0 0 15px;color:var(--lime)}
+.experience-shortcuts>div{display:flex;flex-wrap:wrap;align-items:center;gap:9px;font-size:12px;line-height:1.5}
+.experience-shortcuts kbd{display:inline-grid;place-items:center;min-width:28px;padding:5px 8px;border:1px solid #4f5a4b;background:#252a23;color:#e7f4dc;font:800 11px monospace}
+.experience-shortcuts p{font-size:11px;color:#9da79a;margin-top:18px}
+@media(max-width:700px){.experience-nav{align-items:stretch}.experience-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:5px}.experience-steps a{font-size:9px;min-height:48px;align-items:center;justify-content:center;text-align:center;padding:7px}.experience-help-btn{margin-left:auto}}
+@media(prefers-reduced-motion:reduce){.experience-steps a{transition:none}}
