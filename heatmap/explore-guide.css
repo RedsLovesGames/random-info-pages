@@ -1,0 +1,20 @@
+/* 10Groups / visualization-first guided selection */
+.heatmap-guide{background:#182436;color:#f3f7fa;border:1px solid #445268;padding:clamp(20px,2.6vw,34px);margin:22px 0 26px}
+.heatmap-guide-head{display:grid;grid-template-columns:1.2fr .8fr;align-items:end;gap:25px;padding-bottom:19px;border-bottom:1px solid #43546b}
+.heatmap-guide-kicker,.heatmap-guide-options button>span{display:block;color:#96c5ec;font:750 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.07em}
+.heatmap-guide-head h2{font-size:clamp(31px,4.1vw,62px);letter-spacing:-.07em;line-height:.98;margin:10px 0 0;font-weight:650}
+.heatmap-guide-head h2 em{font-weight:400;font-family:Georgia,serif;color:#96c5ec}
+.heatmap-guide-head p{font-size:13px;line-height:1.65;color:#bac8d5;max-width:47ch;margin:0}
+.heatmap-guide-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:19px 0 17px}
+.heatmap-guide-options button{display:flex;flex-direction:column;align-items:flex-start;gap:9px;position:relative;min-height:150px;padding:18px 28px 16px 16px;background:#20334a;border:1px solid #476280;color:#f3f7fa;text-align:left;cursor:pointer;transition:transform .2s,background .2s,border-color .2s}
+.heatmap-guide-options button:hover{background:#294661;border-color:#96c5ec;transform:translateY(-2px)}
+.heatmap-guide-options button:focus-visible{outline:2px solid #96c5ec;outline-offset:3px}
+.heatmap-guide-options button strong{font-size:clamp(18px,2vw,27px);letter-spacing:-.06em;line-height:1.1}
+.heatmap-guide-options button small{font-size:11px;line-height:1.5;color:#b5cadd}
+.heatmap-guide-options button b{position:absolute;right:12px;top:16px;font-size:20px;color:#96c5ec}
+.heatmap-explain{padding-top:14px;border-top:1px solid #43546b}
+.heatmap-explain summary{cursor:pointer;color:#b7defc;font-size:12px;font-weight:700}
+.heatmap-explain p{color:#c2cdd8;font-size:12px;line-height:1.65;margin:11px 0 0;max-width:90ch}
+#combinedMap,#singleCircleMap,#coordinateExplorer{scroll-margin-top:78px}
+@media(max-width:850px){.heatmap-guide-head{grid-template-columns:1fr}.heatmap-guide-options{grid-template-columns:1fr}.heatmap-guide-options button{min-height:0;gap:7px}}
+@media(prefers-reduced-motion:reduce){.heatmap-guide-options button{transition:none}}
