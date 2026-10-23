@@ -14,6 +14,8 @@
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
+<link rel="stylesheet" href="./guided-review.css">
+<script src="./guided-review.js" defer></script>
 </head>
 <body data-rip-page="political-grid">
 <a class="skip" href="#grid">Skip to statements</a>
@@ -31,6 +33,14 @@
   <div class="hero-tags"><span>100 selectable statements</span><span>Multi-person heatmap</span><span>Editable submissions</span></div>
 </section>
 <div class="content-warning" role="note"><span class="warning-symbol" aria-hidden="true">!</span><p><strong>Content notice.</strong> This grid reproduces provocative, discriminatory, violent, and extremist statements from the supplied image for survey purposes. Inclusion is not an endorsement. The categories are visual groupings, not a validated political assessment.</p></div>
+<section class="survey-guide" aria-labelledby="surveyGuideTitle">
+ <div class="survey-guide-head"><div><span>HOW TO USE THE GRID / 01—03</span><h2 id="surveyGuideTitle">Your marks. Your <em>comparison.</em></h2></div><p>This is a community checklist, not a validated political test. Unmarked statements do not necessarily mean disagreement.</p></div>
+ <div class="survey-stages">
+  <a href="#grid"><span>01</span><strong>Mark statements</strong><small>Only select what you agree with.</small><b aria-hidden="true">↗</b></a>
+  <a href="#identity-title"><span>02</span><strong>Save if you choose</strong><small>Your nickname and selections become visible in shared results.</small><b aria-hidden="true">↗</b></a>
+  <a href="#overlap-lab"><span>03</span><strong>Explore overlaps</strong><small>See how marked statements compare across responses.</small><b aria-hidden="true">↗</b></a>
+ </div>
+ </section>
 <section class="identity-panel" aria-labelledby="identity-title">
   <div class="identity-info"><span class="section-index">01 / PARTICIPATE</span><h2 id="identity-title">Make your mark.</h2><p>Selections stay on your device while you work. Enter a name to save one editable response to the shared database.</p></div>
   <div class="identity-controls">
@@ -43,10 +53,12 @@
   <div class="section-heading"><div><span class="section-index">02 / THE GRID</span><h2 id="grid-heading">Select what you agree with.</h2><p>Click a tile to place an X. Click it again to remove the X. Unmarked statements count as not selected, not necessarily disagreed.</p></div><div class="counter"><strong id="selection-count">0<span> / 100</span></strong><small>SELECTED</small></div></div>
   <div class="toolbar">
     <div class="search-wrap"><label class="visually-hidden" for="statement-search">Find a statement</label><span aria-hidden="true">⌕</span><input id="statement-search" type="search" placeholder="Find a statement…" autocomplete="off"></div>
-    <div class="toolbar-right"><label class="stats-toggle"><input type="checkbox" id="overlay-toggle"> <span>Show community %</span></label><button id="clear-button" class="quiet-button" type="button">Clear marks</button><a href="#statistics" class="jump-button">View statistics ↓</a></div>
+    <div class="toolbar-right"><button type="button" class="survey-marked" id="markedOnly" aria-pressed="false">Show marked only</button><label class="stats-toggle"><input type="checkbox" id="overlay-toggle"> <span>Show community %</span></label><button id="clear-button" class="quiet-button" type="button">Clear marks</button><a href="#statistics" class="jump-button">View statistics ↓</a></div>
   </div>
   <div class="grid-legend" aria-label="The original image's color groups"><span><i class="legend-dot rose"></i>Upper left</span><span><i class="legend-dot blue"></i>Upper right</span><span><i class="legend-dot green"></i>Lower left</span><span><i class="legend-dot yellow"></i>Lower right</span></div>
   <div class="board" id="statement-board" aria-label="100 selectable statements arranged in four quadrants"></div>
+  <div class="survey-progress" aria-label="Marks in the current draft"><span>MARKED IN THIS DRAFT</span><div class="survey-progress-track" role="progressbar" aria-label="Statements marked with X" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="surveyProgressFill"></span></div><strong id="surveyProgressCount">0 of 100</strong></div>
+  <p class="survey-selection-hint" id="markedOnlyHint" hidden>You are viewing only statements marked with an X. Unmarked statements are still part of the survey. <button type="button" id="showAllStatements">Show all statements ↗</button></p>
   <div class="board-foot"><span><kbd>Click</kbd> or <kbd>Enter</kbd> to toggle</span><span>Selections are only saved online when you submit.</span></div>
 </section>
 <section id="overlap-lab" class="overlap-section" aria-labelledby="overlap-heading">
