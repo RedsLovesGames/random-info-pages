@@ -1,0 +1,19 @@
+/* Friend Group / zine-like editorial feature using actual archive records */
+body[data-rip-page="friends"] .quote-spotlight{margin:30px 0 33px;padding:0 25px;background:#251f30;border:1px solid rgba(195,173,240,.29);position:relative;overflow:hidden}
+body[data-rip-page="friends"] .quote-spotlight:after{content:"";position:absolute;right:-10%;top:-45%;width:38%;aspect-ratio:1;background:radial-gradient(circle,rgba(195,173,240,.13),transparent 68%);pointer-events:none}
+.quote-spotlight-top,.quote-spotlight-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:15px 0;border-bottom:1px solid rgba(239,226,248,.21);font:750 10px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.065em;color:#c3adf0}
+.quote-spotlight-top span:last-child{color:#a79db4}
+.quote-spotlight-body{display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);gap:30px;align-items:center;padding:clamp(28px,4vw,65px) 0}
+.quote-spotlight-body h2{font-size:clamp(26px,3.5vw,54px);letter-spacing:-.065em;line-height:1.02;margin:0 0 17px}
+.quote-spotlight-body h2 em{font-family:Georgia,serif;font-weight:400;color:#e7a6c2}
+.quote-byline{font:700 10px ui-monospace,Consolas,monospace;color:#ad9abf;text-transform:uppercase;letter-spacing:.04em}
+.quote-feature{font:500 clamp(23px,3.5vw,43px)/1.22 Georgia,serif;letter-spacing:-.045em;margin:0;color:#faf4fa;overflow-wrap:anywhere;white-space:pre-wrap}
+.quote-spotlight-foot{border-top:1px solid rgba(239,226,248,.21);border-bottom:0;font-size:10px;letter-spacing:0;color:#a79db4}
+.quote-spotlight-foot>div{display:flex;gap:8px;flex-wrap:wrap}
+.quote-spotlight-foot button{padding:10px 12px;border:1px solid #65546e;background:#342b43;color:#f0e9f3;cursor:pointer;font:750 11px ui-monospace,Consolas,monospace;transition:background .2s,border-color .2s}
+.quote-spotlight-foot button:last-child{background:#c3adf0;border-color:#c3adf0;color:#241b2e}
+.quote-spotlight-foot button:hover{background:#554267;border-color:#d4bff0;color:#fff}
+.quote-spotlight-foot button:focus-visible{outline:3px solid #d4bff0;outline-offset:3px}
+.game-key-hint{font:700 11px/1.55 ui-monospace,Consolas,monospace;letter-spacing:.025em;color:#c3adf0;text-align:center;margin:12px 0}
+@media(max-width:760px){.quote-spotlight-body{grid-template-columns:1fr;gap:16px}.quote-spotlight{padding-inline:17px}.quote-feature{font-size:clamp(23px,6vw,35px)}}
+@media(prefers-reduced-motion:reduce){.quote-spotlight-foot button{transition:none}}

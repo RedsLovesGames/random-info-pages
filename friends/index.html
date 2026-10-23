@@ -192,12 +192,18 @@ h1{font-size:clamp(3.15rem,9.5vw,6.4rem);line-height:.9;letter-spacing:-.065em;m
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
-</head>
+<link rel="stylesheet" href="./friend-zine.css"></head>
 <body data-rip-page="friends">
 <header class="top"><div class="wrap topin"><button class="brand" data-go="home" aria-label="Friend Group Hub home"><span class="mark">F</span><span>Friend Group</span></button><button class="homebtn" data-go="home">Home</button></div></header>
 <main class="wrap">
 <section class="view active" id="home">
   <div class="hero"><div class="eyebrow">Friend Group Hub</div><h1>Pick a thing.</h1><p class="lead">Quotes, a guessing game, weekly patch notes, and the only statistics that matter.</p></div>
+  <section class="quote-spotlight" aria-labelledby="quoteSpotlightTitle">
+    <div class="quote-spotlight-top"><span>FROM THE ARCHIVE / SPOTLIGHT</span><span>01 / FOUND WORDS</span></div>
+    <div class="quote-spotlight-body"><div><h2 id="quoteSpotlightTitle">An actual line<br><em>from the group.</em></h2><span class="quote-byline" id="featuredSpeaker">Loading archive…</span></div>
+    <blockquote class="quote-feature" id="featuredQuote">Looking through the quote archive…</blockquote></div>
+    <div class="quote-spotlight-foot"><span>Quotes are shown as recorded in the archive.</span><div><button type="button" id="anotherFeatured">Another quote ↻</button><button type="button" id="findFeatured">View in archive ↗</button></div></div>
+  </section>
   <div class="actions">
     <button class="action" data-go="quotes"><div><div class="icon">“ ”</div><b>Quotes</b><span>Read the Discord quote archive.</span></div><span>Open quotes →</span></button>
     <button class="action" data-go="guess"><div><div class="icon">?</div><b>Guess Who</b><span>See a quote. Pick who said it.</span></div><span>Play now →</span></button>
@@ -216,7 +222,7 @@ h1{font-size:clamp(3.15rem,9.5vw,6.4rem);line-height:.9;letter-spacing:-.065em;m
   <div class="sectiontop"><div><h2>Guess Who</h2><p>Pick the person who said the quote.</p></div><button class="back" data-go="home">← Home</button></div>
   <div class="game">
     <div class="gameQuote" id="gameQuote">Loading…</div>
-    <div class="answers" id="answers"></div>
+    <div class="answers" id="answers"></div><p class="game-key-hint">Pick a person · use number keys 1–4 on a keyboard</p>
     <div class="feedback" id="feedback"></div>
     <div class="scoreline"><div class="scorebox"><b id="score">0</b><span>Correct</span></div><div class="scorebox"><b id="streak">0</b><span>Streak</span></div><div class="scorebox"><b id="played">0</b><span>Played</span></div></div>
   </div>
@@ -247,6 +253,33 @@ function buildFilters(){const names=['All',...PEOPLE];$('#quoteFilters').innerHT
 function filteredQuotes(){const q=$('#quoteSearch').value.trim().toLowerCase();return quotes.filter(x=>(quoteFilter==='All'||(x.people||[]).includes(quoteFilter))&&(!q||x.text.toLowerCase().includes(q)||(x.context||'').toLowerCase().includes(q)||(x.people||[]).join(' ').toLowerCase().includes(q)))}
 function renderQuotes(){const list=filteredQuotes(),shown=list.slice().reverse().slice(0,quoteLimit);$('#quoteList').innerHTML=shown.length?shown.map(x=>`<article class="quoteCard"><div class="speaker">${esc((x.people||[]).join(' + '))}</div><p class="quoteText">“${esc(x.text)}”</p>${x.context?`<div class="context">${esc(x.context)}</div>`:''}</article>`).join(''):'<div class="empty">No quotes found.</div>';$('#moreQuotes').hidden=shown.length>=list.length}
 $('#quoteSearch').addEventListener('input',()=>{quoteLimit=30;renderQuotes()});$('#moreQuotes').onclick=()=>{quoteLimit+=30;renderQuotes()};
+let featuredQuote=null;
+function showFeaturedQuote(){
+ const available=quotes.filter(q=>typeof q.text==='string'&&q.text.trim());
+ const text=$('#featuredQuote'),speaker=$('#featuredSpeaker');
+ if(!available.length){featuredQuote=null;text.textContent='No quotes are available to feature.';speaker.textContent='Archive unavailable';return}
+ const pool=available.length>1?available.filter(q=>q!==featuredQuote):available;
+ featuredQuote=pool[Math.floor(Math.random()*pool.length)];
+ text.textContent='“'+featuredQuote.text+'”';
+ speaker.textContent=(featuredQuote.people||[]).join(' + ')||'Unattributed';
+}
+$('#anotherFeatured').addEventListener('click',showFeaturedQuote);
+$('#findFeatured').addEventListener('click',()=>{
+ if(!featuredQuote)return;
+ quoteFilter='All';quoteLimit=30;
+ $('#quoteSearch').value=featuredQuote.text;
+ $('.filter').forEach(button=>button.classList.toggle('active',button.dataset.person==='All'));
+ go('quotes');
+ $('#quoteSearch').focus({preventScroll:true});
+});
+document.addEventListener('keydown',event=>{
+ if(!$('#guess').classList.contains('active')||event.ctrlKey||event.altKey||event.metaKey||event.repeat)return;
+ if(event.target.closest?.('input,textarea,select,button,a,[contenteditable="true"]'))return;
+ const index=Number(event.key)-1;
+ if(!Number.isInteger(index)||index<0||index>3)return;
+ const choice=$('.answer')[index];
+ if(choice&&!choice.disabled){event.preventDefault();choice.click()}
+});
 function shuffle(a){const out=a.slice();for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out}
 function newGuess(){clearTimeout(game.timer);const pool=quotes.filter(q=>(q.people||[]).length===1);if(!pool.length){$('#gameQuote').textContent='Quotes could not be loaded.';$('#answers').innerHTML='';return}let next=pool[Math.floor(Math.random()*pool.length)];if(pool.length>1&&game.current&&next.id===game.current.id)next=pool[(pool.indexOf(next)+1)%pool.length];game.current=next;game.locked=false;$('#feedback').textContent='';$('#gameQuote').textContent='“'+next.text+'”';const answer=next.people[0],choices=shuffle([answer,...shuffle(PEOPLE.filter(p=>p!==answer)).slice(0,3)]);$('#answers').innerHTML=choices.map(p=>`<button class="answer" data-person="${p}">${p}</button>`).join('');$$('.answer').forEach(b=>b.onclick=()=>checkGuess(b,answer))}
 function checkGuess(btn,answer){if(game.locked)return;game.locked=true;game.played++;const right=btn.dataset.person===answer;if(right){game.score++;game.streak++;$('#feedback').textContent='Correct.';btn.classList.add('correct')}else{game.streak=0;$('#feedback').textContent='It was '+answer+'.';btn.classList.add('wrong');$$('.answer').find(b=>b.dataset.person===answer)?.classList.add('correct')}$('#score').textContent=game.score;$('#streak').textContent=game.streak;$('#played').textContent=game.played;game.timer=setTimeout(newGuess,1100)}
@@ -254,7 +287,7 @@ function renderPatches(){if(!weeks.length){$('#patchList').innerHTML='<div class
 $('#olderWeek').onclick=()=>{if(weekIndex>0){weekIndex--;renderPatches();scrollTo({top:0,behavior:'smooth'})}};$('#newerWeek').onclick=()=>{const releasedMax=Math.max(0,weeks.filter(w=>w<=localMondayISO()).length-1);if(weekIndex<releasedMax){weekIndex++;renderPatches();scrollTo({top:0,behavior:'smooth'})}};
 function renderStats(){const counts=Object.fromEntries(PEOPLE.map(p=>[p,0]));quotes.forEach(q=>(q.people||[]).forEach(p=>{if(p in counts)counts[p]++}));const total=Object.values(counts).reduce((a,b)=>a+b,0),ranked=PEOPLE.slice().sort((a,b)=>counts[b]-counts[a]);$('#totalQuotes').textContent=quotes.length;$('#totalAttributions').textContent=total;$('#topSpeaker').textContent=ranked[0]||'—';let deg=0,parts=[];PEOPLE.forEach((p,i)=>{const span=total?counts[p]/total*360:0;parts.push(`${COLORS[i]} ${deg}deg ${deg+span}deg`);deg+=span});$('#pie').style.background=total?`conic-gradient(${parts.join(',')})`:'#32293d';$('#legend').innerHTML=ranked.map(p=>{const i=PEOPLE.indexOf(p),pct=total?Math.round(counts[p]/total*100):0;return `<div class="leg"><span class="legname"><span class="dot" style="background:${COLORS[i]}"></span>${p}</span><span class="legcount">${counts[p]}</span><span class="legpct">${pct}%</span></div>`}).join('')}
 function localMondayISO(){const d=new Date(),day=(d.getDay()+6)%7;d.setHours(12,0,0,0);d.setDate(d.getDate()-day);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-async function init(){buildFilters();patchNotes=globalThis.PATCH_NOTES||[];weeks=[...new Set(patchNotes.filter(n=>PEOPLE.includes(n.person)).map(n=>n.week))].sort();const today=localMondayISO();const released=weeks.filter(w=>w<=today);weekIndex=released.length?released.length-1:0;try{const q=await fetch('./quotes.json?v=3');if(!q.ok)throw new Error('data');quotes=(await q.json()).quotes||[];renderQuotes();renderStats()}catch(e){$('#quoteList').innerHTML='<div class="empty">Could not load the archive. Refresh the page and try again.</div>'}renderPatches();const target=location.hash.replace('#','');go(['quotes','guess','patches','stats'].includes(target)?target:'home')}
+async function init(){buildFilters();patchNotes=globalThis.PATCH_NOTES||[];weeks=[...new Set(patchNotes.filter(n=>PEOPLE.includes(n.person)).map(n=>n.week))].sort();const today=localMondayISO();const released=weeks.filter(w=>w<=today);weekIndex=released.length?released.length-1:0;try{const q=await fetch('./quotes.json?v=3');if(!q.ok)throw new Error('data');quotes=(await q.json()).quotes||[];renderQuotes();renderStats();showFeaturedQuote()}catch(e){$('#quoteList').innerHTML='<div class="empty">Could not load the archive. Refresh the page and try again.</div>'}renderPatches();const target=location.hash.replace('#','');go(['quotes','guess','patches','stats'].includes(target)?target:'home')}
 init();
 </script>
 </body>
