@@ -1,0 +1,21 @@
+/* Nerdcore Prompt Builder / Swiss typographic writing workflow */
+body[data-rip-page="nerdcore-prompts"] .prompt-guide{background:#151f2b;border:1px solid #4b5872;color:#f2f4f6;padding:clamp(18px,2.4vw,35px);margin-top:16px;margin-bottom:25px}
+.prompt-guide-head{display:grid;grid-template-columns:1.1fr .9fr;align-items:end;gap:25px;padding-bottom:20px;border-bottom:1px solid #435269}
+.prompt-guide-head span,.prompt-steps a>span,.prompt-guide-progress>span{font:750 10px/1.5 ui-monospace,Consolas,monospace;color:#c3adf0;letter-spacing:.075em}
+.prompt-guide-head h2{font-size:clamp(30px,3.6vw,58px);line-height:.99;letter-spacing:-.075em;margin:11px 0 0;font-weight:650}
+.prompt-guide-head h2 em{font:400 1em Georgia,serif;color:#c3adf0}
+.prompt-guide-head p{margin:0;color:#bdc7d3;line-height:1.62;font-size:13px;max-width:50ch}
+.prompt-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:20px 0}
+.prompt-steps a{display:flex;position:relative;flex-direction:column;align-items:flex-start;gap:10px;min-height:151px;padding:18px 34px 16px 16px;background:#1d2d41;border:1px solid #435a73;color:#f2f4f6;text-decoration:none;transition:border-color .2s,background .2s,transform .2s}
+.prompt-steps a:hover{background:#2a405b;border-color:#c3adf0;transform:translateY(-2px)}
+.prompt-steps a:focus-visible{outline:2px solid #c3adf0;outline-offset:3px}
+.prompt-steps a strong{font-size:clamp(18px,2vw,27px);letter-spacing:-.055em;line-height:1.1}
+.prompt-steps a small{font-size:11px;line-height:1.55;color:#b9c6d7}
+.prompt-steps a b{position:absolute;right:12px;top:16px;color:#c3adf0;font-size:20px}
+.prompt-guide-progress{display:flex;align-items:center;gap:14px;border-top:1px solid #435269;padding-top:15px}
+.prompt-progress-track{height:7px;flex:1;background:#3d4858;overflow:hidden}
+.prompt-progress-track>span{height:100%;width:0;display:block;background:#c3adf0;transition:width .2s}
+.prompt-guide-progress strong{color:#e4d6fc;font:750 11px ui-monospace,Consolas,monospace;white-space:nowrap}
+@media(max-width:820px){.prompt-guide-head{grid-template-columns:1fr}.prompt-steps{grid-template-columns:1fr}.prompt-steps a{min-height:0;gap:7px}}
+@media(max-width:550px){.prompt-guide-progress{flex-wrap:wrap}.prompt-progress-track{order:3;flex-basis:100%}}
+@media(prefers-reduced-motion:reduce){.prompt-steps a,.prompt-progress-track>span{transition:none}}
