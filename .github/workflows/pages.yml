@@ -37,6 +37,9 @@ jobs:
       - name: Verify archive home
         run: |
           node --test tests/home-index.test.mjs
+          node --test tests/shard-fusions.test.mjs
+          node --check shard-fusions/app.mjs
+          node --check shard-fusions/calculator.mjs
           node --test tests/subpage-design.test.mjs
           node --test tests/deep-redesign.test.mjs
           node --test tests/third-pass-redesign.test.mjs
@@ -188,6 +191,10 @@ jobs:
           fi
           grep -Fq 'Saved names and X marks are visible to anyone with this page link' /tmp/political-grid.html
           grep -Fq 'political_grid_visible' /tmp/political-grid-overlap.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/shard-market.html "$base/shard-fusions/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/shard-calculator.js "$base/shard-fusions/calculator.mjs"
+          grep -Fq 'HYPIXEL SKYBLOCK' /tmp/shard-market.html
+          grep -Fq 'computeRankings' /tmp/shard-calculator.js
           grep -Fq './wheel/' /tmp/home.html
           grep -Fq './friends/' /tmp/home.html
 
