@@ -45,7 +45,7 @@
 <div class="control"><label class="main" for="tax">Bazaar sales tax</label><select id="tax"><option value="0.0125" selected>1.25% · standard</option><option value="0.01125">1.125% · Flipper I</option><option value="0.01">1.00% · Flipper II</option><option value="0.0225">2.25% · custom scenario</option></select></div>
 <div class="control"><label class="main" for="sell">How you sell</label><select id="sell"><option value="offer" selected>Sell offer · waits to fill</option><option value="instant">Instant sell · immediate</option></select><small>Inputs are instant-bought. Sell offers are priced near the best ask; no fill is guaranteed.</small></div>
 <div class="control"><label class="main" for="volume">Minimum sales / week</label><select id="volume"><option value="0">No minimum</option><option value="500">500</option><option value="1500" selected>1,500</option><option value="5000">5,000</option><option value="10000">10,000</option></select></div>
-<div class="control"><label class="check"><input id="chains" type="checkbox"> Allow one intermediate fusion</label><small>Compares cheapest intermediate costs. Chain estimates amortize surplus over batches.</small></div>
+<div class="control"><label class="check"><input id="chains" type="checkbox"> Allow one intermediate stage</label><small>Compares cheapest intermediate costs. Chain estimates amortize surplus over batches.</small></div>
 <div class="control"><label class="check"><input id="hideRisky" type="checkbox" checked> Exclude thin / wide-spread markets</label><small>Flags outputs with low weekly volume or an ask / bid spread over 1.8×.</small></div>
 <button type="button" class="refresh" id="refresh">Refresh market now ↻</button>
 </aside>
