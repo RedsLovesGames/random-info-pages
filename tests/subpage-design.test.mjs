@@ -92,6 +92,6 @@ test('redesigned project naming and archive separation still intact',()=>{
   assert.match(homepage,/const activeProjects=projects\.filter\(p=>!p\.a\)/);
   assert.match(homepage,/const archivedProjects=projects\.filter\(p=>p\.a\)/);
   assert.match(homepage,/href="\.\/archive\/"/);
-  assert.match(homepage,/id="heroTotal">19/);
+  assert.match(homepage,/id="heroTotal">20/);
   assert.match(file('archive/index.html'),/href="\.\.\/tideborne\/"/);
 });
