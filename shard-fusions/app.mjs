@@ -110,7 +110,7 @@ function render() {
   const qualifying = state.result.rows.filter(r => !r.risky);
   $("liquidCount").textContent = number(qualifying.length);
   const rows = visibleRows();
-  $("bestProfit").textContent = rows.length ? formatCoins(rows[0].profitPerHour) : "—";
+  $("bestProfit").textContent = rows.length ? formatCoins(Math.max(...rows.map(r => r.profitPerHour))) : "—";
   $("resultCount").textContent = number(rows.length) + " qualifying outputs";
   const body = $("rows");
   if (!rows.length) {
@@ -128,8 +128,8 @@ function render() {
         '<td class="amount">' + (100 * row.roi).toFixed(1) + '%</td></tr>';
     }).join("");
   }
-  if (state.selected && state.result.rows.some(r => r.id === state.selected)) {
-    detail(state.result.rows.find(r => r.id === state.selected));
+  if (state.selected && rows.some(r => r.id === state.selected)) {
+    detail(rows.find(r => r.id === state.selected));
   } else {
     $("details").hidden = true;
   }
