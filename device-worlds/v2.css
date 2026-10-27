@@ -1,0 +1,167 @@
+/* Device Worlds V2: interactive systems on top of the original four art directions. */
+.dw2-hub-button{pointer-events:auto;flex:0 0 auto;background:transparent;color:#fff;border:1px solid #ffffff55;font:10px var(--mono);padding:10px 14px;letter-spacing:.02em;backdrop-filter:blur(10px);white-space:nowrap}
+.dw2-hub-button:hover,.dw2-hub-button:focus-visible{background:#ffffff20}
+body:has(.world-apple:not([hidden])) .dw2-hub-button{color:#292832;border-color:#29283288}
+.dw2-hub,.dw2-between{border:1px solid #c7c8cb;background:#f6f5ef;color:#1d222a;width:min(780px,calc(100vw - 24px));max-height:min(90vh,900px);overflow-y:auto;padding:clamp(20px,4vw,38px);box-shadow:0 38px 120px #0008}
+.dw2-hub::backdrop,.dw2-between::backdrop{background:#070e14bb;backdrop-filter:blur(8px)}
+.dw2-hub button,.dw2-between button{cursor:pointer}
+.dw2-hub-top{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#5d6771;font:10px var(--mono);letter-spacing:.05em}
+.dw2-hub-top button,#dw2BetweenClose{font-size:27px;line-height:1;padding:4px 10px;border:1px solid #b6bbc5;background:transparent}
+.dw2-hub h2{font-size:clamp(46px,7.6vw,90px);line-height:.85;letter-spacing:-.085em;margin:28px 0 23px;font-weight:600}
+.dw2-hub h2 em,.dw2-between h2 em{font:italic 1.1em var(--serif);color:#4c5fbe}
+.dw2-hub>p{color:#606773;max-width:575px;line-height:1.5;font-size:14px}
+.dw2-snapshot{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:24px 0 12px}
+.dw2-snapshot>div{padding:16px;border:1px solid #ccd0d7;background:#fff;display:flex;flex-direction:column;gap:7px}
+.dw2-snapshot small{font:10px var(--mono);letter-spacing:.05em;color:#65717f}
+.dw2-snapshot strong{font-size:clamp(23px,4.2vw,35px);line-height:1;letter-spacing:-.06em;overflow-wrap:anywhere}
+.dw2-snapshot span{font:11px/1.5 var(--mono);color:#6c7480}
+.dw2-mini-wave{display:flex;align-items:end;justify-content:center;gap:8px;min-height:90px;border:1px solid #ced0d8;padding:10px;background:linear-gradient(160deg,#dfdfea,#f5f3e9)}
+.dw2-mini-wave button{min-width:24px;flex:1;max-width:62px;border:1px solid #9c9ac2;background:#8d9bd9;color:#1b2758;font-size:22px;transition:height .15s;display:grid;place-items:center}
+.dw2-mini-wave button:hover{background:#6f80c8}
+.dw2-progress{font:10px var(--mono)!important;letter-spacing:.03em}
+.dw2-hub-actions{display:flex;gap:8px;flex-wrap:wrap;margin:23px 0 18px}
+.dw2-hub-actions button,.dw2-import{border:1px solid #9b9fa8;padding:12px 14px;background:white;color:#2d3341;font:11px var(--mono)}
+.dw2-hub-actions button:hover,.dw2-import:hover{background:#e5e6fa}
+.dw2-import{cursor:pointer;position:relative;overflow:hidden}
+.dw2-import input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.dw2-import:focus-within{outline:3px solid #3c50d1;outline-offset:2px}
+#dw2BetweenOpen{border:0;background:#343d65;color:#fff;padding:15px 19px;width:100%;text-align:left;font:12px var(--mono);letter-spacing:.01em}
+#dw2BetweenOpen:hover{background:#20294e}
+.dw2-disclosure{font:11px/1.6 var(--mono);color:#777e86}
+.dw2-history{border-top:1px solid #cdd1d8;padding-top:21px;margin-top:19px}
+.dw2-history>b{font:11px var(--mono)}
+.dw2-history ol{padding-left:22px;color:#565d69;font:12px/1.85 var(--mono);overflow-wrap:anywhere}
+.dw2-storage-warning{font-size:11px;color:#8b352f}
+.dw2-between{background:radial-gradient(circle at 80% 15%,#32394d,#14171f 58%,#080a13);color:#f0f2ed;min-height: min(88vh,750px);position:relative;border-color:#535b6e}
+#dw2BetweenClose{position:absolute;right:23px;top:23px;border-color:#676a72;color:#fff}
+.dw2-between-center{width:min(640px,100%);margin:16px auto;text-align:center}
+.dw2-between-center>small{font:10px var(--mono);letter-spacing:.07em;color:#9ea6c0}
+.dw2-between h2{font-size:clamp(67px,12vw,145px);line-height:.77;letter-spacing:-.105em;margin:48px 0 31px}
+.dw2-between h2 em{color:#bea7ff}
+.dw2-between-center>p{max-width:480px;margin:0 auto;line-height:1.5;color:#bbc2d7;font-size:15px}
+.dw2-between-shapes{display:grid;grid-template-columns:repeat(8,1fr);align-items:center;gap:8px;margin:38px auto;min-height:120px}
+.dw2-between-shapes button{height:clamp(45px,6vw,75px);border:1px solid #fff5;background:color-mix(in srgb,var(--shape-color) 35%,#111526);color:white;font-size:39px;transform:rotate(var(--shape-rotation));transition:transform .35s,background .35s}
+.dw2-between-shapes button:hover{transform:rotate(calc(var(--shape-rotation) + 60deg)) scale(1.1)}
+.dw2-between-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-bottom:30px}
+.dw2-between-actions button{background:#e8e3f4;border:0;padding:12px 14px;color:#161725;font:11px var(--mono)}
+.dw2-between-actions button:hover{background:#c4b7f0}
+/* WINDOWS: preserve the hero while adding tangible mini-applications. */
+.world-win .win-desktop{min-height:640px}
+.world-win .win-icons{display:grid;grid-template-columns:repeat(2,minmax(75px,105px));max-width:235px;gap:10px;right:0;top:10px}
+.world-win .desktop-icon{min-height:99px;min-width:0}
+.world-win .dw2-desktop-icon .icon-glyph{background:linear-gradient(160deg,#eef6ff,var(--dw2-accent,#a8cef6));color:#163f6f}
+.dw2-desktop-readout{position:absolute;bottom:17px;left:0;max-width:600px;border-top:1px solid #e8efff55;padding-top:12px;font:11px var(--mono);letter-spacing:.03em;color:#d4e5ff}
+.dw2-windows{position:absolute;inset:0;z-index:15;pointer-events:none}
+.dw2-window{position:absolute;top:20%;left:16%;width:min(485px,calc(100vw - 38px));min-width:270px;min-height:200px;max-height:min(75vh,590px);background:#f4f5f6;border:1px solid #385474;box-shadow:8px 12px 0 #05183470,0 28px 100px #020f2b89;resize:both;overflow:auto;pointer-events:auto;color:#17253b}
+.dw2-window.dw2-maximized{left:1%!important;top:90px!important;width:98%!important;height:calc(100% - 165px);max-height:none;resize:none}
+.dw2-window-header{height:39px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-left:13px;background:linear-gradient(90deg,#c9dbf4,#f0f6ff);border-bottom:1px solid #9facbb;font:11px var(--mono);color:#284267;touch-action:none;cursor:grab}
+.dw2-window-header:active{cursor:grabbing}
+.dw2-window-header strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dw2-window-header>div{display:flex;gap:3px;margin-right:4px}
+.dw2-window-header button{height:29px;min-width:29px;border:1px solid #93a5bb;background:#fff;font-size:20px;line-height:1}
+.dw2-window-body{padding:19px 20px;max-height:450px;overflow:auto;color:#24344b;font-size:13px;line-height:1.5}
+.dw2-window-body button{font:11px var(--mono);cursor:pointer}
+.dw2-explorer-path{margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid #c4cfdb;font:11px var(--mono)}
+.dw2-folders{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px}
+.dw2-folders button{padding:8px;border:1px solid #c5cbda;background:white}
+.dw2-folders button.selected{background:#284c88;color:white}
+.dw2-file-row{display:grid;grid-template-columns:24px minmax(80px,.8fr) 1fr;text-align:left;width:100%;align-items:center;gap:9px;padding:10px 8px;border:0;border-bottom:1px solid #d8e0e9;background:transparent;color:#203d5b}
+.dw2-file-row:hover{background:#e2ebfa}
+.dw2-file-symbol{font-size:21px}
+.dw2-file-row small{font:10px/1.3 var(--mono);color:#6f7e8c}
+.dw2-file-disclaimer{color:#78879b;font:9px var(--mono);margin-top:15px}
+.dw2-file-text{overflow-wrap:anywhere;white-space:pre-wrap;font:12px/1.6 var(--mono);color:#263d5c}
+.dw2-app-caption{margin:0 0 12px;font:11px/1.5 var(--mono);color:#65748a}
+.dw2-pixel-grid{display:grid;grid-template-columns:repeat(8,minmax(20px,1fr));gap:2px;max-width:300px;aspect-ratio:1;margin:12px 0 17px;background:#cad3e2;padding:3px}
+.dw2-pixel{border:1px solid #aabbd2;background:#f3f7fb;aspect-ratio:1;padding:0}
+.dw2-pixel[data-shade="1"]{background:#9da6c4}
+.dw2-pixel[data-shade="2"]{background:#616d9d}
+.dw2-pixel[data-shade="3"]{background:#223c6a}
+.dw2-pixel:hover{outline:2px solid #ff9577;z-index:1}
+.dw2-window-body>button:not(.dw2-file-row){border:1px solid #9fb1cd;background:#e8effc;color:#254675;padding:9px;margin:8px 8px 0 0}
+.dw2-pet-big{font-size:77px;line-height:1;margin:12px 0}
+.dw2-window-body h3{margin:8px 0 12px;font-size:18px}
+.world-win .win-window{z-index:25}
+/* LINUX: more affordances without making the terminal a wall of buttons. */
+.dw2-chips{display:flex;flex-wrap:wrap;gap:8px;margin:19px 0 55px}
+.dw2-chips button{background:transparent;border:1px solid #63775b;color:#acc9a2;padding:9px 12px;font:11px var(--mono)}
+.dw2-chips button:hover{background:#213322;color:#e4f6db}
+.world-linux .terminal-input{position:relative}
+/* APPLE: a direct-manipulation instrument, not another desktop imitation. */
+.dw2-instrument{border-top:1px solid #d5ccd5;border-bottom:1px solid #d5ccd5;padding:16px 0 17px;margin:25px auto 31px;text-align:left;max-width:790px}
+.dw2-instrument-top{display:flex;justify-content:space-between;gap:12px;align-items:center;font:10px var(--mono);color:#716979;letter-spacing:.03em}
+.dw2-instrument canvas{display:block;margin:15px 0 3px;width:100%;height:clamp(125px,22vw,185px);border-radius:8px;border:1px solid #d9d3dc;background:radial-gradient(circle at 55% 45%,#d6cade87,#f8f5f3);touch-action:none;cursor:crosshair}
+.dw2-instrument>p{font:11px/1.55 var(--mono);color:#746b75;margin:12px 0}
+.dw2-note-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px}
+.dw2-note-grid button{min-height:42px;border:1px solid #c6bdd0;border-radius:4px;background:#f4eff6;color:#524564;font-size:20px}
+.dw2-note-grid button:hover{background:#dfd0e9}
+.dw2-apple-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px}
+.dw2-apple-tools button{border:1px solid #c2b6cb;border-radius:20px;background:white;color:#493e55;font:11px var(--mono);padding:11px 15px}
+.dw2-apple-tools button:hover{background:#e9ddeb}
+.dw2-apple-tools span{margin-left:auto;font:10px var(--mono);color:#857c8c}
+.world-apple .apple-center{max-width:950px}
+.world-apple .apple-orb-wrap{height:200px;margin-bottom:0}
+.world-apple .apple-orb{width:125px;height:125px}
+.world-apple .apple-layout{padding-bottom:20px}
+/* ANDROID: touch-sized functional pocket lab with changing simulated weather. */
+.dw2-pocket{font-size:11px;color:var(--dark);border-top:1px solid #38522c66;margin-top:18px;padding-top:14px}
+.dw2-pocket-bar{display:flex;justify-content:space-between;font:9px var(--mono);margin-bottom:10px;opacity:.8}
+.dw2-pocket-weather{background:linear-gradient(125deg,var(--accent),var(--surface));padding:14px;border-radius:19px;min-height:95px;overflow:hidden;position:relative}
+.dw2-pocket-weather::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(100deg,transparent 0 19px,#617f95aa 20px 21px,transparent 22px 45px);opacity:calc(var(--intensity,.1) * .38)}
+.dw2-pocket-weather>span{font-size:26px;display:block;line-height:1.2}
+.dw2-pocket-weather p{font:12px var(--sans);margin:8px 0 0}
+.dw2-pocket label{display:block;margin-top:14px;font:10px var(--mono)}
+.dw2-pocket label output{float:right}
+.dw2-pocket input[type="range"]{display:block;width:100%;margin-top:7px;accent-color:var(--dark);min-height:25px;cursor:pointer}
+.dw2-pocket-pet{display:flex;gap:10px;align-items:center;margin-top:14px;border-radius:19px;background:#ffffffaa;padding:10px}
+.dw2-pocket-pet>span{display:grid;place-items:center;width:43px;height:43px;flex:0 0 auto;border-radius:14px;background:var(--accent);font-size:15px}
+.dw2-pocket-pet div{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.dw2-pocket-pet strong,.dw2-pocket-pet b{font-size:11px}
+.dw2-pocket-pet small{font:9px var(--mono)}
+.dw2-pocket-pet button{width:39px;height:39px;flex:0 0 auto;border:0;background:var(--dark);color:#fff;border-radius:50%;font-size:24px}
+.dw2-pocket-inbox{display:flex;flex-direction:column;gap:6px;background:#ffffff9a;border-radius:17px;padding:12px;margin-top:12px}
+.dw2-pocket-inbox small{font:9px var(--mono);opacity:.65}
+.dw2-pocket-inbox span{font:10px/1.6 var(--mono);overflow-wrap:anywhere}
+.world-android .android-phone{min-height:750px}
+.world-android .phone-content{padding-bottom:58px}
+@media(max-width:850px){
+  .world-win .win-icons{position:static;grid-template-columns:repeat(3,minmax(75px,110px));max-width:100%;margin:35px 0 0}
+  .world-win .win-desktop{min-height:840px}
+  .dw2-window{max-height:65vh}
+}
+@media(max-width:560px){
+  .dw2-hub-button{padding:10px;font-size:9px}
+  .dw2-hub{padding:20px 15px}
+  .dw2-snapshot{gap:5px}
+  .dw2-snapshot>div{padding:11px}
+  .dw2-snapshot strong{font-size:20px}
+  .dw2-hub-actions button,.dw2-import{padding:11px}
+  .dw2-between{padding:40px 14px 20px}
+  .dw2-between-shapes{gap:3px}
+  .dw2-between-shapes button{font-size:23px}
+  .world-win .win-desktop{min-height:875px}
+  .world-win .win-icons{display:grid;grid-template-columns:repeat(3,minmax(72px,1fr));gap:3px;margin-top:18px}
+  .world-win .desktop-icon{width:auto;min-width:0}
+  .dw2-desktop-readout{bottom:57px;font-size:9px}
+  .dw2-window{width:calc(100vw - 30px);min-width:0;left:8px!important;top:220px!important;max-height:55vh;resize:none}
+  .dw2-window.dw2-maximized{top:60px!important;height:calc(100% - 130px)}
+  .dw2-window-body{padding:12px}
+  .dw2-file-row{grid-template-columns:22px minmax(72px,1fr);gap:6px}
+  .dw2-file-row small{grid-column:2}
+  .dw2-instrument{margin-top:25px}
+  .dw2-instrument-top{font-size:8px}
+  .dw2-note-grid{gap:3px}
+  .dw2-note-grid button{font-size:17px;min-height:37px}
+  .dw2-apple-tools button{padding:9px}
+  .world-android .android-phone{border:0;width:100%;border-radius:0;max-width:none;box-shadow:none}
+  .world-android .android-layout{width:100%;gap:15px}
+  .world-android .android-copy{padding:0 18px}
+  .world-android .phone-content{padding-left:19px;padding-right:19px}
+  .world-android .phone-camera{display:none}
+  .world-android .phone-home-indicator{display:none}
+  .world-android .phone-status{padding-top:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .dw2-mini-wave button,.dw2-between-shapes button{transition:none!important}
+  .dw2-between-shapes button:hover{transform:rotate(var(--shape-rotation))}
+}
