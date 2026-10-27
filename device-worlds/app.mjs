@@ -240,7 +240,7 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
   // ANDROID: each mock phone control visibly does something on the page.
   const phone = $('androidPhone');
   const notification = $('phoneNotification');
-  const colors = document.querySelectorAll('[data-accent]');
+  const colors = document.querySelectorAll('.color-choice[data-accent]');
   const night = $('phoneGlow');
   const notify = $('phoneNotify');
   const message = notification.querySelector('span:last-child');
