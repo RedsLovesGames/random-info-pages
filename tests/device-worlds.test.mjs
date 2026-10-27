@@ -36,7 +36,7 @@ test('each world exists as a separate hidden-by-default view', () => {
   for (const os of ['windows', 'linux', 'apple', 'android']) {
     assert.match(page, new RegExp('id="world-' + os + '" data-os="' + os + '"'));
     assert.match(page, new RegExp('data-world="' + os + '"'));
-    assert.match(styles, new RegExp('\\.world-' + os + '\\b'));
+    assert.match(styles, new RegExp('\\.world-' + (os === 'windows' ? 'win' : os) + '\\b'));
   }
   assert.match(page, /id="showAll"/);
   assert.match(page, /id="worldChooser"/);
