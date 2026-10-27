@@ -19,7 +19,7 @@ test('new experience is served through the original page without losing the OS s
 });
 test('each world has functional input and a cross-world representation',()=>{
   for(const hook of ['dw2-windows','dw2-explorer','dw2-pixel','dw2-pet','dw2-chips','dw2-instrument',
-      'dw2-note-grid','dw2-pocket','dw2-pip','dw2Between']){
+      'dw2-note-grid','dw2-pocket','dw2-pocket-pet','dw2Between']){
     assert.ok(app.includes(hook)||css.includes(hook),hook);
   }
   assert.match(app,/window\.AudioContext/);
