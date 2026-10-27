@@ -148,7 +148,15 @@ function painter(parent){
       cell.setAttribute('aria-label','Pixel '+(i+1)+', shade '+store.get().sketch[i]);},'dw2-pixel');
     cell.dataset.shade=v;cell.setAttribute('aria-label','Pixel '+(i+1)+', shade '+v);grid.append(cell);
   });
-  parent.append(grid,button('Clear',()=>{dispatch('SKETCH_CLEAR');painter(parent);}));
+  parent.append(grid,
+    button('♪ Turn drawing into music',()=>{
+      dispatch('SKETCH_TO_SIGNAL');
+      const info=make('p','dw2-app-caption','The drawing columns now play as eight notes on Apple, appear in Linux, and reach Android.');
+      parent.append(info);
+    }),
+    button('◈ Draw the current signal',()=>{dispatch('SIGNAL_TO_SKETCH');painter(parent);}),
+    button('Clear',()=>{dispatch('SKETCH_CLEAR');painter(parent);})
+  );
 }
 function petWindow(parent){
   const p=store.get().creature;
@@ -235,9 +243,11 @@ function execute(args,stdin){
     if(a==='reverse'){dispatch('REVERSE');return pulseText();}
     if(a==='rotate'){dispatch('ROTATE');return pulseText();}
     if(a==='remix'){dispatch('REMIX');return pulseText();}
+    if(a==='from-sketch'){dispatch('SKETCH_TO_SIGNAL');return 'The eight sketch columns became notes.\n'+pulseText();}
+    if(a==='to-sketch'){dispatch('SIGNAL_TO_SKETCH');return 'The signal became a constellation in Windows Tiny Paint.\n'+sketchText();}
     if(a==='tempo'){dispatch('TEMPO',{value:Number(args[2])});return pulseText();}
     if(a==='palette'){if(!PALETTES.includes(args[2]))return 'Palette: '+PALETTES.join(' | ');dispatch('PALETTE',{value:args[2]});return pulseText();}
-    return pulseText()+'\nCommands: signal reverse / rotate / remix / tempo 120 / palette blue';
+    return pulseText()+'\nCommands: signal reverse / rotate / remix / from-sketch / to-sketch / tempo 120 / palette blue';
   }
   if(op==='weather'){if(['rain','sun','wind'].includes(a)&&args[2]!==undefined)dispatch('WEATHER',{key:a,value:Number(args[2])});return weatherText();}
   if(op==='garden'){dispatch('GARDEN');return '  .  *   .    \\|/\n   \\ | /    -@-\n    \\|/     /|\\\n    / \\   .\nThe imaginary garden changed the weather in all four worlds.';}
@@ -346,6 +356,12 @@ $('dw2Play').onclick=async()=>{
 };
 $('dw2Shift').onclick=()=>dispatch('ROTATE');
 $('dw2AppleReverse').onclick=()=>dispatch('REVERSE');
+const visualize=button('◈ Draw these notes in Windows',()=>{
+  dispatch('SIGNAL_TO_SKETCH');
+  visualize.textContent='✓ Sent to Windows Paint';
+  setTimeout(()=>visualize.textContent='◈ Draw these notes in Windows',1600);
+},'dw2-visualize');
+document.querySelector('.dw2-apple-tools').append(visualize);
 new MutationObserver(()=>{if($('world-apple').hidden)stopAudio();})
   .observe($('world-apple'),{attributes:true,attributeFilter:['hidden']});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAudio();});
