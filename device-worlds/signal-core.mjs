@@ -161,8 +161,17 @@ export function transition(source, action) {
       const index = int(a.index,0,63,0), value = int(a.value,0,3,0);
       if (state.sketch[index] === value) return state;
       const sketch = [...state.sketch]; sketch[index] = value;
-      return log({ ...state, sketch }, world,
-        'Pixel ' + (index + 1) + ' changed in the shared sketch.', 'sketch.started');
+      // A painted column is a musical step. Its highest colored pixel sets pitch.
+      // This makes Windows Paint, Apple's instrument, Linux's signal file and
+      // Android's message genuinely different controls for the same object.
+      const steps = state.signal.steps.map((previous, column) => {
+        for (let row = 0; row < 8; row++) {
+          if (sketch[row * 8 + column] > 0) return 7 - row;
+        }
+        return previous;
+      });
+      return log({ ...state, sketch, signal: { ...state.signal, steps } }, world,
+        'Pixel ' + (index + 1) + ' painted into the eight-note signal.', 'sketch.started');
     }
     case 'SKETCH_TO_SIGNAL': {
       // Each of the eight drawing columns becomes one of eight notes.
