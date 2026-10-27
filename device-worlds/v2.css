@@ -1,6 +1,10 @@
 /* Device Worlds V2: interactive systems on top of the original four art directions. */
 .dw2-hub-button{pointer-events:auto;flex:0 0 auto;background:transparent;color:#fff;border:1px solid #ffffff55;font:10px var(--mono);padding:10px 14px;letter-spacing:.02em;backdrop-filter:blur(10px);white-space:nowrap}
 .dw2-hub-button:hover,.dw2-hub-button:focus-visible{background:#ffffff20}
+.dw2-fifth-dock{pointer-events:auto;border:1px solid #b9a7fc;background:#342d50;color:#eee8ff;width:35px;height:35px;min-width:35px;border-radius:50%;font-size:19px;line-height:1;display:grid;place-items:center;box-shadow:0 0 22px #c6b6ff77;animation:dw2-discovery-glow 4s ease-in-out infinite}
+.dw2-fifth-dock:hover{background:#5c4f85}
+@keyframes dw2-discovery-glow{50%{box-shadow:0 0 7px #b2a0e24d}}
+
 body:has(.world-apple:not([hidden])) .dw2-hub-button{color:#292832;border-color:#29283288}
 .dw2-hub,.dw2-between{border:1px solid #c7c8cb;background:#f6f5ef;color:#1d222a;width:min(780px,calc(100vw - 24px));max-height:min(90vh,900px);overflow-y:auto;padding:clamp(20px,4vw,38px);box-shadow:0 38px 120px #0008}
 .dw2-hub::backdrop,.dw2-between::backdrop{background:#070e14bb;backdrop-filter:blur(8px)}
@@ -122,6 +126,11 @@ body:has(.world-apple:not([hidden])) .dw2-hub-button{color:#292832;border-color:
 .dw2-pocket-inbox{display:flex;flex-direction:column;gap:6px;background:#ffffff9a;border-radius:17px;padding:12px;margin-top:12px}
 .dw2-pocket-inbox small{font:9px var(--mono);opacity:.65}
 .dw2-pocket-inbox span{font:10px/1.6 var(--mono);overflow-wrap:anywhere}
+.dw2-postcard{margin-top:11px;border:1px solid #40584249;border-radius:13px;padding:12px;background:#ffffff94}
+.dw2-postcard>small{display:block;font:9px var(--mono);margin-bottom:8px;opacity:.8}
+.dw2-postcard-grid{width:100px;height:100px;display:grid;grid-template-columns:repeat(8,1fr);gap:1px;background:#a3b99c;padding:2px}
+.dw2-postcard-pixel{background:#fafbf7}.dw2-postcard-pixel[data-shade="1"]{background:#9fb5aa}.dw2-postcard-pixel[data-shade="2"]{background:#5d8b80}.dw2-postcard-pixel[data-shade="3"]{background:#234e56}
+
 .world-android .android-phone{min-height:750px}
 .world-android .phone-content{padding-bottom:58px}
 @media(max-width:850px){
@@ -162,6 +171,8 @@ body:has(.world-apple:not([hidden])) .dw2-hub-button{color:#292832;border-color:
   .world-android .phone-status{padding-top:10px}
 }
 @media(prefers-reduced-motion:reduce){
+  .dw2-fifth-dock{animation:none!important}
+
   .dw2-mini-wave button,.dw2-between-shapes button{transition:none!important}
   .dw2-between-shapes button:hover{transform:rotate(var(--shape-rotation))}
 }

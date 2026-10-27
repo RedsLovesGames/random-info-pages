@@ -22,6 +22,8 @@ test('each world has functional input and a cross-world representation',()=>{
       'dw2-note-grid','dw2-pocket','dw2-pocket-pet','dw2Between']){
     assert.ok(app.includes(hook)||css.includes(hook),hook);
   }
+  assert.match(app,/dw2-fifth-dock/);
+  assert.match(app,/dw2PostcardGrid/);
   assert.match(app,/window\.AudioContext/);
   assert.match(app,/pointermove/);
   assert.match(app,/stopImmediatePropagation/);
@@ -69,6 +71,7 @@ test('a shared 8×8 painting and pocket companion react deterministically',()=>{
   let state=createInitialState();
   state=transition(state,{type:'SKETCH',index:14,value:3,world:'windows'});
   assert.equal(state.sketch[14],3);
+  assert.equal(state.signal.steps[6],6, 'the highest painted cell in a column sets its musical pitch');
   const mood=state.creature.mood;
   state=transition(state,{type:'PET',world:'android'});
   assert.equal(state.creature.mood,mood+13);

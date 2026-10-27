@@ -55,6 +55,10 @@ between.innerHTML='<button id="dw2BetweenClose" type="button" aria-label="Exit t
  +'<div class="dw2-between-shapes" id="dw2Shapes"></div><div class="dw2-between-actions"><button id="dw2BetweenMix" type="button">Remix the machine</button>'
  +'<button id="dw2BetweenShift" type="button">Shift time</button><button id="dw2BetweenRain" type="button">Summon imaginary rain</button></div><small>THE MACHINE REMEMBERS / YOU MAY REVISIT ANY TIME</small></div>';
 document.body.append(between);
+const fifthDock=button('✳',()=>between.showModal(),'dw2-fifth-dock');
+fifthDock.hidden=true;fifthDock.setAttribute('aria-label','Enter the unlocked fifth world');
+fifthDock.title='Enter the space between worlds';
+document.querySelector('.switch-dock').insertBefore(fifthDock,$('showAll'));
 $('dw2BetweenClose').onclick=()=>between.close();
 $('dw2BetweenOpen').onclick=()=>{hub.close();between.showModal();dispatch('DISCOVER',{id:'between.entered',label:'Opened the fifth interpretation.'});};
 $('dw2BetweenMix').onclick=()=>dispatch('REMIX');
@@ -71,7 +75,9 @@ function renderHub(s){
     b.title='Tune note '+(i+1);b.style.height=(28+v*5)+'px';return b;
   }));
   $('dw2History').replaceChildren(...s.journal.slice(-7).reverse().map(x=>make('li','',x.world.toUpperCase()+' / '+x.label)));
-  $('dw2BetweenOpen').hidden=!(s.visited.length===4 && s.discoveries.length>=2);
+  const fifthUnlocked=s.visited.length===4 && s.discoveries.length>=2;
+  $('dw2BetweenOpen').hidden=!fifthUnlocked;
+  fifthDock.hidden=!fifthUnlocked;
   $('dw2Shapes').replaceChildren(...s.signal.steps.map((v,i)=>{
     const b=button('◇',()=>dispatch('STEP',{index:i,value:(store.get().signal.steps[i]+1)%8}));
     b.style.setProperty('--shape-rotation',(v*31+i*18)+'deg');b.style.setProperty('--shape-color',colors[s.signal.palette]);return b;
@@ -141,7 +147,7 @@ function explorer(parent){
   parent.append(make('p','dw2-file-disclaimer','SIMULATED FILES / YOUR REAL FILESYSTEM IS UNTOUCHED'));
 }
 function painter(parent){
-  parent.replaceChildren(make('p','dw2-app-caption','Eight by eight. Click each pixel to change its shade. The same image exists as /gallery/sketch.txt on Linux.'));
+  parent.replaceChildren(make('p','dw2-app-caption','Eight by eight. Each column becomes a musical beat; its highest painted pixel sets the pitch. Hear it on Apple or inspect /gallery/sketch.txt on Linux.'));
   const grid=make('div','dw2-pixel-grid');grid.setAttribute('role','group');grid.setAttribute('aria-label','Shared pixel sketch');
   store.get().sketch.forEach((v,i)=>{
     const cell=button('',()=>{dispatch('SKETCH',{index:i,value:(store.get().sketch[i]+1)%4});cell.dataset.shade=store.get().sketch[i];
@@ -300,6 +306,13 @@ function draw(){
   ctx.clearRect(0,0,w,h);const g=ctx.createLinearGradient(0,0,w,h);
   g.addColorStop(0,'#ffffff00');g.addColorStop(.5,colors[s.signal.palette]+'88');g.addColorStop(1,'#ffffff08');
   ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  // Fictional pocket weather alters the Apple landscape as well as the phone.
+  ctx.strokeStyle='#668dac44';ctx.lineWidth=1;
+  for(let drop=0;drop<Math.floor(s.weather.rain/3);drop++){
+    const x=(drop*73+s.weather.wind*5)%w;
+    const y=(drop*49+s.weather.sun*2)%h;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-7-s.weather.wind/22,y+18);ctx.stroke();
+  }
   ctx.lineWidth=2;ctx.strokeStyle='#746b8690';
   for(let i=0;i<8;i++){
     const x=55+i*98,y=h-36-s.signal.steps[i]*20,n=h-36-s.signal.steps[(i+1)%8]*20;
@@ -377,6 +390,9 @@ pocket.innerHTML='<div class="dw2-pocket-bar"><b>POCKET WEATHER</b><span>SIMULAT
  +'<div class="dw2-pocket-inbox"><small>✳ MESSAGE FROM THE MACHINE</small><span id="dw2PocketPulse"></span></div>';
 const content=$('androidPhone').querySelector('.phone-content');
 content.insertBefore(pocket,content.querySelector('.phone-appbar'));
+const postcard=make('div','dw2-postcard');
+postcard.innerHTML='<small>✳ POSTCARD FROM WINDOWS PAINT</small><div class="dw2-postcard-grid" id="dw2PostcardGrid" aria-label="Eight by eight shared pixel sketch"></div>';
+pocket.append(postcard);
 for(const [key,id] of [['rain','dw2Rain'],['sun','dw2Sun']]) $(id).addEventListener('input',e=>dispatch('WEATHER',{key,value:Number(e.target.value)}));
 $('dw2Pet').onclick=()=>dispatch('PET');
 $('phoneWeather').addEventListener('click',()=>pocket.scrollIntoView({behavior:'smooth',block:'center'}));
@@ -391,6 +407,9 @@ function renderPocket(s){
   $('dw2PipStatus').textContent='Mood '+s.creature.mood+' · Energy '+s.creature.energy;
   $('dw2PipFace').style.background=colors[s.signal.palette];
   $('dw2PocketPulse').textContent=lines(s)+' / '+signature(s);
+  $('dw2PostcardGrid').replaceChildren(...s.sketch.map(value=>{
+    const pixel=make('span','dw2-postcard-pixel');pixel.dataset.shade=String(value);return pixel;
+  }));
 }
 store.subscribe(renderPocket);renderPocket(store.get());
 
