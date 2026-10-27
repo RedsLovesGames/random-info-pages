@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10131b">
+  <meta name="description" content="Four tiny internet worlds. The one you see depends on the device you brought.">
+  <title>Same URL, Different World | Random Info Pages</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <a class="skip" href="#worlds">Skip to the experience</a>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="Random Info Pages home"><span class="brand-symbol">R/</span><span>RANDOM INFO PAGES</span></a>
+    <span class="edition">AN EXPERIMENT IN WHERE YOU ARE</span>
+    <span class="header-serial">EXP—024</span>
+  </header>
+  <main id="worlds">
+    <section class="world world-win" id="world-windows" data-os="windows" aria-labelledby="win-title" hidden>
+      <div class="win-grid"></div>
+      <div class="win-desktop">
+        <div class="win-kicker"><span class="light"></span> PERSONAL COMPUTER / SESSION 01</div>
+        <h1 id="win-title">A little<br>window into<br><i>everything.</i></h1>
+        <p>Welcome to the part of the internet that still believes your computer is a place, not just a browser.</p>
+        <div class="win-icons" aria-label="Desktop shortcuts">
+          <button type="button" class="desktop-icon" data-win="about"><span class="icon-glyph" aria-hidden="true">▤</span><span>READ_ME.txt</span></button>
+          <button type="button" class="desktop-icon" data-win="files"><span class="icon-glyph" aria-hidden="true">▦</span><span>My things</span></button>
+          <button type="button" class="desktop-icon" data-win="secret"><span class="icon-glyph" aria-hidden="true">✳</span><span>Absolutely not a secret</span></button>
+        </div>
+        <div class="win-window" id="winWindow" role="region" aria-label="Desktop window" hidden>
+          <div class="win-titlebar"><span class="win-window-title" id="winWindowTitle">READ_ME.txt</span><button type="button" id="winClose" aria-label="Close desktop window">×</button></div>
+          <div class="win-window-body" id="winWindowBody"></div>
+        </div>
+      </div>
+      <div class="win-taskbar">
+        <button class="start-button" type="button" id="winStart" aria-expanded="false" aria-controls="startMenu"><span class="start-squares" aria-hidden="true">⊞</span> Start</button>
+        <span class="taskbar-caption">Random Info / Windows edition</span>
+        <span class="taskbar-clock" id="winClock">--:--</span>
+        <div class="start-menu" id="startMenu" hidden>
+          <span class="start-menu-heading">A VERY SMALL START MENU</span>
+          <button type="button" data-win="about">▤ &nbsp; About this place</button>
+          <button type="button" data-win="files">▦ &nbsp; Look through the files</button>
+          <button type="button" data-win="secret">✳ &nbsp; Classified curiosity</button>
+          <button type="button" id="winRestart">↻ &nbsp; Refresh the desktop</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="world world-linux" id="world-linux" data-os="linux" aria-labelledby="linux-title" hidden>
+      <div class="linux-noise" aria-hidden="true"></div>
+      <div class="linux-shell">
+        <div class="linux-overline">RANDOM INFO PAGES <span>//</span> UNRESTRICTED PLAYGROUND</div>
+        <div class="linux-intro">
+          <span class="linux-prompt-sign" aria-hidden="true">&gt;_</span>
+          <div><h1 id="linux-title">The best interface<br>is a <em>question.</em></h1><p>You're on Linux. So here is an actual little terminal to poke around in. Nothing runs on your computer. Everything here is imaginary, except the curiosity.</p></div>
+        </div>
+        <div class="terminal" aria-label="Interactive pretend terminal">
+          <div class="terminal-bar"><div class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></div><span>guest@the-internet:~</span><span>⌘ / TTY-01</span></div>
+          <div class="terminal-content" id="terminalOutput" role="log" aria-live="polite" aria-relevant="additions">
+            <p class="term-muted">Random Info Operating System [version 0.0.1]<br>Type <strong>help</strong> for commands. This is a toy, not a real shell.</p>
+          </div>
+          <form id="terminalForm" class="terminal-input"><label for="terminalCommand"><span>guest@random</span>:~$</label><input id="terminalCommand" name="command" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command" placeholder="try: help"></form>
+        </div>
+        <div class="linux-footnote"><span>NO ROOT ACCESS REQUIRED</span><span>OPEN SOURCE IN SPIRIT, OPEN ENDED BY DESIGN.</span></div>
+      </div>
+    </section>
+
+    <section class="world world-apple" id="world-apple" data-os="apple" aria-labelledby="apple-title" hidden>
+      <div class="apple-halo apple-halo-one" aria-hidden="true"></div><div class="apple-halo apple-halo-two" aria-hidden="true"></div>
+      <div class="apple-layout">
+        <div class="apple-topline"><span>THE QUIET CORNER</span><span id="appleDeviceLabel">MADE FOR YOUR APPLE DEVICE</span></div>
+        <div class="apple-center">
+          <p class="apple-eyebrow">ONE TAB. NO URGENCY.</p>
+          <h1 id="apple-title">A little less<br><em>internet.</em></h1>
+          <p class="apple-copy">Not everything needs an alert. Sometimes the most useful page is the one that asks nothing of you.</p>
+          <div class="apple-orb-wrap"><div class="apple-orb" id="appleOrb" aria-hidden="true"><div class="apple-orb-core"></div></div><div class="apple-orb-label" id="appleBreathLabel" aria-live="polite">A moment to yourself</div></div>
+          <div class="apple-controls">
+            <button type="button" class="apple-primary" id="appleBreathe">Breathe with the page <span aria-hidden="true">↗</span></button>
+            <button type="button" class="apple-secondary" id="appleNoteToggle" aria-expanded="false" aria-controls="appleNoteWrap">Leave a thought +</button>
+          </div>
+          <div class="apple-note-wrap" id="appleNoteWrap" hidden>
+            <label for="appleNote">A note just for this browser</label><textarea id="appleNote" rows="3" maxlength="300" placeholder="Something worth remembering…"></textarea>
+            <p class="apple-note-help" id="appleSaveStatus" aria-live="polite">Saved locally on this device, not sent anywhere.</p>
+          </div>
+        </div>
+        <div class="apple-bottomline"><span>BE HERE, NOT EVERYWHERE.</span><span id="appleGreeting">GOOD DAY.</span></div>
+      </div>
+    </section>
+
+    <section class="world world-android" id="world-android" data-os="android" aria-labelledby="android-title" hidden>
+      <div class="android-layout">
+        <div class="android-copy">
+          <span class="android-eyebrow">HELLO FROM THE POCKET INTERNET / 04</span>
+          <h1 id="android-title">A whole world.<br><em>One thumb.</em></h1>
+          <p>Your tiny control center for doing absolutely nothing important. The buttons work, the colors change, and the notifications are harmless.</p>
+          <div class="android-choices" aria-label="Pick a phone color">
+            <span>Choose your signal</span>
+            <button type="button" class="color-choice" data-accent="lime" aria-label="Use lime colors" aria-pressed="true"><i class="swatch lime"></i></button>
+            <button type="button" class="color-choice" data-accent="lilac" aria-label="Use lilac colors" aria-pressed="false"><i class="swatch lilac"></i></button>
+            <button type="button" class="color-choice" data-accent="peach" aria-label="Use peach colors" aria-pressed="false"><i class="swatch peach"></i></button>
+          </div>
+        </div>
+        <div class="android-phone" id="androidPhone" data-accent="lime">
+          <div class="phone-camera" aria-hidden="true"></div>
+          <div class="phone-status"><span id="phoneClock">9:41</span><span aria-hidden="true">◆  ▰</span></div>
+          <div class="phone-content">
+            <p class="phone-day" id="phoneDay">TODAY, IN YOUR POCKET</p>
+            <h2>Good to<br>be here<span>.</span></h2>
+            <button type="button" class="phone-weather" id="phoneWeather"><span class="weather-sun" aria-hidden="true">✺</span><span><strong>100%</strong><small>chance of curiosity</small></span><span class="weather-arrow" aria-hidden="true">↗</span></button>
+            <div class="phone-actions">
+              <button type="button" class="phone-tile" id="phoneGlow" aria-pressed="false"><span aria-hidden="true">◐</span><strong>Night mode</strong><small>OFF</small></button>
+              <button type="button" class="phone-tile" id="phoneNotify" aria-pressed="false"><span aria-hidden="true">▤</span><strong>Notifications</strong><small>OPEN</small></button>
+            </div>
+            <div class="phone-notification" id="phoneNotification" aria-live="polite"><span class="notif-dot"></span><span><strong>System message</strong><br>You're exactly where you need to be.</span></div>
+            <div class="phone-appbar"><span>THE POCKET DESKTOP</span><span aria-hidden="true">● ● ●</span></div>
+            <div class="phone-apps">
+              <button type="button" id="phoneSurprise"><span aria-hidden="true">✳</span><small>Surprise</small></button>
+              <button type="button" id="phoneHello"><span aria-hidden="true">☺</span><small>Say hi</small></button>
+              <button type="button" id="phoneReset"><span aria-hidden="true">↺</span><small>Reset</small></button>
+            </div>
+          </div>
+          <div class="phone-home-indicator" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+    <noscript><div class="no-script">This experiment needs JavaScript to detect your device. <a href="../">Return to Random Info Pages.</a></div></noscript>
+  </main>
+  <footer class="switch-dock">
+    <div class="switch-meta">YOU ARE SEEING <strong id="currentWorld">YOUR DEVICE</strong> <span class="switch-autodetect" id="detectionLabel">/ AUTO-DETECTED</span></div>
+    <button type="button" id="showAll" class="show-all" aria-haspopup="dialog">all 4 worlds <span aria-hidden="true">↗</span></button>
+  </footer>
+  <dialog id="worldChooser" aria-labelledby="chooserTitle">
+    <div class="chooser-top"><span class="chooser-kicker">FOUR SYSTEMS, FOUR PERSONALITIES</span><button type="button" id="closeChooser" aria-label="Close version chooser">×</button></div>
+    <h2 id="chooserTitle">Same address.<br><em>Different universe.</em></h2>
+    <p>Normally this page detects your operating system. Pick any edition to peek behind the curtain. The URL updates, so you can share a specific one.</p>
+    <div class="chooser-grid">
+      <button type="button" data-world="windows"><span class="chooser-symbol win-symbol">⊞</span><strong>Windows</strong><small>A little desktop with secrets.</small><span class="chooser-arrow">↗</span></button>
+      <button type="button" data-world="linux"><span class="chooser-symbol linux-symbol">&gt;_</span><strong>Linux</strong><small>Talk to a terminal.</small><span class="chooser-arrow">↗</span></button>
+      <button type="button" data-world="apple"><span class="chooser-symbol apple-symbol">◌</span><strong>Apple</strong><small>A moment of calm.</small><span class="chooser-arrow">↗</span></button>
+      <button type="button" data-world="android"><span class="chooser-symbol android-symbol">◉</span><strong>Android</strong><small>A pocket-sized playground.</small><span class="chooser-arrow">↗</span></button>
+    </div>
+    <button type="button" class="return-auto" id="returnAuto">↶ Back to automatic detection</button>
+  </dialog>
+</body>
+</html>

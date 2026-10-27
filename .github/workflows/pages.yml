@@ -37,6 +37,8 @@ jobs:
       - name: Verify archive home
         run: |
           node --test tests/home-index.test.mjs
+          node --test tests/device-worlds.test.mjs
+          node --check device-worlds/app.mjs
           node --test tests/shard-fusions.test.mjs
           node --check shard-fusions/app.mjs
           node --check shard-fusions/calculator.mjs
@@ -195,6 +197,11 @@ jobs:
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/shard-calculator.js "$base/shard-fusions/calculator.mjs"
           grep -Fq 'HYPIXEL SKYBLOCK' /tmp/shard-market.html
           grep -Fq 'computeRankings' /tmp/shard-calculator.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/device-worlds.html "$base/device-worlds/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/device-worlds.js "$base/device-worlds/app.mjs"
+          grep -Fq 'id="worldChooser"' /tmp/device-worlds.html
+          grep -Fq 'export function detectOS' /tmp/device-worlds.js
+          grep -Fq './device-worlds/' /tmp/home.html
           grep -Fq './wheel/' /tmp/home.html
           grep -Fq './friends/' /tmp/home.html
 

@@ -16,7 +16,7 @@ const requiredRoutes = [
   'political-grid', 'infrastructure-atlas', 'wanuiv2',
   'nerdcore-prompts', 'music-microscope', 'one-million',
   'algorithm-arena', 'cryptography-museum', '9-11-timeline',
-  'belief-atlas'
+  'belief-atlas', 'device-worlds'
 ];
 
 test('new homepage has the intended editorial interface', () => {
@@ -41,7 +41,7 @@ test('classic homepage is preserved as a separate functional page', () => {
 });
 
 test('all public project routes remain in the new index without duplicates', () => {
-  assert.equal(projects.length, 23);
+  assert.equal(projects.length, 24);
   assert.equal(new Set(projects.map(p => p.p)).size, projects.length);
   assert.equal(new Set(projects.map(p => p.n)).size, projects.length);
   for (const route of requiredRoutes) {
@@ -125,7 +125,7 @@ test('human-facing project labels are clear, unique, and backwards searchable', 
 test('VCT and Tideborne are archived, remain available, and are excluded from the active project index', () => {
   const archived=projects.filter(p=>p.a);
   assert.deepEqual(Array.from(archived,p=>p.p).sort(),['./tide2/','./tideborne/','./vct-scout/'].sort());
-  assert.equal(projects.filter(p=>!p.a).length,20);
+  assert.equal(projects.filter(p=>!p.a).length,21);
   assert.match(html,/const activeProjects=projects\.filter\(p=>!p\.a\)/);
   assert.match(html,/const shown=activeProjects\.filter/);
   assert.match(html,/const p=activeProjects\[Math\.floor\(Math\.random\(\)\*activeProjects\.length\)\]/);
