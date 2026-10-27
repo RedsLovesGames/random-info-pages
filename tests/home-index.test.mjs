@@ -16,7 +16,7 @@ const requiredRoutes = [
   'political-grid', 'infrastructure-atlas', 'wanuiv2',
   'nerdcore-prompts', 'music-microscope', 'one-million',
   'algorithm-arena', 'cryptography-museum', '9-11-timeline',
-  'belief-atlas', 'device-worlds'
+  'belief-atlas'
 ];
 
 test('new homepage has the intended editorial interface', () => {
@@ -52,6 +52,13 @@ test('all public project routes remain in the new index without duplicates', () 
   for (const p of projects) {
     assert.ok(p.n && p.c && p.k.length > 10, p.n + ' has searchable metadata');
   }
+});
+
+test('Device Worlds is discoverable in the new index', () => {
+  const project=projects.find(p=>p.p==='./device-worlds/');
+  assert.ok(project && !project.a);
+  assert.equal(project.c,'Experiments');
+  assert.ok(existsSync(new URL('../device-worlds/index.html', import.meta.url)));
 });
 
 test('category controls and project metadata remain in sync', () => {
