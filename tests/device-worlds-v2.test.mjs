@@ -110,3 +110,21 @@ test('event history is bounded, unknown actions do not modify state',()=>{
   const seen=transition(s,{type:'VISIT',world:'linux'});
   assert.deepEqual(transition(seen,{type:'VISIT',world:'linux'}).visited,['linux']);
 });
+
+test('sketch and music translate into one another across OS worlds',()=>{
+  let s=createInitialState('translation-demo');
+  assert.equal(transition(s,{type:'SKETCH_TO_SIGNAL',world:'windows'}).revision,0,'blank drawing is unchanged');
+  s=transition(s,{type:'SKETCH',world:'windows',index:0,value:3});
+  s=transition(s,{type:'SKETCH',world:'windows',index:8,value:3});
+  s=transition(s,{type:'SKETCH',world:'windows',index:16,value:3});
+  s=transition(s,{type:'SKETCH_TO_SIGNAL',world:'windows'});
+  assert.equal(s.signal.steps[0],3,'column ink converted to audible note');
+  assert.equal(s.signal.steps[1],0,'empty column becomes lowest note');
+  assert.ok(s.discoveries.includes('sketch.sonified'));
+  s=transition(s,{type:'STEP',world:'apple',index:2,value:7});
+  s=transition(s,{type:'SIGNAL_TO_SKETCH',world:'apple'});
+  assert.equal(s.sketch[2],3,'high note converted into top pixel');
+  assert.equal(s.sketch[10],1,'a shadow helps visually identify note position');
+  assert.ok(s.discoveries.includes('signal.visualized'));
+  assert.equal(s.journal.at(-1).world,'apple');
+});

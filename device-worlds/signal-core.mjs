@@ -164,6 +164,28 @@ export function transition(source, action) {
       return log({ ...state, sketch }, world,
         'Pixel ' + (index + 1) + ' changed in the shared sketch.', 'sketch.started');
     }
+    case 'SKETCH_TO_SIGNAL': {
+      // Each of the eight drawing columns becomes one of eight notes.
+      if (state.sketch.every(value => value === 0)) return state;
+      const steps = Array.from({ length: 8 }, (_, x) => {
+        let ink = 0;
+        for (let y = 0; y < 8; y++) ink += state.sketch[y * 8 + x];
+        return Math.min(7, Math.round(ink / 3));
+      });
+      return log({ ...state, signal: { ...state.signal, steps } }, world,
+        'The eight sketch columns were translated into eight notes.', 'sketch.sonified');
+    }
+    case 'SIGNAL_TO_SKETCH': {
+      // A note draws a dot at its height; the lower pixel is its shadow.
+      const sketch = Array(64).fill(0);
+      state.signal.steps.forEach((note, x) => {
+        const y = 7 - note;
+        sketch[y * 8 + x] = 3;
+        if (y < 7) sketch[(y + 1) * 8 + x] = 1;
+      });
+      return log({ ...state, sketch }, world,
+        'The eight notes were translated into a tiny constellation.', 'signal.visualized');
+    }
     case 'SKETCH_CLEAR':
       return log({ ...state, sketch: Array(64).fill(0) }, world,
         'The shared canvas was cleared.');
