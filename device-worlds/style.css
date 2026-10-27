@@ -13,7 +13,7 @@ a{color:inherit;text-decoration:none}
 .site-header{height:70px;padding:0 clamp(20px,4vw,60px);position:absolute;z-index:20;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:15px;pointer-events:none}
 .site-header>*{pointer-events:auto}
 .brand{display:flex;align-items:center;gap:11px;font-size:11px;font-weight:800;letter-spacing:.05em}
-.brand-symbol{width:30px;height:30px;display:grid;place-items:center;background:currentColor;color:transparent;position:relative;font-size:0}
+.brand-symbol{width:30px;height:30px;display:grid;place-items:center;background:#fff;color:transparent;position:relative;font-size:0}
 .brand-symbol:after{content:'R/';position:absolute;color:#13141c;font-size:13px;letter-spacing:-.08em}
 .edition,.header-serial{font:10px var(--mono);letter-spacing:.07em;opacity:.67}
 .world{min-height:100svh;position:relative;overflow:hidden;padding-top:82px;padding-bottom:103px;isolation:isolate}
@@ -92,6 +92,7 @@ a{color:inherit;text-decoration:none}
 .world-apple .site-header{color:#292832}
 .world-apple{color:#292832}
 body:has(.world-apple:not([hidden])) .site-header{color:#292832}
+body:has(.world-apple:not([hidden])) .brand-symbol{background:#292832}
 body:has(.world-apple:not([hidden])) .brand-symbol:after{color:#f7f3ed}
 body:has(.world-apple:not([hidden])) .switch-dock:before{background:linear-gradient(0deg,#f7f3ed,transparent)}
 body:has(.world-apple:not([hidden])) .switch-meta{color:#292832}
