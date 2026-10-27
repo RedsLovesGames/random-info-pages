@@ -39,6 +39,9 @@ jobs:
           node --test tests/home-index.test.mjs
           node --test tests/device-worlds.test.mjs
           node --check device-worlds/app.mjs
+          node --test tests/device-worlds-v2.test.mjs
+          node --check device-worlds/signal-core.mjs
+          node --check device-worlds/v2.mjs
           node --test tests/shard-fusions.test.mjs
           node --check shard-fusions/app.mjs
           node --check shard-fusions/calculator.mjs
@@ -144,6 +147,9 @@ jobs:
 
       - name: Verify staged Random Info Computer
         run: |
+          test -f _site/device-worlds/v2.mjs
+          test -f _site/device-worlds/signal-core.mjs
+          test -f _site/device-worlds/v2.css
           test -f _site/computer/index.html
           test -f _site/os/index.html
           test -f _site/os/doom.jsdos
@@ -201,6 +207,8 @@ jobs:
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/device-worlds.js "$base/device-worlds/app.mjs"
           grep -Fq 'id="worldChooser"' /tmp/device-worlds.html
           grep -Fq 'export function detectOS' /tmp/device-worlds.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/device-worlds-v2.js "$base/device-worlds/v2.mjs"
+          grep -Fq 'createSignalStore' /tmp/device-worlds-v2.js
           grep -Fq './device-worlds/' /tmp/home.html
           grep -Fq './wheel/' /tmp/home.html
           grep -Fq './friends/' /tmp/home.html
