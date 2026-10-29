@@ -22,7 +22,13 @@ const games:any={};for(const g of ['alex','doron']){const rows=all.filter((r:any
 async function settle(tx:any,s:any){if(s.stage!=='question')return;const tally:any=Object.fromEntries(s.options.map((o:any)=>[o.id,{sum:0,first:0,second:0,third:0}]));const seq=sequence(s);for(const [name,vote] of Object.entries(s.votes) as [string,string[]][]){if(!s.players.some((p:any)=>p.name===name))continue;for(let i=0;i<vote.length;i++){const o=s.options.find((o:any)=>o.id===vote[i]);if(!o||o.author===name)continue;const inc=3-i,field=['first','second','third'][i];tally[o.id].sum+=inc;tally[o.id][field]++;s.scores[o.author].sum+=inc;s.scores[o.author][field]++;s.byGame[seq.game][o.author].sum+=inc;s.byGame[seq.game][o.author][field]++;}}
 for(const o of s.options){s.scores[o.author].rounds++;s.byGame[seq.game][o.author].rounds++;}
 const prompts=s.questionText?[]:await tx`select prompt from rankriot_questions where game=${seq.game} and question_index=${seq.index}`;
-const round={status:'scored',game:seq.game,questionIndex:seq.index,number:seq.index+1,question:s.questionText||prompts[0]?.prompt||'',completedAt:new Date().toISOString(),votes:Object.keys(s.votes).length,results:s.options.map((o:any)=>({author:o.author,answer:o.text,...tally[o.id]})).sort((a:any,b:any)=>b.sum-a.sum||b.first-a.first||a.author.localeCompare(b.author))};
+const ranked=s.options.map((o:any)=>({author:o.author,answer:o.text,...tally[o.id]}))
+  .sort((a:any,b:any)=>b.sum-a.sum||b.first-a.first||b.second-a.second||b.third-a.third||a.author.localeCompare(b.author));
+ranked.forEach((a:any,i:number)=>{
+  const previous=ranked[i-1];
+  a.rank=previous&&a.sum===previous.sum&&a.first===previous.first&&a.second===previous.second&&a.third===previous.third?previous.rank:i+1;
+});
+const round={status:'scored',game:seq.game,questionIndex:seq.index,number:seq.index+1,question:s.questionText||prompts[0]?.prompt||'',completedAt:new Date().toISOString(),votes:Object.keys(s.votes).length,results:ranked};
 if(!Array.isArray(s.history))s.history=[];s.history.push(round);
 s.round={totals:tally,received:Object.keys(s.votes).length};s.stage='reveal';}
 
