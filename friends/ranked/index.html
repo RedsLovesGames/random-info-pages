@@ -164,7 +164,7 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
     }
     case 'open-result':{
       const pin=target.dataset.pin;
-      if(!/^\\d{6}$/.test(pin))throw new Error('Invalid saved game PIN.');
+      if(!/^\d{6}$/.test(pin))throw new Error('Invalid saved game PIN.');
       state.savedResult=await rpc('result',{secret:state.secret,pin});
       state.view='saved-result';render();return;
     }
