@@ -30,56 +30,56 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
  */
 (() => {
   'use strict';
-  const PEOPLE = ['Tommy','Mike','Jack','Ethan','Rita','Nora'];
+  const PEOPLE = ['Tommy','Mike','Jack','Ethan','Rita','Nora','Alex','Doron'];
   const $ = (selector) => document.querySelector(selector);
   const app = $('#app');
   const toast = $('#toast');
   const storage = window.localStorage;
   const params = new URLSearchParams(window.location.search);
-  const urlServer = params.get('server') || '';
-  const state = {view:'home',server:validServer(urlServer) ? urlServer : (storage.getItem('rank-riot-server') || ''),secret:sessionStorage.getItem('rank-riot-host') || '',
-    pin:params.get('pin') || '',playerKey:'',name:'',snapshot:null,setup:null,rank:[],requesting:false,loading:false,lastStage:'',sound:storage.getItem('rank-riot-sound') !== 'off',networkError:false};
-  if(validServer(state.server)) storage.setItem('rank-riot-server',state.server);
+  const ENDPOINT = 'https://bpudsyyepiminpdxlquz.supabase.co/functions/v1/rank-riot';
+  const state = {view:'home',secret:storage.getItem('rank-riot-host-key') || '',pin:params.get('pin') || '',
+    playerKey:'',name:'',snapshot:null,setup:null,rank:[],requesting:false,loading:false,lastStage:'',sound:storage.getItem('rank-riot-sound') !== 'off',networkError:false};
   if(state.pin && !/^\d{6}$/.test(state.pin)) state.pin='';
   if(state.pin) state.view='join';
   const esc = (value) => String(value==null?'':value).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function validServerFn(url){return /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(String(url||'').trim());}
-  // Resolve before first use; supports typed URLs containing harmless query strings.
-  function validServer(url){return validServerFn(url);}
   function beep(pitch=660){if(!state.sound)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ac=new AC(),osc=ac.createOscillator(),gain=ac.createGain();osc.type='triangle';osc.frequency.value=pitch;gain.gain.setValueAtTime(.035,ac.currentTime);gain.gain.exponentialRampToValueAtTime(.0005,ac.currentTime+.16);osc.connect(gain).connect(ac.destination);osc.start();osc.stop(ac.currentTime+.17);setTimeout(()=>ac.close(),260);}catch{}}
   function notify(message,error=false){toast.textContent=message;toast.className='toast visible'+(error?' error':'');clearTimeout(notify.t);notify.t=setTimeout(()=>toast.className='toast',4400);}
   function updateConnection(ok){$('#connectionStatus').textContent=ok?'CONNECTED':'OFFLINE';$('#connectionStatus').classList.toggle('online',ok);}
-  function joinUrl(){const u=new URL(window.location.href);u.search='';u.searchParams.set('server',state.server);u.searchParams.set('pin',state.pin);return u.toString();}
+  function joinUrl(){const u=new URL(window.location.href);u.search='';u.searchParams.set('pin',state.pin);return u.toString();}
   function roomKey(pin,name){return 'rank-riot-player-'+pin+'-'+name;}
-  function rpc(action,payload={}){
-    if(!validServer(state.server))return Promise.reject(new Error('Connect the Google Apps Script Web App URL first.'));
-    return new Promise((resolve,reject)=>{
-      const key='rankCb_'+Math.random().toString(36).slice(2,13);const script=document.createElement('script');let settled=false;
-      const done=(error,response)=>{if(settled)return;settled=true;clearTimeout(timeout);script.remove();delete window[key];if(error){updateConnection(false);reject(error);}else{updateConnection(true);resolve(response);}};
-      const timeout=setTimeout(()=>done(new Error('Server timed out. Confirm the web app is deployed with Anyone access.')),25000);
-      window[key]=(response)=>{if(!response || !response.ok)done(new Error(response?.error||'The game server returned an error.'));else done(null,response.data);};
-      const endpoint=new URL(state.server);endpoint.searchParams.set('callback',key);
-      endpoint.searchParams.set('payload',JSON.stringify({action,...payload}));
-      script.onerror=()=>done(new Error('Could not reach the Apps Script server. Confirm the /exec URL and deployment access.'));
-      script.src=endpoint.toString();document.head.appendChild(script);
-    });
+  async function rpc(action,payload={}){
+    const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),15000);
+    try{
+      const res=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...payload}),signal:controller.signal,cache:'no-store'});
+      const json=await res.json();
+      if(!res.ok || !json.ok) throw new Error(json?.error||'Game server unavailable.');
+      updateConnection(true);return json.data;
+    }catch(err){updateConnection(false);if(err.name==='AbortError')throw new Error('Server timed out. Try again.');throw err;}
+    finally{clearTimeout(timeout);}
   }
   function header(title,subtitle=''){return `<div class="eyebrow">${esc(subtitle)}</div><h1 class="subhead">${esc(title)}</h1>`;}
   function button(label,action,cls='btn',extra=''){return `<button type="button" class="${cls}" data-action="${action}" ${extra}>${label}</button>`;}
-  function home(){return `<section class="shell hero-grid"><div><div class="eyebrow">THE ALEX + DORON EDITION / 2026</div><h1 class="display">RANK<br><i>RIOT.</i></h1><p class="lead">Six anonymous answers. Three ranked votes. One brutally competitive leaderboard. Your friends wrote the answers. You decide who wins.</p><div class="button-row">${button('JOIN A GAME ↗','view-join')}${button('HOST A GAME ↗','view-setup','btn alt')}</div><p class="tiny" style="margin-top:30px">50 ORIGINAL PROMPTS · ALEX / DORON / DOUBLE FEATURE · LIVE ON EVERY PHONE</p></div><div class="orbit" aria-hidden="true"><strong>3<span style="color:white">/</span>2<span style="color:white">/</span>1</strong></div></section>`;}
-  function serverField(){return `<div class="field"><label for="serverUrl">Google Apps Script server URL</label><input id="serverUrl" type="url" autocomplete="off" spellcheck="false" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(state.server)}"><div class="tiny">One-time setup: deploy the included Code.gs as a Google Apps Script Web App. Your sheet stays private in your Google account.</div></div>`;}
+  function home(){return `<section class="shell hero-grid"><div><div class="eyebrow">THE ALEX + DORON EDITION / 2026</div><h1 class="display">RANK<br><i>RIOT.</i></h1><p class="lead">Six anonymous answers each round. Three ranked votes. One brutally competitive leaderboard. Your friends wrote the answers. You decide who wins.</p><div class="button-row">${button('JOIN A GAME ↗','view-join')}${button('HOST A GAME ↗','view-setup','btn alt')}</div><p class="tiny" style="margin-top:30px">50 ORIGINAL PROMPTS · ALEX / DORON / DOUBLE FEATURE · LIVE ON EVERY PHONE</p></div><div class="orbit" aria-hidden="true"><strong>3<span style="color:white">/</span>2<span style="color:white">/</span>1</strong></div></section>`;}
   function setupView(){
-    let sections='';
-    if(state.setup){sections=['alex','doron'].map(g=>{
-      const data=state.setup.games[g];const ready=data.perQuestion.filter(x=>x>=4).length;
-      return `<section class="panel stack" data-form="${g}"><div class="meta-row"><div><div class="eyebrow">${g.toUpperCase()} / ANSWER SOURCE</div><h3 style="margin:9px 0;font-size:1.7rem">${data.tab?esc(data.tab):'Response tab missing'}</h3></div><span class="tag ${ready===25?'ready':'warning'}">${ready}/25 playable</span></div><p class="copy">${data.responses.length} response rows found. Assign every submitted row to its author. Nobody can vote for their own response. Empty questions can be skipped by the host.</p>${data.responses.length?`<div class="mapping-list">${data.responses.map(r=>`<div class="mapping"><div><strong>Row ${r.row}</strong><small>${esc(r.identifier)} · ${r.filled}/25 answers</small></div><select aria-label="Author of row ${r.row}" data-row="${r.row}" data-game="${g}"><option value="">Unassigned</option>${PEOPLE.map(name=>`<option value="${name}" ${(data.mapping[r.row]||r.suggestedName)===name?'selected':''}>${name}</option>`).join('')}</select></div>`).join('')}</div>${button('Save '+g+' author assignments','save-map','btn small',`data-game="${g}"`)}`:`<div class="empty">No linked response rows. Open the Google Form → Responses → Link to Sheets → use the connected workbook. If it already uses another spreadsheet, edit RR_SHEET_ID in Code.gs.</div>`}</section>`;
-    }).join('');
-    }
-    return `<section class="shell"><div class="meta-row"><div>${header('Host control room','MISSION CONTROL / SETUP')}</div>${button('← BACK','view-home','btn ghost small')}</div><div class="two-col"><div class="panel stack">${serverField()}<div class="field"><label for="hostPass">Host passphrase</label><input id="hostPass" type="password" value="${esc(state.secret)}" placeholder="From installRankRiot() execution log"></div><div class="button-row">${button('Connect & inspect sheets','inspect')}${button('Copy source sheet link','sheet-link','btn ghost')}</div><p class="tiny">The host passphrase is never shown to players. If you have not initialized the script, run installRankRiot() once in the Apps Script editor.</p></div><div class="panel stack"><div class="eyebrow">NEW GAME</div><div class="field"><label for="gameMode">Game</label><select id="gameMode"><option value="alex">Alex · 25 questions</option><option value="doron">Doron · 25 questions</option><option value="both">Double feature · 50 questions</option></select></div><div class="field"><label for="duration">Voting time per question</label><select id="duration"><option value="30">30 seconds</option><option value="45" selected>45 seconds</option><option value="60">60 seconds</option><option value="90">90 seconds</option></select></div>${button('Create live room ↗','create','btn full')}<p class="tiny">Scores belong to answer writers, not voters. 1st/2nd/3rd receive 3/2/1 points; ranked averages determine the winner.</p></div></div>${state.setup?`<h2 style="margin-top:50px">Response mapping</h2><div class="two-col">${sections}</div>`:`<div class="panel" style="margin-top:20px"><div class="eyebrow">LIVE DATA REQUIREMENTS</div><p class="copy">The linked tracker currently has no Alex or Doron response tabs. Once actual Google Form responses are linked, this screen detects all 25 question headers and lets you map the six rows to Tommy, Mike, Jack, Ethan, Rita and Nora.</p><a href="https://docs.google.com/spreadsheets/d/1ZIs8vwnnIAy-rEU8QsGXRBSZ7BoudigjYU9v00-d5iY/edit" target="_blank" rel="noopener noreferrer">Open connected responses workbook ↗</a></div>`}</section>`;
+    const stats=state.setup;
+    return `<section class="shell"><div class="meta-row"><div>${header('Host control room','MISSION CONTROL / SUPABASE')}</div>${button('← BACK','view-home','btn ghost small')}</div>
+      <div class="two-col"><div class="panel stack"><div class="eyebrow">HOST SIGN-IN</div>
+      <p class="copy">Supabase is connected directly. Enter your private host key once on this device. Players never need it.</p>
+      <div class="field"><label for="hostPass">Host access key</label><input id="hostPass" type="password" autocomplete="off" value="${esc(state.secret)}" placeholder="Enter your private host key"></div>
+      ${button('VERIFY HOST ACCESS','inspect')}
+      <p class="tiny">Your key is stored in this browser only. No Google Apps Script URL is required.</p></div>
+      <div class="panel stack"><div class="eyebrow">NEW GAME</div>
+      <div class="field"><label for="gameMode">Game</label><select id="gameMode"><option value="alex">Alex · 25 questions</option><option value="doron">Doron · 25 questions</option><option value="both">Double feature · 50 questions</option></select></div>
+      <div class="field"><label for="duration">Voting time per question</label><select id="duration"><option value="30">30 seconds</option><option value="45" selected>45 seconds</option><option value="60">60 seconds</option><option value="90">90 seconds</option></select></div>
+      ${button('CREATE LIVE ROOM ↗','create','btn full')}
+      <p class="tiny">Answer writers earn 3/2/1 points for first, second, and third rankings. Self-voting is blocked.</p></div></div>
+      <div class="panel" style="margin-top:20px"><div class="eyebrow">PRELOADED RESPONSES</div>
+      ${stats?`<div class="two-col" style="margin-top:18px">${['alex','doron'].map(game=>{const d=stats.games[game];return `<div><h2>${game==='alex'?'Alex':'Doron'} · ${d.perQuestion.filter(n=>n>=4).length}/25 playable</h2><p class="copy">${d.authors.join(', ')}</p><p class="tiny">${d.perQuestion.reduce((a,b)=>a+b,0)} submitted answers.</p></div>`}).join('')}</div>`:'<p class="copy">The two uploaded response spreadsheets have been imported into the private game database. Verify host access to inspect all 50 rounds.</p>'}
+      <p class="tiny">The original Excel submissions are the preloaded snapshot. New Google Forms submissions are not continuously synchronized until an additional Sheets integration is configured.</p></div></section>`;
   }
-  function joinView(){return `<section class="shell narrow"><div class="meta-row">${header('Enter the arena','JOIN / LIVE GAME')}${button('← HOME','view-home','btn ghost small')}</div><div class="panel stack">${state.server?'':serverField()}<div class="field"><label for="pinInput">Six-digit game PIN</label><input id="pinInput" inputmode="numeric" maxlength="6" pattern="[0-9]*" autocomplete="off" style="font-size:2.8rem;font-family:var(--mono);text-align:center;letter-spacing:.13em" value="${esc(state.pin)}" placeholder="000000"></div><div class="field"><label for="playerName">Which response is yours?</label><select id="playerName"><option value="">Choose your name</option>${PEOPLE.map(name=>`<option ${state.name===name?'selected':''}>${name}</option>`).join('')}</select></div>${button('JOIN ROOM ↗','join','btn full')}<p class="tiny">You will see everyone’s answers, but you cannot rank your own. Pick your favorite three in order.</p></div></section>`;}
+  function joinView(){return `<section class="shell narrow"><div class="meta-row">${header('Enter the arena','JOIN / LIVE GAME')}${button('← HOME','view-home','btn ghost small')}</div><div class="panel stack"><div class="field"><label for="pinInput">Six-digit game PIN</label><input id="pinInput" inputmode="numeric" maxlength="6" pattern="[0-9]*" autocomplete="off" style="font-size:2.8rem;font-family:var(--mono);text-align:center;letter-spacing:.13em" value="${esc(state.pin)}" placeholder="000000"></div><div class="field"><label for="playerName">Which response is yours?</label><select id="playerName"><option value="">Choose your name</option>${PEOPLE.map(name=>`<option ${state.name===name?'selected':''}>${name}</option>`).join('')}</select></div>${button('JOIN ROOM ↗','join','btn full')}<p class="tiny">You will see everyone’s answers, but you cannot rank your own. Pick your favorite three in order.</p></div></section>`;}
   function hostActions(s){if(s.stage==='lobby')return button('START GAME ↗','advance');if(s.stage==='question')return button('REVEAL ANSWERS EARLY ↗','advance','btn alt');if(s.stage==='reveal')return button('SHOW LEADERBOARD ↗','advance');if(s.stage==='leaderboard'||s.stage==='skipped')return button(s.questionIndex===s.count-1?'FINISH GAME ↗':'NEXT QUESTION ↗','advance');return button('NEW GAME','view-setup');}
-  function lobby(s){return `<section class="shell center"><div class="eyebrow">ROOM IS LIVE / ${esc(s.mode.toUpperCase())}</div><h1 class="subhead" style="margin-top:23px">Join at <span style="color:var(--green)">Rank Riot</span></h1><p class="copy">Share the link or ask everyone to enter this code.</p><div class="pin">${esc(s.pin)}</div><div class="button-row" style="justify-content:center">${button('COPY JOIN LINK','copy-link','btn ghost')}${button('COPY PIN','copy-pin','btn ghost')}</div><h2 style="margin:50px 0 20px">Players in room <span style="color:var(--green)">${s.players.length}/6</span></h2><div class="player-chips">${s.players.map(n=>`<span class="chip">${esc(n)}</span>`).join('')}</div><p class="tiny" style="margin-top:21px">${s.players.length===0?'Waiting for the first player…':'Waiting for everyone to join…'}</p>${state.view==='host'?`<div style="margin-top:38px">${hostActions(s)}</div>`:'<div class="flair" aria-hidden="true" style="margin-top:44px">✳</div>'}</section>`;}
+  function lobby(s){return `<section class="shell center"><div class="eyebrow">ROOM IS LIVE / ${esc(s.mode.toUpperCase())}</div><h1 class="subhead" style="margin-top:23px">Join at <span style="color:var(--green)">Rank Riot</span></h1><p class="copy">Share the link or ask everyone to enter this code.</p><div class="pin">${esc(s.pin)}</div><div class="button-row" style="justify-content:center">${button('COPY JOIN LINK','copy-link','btn ghost')}${button('COPY PIN','copy-pin','btn ghost')}</div><h2 style="margin:50px 0 20px">Players in room <span style="color:var(--green)">${s.players.length}/8</span></h2><div class="player-chips">${s.players.map(n=>`<span class="chip">${esc(n)}</span>`).join('')}</div><p class="tiny" style="margin-top:21px">${s.players.length===0?'Waiting for the first player…':'Waiting for everyone to join…'}</p>${state.view==='host'?`<div style="margin-top:38px">${hostActions(s)}</div>`:'<div class="flair" aria-hidden="true" style="margin-top:44px">✳</div>'}</section>`;}
   function timer(s){return `<div class="round-header"><div class="pill">${esc(s.game.toUpperCase())} / Q ${s.number} OF 25</div><div class="countdown" id="countdown">${Math.ceil(s.seconds)}</div></div><div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>`;}
   function answerCards(s){return `<div class="answer-grid">${s.options.map((o,i)=>{
     const rank=state.rank.indexOf(o.id),isPlayer=state.view==='player' && s.stage==='question',canVote=isPlayer&&!o.mine&&!s.voted;
@@ -107,31 +107,25 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
     else updateTimer();
   }
   function confetti(){if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;for(let i=0;i<65;i++){const e=document.createElement('span');e.className='confetti';e.style.setProperty('--left',Math.random()*100+'vw');e.style.setProperty('--duration',(1.4+Math.random()*2.5)+'s');e.style.setProperty('--drift',(Math.random()-.5)*280+'px');e.style.setProperty('--color',['#cbff4d','#ff729f','#7bdcff','#ffbd6e','#c2a7ff'][i%5]);document.body.append(e);setTimeout(()=>e.remove(),4400);}}
-  async function poll(force=false){if(!['host','player'].includes(state.view)||!state.pin||state.requesting)return;if(!validServer(state.server))return;
+  async function poll(force=false){if(!['host','player'].includes(state.view)||!state.pin||state.requesting)return;
     state.requesting=true;try{const snapshot=await rpc('state',{pin:state.pin,secret:state.view==='host'?state.secret:'',playerKey:state.view==='player'?state.playerKey:''});state.networkError=false;onSnapshot(snapshot);}catch(err){if(!state.networkError||force)notify(err.message,true);state.networkError=true;}finally{state.requesting=false;}
   }
   function fieldValue(id){return ($('#'+id)?.value||'').trim();}
-  function saveServer(){const url=fieldValue('serverUrl')||state.server;if(!validServer(url))throw new Error('Enter the deployed Apps Script /exec URL, not its editor link.');state.server=url;storage.setItem('rank-riot-server',url);}
   async function act(action,target){switch(action){
     case 'view-home':state.view='home';state.snapshot=null;render();return;
     case 'view-join':state.view='join';render();return;
     case 'view-setup':state.view='setup';state.snapshot=null;render();return;
-    case 'sheet-link':window.open('https://docs.google.com/spreadsheets/d/1ZIs8vwnnIAy-rEU8QsGXRBSZ7BoudigjYU9v00-d5iY/edit','_blank','noopener');return;
     case 'inspect':{
-      saveServer();state.secret=fieldValue('hostPass');sessionStorage.setItem('rank-riot-host',state.secret);
-      state.setup=await rpc('setup',{secret:state.secret});render();notify('Sheets inspected. Assign each row to its author.');return;
-    }
-    case 'save-map':{
-      const game=target.dataset.game,assignments=[...document.querySelectorAll(`select[data-game="${game}"]`)].map(el=>({row:Number(el.dataset.row),name:el.value}));
-      state.setup=await rpc('saveMap',{secret:state.secret,game,assignments});render();notify(game.toUpperCase()+' assignments saved.');return;
+      state.secret=fieldValue('hostPass');
+      state.setup=await rpc('setup',{secret:state.secret});storage.setItem('rank-riot-host-key',state.secret);render();notify('Host verified. All 50 rounds are ready.');return;
     }
     case 'create':{
-      if(!state.secret)throw new Error('Enter and connect your host passphrase first.');
+      if(fieldValue('hostPass')){state.secret=fieldValue('hostPass');storage.setItem('rank-riot-host-key',state.secret);}
+      if(!state.secret)throw new Error('Enter your host access key first.');
       const response=await rpc('create',{secret:state.secret,game:fieldValue('gameMode'),seconds:Number(fieldValue('duration'))});
       state.pin=response.pin;state.view='host';state.rank=[];await poll(true);notify('Room '+state.pin+' is open.');return;
     }
     case 'join':{
-      if(!state.server)saveServer();
       const pin=fieldValue('pinInput'),name=fieldValue('playerName');
       if(!/^\d{6}$/.test(pin))throw new Error('Enter a six-digit PIN.');
       if(!PEOPLE.includes(name))throw new Error('Choose your name.');
@@ -164,7 +158,7 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   app.addEventListener('click',async event=>{const target=event.target.closest('[data-action]');if(!target)return;const action=target.dataset.action;try{target.disabled=true;await act(action,target);}catch(err){notify(err.message,true);}finally{if(target.isConnected)target.disabled=false;}});
   $('#soundButton').addEventListener('click',()=>{state.sound=!state.sound;storage.setItem('rank-riot-sound',state.sound?'on':'off');$('#soundButton').textContent=state.sound?'♪':'×';if(state.sound)beep();});
   $('#soundButton').textContent=state.sound?'♪':'×';
-  // A room link joins with its server URL encoded; no player needs to configure anything.
+  // Room join links carry only the public PIN. The host key is never included.
   render();setInterval(()=>{poll(false);updateTimer();},1850);setInterval(updateTimer,150);
 })();
 
