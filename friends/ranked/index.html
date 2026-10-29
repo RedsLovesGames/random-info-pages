@@ -67,6 +67,9 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
       <p class="copy">Supabase is connected directly. Enter your private host key once on this device. Players never need it.</p>
       <div class="field"><label for="hostPass">Host access key</label><input id="hostPass" type="password" autocomplete="off" value="${esc(state.secret)}" placeholder="Enter your private host key"></div>
       ${button('VERIFY HOST ACCESS','inspect')}
+      <div class="field"><label for="startPin">Existing room PIN</label><input id="startPin" inputmode="numeric" maxlength="6" pattern="[0-9]*" autocomplete="off" value="${esc(storage.getItem('rank-riot-last-host-pin') || '')}" placeholder="6-digit room PIN"></div>
+      ${button('START NOW ↗','start-now','btn full')}
+      <p class="tiny">Start the first question in an existing lobby right away. If the game is already running, this opens its host controls.</p>
       <p class="tiny">Your key is stored in this browser only. No Google Apps Script URL is required.</p></div>
       <div class="panel stack"><div class="eyebrow">NEW GAME</div>
       <div class="field"><label for="gameMode">Game</label><select id="gameMode"><option value="alex">Alex · 25 questions</option><option value="doron">Doron · 25 questions</option><option value="both">Double feature · 50 questions</option></select></div>
@@ -78,7 +81,7 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
       <p class="tiny">The original Excel submissions are the preloaded snapshot. New Google Forms submissions are not continuously synchronized until an additional Sheets integration is configured.</p></div></section>`;
   }
   function joinView(){return `<section class="shell narrow"><div class="meta-row">${header('Enter the arena','JOIN / LIVE GAME')}${button('← HOME','view-home','btn ghost small')}</div><div class="panel stack"><div class="field"><label for="pinInput">Six-digit game PIN</label><input id="pinInput" inputmode="numeric" maxlength="6" pattern="[0-9]*" autocomplete="off" style="font-size:2.8rem;font-family:var(--mono);text-align:center;letter-spacing:.13em" value="${esc(state.pin)}" placeholder="000000"></div><div class="field"><label for="playerName">Which response is yours?</label><select id="playerName"><option value="">Choose your name</option>${PEOPLE.map(name=>`<option ${state.name===name?'selected':''}>${name}</option>`).join('')}</select></div>${button('JOIN ROOM ↗','join','btn full')}<p class="tiny">You will see everyone’s answers, but you cannot rank your own. Pick your favorite three in order.</p></div></section>`;}
-  function hostActions(s){if(s.stage==='lobby')return button('START GAME ↗','advance');if(s.stage==='question')return button('REVEAL ANSWERS EARLY ↗','advance','btn alt');if(s.stage==='reveal')return button('SHOW LEADERBOARD ↗','advance');if(s.stage==='leaderboard'||s.stage==='skipped')return button(s.questionIndex===s.count-1?'FINISH GAME ↗':'NEXT QUESTION ↗','advance');return button('NEW GAME','view-setup');}
+  function hostActions(s){if(s.stage==='lobby')return button('START NOW ↗','advance');if(s.stage==='question')return button('REVEAL ANSWERS EARLY ↗','advance','btn alt');if(s.stage==='reveal')return button('SHOW LEADERBOARD ↗','advance');if(s.stage==='leaderboard'||s.stage==='skipped')return button(s.questionIndex===s.count-1?'FINISH GAME ↗':'NEXT QUESTION ↗','advance');return button('NEW GAME','view-setup');}
   function lobby(s){return `<section class="shell center"><div class="eyebrow">ROOM IS LIVE / ${esc(s.mode.toUpperCase())}</div><h1 class="subhead" style="margin-top:23px">Join at <span style="color:var(--green)">Rank Riot</span></h1><p class="copy">Share the link or ask everyone to enter this code.</p><div class="pin">${esc(s.pin)}</div><div class="button-row" style="justify-content:center">${button('COPY JOIN LINK','copy-link','btn ghost')}${button('COPY PIN','copy-pin','btn ghost')}</div><h2 style="margin:50px 0 20px">Players in room <span style="color:var(--green)">${s.players.length}/8</span></h2><div class="player-chips">${s.players.map(n=>`<span class="chip">${esc(n)}</span>`).join('')}</div><p class="tiny" style="margin-top:21px">${s.players.length===0?'Waiting for the first player…':'Waiting for everyone to join…'}</p>${state.view==='host'?`<div style="margin-top:38px">${hostActions(s)}</div>`:'<div class="flair" aria-hidden="true" style="margin-top:44px">✳</div>'}</section>`;}
   function timer(s){return `<div class="round-header"><div class="pill">${esc(s.game.toUpperCase())} / Q ${s.number} OF 25</div><div class="countdown" id="countdown">${Math.ceil(s.seconds)}</div></div><div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>`;}
   function answerCards(s){return `<div class="answer-grid">${s.options.map((o,i)=>{
@@ -119,11 +122,27 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
       state.secret=fieldValue('hostPass');
       state.setup=await rpc('setup',{secret:state.secret});storage.setItem('rank-riot-host-key',state.secret);render();notify('Host verified. All 50 rounds are ready.');return;
     }
+    case 'start-now':{
+      const pin=fieldValue('startPin');
+      if(!/^\d{6}$/.test(pin))throw new Error('Enter the six-digit room PIN first.');
+      const secret=fieldValue('hostPass') || state.secret;
+      if(!secret)throw new Error('Enter your host access key first.');
+      const room=await rpc('state',{pin,secret});
+      if(room.stage==='finished')throw new Error('This game has already finished. Create a new room.');
+      if(room.stage==='lobby')await rpc('advance',{pin,secret});
+      state.secret=secret;
+      storage.setItem('rank-riot-host-key',secret);
+      storage.setItem('rank-riot-last-host-pin',pin);
+      state.pin=pin;state.view='host';state.rank=[];
+      await poll(true);
+      notify(room.stage==='lobby'?'Game started. First question is live.':'Opened the existing host room.');
+      return;
+    }
     case 'create':{
       if(fieldValue('hostPass')){state.secret=fieldValue('hostPass');storage.setItem('rank-riot-host-key',state.secret);}
       if(!state.secret)throw new Error('Enter your host access key first.');
       const response=await rpc('create',{secret:state.secret,game:fieldValue('gameMode'),seconds:Number(fieldValue('duration'))});
-      state.pin=response.pin;state.view='host';state.rank=[];await poll(true);notify('Room '+state.pin+' is open.');return;
+      state.pin=response.pin;storage.setItem('rank-riot-last-host-pin',state.pin);state.view='host';state.rank=[];await poll(true);notify('Room '+state.pin+' is open.');return;
     }
     case 'join':{
       const pin=fieldValue('pinInput'),name=fieldValue('playerName');
