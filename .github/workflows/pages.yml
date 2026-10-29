@@ -38,6 +38,7 @@ jobs:
         run: |
           node --test tests/home-index.test.mjs
           node --test friends/ranked/rank-riot.test.cjs
+          node --test friends/ranked/rank-riot-supabase.test.cjs
           node --test tests/device-worlds.test.mjs
           node --check device-worlds/app.mjs
           node --test tests/device-worlds-v2.test.mjs
