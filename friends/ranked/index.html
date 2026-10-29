@@ -159,7 +159,7 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   $('#soundButton').addEventListener('click',()=>{state.sound=!state.sound;storage.setItem('rank-riot-sound',state.sound?'on':'off');$('#soundButton').textContent=state.sound?'♪':'×';if(state.sound)beep();});
   $('#soundButton').textContent=state.sound?'♪':'×';
   // Room join links carry only the public PIN. The host key is never included.
-  render();setInterval(()=>{poll(false);updateTimer();},1850);setInterval(updateTimer,150);
+  render();rpc('ping').catch(()=>{});setInterval(()=>{poll(false);updateTimer();},1850);setInterval(updateTimer,150);
 })();
 
 </script>
