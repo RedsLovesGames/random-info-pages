@@ -133,13 +133,14 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   }
   function answerPlacements(round){
     const results=[...(round.results||[])].sort((a,b)=>b.sum-a.sum||b.first-a.first||b.second-a.second||b.third-a.third||String(a.author).localeCompare(String(b.author)));
-    return results.map((answer,i)=>{
-      const previous=results[i-1];
-      const rank=Number.isInteger(answer.rank)&&answer.rank>0?answer.rank:
-        previous&&answer.sum===previous.sum&&answer.first===previous.first&&answer.second===previous.second&&answer.third===previous.third?
-          (Number.isInteger(previous.rank)?previous.rank:i):i+1;
-      return {...answer,rank};
-    });
+    const placements=[];
+    for(const answer of results){
+      const previous=placements[placements.length-1];
+      const tied=previous&&answer.sum===previous.sum&&answer.first===previous.first&&answer.second===previous.second&&answer.third===previous.third;
+      const rank=Number.isInteger(answer.rank)&&answer.rank>0?answer.rank:(tied?previous.rank:placements.length+1);
+      placements.push({...answer,rank});
+    }
+    return placements;
   }
   function resultView(){
     const r=state.savedResult;if(!r)return `<section class="shell">${header('Loading saved game','HISTORY')}</section>`;
