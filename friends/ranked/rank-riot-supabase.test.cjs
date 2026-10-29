@@ -48,6 +48,14 @@ test('Host can start an existing lobby directly from Host Control Room',()=>{
   assert.match(app,/rank-riot-last-host-pin/);
   assert.match(app,/START NOW ↗/);
 });
+test('Total points are the primary leaderboard and winner metric',()=>{
+  assert.match(edge,/\.sort\(\(a,b\)=>b\.sum-a\.sum\|\|b\.first-a\.first\|\|b\.average-a\.average/);
+  assert.match(app,/const top=Math\.max\(1,\.\.\.scores\.map\(s=>s\.sum\)\)/);
+  assert.match(app,/p\.sum\/top\*100/);
+  assert.match(app,/score-value.*<strong>\$\{p\.sum\}<\/strong><span>PTS<\/span>/);
+  assert.match(app,/\$\{p\.average\.toFixed\(2\)\} avg pts\/answer/);
+  assert.match(app,/\$\{win\.sum\} total points/);
+});
 test('Original mobile game structure and styling remain intact',()=>{
   assert.match(html,/id="app"/);assert.match(html,/id="connectionStatus"/);
   assert.match(css,/\.answer-grid/);assert.match(css,/@media/);
