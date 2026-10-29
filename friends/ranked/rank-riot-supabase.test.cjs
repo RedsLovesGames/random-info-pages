@@ -56,6 +56,45 @@ test('Total points are the primary leaderboard and winner metric',()=>{
   assert.match(app,/\$\{p\.average\.toFixed\(2\)\} avg pts\/answer/);
   assert.match(app,/\$\{win\.sum\} total points/);
 });
+test('Finished matches are durably archived without exposing private player keys',()=>{
+  const schema=fs.readFileSync(path.join(dir,'supabase/schema.sql'),'utf8');
+  assert.match(schema,/create table if not exists public\.rankriot_results/);
+  assert.match(schema,/alter table public\.rankriot_results enable row level security/);
+  assert.match(schema,/revoke all on public\.rankriot_results from public, anon, authenticated/);
+  assert.match(edge,/async function archiveFinished\(tx:any,s:any\)/);
+  assert.match(edge,/await archiveFinished\(tx,s\)/);
+  assert.match(edge,/on conflict\(pin\) do nothing/);
+  assert.match(edge,/const playerNames=s\.players\.map\(\(p:any\)=>p\.name\)/);
+});
+test('Per-round score results are recorded and retained across the game',()=>{
+  assert.match(edge,/async function settle\(tx:any,s:any\)/);
+  assert.match(edge,/s\.history\.push\(round\)/);
+  assert.match(edge,/status:'scored'/);
+  assert.match(edge,/status:'skipped'/);
+  assert.match(edge,/await settle\(tx,s\)/);
+  assert.match(edge,/history:\[\],questionText:''/);
+  assert.match(edge,/seconds_per_question,players,scores,by_game,rounds/);
+});
+test('Host-only saved match history and match detail APIs support pagination',()=>{
+  assert.match(edge,/if\(action==='history'\)/);
+  assert.match(edge,/if\(action==='result'\)/);
+  assert.match(edge,/await authorize\(tx,p\.secret\)/);
+  assert.match(edge,/limit \$\{limit\+1\} offset \$\{offset\}/);
+  assert.match(edge,/nextOffset:offset\+Math\.min\(rows\.length,limit\)/);
+  assert.match(edge,/rows\.length,'Saved game not found\.'/);
+});
+test('Finished games can be inspected and exported from the website',()=>{
+  assert.match(app,/function historyView\(\)/);
+  assert.match(app,/function resultView\(\)/);
+  assert.match(app,/VIEW SAVED GAME RESULTS/);
+  assert.match(app,/case 'history'/);
+  assert.match(app,/case 'open-result'/);
+  assert.match(app,/case 'more-history'/);
+  assert.match(app,/case 'export-result'/);
+  assert.match(app,/state\.view==='history'/);
+  assert.match(app,/state\.view==='saved-result'/);
+  assert.match(app,/JSON\.stringify\(state\.savedResult,null,2\)/);
+});
 test('Original mobile game structure and styling remain intact',()=>{
   assert.match(html,/id="app"/);assert.match(html,/id="connectionStatus"/);
   assert.match(css,/\.answer-grid/);assert.match(css,/@media/);
