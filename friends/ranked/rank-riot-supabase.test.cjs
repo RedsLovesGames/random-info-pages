@@ -95,6 +95,40 @@ test('Finished games can be inspected and exported from the website',()=>{
   assert.match(app,/state\.view==='saved-result'/);
   assert.match(app,/JSON\.stringify\(state\.savedResult,null,2\)/);
 });
+test('Each saved question stores rank positions and supports tied answers',()=>{
+  assert.match(edge,/const ranked=s\.options\.map/);
+  assert.match(edge,/ranked\.forEach\(\(a:any,i:number\)=>/);
+  assert.match(edge,/a\.rank=previous&&/);
+  assert.match(edge,/results:ranked/);
+  assert.match(edge,/s\.history\.push\(round\)/);
+  assert.match(edge,/tx\.json\(Array\.isArray\(s\.history\)\?s\.history:\[\]\)/);
+});
+test('Saved results show a scrollable list of question-by-question ranked answers',()=>{
+  assert.match(css,/\.history-round-scroll\{[^}]*overflow-y:auto/);
+  assert.match(css,/\.ranked-answer-list/);
+  assert.match(css,/@media\(max-width:600px\)/);
+  assert.match(app,/function answerPlacements\(round\)/);
+  assert.match(app,/class="history-rounds history-round-scroll"/);
+  assert.match(app,/id="savedQuestionJump"/);
+  assert.match(app,/id="saved-round-\$\{i\}"/);
+  assert.match(app,/opt\.rank===1\?'first-answer'/);
+  assert.match(app,/case 'open-finished-result'/);
+  assert.match(app,/selected\.scrollIntoView\(/);
+  assert.match(app,/button\('VIEW QUESTION RANKINGS/);
+});
+test('Legacy rounds without explicit stored ranks display ties correctly',()=>{
+  const start=app.indexOf('  function answerPlacements(round){');
+  const end=app.indexOf('  function resultView(){',start);
+  assert.ok(start>=0&&end>start,'answerPlacements is present');
+  const fn=vm.runInNewContext(app.slice(start,end)+'\nanswerPlacements');
+  const placements=fn({results:[
+    {author:'Alex',sum:10,first:3,second:0,third:1},
+    {author:'Tommy',sum:6,first:2,second:0,third:0},
+    {author:'Rita',sum:6,first:2,second:0,third:0},
+    {author:'Doron',sum:2,first:0,second:1,third:0}
+  ]});
+  assert.deepEqual(Array.from(placements, r=>r.rank),[1,2,2,4]);
+});
 test('Original mobile game structure and styling remain intact',()=>{
   assert.match(html,/id="app"/);assert.match(html,/id="connectionStatus"/);
   assert.match(css,/\.answer-grid/);assert.match(css,/@media/);
