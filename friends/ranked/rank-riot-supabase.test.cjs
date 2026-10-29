@@ -39,6 +39,15 @@ test('Server keeps answer authors hidden until reveal',()=>{
   assert.match(edge,/\.\.\.\(show\?\{author:o\.author/);
   assert.match(edge,/mine:Boolean\(player&&o\.author===player\.name\)/);
 });
+test('Host can start an existing lobby directly from Host Control Room',()=>{
+  assert.match(app,/Existing room PIN/);
+  assert.match(app,/case 'start-now'/);
+  assert.match(app,/const room=await rpc\('state',\{pin,secret\}\)/);
+  assert.match(app,/if\(room\.stage==='lobby'\)await rpc\('advance',\{pin,secret\}\)/);
+  assert.match(app,/state\.pin=pin;state\.view='host'/);
+  assert.match(app,/rank-riot-last-host-pin/);
+  assert.match(app,/START NOW ↗/);
+});
 test('Original mobile game structure and styling remain intact',()=>{
   assert.match(html,/id="app"/);assert.match(html,/id="connectionStatus"/);
   assert.match(css,/\.answer-grid/);assert.match(css,/@media/);
