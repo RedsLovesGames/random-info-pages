@@ -15,6 +15,28 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
 @media(max-width:850px){.hero-grid{grid-template-columns:1fr;min-height:auto}.orbit{max-width:280px;order:-1}.orbit strong{font-size:6rem}.display{font-size:clamp(5.5rem,21vw,9rem)}.three-col{grid-template-columns:1fr}.two-col{grid-template-columns:1fr}.answer-grid{grid-template-columns:1fr}.answer{min-height:104px;font-size:1.03rem;padding:19px 15px 39px}.score-row{grid-template-columns:30px 86px minmax(0,1fr) auto;gap:8px;padding:12px}.score-value{font-size:.8rem}.site-footer{flex-wrap:wrap}.shell{padding-top:24px;padding-bottom:68px}.masthead{padding:15px 20px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
+
+/* Saved results are fully scrollable and keep all answer placements visible. */
+.history-list{max-height:min(68vh,760px);overflow-y:auto;overscroll-behavior:contain;padding:4px 10px 8px 3px;align-content:start}
+.round-scroll-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:14px 0}
+.round-scroll-toolbar label{color:var(--green);font:.72rem var(--mono)}
+.round-scroll-toolbar select{flex:1 1 270px;min-width:0;max-width:640px;border:1px solid var(--stroke);border-radius:12px;background:#211936;color:var(--text);padding:13px 14px;font:500 .9rem var(--mono)}
+.history-round-scroll{max-height:min(72vh,860px);min-height:260px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scroll-padding-top:14px;scrollbar-color:var(--green) #17122f;padding:5px 14px 14px 5px}
+.history-round-scroll:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.history-question{scroll-margin-top:15px;background:linear-gradient(145deg,#29234d,#1c1736);border:1px solid var(--stroke);border-radius:20px;padding:clamp(16px,2.4vw,28px)}
+.history-question h3{font-size:clamp(1.2rem,2.4vw,1.85rem);letter-spacing:-.035em;line-height:1.25;margin:16px 0 21px;overflow-wrap:anywhere}
+.ranked-answer-list{list-style:none;padding:0;margin:0;display:grid;gap:9px}
+.ranked-answer{display:grid;grid-template-columns:54px minmax(0,1fr) minmax(122px,185px);gap:13px;align-items:center;background:#14112b;border:1px solid #5c507650;border-radius:12px;padding:13px}
+.ranked-answer.first-answer{border-color:#c5ed66;background:#293b2580}
+.answer-rank-badge{display:grid;place-items:center;width:48px;height:48px;border-radius:10px;background:#3a315d;color:var(--text);font:800 1.45rem var(--mono)}
+.first-answer .answer-rank-badge{background:var(--green);color:#17112e}
+.ranked-answer-copy{min-width:0;display:grid;gap:7px;overflow-wrap:anywhere}
+.ranked-answer-copy strong{font-size:1.02rem;line-height:1.4}
+.ranked-answer-stats{text-align:right;display:grid;gap:8px;white-space:nowrap}
+.ranked-answer-stats strong{font:800 1.4rem var(--mono);color:var(--green)}
+.ranked-answer-stats strong small{font-size:.72rem;letter-spacing:.08em}
+.ranked-answer-stats .tiny{font-size:.7rem}
+@media(max-width:600px){.round-scroll-toolbar .tiny{width:100%}.history-round-scroll{padding:3px 7px 10px 3px;max-height:68vh}.ranked-answer{grid-template-columns:40px minmax(0,1fr);gap:8px;padding:11px}.answer-rank-badge{width:38px;height:38px;font-size:1.05rem}.ranked-answer-stats{grid-column:2;display:flex;flex-wrap:wrap;align-items:baseline;gap:9px;text-align:left}.ranked-answer-stats strong{font-size:1.14rem}.history-question{padding:16px 12px}}
 </style>
 </head>
 <body>
@@ -97,7 +119,7 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   function reveal(s){const sorted=[...s.options].sort((a,b)=>b.tally.sum-a.tally.sum || b.tally.first-a.tally.first);const first=sorted[0];return `<section class="shell"><div class="eyebrow">${esc(s.game.toUpperCase())} / QUESTION ${s.number} · ANSWER REVEAL</div><h1 class="reveal-hero"><span class="flair">✹</span> THE RESULTS ARE IN.</h1><p class="copy">Top choice: <strong style="color:var(--green)">${esc(first?.author||'No votes')}</strong> · ${first?.tally.sum||0} points. Writers get the points, not the people voting.</p><h2 class="subhead" style="font-size:2rem;margin-top:35px">${esc(s.question)}</h2><div class="answer-grid">${sorted.map((o,i)=>`<article class="answer" style="min-height:165px;--c:${['#cbff4d','#7bdcff','#ff729f','#ffbd6e','#c2a7ff','#a2f0da'][i%6]}"><span class="win">#${i+1}</span><span>${esc(o.text)}</span><span class="points">${o.tally.sum} pts · ${o.tally.first} first / ${o.tally.second} second / ${o.tally.third} third</span><span class="author">By ${esc(o.author)}</span></article>`).join('')}</div><div style="margin-top:28px;text-align:center">${state.view==='host'?hostActions(s):'<p class="tiny">Waiting for leaderboard…</p>'}</div></section>`;}
   function scoresBoard(scores){const top=Math.max(1,...scores.map(s=>s.sum));return `<div class="scoreboard">${scores.map((p,i)=>`<div class="score-row"><div class="score-rank">${i+1}</div><div class="score-name">${esc(p.name)}</div><div class="score-bar"><span style="width:${Math.max(0,p.sum/top*100).toFixed(2)}%"></span></div><div class="score-value"><strong>${p.sum}</strong><span>PTS</span></div><div class="score-sub">${p.average.toFixed(2)} avg pts/answer · ${p.rounds} scored rounds · ${p.first} first-place votes</div></div>`).join('')}</div>`;}
   function boardView(s){return `<section class="shell"><div class="eyebrow">RANKINGS / AFTER ${esc(s.game.toUpperCase())} QUESTION ${s.number}</div><h1 class="subhead">THE LEADERBOARD<span style="color:var(--green)">.</span></h1><p class="copy">Ranked by total points. First-place votes break ties. Average points per answer is shown below.</p>${scoresBoard(s.leaderboard)}<div class="center" style="margin-top:30px">${state.view==='host'?hostActions(s):'<p class="copy">Next round starting when the host is ready…</p>'}</div></section>`;}
-  function finalView(s){const win=s.leaderboard[0];return `<section class="shell"><div class="center"><div class="eyebrow">COMPETITION COMPLETE / ${esc(s.mode.toUpperCase())}</div><div class="flair" style="font-size:7rem">★</div><h1 class="reveal-hero" style="font-size:clamp(3.4rem,8vw,8rem)">${esc(win.name)} WINS.</h1><p class="lead" style="margin:auto">${win.sum} total points · ${win.average.toFixed(2)} avg points per answer. The crowd has spoken.</p></div><h2 class="subhead" style="margin-top:55px">Final standings</h2>${scoresBoard(s.leaderboard)}${s.mode==='both'?`<div class="two-col" style="margin-top:30px"><div class="panel"><h2>Alex champion: ${esc(s.byGame.alex[0].name)}</h2>${scoresBoard(s.byGame.alex)}</div><div class="panel"><h2>Doron champion: ${esc(s.byGame.doron[0].name)}</h2>${scoresBoard(s.byGame.doron)}</div></div>`:''}<div class="center" style="margin-top:30px">${state.view==='host'?`${button('VIEW SAVED RESULTS ↗','history','btn')}${button('PLAY AGAIN ↗','view-setup','btn alt')}`:button('BACK TO HOME','view-home')}</div></section>`;}
+  function finalView(s){const win=s.leaderboard[0];return `<section class="shell"><div class="center"><div class="eyebrow">COMPETITION COMPLETE / ${esc(s.mode.toUpperCase())}</div><div class="flair" style="font-size:7rem">★</div><h1 class="reveal-hero" style="font-size:clamp(3.4rem,8vw,8rem)">${esc(win.name)} WINS.</h1><p class="lead" style="margin:auto">${win.sum} total points · ${win.average.toFixed(2)} avg points per answer. The crowd has spoken.</p></div><h2 class="subhead" style="margin-top:55px">Final standings</h2>${scoresBoard(s.leaderboard)}${s.mode==='both'?`<div class="two-col" style="margin-top:30px"><div class="panel"><h2>Alex champion: ${esc(s.byGame.alex[0].name)}</h2>${scoresBoard(s.byGame.alex)}</div><div class="panel"><h2>Doron champion: ${esc(s.byGame.doron[0].name)}</h2>${scoresBoard(s.byGame.doron)}</div></div>`:''}<div class="center" style="margin-top:30px">${state.view==='host'?`${button('VIEW QUESTION RANKINGS ↗','open-finished-result','btn')}${button('PLAY AGAIN ↗','view-setup','btn alt')}`:button('BACK TO HOME','view-home')}</div></section>`;}
   function gameView(){const s=state.snapshot;if(!s)return `<section class="shell"><h1 class="subhead">Connecting to room…</h1></section>`;switch(s.stage){case'lobby':return lobby(s);case'question':return question(s);case'reveal':return reveal(s);case'leaderboard':return boardView(s);case'skipped':return skipped(s);case'finished':return finalView(s);default:return '<div>Unknown room state.</div>';}}
 
   function niceDate(date){const d=new Date(date);return Number.isNaN(d.getTime())?'Unknown date':d.toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});}
@@ -108,6 +130,16 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
       <div class="history-list">${data.games.length?data.games.map(g=>`<article class="history-card"><div><div class="eyebrow">${esc(g.mode.toUpperCase())} · ROOM ${esc(g.pin)}</div><h2>${esc(g.winner?.name||'No winner')} · ${esc(g.playerCount)} players</h2><div class="tiny">Finished ${esc(niceDate(g.finishedAt))} · ${g.roundsRecorded} recorded rounds</div></div><div><div class="history-stat-line"><strong class="history-stat">${g.winner?.sum||0}</strong><span class="tiny">WINNER'S POINTS</span></div>${button('VIEW RESULTS ↗','open-result','btn ghost small',`data-pin="${esc(g.pin)}"`)}</div></article>`).join(''):'<div class="empty">No completed games have been saved yet.</div>'}</div>
       ${data.hasMore?`<div class="center" style="margin-top:25px">${button('LOAD MORE GAMES ↗','more-history','btn alt')}</div>`:''}
     </section>`;
+  }
+  function answerPlacements(round){
+    const results=[...(round.results||[])].sort((a,b)=>b.sum-a.sum||b.first-a.first||b.second-a.second||b.third-a.third||String(a.author).localeCompare(String(b.author)));
+    return results.map((answer,i)=>{
+      const previous=results[i-1];
+      const rank=Number.isInteger(answer.rank)&&answer.rank>0?answer.rank:
+        previous&&answer.sum===previous.sum&&answer.first===previous.first&&answer.second===previous.second&&answer.third===previous.third?
+          (Number.isInteger(previous.rank)?previous.rank:i):i+1;
+      return {...answer,rank};
+    });
   }
   function resultView(){
     const r=state.savedResult;if(!r)return `<section class="shell">${header('Loading saved game','HISTORY')}</section>`;
@@ -121,12 +153,24 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
       </div>
       <h2 class="subhead" style="margin-top:42px">Final standings</h2>${scoresBoard(r.leaderboard)}
       ${r.mode==='both'?`<div class="two-col" style="margin-top:26px"><div class="panel"><h2>Alex standings</h2>${scoresBoard(r.byGame.alex)}</div><div class="panel"><h2>Doron standings</h2>${scoresBoard(r.byGame.doron)}</div></div>`:''}
-      <div class="meta-row" style="margin-top:45px"><h2 class="subhead" style="margin:0">Round details</h2>${button('EXPORT RESULTS JSON ↓','export-result','btn alt small')}</div>
-      ${rounds.length?`<div class="history-rounds">${rounds.map(round=>`<details class="history-round">
-        <summary>${esc(round.game.toUpperCase())} · Q${esc(round.number)} · ${esc(round.question||'Untitled question')} ${round.status==='skipped'?'(skipped)':''}</summary>
-        <p class="tiny">${round.status==='skipped'?'Not enough answers to score':round.votes+' player votes'} · ${esc(niceDate(round.completedAt))}</p>
-        ${round.results?.length?`<table><thead><tr><th>Answer</th><th>Written by</th><th>Points</th></tr></thead><tbody>${round.results.map(opt=>`<tr><td>${esc(opt.answer)}</td><td>${esc(opt.author)}</td><td>${opt.sum} pts<br><small>${opt.first} 1st · ${opt.second} 2nd · ${opt.third} 3rd</small></td></tr>`).join('')}</tbody></table>`:''}
-      </details>`).join('')}</div>`:'<div class="empty" style="margin-top:20px">Round-by-round data was not recorded for this older match. Its final standings and scores have been preserved.</div>'}
+      <div class="meta-row" style="margin-top:45px"><div><div class="eyebrow">QUESTION-BY-QUESTION ARCHIVE</div><h2 class="subhead" style="margin:8px 0">Answer rankings</h2></div>${button('EXPORT RESULTS JSON ↓','export-result','btn alt small')}</div>
+      ${rounds.length?`
+        <p class="copy">Answers are ranked by points and vote placements. Tied scores with identical vote counts share a rank. Scroll through all ${rounds.length} questions.</p>
+        <div class="round-scroll-toolbar"><label for="savedQuestionJump">JUMP TO QUESTION</label><select id="savedQuestionJump" aria-label="Jump to a saved question">${rounds.map((round,i)=>`<option value="${i}">${esc(round.game.toUpperCase())} · Q${esc(round.number)} · ${esc(round.question||'Untitled question')}</option>`).join('')}</select><span class="tiny">↕ Scroll inside the results panel</span></div>
+        <div class="history-rounds history-round-scroll" id="savedRoundScroll" role="region" aria-label="Scrollable saved answer rankings" tabindex="0">
+          ${rounds.map((round,i)=>`<article class="history-question" id="saved-round-${i}">
+            <div class="meta-row"><span class="eyebrow">${esc(round.game.toUpperCase())} · QUESTION ${esc(round.number)}</span><span class="pill">${round.status==='skipped'?'SKIPPED':esc(round.votes)+' VOTES'}</span></div>
+            <h3>${esc(round.question||'Untitled question')}</h3>
+            ${round.status==='skipped'?'<p class="tiny">Not enough answers to score this question.</p>':`
+              <ol class="ranked-answer-list" aria-label="Ranked answers for question ${esc(round.number)}">
+                ${answerPlacements(round).map((opt,i)=>`<li class="ranked-answer ${opt.rank===1?'first-answer':''}">
+                  <span class="answer-rank-badge" aria-label="Place ${opt.rank}">#${opt.rank}</span>
+                  <div class="ranked-answer-copy"><strong>${esc(opt.answer)}</strong><span class="tiny">By ${esc(opt.author)}</span></div>
+                  <div class="ranked-answer-stats"><strong>${esc(opt.sum)} <small>PTS</small></strong><span class="tiny">${esc(opt.first)} first · ${esc(opt.second)} second · ${esc(opt.third)} third</span></div>
+                </li>`).join('')}
+              </ol>`}
+          </article>`).join('')}
+        </div>`:'<div class="empty" style="margin-top:20px">This game finished before per-question rankings were saved. Its final leaderboard is preserved, but individual answer rankings cannot be reconstructed.</div>'}
     </section>`;
   }
   function render(){if(state.view==='home')app.innerHTML=home();else if(state.view==='setup')app.innerHTML=setupView();else if(state.view==='join')app.innerHTML=joinView();else if(state.view==='history')app.innerHTML=historyView();else if(state.view==='saved-result')app.innerHTML=resultView();else app.innerHTML=gameView();updateTimer();}
@@ -166,6 +210,11 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
       const pin=target.dataset.pin;
       if(!/^\d{6}$/.test(pin))throw new Error('Invalid saved game PIN.');
       state.savedResult=await rpc('result',{secret:state.secret,pin});
+      state.view='saved-result';render();return;
+    }
+    case 'open-finished-result':{
+      if(state.view!=='host'||!state.pin)return;
+      state.savedResult=await rpc('result',{secret:state.secret,pin:state.pin});
       state.view='saved-result';render();return;
     }
     case 'back-history':state.view='history';render();return;
@@ -234,6 +283,13 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   }}
   async function copy(content){try{await navigator.clipboard.writeText(content);notify('Copied to clipboard.');}catch{notify('Copy unavailable. Select the join URL from the address bar.',true);}}
   app.addEventListener('click',async event=>{const target=event.target.closest('[data-action]');if(!target)return;const action=target.dataset.action;try{target.disabled=true;await act(action,target);}catch(err){notify(err.message,true);}finally{if(target.isConnected)target.disabled=false;}});
+  app.addEventListener('change',event=>{
+    if(event.target?.id!=='savedQuestionJump')return;
+    const index=Number(event.target.value);
+    if(!Number.isInteger(index))return;
+    const selected=document.getElementById('saved-round-'+index);
+    if(selected)selected.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+  });
   $('#soundButton').addEventListener('click',()=>{state.sound=!state.sound;storage.setItem('rank-riot-sound',state.sound?'on':'off');$('#soundButton').textContent=state.sound?'♪':'×';if(state.sound)beep();});
   $('#soundButton').textContent=state.sound?'♪':'×';
   // Room join links carry only the public PIN. The host key is never included.
