@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-28T16:00:49+00:00",
+  "generated_at": "2026-10-29T00:54:52+00:00",
   "window_start": "2026-07-01",
-  "window_end": "2026-10-28",
+  "window_end": "2026-10-29",
   "status": "live",
   "source_note": "Public VLR match data, filtered to 2026 top-level VCT events. Team-side map observations are used for composition and agent rates.",
   "map_pool": [
@@ -318,7 +318,7 @@
                 "defense_rounds_lost": 4
               },
               {
-                "date": "2026-07-24",
+                "date": "2026-07-25",
                 "series_id": 706358,
                 "opponent": "KRÜ Esports",
                 "opponent_tag": "100T",
@@ -383,7 +383,7 @@
                   "defense_rounds_lost": 4
                 },
                 {
-                  "date": "2026-07-24",
+                  "date": "2026-07-25",
                   "series_id": 706358,
                   "opponent": "KRÜ Esports",
                   "opponent_tag": "100T",
@@ -644,7 +644,7 @@
                 "defense_rounds_lost": 2
               },
               {
-                "date": "2026-07-30",
+                "date": "2026-07-31",
                 "series_id": 706365,
                 "opponent": "Sentinels",
                 "opponent_tag": "SEN",
@@ -660,7 +660,7 @@
                 "defense_rounds_lost": 4
               },
               {
-                "date": "2026-07-24",
+                "date": "2026-07-25",
                 "series_id": 706358,
                 "opponent": "KRÜ Esports",
                 "opponent_tag": "100T",
@@ -789,7 +789,7 @@
                   "defense_rounds_lost": 2
                 },
                 {
-                  "date": "2026-07-30",
+                  "date": "2026-07-31",
                   "series_id": 706365,
                   "opponent": "Sentinels",
                   "opponent_tag": "SEN",
@@ -805,7 +805,7 @@
                   "defense_rounds_lost": 4
                 },
                 {
-                  "date": "2026-07-24",
+                  "date": "2026-07-25",
                   "series_id": 706358,
                   "opponent": "KRÜ Esports",
                   "opponent_tag": "100T",
@@ -944,7 +944,7 @@
                 "defense_rounds_lost": 2
               },
               {
-                "date": "2026-08-28",
+                "date": "2026-08-29",
                 "series_id": 734305,
                 "opponent": "LEVIATÁN",
                 "opponent_tag": "100T",
@@ -1025,7 +1025,7 @@
                   "defense_rounds_lost": 2
                 },
                 {
-                  "date": "2026-08-28",
+                  "date": "2026-08-29",
                   "series_id": 734305,
                   "opponent": "LEVIATÁN",
                   "opponent_tag": "100T",
@@ -1258,10 +1258,10 @@
               "wins": 0,
               "losses": 2,
               "win_rate": 0.0,
-              "last_used": "2026-07-30",
+              "last_used": "2026-07-31",
               "matches": [
                 {
-                  "date": "2026-07-30",
+                  "date": "2026-07-31",
                   "series_id": 706365,
                   "opponent": "Sentinels",
                   "opponent_tag": "SEN",
@@ -1711,7 +1711,7 @@
                   "defense_rounds_lost": 11
                 },
                 {
-                  "date": "2026-08-28",
+                  "date": "2026-08-29",
                   "series_id": 734305,
                   "opponent": "LEVIATÁN",
                   "opponent_tag": "100T",
@@ -2606,7 +2606,7 @@
                 "defense_rounds_lost": 0
               },
               {
-                "date": "2026-08-30",
+                "date": "2026-08-31",
                 "series_id": 734312,
                 "opponent": "MIBR",
                 "opponent_tag": "MIBR",
@@ -2638,7 +2638,7 @@
                 "defense_rounds_lost": 5
               },
               {
-                "date": "2026-08-07",
+                "date": "2026-08-08",
                 "series_id": 706375,
                 "opponent": "G2 Esports",
                 "opponent_tag": "G2",
@@ -2719,7 +2719,7 @@
                   "defense_rounds_lost": 0
                 },
                 {
-                  "date": "2026-08-30",
+                  "date": "2026-08-31",
                   "series_id": 734312,
                   "opponent": "MIBR",
                   "opponent_tag": "MIBR",
@@ -2751,7 +2751,7 @@
                   "defense_rounds_lost": 5
                 },
                 {
-                  "date": "2026-08-07",
+                  "date": "2026-08-08",
                   "series_id": 706375,
                   "opponent": "G2 Esports",
                   "opponent_tag": "G2",
@@ -2799,7 +2799,7 @@
                   "defense_rounds_lost": 9
                 },
                 {
-                  "date": "2026-07-17",
+                  "date": "2026-07-18",
                   "series_id": 706352,
                   "opponent": "KRÜ Esports",
                   "opponent_tag": "KRÜ",
@@ -3028,7 +3028,7 @@
                 "defense_rounds_lost": 3
               },
               {
-                "date": "2026-08-30",
+                "date": "2026-08-31",
                 "series_id": 734312,
                 "opponent": "MIBR",
                 "opponent_tag": "MIBR",
@@ -3044,7 +3044,7 @@
                 "defense_rounds_lost": 5
               },
               {
-                "date": "2026-08-07",
+                "date": "2026-08-08",
                 "series_id": 706375,
                 "opponent": "G2 Esports",
                 "opponent_tag": "G2",
@@ -3076,7 +3076,7 @@
                 "defense_rounds_lost": 4
               },
               {
-                "date": "2026-07-17",
+                "date": "2026-07-18",
                 "series_id": 706352,
                 "opponent": "KRÜ Esports",
                 "opponent_tag": "KRÜ",
@@ -3205,7 +3205,7 @@
                   "defense_rounds_lost": 3
                 },
                 {
-                  "date": "2026-08-30",
+                  "date": "2026-08-31",
                   "series_id": 734312,
                   "opponent": "MIBR",
                   "opponent_tag": "MIBR",
@@ -3221,7 +3221,7 @@
                   "defense_rounds_lost": 5
                 },
                 {
-                  "date": "2026-08-07",
+                  "date": "2026-08-08",
                   "series_id": 706375,
                   "opponent": "G2 Esports",
                   "opponent_tag": "G2",
@@ -3253,7 +3253,7 @@
                   "defense_rounds_lost": 4
                 },
                 {
-                  "date": "2026-07-17",
+                  "date": "2026-07-18",
                   "series_id": 706352,
                   "opponent": "KRÜ Esports",
                   "opponent_tag": "KRÜ",
@@ -4016,7 +4016,7 @@
                 "defense_rounds_lost": 4
               },
               {
-                "date": "2026-08-06",
+                "date": "2026-08-07",
                 "series_id": 706373,
                 "opponent": "ENVY",
                 "opponent_tag": "ENVY",
@@ -4032,7 +4032,7 @@
                 "defense_rounds_lost": 5
               },
               {
-                "date": "2026-08-01",
+                "date": "2026-08-02",
                 "series_id": 706369,
                 "opponent": "LEVIATÁN",
                 "opponent_tag": "LEV",
@@ -4129,7 +4129,7 @@
                   "defense_rounds_lost": 4
                 },
                 {
-                  "date": "2026-08-06",
+                  "date": "2026-08-07",
                   "series_id": 706373,
                   "opponent": "ENVY",
                   "opponent_tag": "ENVY",
@@ -4145,7 +4145,7 @@
                   "defense_rounds_lost": 5
                 },
                 {
-                  "date": "2026-08-01",
+                  "date": "2026-08-02",
                   "series_id": 706369,
                   "opponent": "LEVIATÁN",
                   "opponent_tag": "LEV",
@@ -4910,10 +4910,10 @@
               "wins": 0,
               "losses": 1,
               "win_rate": 0.0,
-              "last_used": "2026-08-01",
+              "last_used": "2026-08-02",
               "matches": [
                 {
-                  "date": "2026-08-01",
+                  "date": "2026-08-02",
                   "series_id": 706369,
                   "opponent": "LEVIATÁN",
                   "opponent_tag": "LEV",
@@ -4942,10 +4942,10 @@
               "wins": 0,
               "losses": 1,
               "win_rate": 0.0,
-              "last_used": "2026-07-18",
+              "last_used": "2026-07-19",
               "matches": [
                 {
-                  "date": "2026-07-18",
+                  "date": "2026-07-19",
                   "series_id": 706354,
                   "opponent": "MIBR",
                   "opponent_tag": "MIBR",
@@ -5313,7 +5313,7 @@
                 "defense_rounds_lost": 8
               },
               {
-                "date": "2026-08-01",
+                "date": "2026-08-02",
                 "series_id": 706369,
                 "opponent": "LEVIATÁN",
                 "opponent_tag": "LEV",
@@ -5345,7 +5345,7 @@
                 "defense_rounds_lost": 2
               },
               {
-                "date": "2026-07-18",
+                "date": "2026-07-19",
                 "series_id": 706354,
                 "opponent": "MIBR",
                 "opponent_tag": "MIBR",
@@ -5442,7 +5442,7 @@
                   "defense_rounds_lost": 8
                 },
                 {
-                  "date": "2026-08-01",
+                  "date": "2026-08-02",
                   "series_id": 706369,
                   "opponent": "LEVIATÁN",
                   "opponent_tag": "LEV",
@@ -5474,7 +5474,7 @@
                   "defense_rounds_lost": 2
                 },
                 {
-                  "date": "2026-07-18",
+                  "date": "2026-07-19",
                   "series_id": 706354,
                   "opponent": "MIBR",
                   "opponent_tag": "MIBR",
@@ -5925,7 +5925,7 @@
                 "defense_rounds_lost": 5
               },
               {
-                "date": "2026-08-02",
+                "date": "2026-08-03",
                 "series_id": 706371,
                 "opponent": "Sentinels",
                 "opponent_tag": "G2",
@@ -6038,7 +6038,7 @@
                   "defense_rounds_lost": 5
                 },
                 {
-                  "date": "2026-08-02",
+                  "date": "2026-08-03",
                   "series_id": 706371,
                   "opponent": "Sentinels",
                   "opponent_tag": "G2",
@@ -6450,7 +6450,7 @@
                 "defense_rounds_lost": 5
               },
               {
-                "date": "2026-08-07",
+                "date": "2026-08-08",
                 "series_id": 706375,
                 "opponent": "LOUD",
                 "opponent_tag": "LOUD",
@@ -6466,7 +6466,7 @@
                 "defense_rounds_lost": 11
               },
               {
-                "date": "2026-08-02",
+                "date": "2026-08-03",
                 "series_id": 706371,
                 "opponent": "Sentinels",
                 "opponent_tag": "G2",
@@ -6595,7 +6595,7 @@
                   "defense_rounds_lost": 5
                 },
                 {
-                  "date": "2026-08-07",
+                  "date": "2026-08-08",
                   "series_id": 706375,
                   "opponent": "LOUD",
                   "opponent_tag": "LOUD",
@@ -6611,7 +6611,7 @@
                   "defense_rounds_lost": 11
                 },
                 {
-                  "date": "2026-08-02",
+                  "date": "2026-08-03",
                   "series_id": 706371,
                   "opponent": "Sentinels",
                   "opponent_tag": "G2",
@@ -6750,7 +6750,7 @@
                 "defense_rounds_lost": 1
               },
               {
-                "date": "2026-08-19",
+                "date": "2026-08-20",
                 "series_id": 729753,
                 "opponent": "M80",
                 "opponent_tag": "M80",
@@ -6766,7 +6766,7 @@
                 "defense_rounds_lost": 3
               },
               {
-                "date": "2026-08-07",
+                "date": "2026-08-08",
                 "series_id": 706375,
                 "opponent": "LOUD",
                 "opponent_tag": "LOUD",
@@ -6863,7 +6863,7 @@
                   "defense_rounds_lost": 1
                 },
                 {
-                  "date": "2026-08-19",
+                  "date": "2026-08-20",
                   "series_id": 729753,
                   "opponent": "M80",
                   "opponent_tag": "M80",
@@ -6879,7 +6879,7 @@
                   "defense_rounds_lost": 3
                 },
                 {
-                  "date": "2026-08-07",
+                  "date": "2026-08-08",
                   "series_id": 706375,
                   "opponent": "LOUD",
                   "opponent_tag": "LOUD",
