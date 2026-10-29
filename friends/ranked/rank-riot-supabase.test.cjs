@@ -4,10 +4,10 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
 const dir=__dirname;
-const app=fs.readFileSync(path.join(dir,'app.js'),'utf8');
-const edge=fs.readFileSync(path.join(dir,'index.ts'),'utf8');
 const html=fs.readFileSync(path.join(dir,'index.html'),'utf8');
-const css=fs.readFileSync(path.join(dir,'style.css'),'utf8');
+const edge=fs.readFileSync(path.join(dir,'supabase/index.ts'),'utf8');
+const app=html.match(/<script>([\s\S]*?)<\/script>/)?.[1]||'';
+const css=html.match(/<style>([\s\S]*?)<\/style>/)?.[1]||'';
 test('Frontend parses and targets pinned Supabase function, never JSONP',()=>{
   assert.doesNotThrow(()=>new vm.Script(app));
   assert.match(app,/bpudsyyepiminpdxlquz\.supabase\.co\/functions\/v1\/rank-riot/);
