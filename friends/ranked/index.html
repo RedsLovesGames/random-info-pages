@@ -243,11 +243,11 @@ body.tv-mode #app{width:100%;min-height:100vh}
 .podium-base{display:flex;justify-content:center;align-items:center;position:relative;height:78px;flex:0 0 auto;color:var(--podium-color);background:linear-gradient(135deg,#37294d,#111022 65%);border:3px solid var(--podium-color);border-bottom-width:5px;border-radius:9px 9px 25px 25px;box-shadow:0 4px 35px rgba(var(--podium-rgb),.27),inset 0 9px 20px #0006}
 .podium-base strong{font:900 clamp(2rem,3.8vw,4rem) var(--mono);text-shadow:0 0 15px currentColor}
 .podium-base-icon{position:absolute;left:23%;opacity:.7;font-size:1.5rem}
-.podium-slot-center .podium-card{min-height:260px}
-.podium-slot-left .podium-card{min-height:216px}
+.podium-slot-left .podium-card{min-height:260px}
+.podium-slot-center .podium-card{min-height:216px}
 .podium-slot-right .podium-card{min-height:202px}
-.podium-slot-center .podium-base{height:96px}
-.podium-slot-left .podium-base{height:79px}
+.podium-slot-left .podium-base{height:96px}
+.podium-slot-center .podium-base{height:79px}
 .podium-slot-right .podium-base{height:69px}
 .podium-winner .podium-card{box-shadow:0 0 0 3px var(--podium-color),0 0 44px #cbff4d63}
 .podium-bottom{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:clamp(10px,2vw,25px);margin-top:22px;padding-inline:clamp(0px,3vw,45px)}
@@ -262,7 +262,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
 .podium-next{text-align:center;margin:25px 0 8px}
 @keyframes podiumRise{from{opacity:0;transform:translateY(50px) scale(.95);filter:blur(6px)}70%{opacity:1;filter:blur(0)}to{opacity:1;transform:none;filter:none}}
 .tv-reveal-podium .tv-podium-question{font-size:clamp(1.4rem,3vw,3.1rem);line-height:1.16;letter-spacing:-.045em;margin:6px 0 26px}
-.result-podium-tv .podium-slot-center .podium-card{min-height:220px}
+.result-podium-tv .podium-slot-left .podium-card{min-height:220px}
 .result-podium-tv .podium-base{height:62px}
 .result-podium-tv .podium-bottom .podium-base{height:34px}
 .result-podium-tv .podium-answer{font-size:clamp(1rem,1.8vw,1.7rem)}
@@ -270,15 +270,15 @@ body.tv-mode #app{width:100%;min-height:100vh}
 @media(max-width:760px){
  .podium-top{gap:7px;padding-top:19px}
  .podium-card{min-height:155px;padding:22px 7px 9px;gap:5px;border-radius:12px}
- .podium-slot-center .podium-card{min-height:203px}
- .podium-slot-left .podium-card,.podium-slot-right .podium-card{min-height:169px}
+ .podium-slot-left .podium-card{min-height:203px}
+ .podium-slot-center .podium-card,.podium-slot-right .podium-card{min-height:169px}
  .podium-answer{font-size:clamp(.74rem,2.5vw,1.12rem);line-height:1.19;margin-top:13px}
  .podium-author{font-size:.58rem}
  .podium-score{font-size:clamp(1.15rem,3.8vw,2rem)}
  .podium-votes{font-size:.54rem;gap:2px 5px}
  .podium-rank{width:37px;height:37px;top:-15px;font-size:.95rem}
- .podium-base,.podium-slot-center .podium-base{height:60px}
- .podium-slot-left .podium-base,.podium-slot-right .podium-base{height:47px}
+ .podium-base,.podium-slot-left .podium-base{height:60px}
+ .podium-slot-center .podium-base,.podium-slot-right .podium-base{height:47px}
  .podium-base strong{font-size:1.8rem}
  .podium-base-icon{display:none}
  .podium-bottom{gap:7px;padding:0;margin-top:17px}
