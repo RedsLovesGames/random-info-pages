@@ -243,12 +243,12 @@ body.tv-mode #app{width:100%;min-height:100vh}
 .podium-base{display:flex;justify-content:center;align-items:center;position:relative;height:78px;flex:0 0 auto;color:var(--podium-color);background:linear-gradient(135deg,#37294d,#111022 65%);border:3px solid var(--podium-color);border-bottom-width:5px;border-radius:9px 9px 25px 25px;box-shadow:0 4px 35px rgba(var(--podium-rgb),.27),inset 0 9px 20px #0006}
 .podium-base strong{font:900 clamp(2rem,3.8vw,4rem) var(--mono);text-shadow:0 0 15px currentColor}
 .podium-base-icon{position:absolute;left:23%;opacity:.7;font-size:1.5rem}
-.podium-gold .podium-card{min-height:260px}
-.podium-silver .podium-card{min-height:216px}
-.podium-bronze .podium-card{min-height:202px}
-.podium-gold .podium-base{height:96px}
-.podium-silver .podium-base{height:79px}
-.podium-bronze .podium-base{height:69px}
+.podium-slot-center .podium-card{min-height:260px}
+.podium-slot-left .podium-card{min-height:216px}
+.podium-slot-right .podium-card{min-height:202px}
+.podium-slot-center .podium-base{height:96px}
+.podium-slot-left .podium-base{height:79px}
+.podium-slot-right .podium-base{height:69px}
 .podium-winner .podium-card{box-shadow:0 0 0 3px var(--podium-color),0 0 44px #cbff4d63}
 .podium-bottom{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:clamp(10px,2vw,25px);margin-top:22px;padding-inline:clamp(0px,3vw,45px)}
 .podium-bottom .podium-card{min-height:133px;padding:20px 12px 10px;gap:4px}
@@ -262,7 +262,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
 .podium-next{text-align:center;margin:25px 0 8px}
 @keyframes podiumRise{from{opacity:0;transform:translateY(50px) scale(.95);filter:blur(6px)}70%{opacity:1;filter:blur(0)}to{opacity:1;transform:none;filter:none}}
 .tv-reveal-podium .tv-podium-question{font-size:clamp(1.4rem,3vw,3.1rem);line-height:1.16;letter-spacing:-.045em;margin:6px 0 26px}
-.result-podium-tv .podium-gold .podium-card{min-height:220px}
+.result-podium-tv .podium-slot-center .podium-card{min-height:220px}
 .result-podium-tv .podium-base{height:62px}
 .result-podium-tv .podium-bottom .podium-base{height:34px}
 .result-podium-tv .podium-answer{font-size:clamp(1rem,1.8vw,1.7rem)}
@@ -270,15 +270,15 @@ body.tv-mode #app{width:100%;min-height:100vh}
 @media(max-width:760px){
  .podium-top{gap:7px;padding-top:19px}
  .podium-card{min-height:155px;padding:22px 7px 9px;gap:5px;border-radius:12px}
- .podium-gold .podium-card{min-height:203px}
- .podium-silver .podium-card,.podium-bronze .podium-card{min-height:169px}
+ .podium-slot-center .podium-card{min-height:203px}
+ .podium-slot-left .podium-card,.podium-slot-right .podium-card{min-height:169px}
  .podium-answer{font-size:clamp(.74rem,2.5vw,1.12rem);line-height:1.19;margin-top:13px}
  .podium-author{font-size:.58rem}
  .podium-score{font-size:clamp(1.15rem,3.8vw,2rem)}
  .podium-votes{font-size:.54rem;gap:2px 5px}
  .podium-rank{width:37px;height:37px;top:-15px;font-size:.95rem}
- .podium-base,.podium-gold .podium-base{height:60px}
- .podium-silver .podium-base,.podium-bronze .podium-base{height:47px}
+ .podium-base,.podium-slot-center .podium-base{height:60px}
+ .podium-slot-left .podium-base,.podium-slot-right .podium-base{height:47px}
  .podium-base strong{font-size:1.8rem}
  .podium-base-icon{display:none}
  .podium-bottom{gap:7px;padding:0;margin-top:17px}
@@ -437,12 +437,12 @@ body.tv-mode #app{width:100%;min-height:100vh}
   }
   function answerPodium(s,compact=false){
     const ordered=podiumRanks(s),top=ordered.slice(0,3),lower=ordered.slice(3);
-    const upper=[top[1],top[0],top[2]].filter(Boolean);
+    const upper=[top[0],top[1],top[2]].filter(Boolean);
     const bases=['silver','gold','bronze'],icons=['♛','★','✦'];
-    const card=(o,base,topRow)=>{
+    const card=(o,base,topRow,slot='')=>{
       const delay=(Math.max(0,ordered.length-1-o.ordinal+1)*.42).toFixed(2);
       const tally=o.tally;
-      return `<article class="podium-entry ${topRow?'podium-main podium-'+base:'podium-small'} ${o.place===1?'podium-winner':''}" style="--podium-delay:${delay}s;--podium-slot:${o.ordinal}" aria-label="Rank ${o.place}: ${esc(o.text)}, by ${esc(o.author)}, ${tally.sum} points">
+      return `<article class="podium-entry ${topRow?'podium-main podium-'+base+' podium-slot-'+slot:'podium-small'} ${o.place===1?'podium-winner':''}" style="--podium-delay:${delay}s;--podium-slot:${o.ordinal}" aria-label="Rank ${o.place}: ${esc(o.text)}, by ${esc(o.author)}, ${tally.sum} points">
         <div class="podium-card">
           <div class="podium-rank">#${o.place}</div>
           <div class="podium-answer">${esc(o.text)}</div>
@@ -454,7 +454,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
       </article>`;
     };
     return `<div class="result-podium ${compact?'result-podium-tv':''}" aria-label="All ${ordered.length} answers by ranked points">
-      <div class="podium-top">${upper.map(o=>card(o,bases[o.ordinal-1]||'silver',true)).join('')}</div>
+      <div class="podium-top">${upper.map((o,i)=>card(o,bases[o.ordinal-1]||'silver',true,['left','center','right'][i])).join('')}</div>
       ${lower.length?`<div class="podium-bottom">${lower.map(o=>card(o,'lower',false)).join('')}</div>`:''}
     </div>`;
   }
