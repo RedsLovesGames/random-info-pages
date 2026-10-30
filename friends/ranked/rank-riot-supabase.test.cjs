@@ -162,7 +162,7 @@ test('Official spooky Kahoot audio is locally staged, default-on, and plays with
 test('Answer reveals use a six-answer podium with all placements and points',()=>{
   assert.match(app,/function podiumRanks\(s\)/);
   assert.match(app,/function answerPodium\(s,compact=false\)/);
-  assert.match(app,/const upper=\[top\[1\],top\[0\],top\[2\]\]/);
+  assert.match(app,/const upper=\[top\[0\],top\[1\],top\[2\]\]/);
   assert.match(app,/podium-top/);
   assert.match(app,/podium-bottom/);
   assert.match(app,/podium-score/);
@@ -193,6 +193,17 @@ test('Answer reveals use a six-answer podium with all placements and points',()=
   assert.match(output,/4 first/);
   assert.equal((output.match(/class="podium-entry/g)||[]).length,6);
   assert.match(output,/podium-top/);assert.match(output,/podium-bottom/);
+  const topPart=output.split('class="podium-top">')[1].split('</div>\n      <div class="podium-bottom">')[0];
+  assert.ok(topPart.indexOf('podium-slot-left')<topPart.indexOf('podium-slot-center'));
+  assert.ok(topPart.indexOf('podium-slot-center')<topPart.indexOf('podium-slot-right'));
+  assert.match(topPart,/podium-gold podium-slot-left/);
+  assert.match(topPart,/podium-silver podium-slot-center/);
+  assert.match(topPart,/podium-bronze podium-slot-right/);
+  assert.match(css,/\.podium-slot-center \.podium-card\{min-height:260px\}/);
+  assert.match(css,/\.podium-slot-left \.podium-card\{min-height:216px\}/);
+  assert.match(css,/\.podium-slot-center \.podium-base\{height:96px\}/);
+  assert.match(css,/\.podium-slot-left \.podium-base\{height:79px\}/);
+  assert.match(css,/\.result-podium-tv \.podium-slot-center \.podium-card\{min-height:220px\}/);
 });
 test('Rank selection audio and game-show visual FX use accessible reduced-motion fallback',()=>{
   assert.match(app,/rank-tray-grid/);
