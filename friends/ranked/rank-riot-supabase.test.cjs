@@ -220,6 +220,70 @@ test('Shared sound engine is reused and supports countdown and per-rank tones',(
   assert.match(app,/lastTimerBeep/);
   assert.match(app,/audioReady\(\);const action=target\.dataset\.action/);
 });
+test('Postgame awards are persistently saved and exposed on final, historical, and TV screens',()=>{
+  const awards=fs.readFileSync(path.join(dir,'supabase/awards.mjs'),'utf8');
+  const schema=fs.readFileSync(path.join(dir,'supabase/schema.sql'),'utf8');
+  assert.match(awards,/export function buildAwards\(rounds, scores, mode\)/);
+  assert.match(schema,/awards jsonb not null default/);
+  assert.match(edge,/import \{ buildAwards \} from '\.\/awards\.mjs'/);
+  assert.match(edge,/s\.awards=awards/);
+  assert.match(edge,/tx\.json\(awards\)/);
+  assert.match(edge,/result\.awards=s\.awards\?\.cards/);
+  assert.match(edge,/awards:row\.awards\?\.cards/);
+  assert.match(app,/function postgameAwardsPanel\(/);
+  assert.match(app,/postgameAwardsPanel\(s\.awards\)/);
+  assert.match(app,/postgameAwardsPanel\(s\.awards,true\)/);
+  assert.match(app,/postgameAwardsPanel\(r\.awards\)/);
+  assert.match(css,/\.award-card\{/);
+  assert.match(css,/prefers-reduced-motion:reduce/);
+});
+test('Awards engine picks objective winners and rejects incomplete historical games',async()=>{
+  const {pathToFileURL}=require('node:url');
+  const {buildAwards}=await import(pathToFileURL(path.join(dir,'supabase/awards.mjs')).href);
+  const names=['Alex','Doron','Jack','Mike','Nora','Rita'];
+  const scores=Object.fromEntries(names.map(name=>[name,{sum:0,first:0,second:0,third:0,rounds:0}]));
+  const rounds=Array.from({length:25},(_,i)=>({
+    game:'alex',questionIndex:i,number:i+1,question:'Question '+(i+1),status:'scored',votes:1,
+    results:names.map((name,k)=>{
+      const sum=k===0?3:k===1?2:k===2?1:0;
+      scores[name].sum+=sum;scores[name].rounds++;
+      if(k===0)scores[name].first++;
+      return {author:name,answer:name+' answer '+(i+1),sum,rank:k+1,first:k===0?1:0,second:k===1?1:0,third:k===2?1:0};
+    })
+  }));
+  const result=buildAwards(rounds,scores,'alex');
+  assert.equal(result.complete,true);
+  const byId=Object.fromEntries(result.cards.map(card=>[card.id,card]));
+  for(const id of ['crowd-favorite','top-answer','first-place-magnet','most-consistent'])assert.ok(byId[id],id);
+  assert.equal(byId['crowd-favorite'].winner,'Alex');
+  assert.equal(byId['first-place-magnet'].stat,'25 first-place votes');
+  assert.equal(byId['most-consistent'].stat,'25/25 scoring rounds');
+  assert.equal(result.cards.filter(card=>card.id==='biggest-comeback').length,0);
+  const historic=buildAwards(rounds.slice(-1),scores,'alex');
+  assert.equal(historic.complete,false);
+  assert.deepEqual(historic.cards,[]);
+  const duplicate=buildAwards([rounds[0],...rounds.slice(0,24)],scores,'alex');
+  assert.equal(duplicate.complete,false);
+  const both=buildAwards(rounds,scores,'both');
+  assert.equal(both.complete,false);
+});
+test('Award winning honors never use uncast vote counts or fake humor judgments',async()=>{
+  const {pathToFileURL}=require('node:url');
+  const {buildAwards}=await import(pathToFileURL(path.join(dir,'supabase/awards.mjs')).href);
+  const names=['A','B','C','D','E','F'];
+  const scores=Object.fromEntries(names.map(name=>[name,{sum:0,rounds:25,first:0}]));
+  const results=Array.from({length:25},(_,i)=>{
+    const champion=i<9?'A':i<12?'B':i<16?'C':i<20?'D':'E';
+    const opts=names.map(name=>({author:name,answer:name+' says hello',sum:name===champion?3:0,first:name===champion?1:0,second:0,third:0,rank:name===champion?1:2}));
+    scores[champion].sum+=3;scores[champion].first++;
+    return {game:'alex',questionIndex:i,number:i+1,question:'What?',status:'scored',votes:1,results:opts};
+  });
+  const awards=buildAwards(results,scores,'alex');
+  assert.equal(awards.complete,true);
+  assert.ok(awards.cards.some(c=>c.id==='underdog'||c.id==='biggest-comeback'), 'Dynamic awards should capture score changes');
+  assert.ok(awards.cards.every(c=>typeof c.winner==='string'&&typeof c.detail==='string'));
+  assert.ok(!awards.cards.some(c=>/funniest/i.test(c.title)),'Popularity is not an objective measure of humor');
+});
 test('Original mobile game structure and styling remain intact',()=>{
   assert.match(html,/id="app"/);assert.match(html,/id="connectionStatus"/);
   assert.match(css,/\.answer-grid/);assert.match(css,/@media/);
