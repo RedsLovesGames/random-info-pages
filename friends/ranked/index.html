@@ -559,7 +559,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
     musicDock.hidden=false;musicSlot.replaceChildren();
     const player=document.createElement('iframe');
     player.src='https://www.youtube.com/embed/yjwJIjNuniQ?autoplay=1&playsinline=1&loop=1&playlist=yjwJIjNuniQ&rel=0';
-    player.title='Kahoot! - Lobby Music (Original Soundtrack)';player.allow='autoplay; encrypted-media; picture-in-picture';player.referrerPolicy='no-referrer';player.allowFullscreen=true;player.loading='eager';
+    player.title='Kahoot! - Lobby Music (Original Soundtrack)';player.allow='autoplay; encrypted-media; picture-in-picture';player.referrerPolicy='strict-origin-when-cross-origin';player.allowFullscreen=true;player.loading='eager';
     musicSlot.append(player);
   });
   $('#musicClose').addEventListener('click',closeKahootMusic);
