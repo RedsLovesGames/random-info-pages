@@ -109,6 +109,47 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
 .up-arrow{font:700 .62rem var(--mono);color:var(--green);animation:liftArrow .65s ease-out both}
 @keyframes liftArrow{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.ambient-orb,.clutch-alert,.up-arrow{animation:none!important}}
+
+/* Projector / TV mode. Read-only viewer, no host controls or votes. */
+.tv-host-tools{max-width:1380px;margin:16px auto 0;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;border:1px solid var(--green);border-radius:15px;background:#27332a}
+.tv-host-tools .button-row{display:flex;gap:9px;flex-wrap:wrap}
+body.tv-mode{background:radial-gradient(circle at 10% 5%,#343160 0,transparent 45%),radial-gradient(circle at 90% 90%,#452343 0,transparent 45%),#0c0b1b}
+body.tv-mode .masthead,body.tv-mode .site-footer{display:none}
+body.tv-mode #app{width:100%;min-height:100vh}
+.tv-stage{width:min(100%,1780px);margin:auto;padding:clamp(18px,3vw,46px);min-height:100vh}
+.tv-top{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:clamp(25px,4vh,60px)}
+.tv-live-dot{color:var(--green);filter:drop-shadow(0 0 6px var(--green))}
+.tv-top .button-row{gap:6px}
+.tv-center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:68vh;gap:18px}
+.tv-banner{font-size:clamp(3rem,8.2vw,9rem);letter-spacing:-.09em;line-height:1;margin:14px 0;font-weight:800;overflow-wrap:anywhere}
+.tv-banner span{color:var(--green)}
+.tv-pin{font:800 clamp(6rem,20vw,17rem) var(--mono);letter-spacing:.055em;color:var(--green);line-height:1;text-shadow:0 0 60px #cbff4d60}
+.tv-hint{font:700 clamp(1rem,1.8vw,1.6rem) var(--mono);color:var(--muted);letter-spacing:.06em}
+.tv-round-head{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.tv-question{font-size:clamp(2.3rem,5.3vw,6.2rem);line-height:1.07;letter-spacing:-.055em;margin:22px 0 30px;max-width:1500px}
+.tv-answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.tv-option{padding:clamp(18px,2.1vw,34px);border-radius:19px;min-height:clamp(120px,18vh,215px);display:flex;align-items:center;gap:20px;font-size:clamp(1.2rem,2.15vw,2.7rem);font-weight:700;line-height:1.22;overflow-wrap:anywhere;color:#130e24;box-shadow:0 10px 0 #0004}
+.tv-option-number{flex:0 0 auto;display:grid;place-items:center;background:#180f3180;color:white;border-radius:12px;width:50px;height:50px;font:700 1.7rem var(--mono)}
+.tv-color-0{background:#ff729f}.tv-color-1{background:#7bdcff}.tv-color-2{background:#cbff4d}.tv-color-3{background:#ffbd6e}.tv-color-4{background:#c2a7ff}.tv-color-5{background:#a2f0da}
+.tv-footer-note{margin:28px 0;text-align:center;color:var(--muted);font-size:clamp(.88rem,1.5vw,1.4rem)}
+.tv-reveals{display:grid;gap:13px}
+.tv-reveal-entry{background:#292347;border:1px solid var(--stroke);display:grid;grid-template-columns:100px minmax(0,1fr) auto;gap:20px;align-items:center;border-radius:15px;padding:clamp(15px,1.6vw,25px);animation:answerCurtain .58s both;animation-delay:var(--reveal-delay,0s)}
+.tv-reveal-entry .tv-place{font:800 clamp(1.8rem,2.4vw,3rem) var(--mono);color:var(--green)}
+.tv-reveal-entry strong{display:block;font-size:clamp(1.05rem,2vw,2rem);overflow-wrap:anywhere}
+.tv-reveal-entry .tiny{display:block;margin-top:5px}
+.tv-reveal-entry.tv-winning-answer{border-color:var(--green);box-shadow:0 0 30px #cbff4d55}
+.tv-point-value{font:800 clamp(2rem,3.4vw,4.1rem) var(--mono);color:var(--green);white-space:nowrap}
+.tv-point-value small{font-size:clamp(.68rem,1vw,1.1rem);margin-left:6px}
+.tv-scores{width:min(100%,1450px);margin:25px auto}
+.tv-scores .score-row{padding:clamp(14px,1.6vw,25px);grid-template-columns:60px minmax(120px,210px) minmax(100px,1fr) auto}
+.tv-scores .score-name{font-size:clamp(1.3rem,2.2vw,2.6rem)}
+.tv-scores .score-value strong{font-size:clamp(2rem,3vw,3.6rem)}
+.tv-scores .score-rank{font-size:clamp(1.7rem,3vw,3.1rem)}
+.tv-winner{font-size:clamp(3rem,10vw,11rem)}
+.tv-winner-points{font:800 clamp(3.5rem,9vw,9rem) var(--mono);color:var(--green)}
+.tv-winner-points small{display:block;font-size:clamp(1rem,2vw,2rem)}
+@media(max-width:760px){.tv-top{gap:10px}.tv-answers{grid-template-columns:1fr}.tv-option{min-height:105px}.tv-reveal-entry{grid-template-columns:49px 1fr auto;gap:8px}.tv-scores .score-row{grid-template-columns:32px 100px 1fr auto;gap:8px}.tv-stage{padding:15px}.tv-host-tools{margin:8px 12px}.tv-pin{font-size:clamp(4rem,16vw,9rem)}}
+@media(prefers-reduced-motion:reduce){.tv-reveal-entry{animation:none!important;opacity:1!important;transform:none!important}}
 </style>
 </head>
 <body>
@@ -225,7 +266,42 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   function scoresBoard(scores){const top=Math.max(1,...scores.map(s=>s.sum));return `<div class="scoreboard">${scores.map((p,i)=>`<div class="score-row scoreboard-entry ${state.overtakes?.has(p.name)&&['host','player'].includes(state.view)?'overtake-row':''}" style="--entry-delay:${(i*.11).toFixed(2)}s"><div class="score-rank">${i+1}</div><div class="score-name">${esc(p.name)}${state.overtakes?.has(p.name)&&['host','player'].includes(state.view)?' <span class="up-arrow">▲ UP</span>':''}</div><div class="score-bar"><span style="width:${Math.max(0,p.sum/top*100).toFixed(2)}%"></span></div><div class="score-value"><strong class="animated-score" data-score="${p.sum}">${p.sum}</strong><span>PTS</span></div><div class="score-sub">${p.average.toFixed(2)} avg pts/answer · ${p.rounds} scored rounds · ${p.first} first-place votes</div></div>`).join('')}</div>`;}
   function boardView(s){return `<section class="shell"><div class="eyebrow">RANKINGS / AFTER ${esc(s.game.toUpperCase())} QUESTION ${s.number}</div><h1 class="subhead">THE LEADERBOARD<span style="color:var(--green)">.</span></h1><p class="copy">Ranked by total points. First-place votes break ties. Average points per answer is shown below.</p>${s.leaderboard.length>1&&s.leaderboard[0].sum-s.leaderboard[1].sum<=3?`<div class="clutch-alert">⚡ CLUTCH ROUND · ONLY ${s.leaderboard[0].sum-s.leaderboard[1].sum} POINTS SEPARATE THE TOP TWO</div>`:''}${scoresBoard(s.leaderboard)}<div class="center" style="margin-top:30px">${state.view==='host'?hostActions(s):'<p class="copy">Next round starting when the host is ready…</p>'}</div></section>`;}
   function finalView(s){const win=s.leaderboard[0];return `<section class="shell"><div class="center"><div class="eyebrow">COMPETITION COMPLETE / ${esc(s.mode.toUpperCase())}</div><div class="flair" style="font-size:7rem">★</div><h1 class="reveal-hero" style="font-size:clamp(3.4rem,8vw,8rem)">${esc(win.name)} WINS.</h1><p class="lead" style="margin:auto">${win.sum} total points · ${win.average.toFixed(2)} avg points per answer. The crowd has spoken.</p></div><h2 class="subhead" style="margin-top:55px">Final standings</h2>${scoresBoard(s.leaderboard)}${s.mode==='both'?`<div class="two-col" style="margin-top:30px"><div class="panel"><h2>Alex champion: ${esc(s.byGame.alex[0].name)}</h2>${scoresBoard(s.byGame.alex)}</div><div class="panel"><h2>Doron champion: ${esc(s.byGame.doron[0].name)}</h2>${scoresBoard(s.byGame.doron)}</div></div>`:''}<div class="center" style="margin-top:30px">${state.view==='host'?`${button('VIEW QUESTION RANKINGS ↗','open-finished-result','btn')}${button('HALL OF FAME ★','fame','btn ghost')}${button('PLAY AGAIN ↗','view-setup','btn alt')}`:button('BACK TO HOME','view-home')}</div></section>`;}
-  function gameView(){const s=state.snapshot;if(!s)return `<section class="shell"><h1 class="subhead">Connecting to room…</h1></section>`;switch(s.stage){case'lobby':return lobby(s);case'question':return question(s);case'reveal':return reveal(s);case'leaderboard':return boardView(s);case'skipped':return skipped(s);case'finished':return finalView(s);default:return '<div>Unknown room state.</div>';}}
+
+  function projectorUrl(key){
+    const u=new URL(window.location.href);u.search='';u.hash='';
+    u.searchParams.set('display',state.pin);u.searchParams.set('viewer',key);
+    return u.toString();
+  }
+  async function projectorLink(){
+    if(state.view!=='host'||!state.pin||!state.secret)throw new Error('Open a host room first.');
+    const storageKey='rank-riot-projector-'+state.pin;
+    const response=await rpc('projector-access',{pin:state.pin,secret:state.secret,viewerKey:storage.getItem(storageKey)||''});
+    storage.setItem(storageKey,response.viewerKey);
+    return projectorUrl(response.viewerKey);
+  }
+  function tvToolbar(){
+    return `<div class="tv-host-tools"><span class="eyebrow">HOST CONTROLS · PRIVATE PROJECTOR LINK</span><div class="button-row">${button('OPEN TV / PROJECTOR ↗','open-projector','btn alt small')}${button('COPY TV LINK','copy-projector','btn ghost small')}</div></div>`;
+  }
+  function tvView(){
+    const s=state.snapshot;
+    if(!s)return `<section class="tv-stage tv-wait"><div class="eyebrow">RANK RIOT / TV DISPLAY</div><h1 class="tv-banner">${esc(state.projectorError||'CONNECTING TO THE GAME...')}</h1><p class="copy">${esc(state.projectorError?'This display link might have expired. Ask the host to generate a new TV link.':'The game will appear automatically when connected.')}</p></section>`;
+    const label=`<div class="tv-top"><span class="eyebrow">RANK RIOT <span class="tv-live-dot">●</span> LIVE</span><span class="pill">${esc(s.mode.toUpperCase())} · PIN ${esc(s.pin)}</span><div class="button-row">${button('♫ MUSIC','tv-music','btn ghost small')}${button('⛶ FULLSCREEN','tv-fullscreen','btn ghost small')}</div></div>`;
+    if(s.stage==='lobby')return `<section class="tv-stage">${label}<div class="tv-center"><div class="eyebrow">JOIN THE GAME</div><h1 class="tv-banner">RANK <span>RIOT.</span></h1><p class="tv-hint">ENTER THIS CODE ON YOUR PHONE</p><div class="tv-pin">${esc(s.pin)}</div><p class="tv-hint">${s.players.length} / 8 PLAYERS JOINED</p><div class="player-chips">${s.players.map(name=>`<span class="chip">${esc(name)}</span>`).join('')}</div><p class="tiny">Waiting for the host to start…</p></div></section>`;
+    if(s.stage==='question')return `<section class="tv-stage">${label}<div class="tv-round-head"><div class="eyebrow">QUESTION ${esc(s.number)} OF 25 / ${esc(s.game.toUpperCase())}</div><span class="pill">${s.voteCount} / ${s.players.length} VOTES IN</span></div><h1 class="tv-question">${esc(s.question)}</h1>${timer(s)}<div class="tv-answers">${s.options.map((o,i)=>`<div class="tv-option tv-color-${i%6}"><span class="tv-option-number">${i+1}</span><span>${esc(o.text)}</span></div>`).join('')}</div><p class="tv-footer-note">Vote on your phone. This screen never reveals the authors until voting ends.</p></section>`;
+    if(s.stage==='reveal'){
+      const sorted=[...s.options].sort((a,b)=>b.tally.sum-a.tally.sum||b.tally.first-a.tally.first||b.tally.second-a.tally.second||b.tally.third-a.tally.third);
+      const placed=[];sorted.forEach((o,i)=>{const p=placed[i-1],tie=p&&p.tally.sum===o.tally.sum&&p.tally.first===o.tally.first&&p.tally.second===o.tally.second&&p.tally.third===o.tally.third;placed.push({...o,place:tie?p.place:i+1});});
+      return `<section class="tv-stage">${label}<div class="eyebrow">ANSWER REVEAL / QUESTION ${esc(s.number)}</div><h1 class="tv-question">${esc(s.question)}</h1><div class="tv-reveals">${placed.reverse().map((o,i)=>`<div class="tv-reveal-entry ${o.place===1?'tv-winning-answer':''}" style="--reveal-delay:${(i*.44).toFixed(2)}s"><span class="tv-place">#${o.place}</span><div><strong>${esc(o.text)}</strong><span class="tiny">BY ${esc(o.author)}</span></div><div class="tv-point-value">${o.tally.sum}<small>PTS</small></div></div>`).join('')}</div></section>`;
+    }
+    if(s.stage==='leaderboard')return `<section class="tv-stage">${label}<div class="eyebrow">AFTER QUESTION ${esc(s.number)}</div><h1 class="tv-banner">THE <span>LEADERBOARD.</span></h1><div class="tv-scores">${scoresBoard(s.leaderboard)}</div><p class="tv-footer-note">The host will start the next question.</p></section>`;
+    if(s.stage==='finished'){const w=s.leaderboard[0];return `<section class="tv-stage">${label}<div class="tv-center"><div class="eyebrow">THE FINAL RESULTS ARE IN</div><h1 class="tv-banner tv-winner"><span>${esc(w?.name||'Nobody')}</span> WINS!</h1><div class="tv-winner-points">${w?.sum||0} <small>TOTAL POINTS</small></div><div class="tv-scores">${scoresBoard(s.leaderboard)}</div><p class="tiny">Game archived · ${esc(s.mode.toUpperCase())}</p></div></section>`;}
+    return `<section class="tv-stage">${label}<div class="tv-center"><h1 class="tv-banner">ROUND <span>SKIPPED.</span></h1><p class="tv-hint">Waiting for the host to continue.</p></div></section>`;
+  }
+  function gameView(){const s=state.snapshot;if(!s)return `<section class="shell"><h1 class="subhead">Connecting to room…</h1></section>`;
+    let content='';
+    switch(s.stage){case'lobby':content=lobby(s);break;case'question':content=question(s);break;case'reveal':content=reveal(s);break;case'leaderboard':content=boardView(s);break;case'skipped':content=skipped(s);break;case'finished':content=finalView(s);break;default:content='<div>Unknown room state.</div>';}
+    return (state.view==='host'?tvToolbar():'')+content;
+  }
 
   function niceDate(date){const d=new Date(date);return Number.isNaN(d.getTime())?'Unknown date':d.toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});}
 
@@ -309,7 +385,7 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
         </div>`:'<div class="empty" style="margin-top:20px">This game finished before per-question rankings were saved. Its final leaderboard is preserved, but individual answer rankings cannot be reconstructed.</div>'}
     </section>`;
   }
-  function render(){if(state.view==='home')app.innerHTML=home();else if(state.view==='setup')app.innerHTML=setupView();else if(state.view==='join')app.innerHTML=joinView();else if(state.view==='history')app.innerHTML=historyView();else if(state.view==='saved-result')app.innerHTML=resultView();else if(state.view==='fame')app.innerHTML=fameView();else app.innerHTML=gameView();updateTimer();animateScoreCounters();}
+  function render(){document.body.classList.toggle('tv-mode',state.view==='projector');if(state.view==='home')app.innerHTML=home();else if(state.view==='setup')app.innerHTML=setupView();else if(state.view==='join')app.innerHTML=joinView();else if(state.view==='history')app.innerHTML=historyView();else if(state.view==='saved-result')app.innerHTML=resultView();else if(state.view==='fame')app.innerHTML=fameView();else if(state.view==='projector')app.innerHTML=tvView();else app.innerHTML=gameView();updateTimer();animateScoreCounters();}
   function animateScoreCounters(){
     const nodes=app.querySelectorAll('.animated-score');if(!nodes.length)return;
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
@@ -334,8 +410,17 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
     else updateTimer();
   }
   function confetti(){if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;for(let i=0;i<65;i++){const e=document.createElement('span');e.className='confetti';e.style.setProperty('--left',Math.random()*100+'vw');e.style.setProperty('--duration',(1.4+Math.random()*2.5)+'s');e.style.setProperty('--drift',(Math.random()-.5)*280+'px');e.style.setProperty('--color',['#cbff4d','#ff729f','#7bdcff','#ffbd6e','#c2a7ff'][i%5]);document.body.append(e);setTimeout(()=>e.remove(),4400);}}
-  async function poll(force=false){if(!['host','player'].includes(state.view)||!state.pin||state.requesting)return;
-    state.requesting=true;try{const snapshot=await rpc('state',{pin:state.pin,secret:state.view==='host'?state.secret:'',playerKey:state.view==='player'?state.playerKey:''});state.networkError=false;onSnapshot(snapshot);}catch(err){if(!state.networkError||force)notify(err.message,true);state.networkError=true;}finally{state.requesting=false;}
+  async function poll(force=false){
+    if(!['host','player','projector'].includes(state.view)||!state.pin||state.requesting)return;
+    state.requesting=true;
+    try{
+      const projector=state.view==='projector';
+      const snapshot=await rpc(projector?'projector-state':'state',projector?{pin:state.pin,viewerKey:state.viewerKey}:{pin:state.pin,secret:state.view==='host'?state.secret:'',playerKey:state.view==='player'?state.playerKey:''});
+      state.networkError=false;state.projectorError='';onSnapshot(snapshot);
+    }catch(err){
+      if(state.view==='projector'){state.projectorError=err.message;state.snapshot=null;render();}
+      if(!state.networkError||force)notify(err.message,true);state.networkError=true;
+    }finally{state.requesting=false;}
   }
   function fieldValue(id){return ($('#'+id)?.value||'').trim();}
   async function act(action,target){switch(action){
@@ -416,6 +501,26 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
       state.pin=joined.pin;state.name=joined.name;state.playerKey=joined.playerKey;storage.setItem(roomKey(pin,name),joined.playerKey);
       state.view='player';await poll(true);return;
     }
+    case 'open-projector':{
+      const popup=window.open('about:blank','_blank');
+      try{
+        const url=await projectorLink();
+        if(popup){popup.opener=null;popup.location.href=url;notify('TV display opened in a new tab.');}
+        else{await copy(url);notify('Popup blocked. TV link copied. Open it on the display device.');}
+      }catch(error){if(popup)popup.close();throw error;}
+      return;
+    }
+    case 'copy-projector':{
+      const url=await projectorLink();await copy(url);return;
+    }
+    case 'tv-fullscreen':{
+      if(!document.fullscreenElement)await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+      return;
+    }
+    case 'tv-music':{
+      $('#musicButton').click();return;
+    }
     case 'advance':{
       if(state.view!=='host')return;
       await rpc('advance',{pin:state.pin,secret:state.secret});await poll(true);return;
@@ -461,7 +566,7 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   $('#soundButton').addEventListener('click',()=>{state.sound=!state.sound;storage.setItem('rank-riot-sound',state.sound?'on':'off');$('#soundButton').textContent=state.sound?'♪':'×';$('#soundButton').setAttribute('aria-pressed',String(state.sound));if(state.sound){audioReady();beep(784)}});
   $('#soundButton').textContent=state.sound?'♪':'×';$('#soundButton').setAttribute('aria-pressed',String(state.sound));
   // Room join links carry only the public PIN. The host key is never included.
-  render();rpc('ping').catch(()=>{});setInterval(()=>{poll(false);updateTimer();},1850);setInterval(updateTimer,150);
+  render();rpc('ping').catch(()=>{});if(state.view==='projector')poll(true);setInterval(()=>{poll(false);updateTimer();},1850);setInterval(updateTimer,150);
 })();
 
 </script>
