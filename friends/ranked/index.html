@@ -211,16 +211,29 @@ body.tv-mode #app{width:100%;min-height:100vh}
 .test-note{margin:17px 0 0;color:var(--muted);font-size:.82rem;line-height:1.5}
 @media(max-width:850px){.test-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.test-controls{grid-template-columns:1fr}.test-header{flex-direction:column;gap:10px}.test-actions .btn{flex:1 1 160px}.test-corner{right:8px;bottom:8px;padding:7px 8px}.test-preview{border-radius:13px}.test-shell{padding:12px 10px 70px}}
+
+.spooky-music-panel[hidden]{display:none!important}
+.spooky-music-panel{position:fixed;z-index:56;right:18px;top:79px;width:min(340px,calc(100vw - 36px));padding:19px;border:1px solid #caff78a8;border-radius:17px;background:#211a3dec;backdrop-filter:blur(13px);box-shadow:0 18px 60px #050211c9}
+.spooky-volume-label{display:flex;justify-content:space-between;align-items:center;margin:17px 0 9px;font:700 .8rem var(--mono);color:var(--green)}
+.spooky-music-panel input[type=range]{width:100%;accent-color:var(--green);cursor:pointer}
+.spooky-music-status{color:#e0d6f1;margin:12px 0;font:.78rem var(--mono)}
+.spooky-music-panel p{color:var(--muted);margin:10px 0 0}
 </style>
 </head>
 <body>
 <div class="noise" aria-hidden="true"></div><div class="ambient-orb orb-one" aria-hidden="true"></div><div class="ambient-orb orb-two" aria-hidden="true"></div>
-<header class="masthead"><a class="brand" href="../" aria-label="Friend Group Hub">R<span>★</span>RIOT</a><div class="header-actions"><span class="status-dot" id="connectionStatus">OFFLINE</span><button type="button" class="icon-button" id="soundButton" title="Toggle sound effects" aria-label="Toggle sound effects">♪</button><button type="button" class="icon-button music-toggle" id="musicButton" title="Official Kahoot soundtrack" aria-label="Open official Kahoot soundtrack">♫</button></div></header>
-<aside class="kahoot-music-dock" id="kahootMusicDock" hidden><div class="music-dock-header"><div><strong>Kahoot! Lobby Music</strong><span class="tiny">Official YouTube player · audio comes from the video</span></div><button type="button" class="icon-button" id="musicClose" aria-label="Close music player">×</button></div><div id="kahootPlayerSlot" class="music-video"><a href="https://www.youtube.com/watch?v=yjwJIjNuniQ" target="_blank" rel="noopener noreferrer">Open official Kahoot! music on YouTube</a></div><p class="tiny">Use the player controls for volume. <a href="https://www.youtube.com/watch?v=yjwJIjNuniQ" target="_blank" rel="noopener noreferrer">Open official track on YouTube</a> if the embed is unavailable.</p></aside>
+<header class="masthead"><a class="brand" href="../" aria-label="Friend Group Hub">R<span>★</span>RIOT</a><div class="header-actions"><span class="status-dot" id="connectionStatus">OFFLINE</span><button type="button" class="icon-button" id="soundButton" title="Toggle sound effects" aria-label="Toggle sound effects">♪</button><button type="button" class="icon-button music-toggle" id="musicButton" title="Spooky music settings" aria-label="Spooky music settings">♫</button></div></header>
+<aside class="spooky-music-panel" id="spookyMusicPanel" hidden>
+  <div class="music-dock-header"><div><strong>SPOOKY ARCADE MUSIC</strong><span class="tiny">Original built-in Halloween-style loop · no YouTube</span></div><button type="button" class="icon-button" id="musicClose" aria-label="Close music settings">×</button></div>
+  <label class="spooky-volume-label" for="spookyVolume">Music volume <span id="spookyVolumePercent">32%</span></label><input id="spookyVolume" type="range" min="0" max="100" value="32" aria-label="Spooky soundtrack volume">
+  <div class="spooky-music-status" id="spookyMusicStatus">Music enabled · begins after your first click</div>
+  <p class="tiny">Music is synthesized in your browser and loops without opening a media player. The official Kahoot! recording is not included.</p>
+</aside>
 <main id="app" aria-live="polite"><section class="shell"><div class="eyebrow">LIVE PARTY GAME / RANKED CHOICE</div><h1 class="display">RANK<br><i>RIOT.</i></h1><p class="lead">Loading...</p></section></main>
 <footer class="site-footer"><a href="../">← Friend Group Hub</a><span>Made for Alex &amp; Doron · 25 questions each · 3 / 2 / 1 points</span></footer>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <button type="button" id="testToggle" class="test-corner" aria-label="Open offline Rank Riot test lab" aria-pressed="false" title="Preview all game features without changing real games">TEST</button>
+<script src="spooky-music.js"></script>
 <script src="test-lab.js"></script>
 <script>
 /* Rank Riot: original Kahoot-style ranked-choice live game UI.
@@ -238,12 +251,24 @@ body.tv-mode #app{width:100%;min-height:100vh}
   const ENDPOINT = 'https://bpudsyyepiminpdxlquz.supabase.co/functions/v1/rank-riot';
   const displayPin=params.get('display')||'',displayKey=params.get('viewer')||'';
   const state = {view:'home',secret:storage.getItem('rank-riot-host-key') || '',pin:displayPin||params.get('pin') || '',viewerKey:displayKey,projectorError:'',
-    playerKey:'',name:'',snapshot:null,setup:null,rank:[],requesting:false,loading:false,lastStage:'',sound:storage.getItem('rank-riot-sound') !== 'off',networkError:false,historyData:null,savedResult:null,fame:null,fameGame:'all',fameSort:'points',overtakes:new Set(),lastBoardOrder:null};
+    playerKey:'',name:'',snapshot:null,setup:null,rank:[],requesting:false,loading:false,lastStage:'',sound:storage.getItem('rank-riot-sound') !== 'off',networkError:false,historyData:null,savedResult:null,fame:null,fameGame:'all',fameSort:'points',overtakes:new Set(),lastBoardOrder:null,musicEnabled:storage.getItem('rank-riot-spooky-music')!=='off',musicVolume:Number(storage.getItem('rank-riot-spooky-volume')||32)/100};
   let testLab=null;
   if(state.pin && !/^\d{6}$/.test(state.pin)) state.pin='';
   if(state.pin) state.view='join';
   if(displayPin && /^\d{6}$/.test(displayPin))state.view='projector';
   const esc = (value) => String(value==null?'':value).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const spookyMusic=window.RankRiotSpookyMusic();
+  spookyMusic.setVolume(state.musicVolume);
+  if(!state.musicEnabled)spookyMusic.enable(false);
+  function updateMusicButton(){
+    const btn=$('#musicButton');
+    btn.textContent=state.musicEnabled?'♫':'♫̸';
+    btn.setAttribute('aria-pressed',String(state.musicEnabled));
+    btn.setAttribute('title',state.musicEnabled?'Spooky soundtrack on · click for settings':'Spooky soundtrack off · click to enable');
+    const status=$('#spookyMusicStatus');
+    if(status)status.textContent=state.musicEnabled?'Enabled · starts after your first interaction':'Off · click the music button to turn on';
+  }
+  function beginSpookyMusic(){if(state.musicEnabled)spookyMusic.start();}
   let audioContext=null,lastTimerBeep='';
   function audioReady(){
     if(!state.sound)return null;
@@ -482,7 +507,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
       state.savedResult=old.savedResult;state.fame=old.fame;state.historyData=old.historyData;
     }
   }
-  function render(){document.body.classList.toggle('tv-mode',!testLab?.open&&state.view==='projector');$('#testToggle').setAttribute('aria-pressed',String(Boolean(testLab?.open)));if(testLab?.open)app.innerHTML=testLab.view();else if(state.view==='home')app.innerHTML=home();else if(state.view==='setup')app.innerHTML=setupView();else if(state.view==='join')app.innerHTML=joinView();else if(state.view==='history')app.innerHTML=historyView();else if(state.view==='saved-result')app.innerHTML=resultView();else if(state.view==='fame')app.innerHTML=fameView();else if(state.view==='projector')app.innerHTML=tvView();else app.innerHTML=gameView();updateTimer();animateScoreCounters();}
+  function render(){spookyMusic.setPhase(testLab?.open?'lobby':state.snapshot?.stage||'home');document.body.classList.toggle('tv-mode',!testLab?.open&&state.view==='projector');$('#testToggle').setAttribute('aria-pressed',String(Boolean(testLab?.open)));if(testLab?.open)app.innerHTML=testLab.view();else if(state.view==='home')app.innerHTML=home();else if(state.view==='setup')app.innerHTML=setupView();else if(state.view==='join')app.innerHTML=joinView();else if(state.view==='history')app.innerHTML=historyView();else if(state.view==='saved-result')app.innerHTML=resultView();else if(state.view==='fame')app.innerHTML=fameView();else if(state.view==='projector')app.innerHTML=tvView();else app.innerHTML=gameView();updateTimer();animateScoreCounters();}
   function animateScoreCounters(){
     const nodes=app.querySelectorAll('.animated-score');if(!nodes.length)return;
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
@@ -502,7 +527,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
       state.overtakes=new Set(snapshot.leaderboard.map((p,i)=>state.lastBoardOrder&&state.lastBoardOrder[p.name]!==undefined&&i<state.lastBoardOrder[p.name]?p.name:null).filter(Boolean));
       state.lastBoardOrder=Object.fromEntries(snapshot.leaderboard.map((p,i)=>[p.name,i]));
     }
-    if(stageChanged){if(snapshot.stage==='reveal')revealSound();else if(snapshot.stage==='finished'){lockSound();confetti();}else if(snapshot.stage==='leaderboard')beep(784,.25);else beep(523,.1);lastTimerBeep='';}
+    if(stageChanged){spookyMusic.setPhase(snapshot.stage);if(snapshot.stage==='reveal')revealSound();else if(snapshot.stage==='finished'){lockSound();confetti();}else if(snapshot.stage==='leaderboard')beep(784,.25);else beep(523,.1);lastTimerBeep='';}
     if(!last || stageChanged || JSON.stringify({...last,serverNow:0})!==JSON.stringify({...snapshot,serverNow:0}))render();
     else updateTimer();
   }
@@ -641,7 +666,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
   async function copy(content){try{await navigator.clipboard.writeText(content);notify('Copied to clipboard.');}catch{notify('Copy unavailable. Select the join URL from the address bar.',true);}}
   app.addEventListener('click',async event=>{
     const target=event.target.closest('[data-action]');if(!target)return;
-    audioReady();let action=target.dataset.action;
+    audioReady();beginSpookyMusic();let action=target.dataset.action;
     if(testLab?.open){
       if(target.closest('#testPreview'))action=action==='pick'?'test-pick':action==='vote'?'test-vote':action==='advance'?'test-advance':'test-ignored';
       try{target.disabled=true;await testLab.action(action,target)}catch(err){notify(err.message,true)}
@@ -661,20 +686,27 @@ body.tv-mode #app{width:100%;min-height:100vh}
     const selected=document.getElementById('saved-round-'+index);
     if(selected)selected.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
   });
-  const musicDock=$('#kahootMusicDock'),musicSlot=$('#kahootPlayerSlot');
-  function closeKahootMusic(){musicDock.hidden=true;musicSlot.replaceChildren();const a=document.createElement('a');a.href='https://www.youtube.com/watch?v=yjwJIjNuniQ';a.target='_blank';a.rel='noopener noreferrer';a.textContent='Open official Kahoot! music on YouTube';musicSlot.append(a);}
+  const musicPanel=$('#spookyMusicPanel');
   $('#musicButton').addEventListener('click',()=>{
-    if(!musicDock.hidden){closeKahootMusic();return;}
-    musicDock.hidden=false;musicSlot.replaceChildren();
-    const player=document.createElement('iframe');
-    player.src='https://www.youtube.com/embed/yjwJIjNuniQ?autoplay=1&playsinline=1&loop=1&playlist=yjwJIjNuniQ&rel=0';
-    player.title='Kahoot! - Lobby Music (Original Soundtrack)';player.allow='autoplay; encrypted-media; picture-in-picture';player.referrerPolicy='strict-origin-when-cross-origin';player.allowFullscreen=true;player.loading='eager';
-    musicSlot.append(player);
+    if(!state.musicEnabled){state.musicEnabled=true;storage.setItem('rank-riot-spooky-music','on');spookyMusic.enable(true);musicPanel.hidden=true;}
+    else musicPanel.hidden=!musicPanel.hidden;
+    updateMusicButton();
   });
-  $('#musicClose').addEventListener('click',closeKahootMusic);
+  $('#musicClose').addEventListener('click',()=>{musicPanel.hidden=true;});
+  $('#spookyVolume').value=Math.round(state.musicVolume*100);
+  $('#spookyVolumePercent').textContent=Math.round(state.musicVolume*100)+'%';
+  $('#spookyVolume').addEventListener('input',event=>{
+    state.musicVolume=Number(event.target.value)/100;storage.setItem('rank-riot-spooky-volume',String(event.target.value));
+    spookyMusic.setVolume(state.musicVolume);$('#spookyVolumePercent').textContent=event.target.value+'%';
+    if(state.musicEnabled)spookyMusic.start();
+  });
+  $('#spookyMusicPanel').addEventListener('dblclick',()=>{
+    state.musicEnabled=false;storage.setItem('rank-riot-spooky-music','off');spookyMusic.enable(false);updateMusicButton();
+  });
+  updateMusicButton();
   $('#testToggle').addEventListener('click',()=>{
     if(testLab?.open)testLab.close();
-    else{audioReady();testLab.openLab();}
+    else{audioReady();beginSpookyMusic();testLab.openLab();}
   });
   $('#soundButton').addEventListener('click',()=>{state.sound=!state.sound;storage.setItem('rank-riot-sound',state.sound?'on':'off');$('#soundButton').textContent=state.sound?'♪':'×';$('#soundButton').setAttribute('aria-pressed',String(state.sound));if(state.sound){audioReady();beep(784)}});
   $('#soundButton').textContent=state.sound?'♪':'×';$('#soundButton').setAttribute('aria-pressed',String(state.sound));
