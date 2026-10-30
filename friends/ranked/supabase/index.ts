@@ -2,6 +2,7 @@
  * Runtime: Deno + pinned postgres.js over Supabase's managed DB URL.
  */
 import postgres from 'npm:postgres@3.4.5';
+import { buildAwards } from './awards.mjs';
 const sql = postgres(Deno.env.get('SUPABASE_DB_URL')!, {prepare:false,max:2,idle_timeout:8,connect_timeout:8});
 const MEMBERS = ['Tommy','Mike','Jack','Ethan','Rita','Nora','Alex','Doron'];
 const CORS = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'content-type','Cache-Control':'no-store'};
@@ -37,15 +38,17 @@ async function archiveFinished(tx:any,s:any){
   const room=await tx`select created_at from rankriot_rooms where pin=${s.pin}`;
   requireTrue(room.length,'Cannot archive a missing room.');
   const playerNames=s.players.map((p:any)=>p.name);
-  await tx`insert into rankriot_results(pin,mode,created_at,finished_at,seconds_per_question,players,scores,by_game,rounds)
-  values (${s.pin},${s.mode},${room[0].created_at},${new Date(s.finishedAt).toISOString()},${s.seconds},${tx.json(playerNames)},${tx.json(s.scores)},${tx.json(s.byGame)},${tx.json(Array.isArray(s.history)?s.history:[])})
+  const awards=buildAwards(Array.isArray(s.history)?s.history:[],s.scores,s.mode);
+  s.awards=awards;
+  await tx`insert into rankriot_results(pin,mode,created_at,finished_at,seconds_per_question,players,scores,by_game,rounds,awards)
+  values (${s.pin},${s.mode},${room[0].created_at},${new Date(s.finishedAt).toISOString()},${s.seconds},${tx.json(playerNames)},${tx.json(s.scores)},${tx.json(s.byGame)},${tx.json(Array.isArray(s.history)?s.history:[])},${tx.json(awards)})
   on conflict(pin) do nothing`;
 }
 function savedGameSummary(row:any){const leaderboard=scoreboard(row.scores);return {pin:clean(row.pin),mode:row.mode,createdAt:row.created_at,finishedAt:row.finished_at,playerCount:row.players.length,winner:leaderboard[0]||null,leaderboard,roundsRecorded:row.rounds_recorded};}
 async function next(tx:any,s:any){s.questionIndex++;if(s.questionIndex>=(s.mode==='both'?50:25)){s.stage='finished';s.finishedAt=Date.now();await archiveFinished(tx,s);return;}const seq=sequence(s);const answers=await source(tx,seq.game,seq.index);const prompts=await tx`select prompt from rankriot_questions where game=${seq.game} and question_index=${seq.index}`;s.questionText=prompts[0]?.prompt||'';const options=answers.map((r:any)=>({id:token().slice(0,12),author:r.author,text:r.answer}));for(let i=options.length-1;i>0;i--){const a=crypto.getRandomValues(new Uint32Array(1))[0]%(i+1);[options[a],options[i]]=[options[i],options[a]];}s.options=options;s.votes={};s.round=null;s.openedAt=0;s.closesAt=0;if(options.length<4){s.stage='skipped';if(!Array.isArray(s.history))s.history=[];s.history.push({status:'skipped',game:seq.game,questionIndex:seq.index,number:seq.index+1,question:s.questionText,completedAt:new Date().toISOString(),votes:0,results:[]});return;}s.stage='question';s.openedAt=Date.now();s.closesAt=s.seconds===0?0:s.openedAt+s.seconds*1000;}
 function snapshot(s:any,isHost:boolean,player:any,now:number,questionText:string){const score=scoreboard(s.scores),seq=s.questionIndex>=0?sequence(s):null;const show=s.stage!=='question';const result:any={pin:s.pin,mode:s.mode,stage:s.stage,questionIndex:s.questionIndex,count:s.mode==='both'?50:25,seconds:s.seconds,openedAt:s.openedAt,closesAt:s.closesAt,players:s.players.map((p:any)=>p.name),voteCount:Object.keys(s.votes).length,serverNow:now,viewer:player?.name||null,voted:player?Boolean(s.votes[player.name]):false,picks:player?(s.votes[player.name]||[]):[],leaderboard:score,roster:MEMBERS};
 if(seq&&s.stage!=='finished'){result.game=seq.game;result.number=seq.index+1;result.question=questionText;result.options=s.options.map((o:any)=>({id:o.id,text:o.text,...(show?{author:o.author,tally:s.round?.totals[o.id]||{sum:0,first:0,second:0,third:0}}:{}),mine:Boolean(player&&o.author===player.name)}));}
-if(s.stage==='finished'){result.byGame={alex:scoreboard(s.byGame.alex),doron:scoreboard(s.byGame.doron)};}return result;}
+if(s.stage==='finished'){result.byGame={alex:scoreboard(s.byGame.alex),doron:scoreboard(s.byGame.doron)};result.awards=s.awards?.cards?s.awards:buildAwards(s.history||[],s.scores,s.mode);}return result;}
 async function perform(action:string,p:any){if(action==='ping'){const rows=await sql`select (select count(*)::int from rankriot_questions) as questions, (select count(*)::int from rankriot_answers) as answers`;return {connected:true,provider:'Supabase',questions:rows[0].questions,answers:rows[0].answers};}
 if(action==='fame'){return sql.begin(async(tx:any)=>{
   await authorize(tx,p.secret);
@@ -84,10 +87,10 @@ if(action==='history'){return sql.begin(async(tx:any)=>{
 });}
 if(action==='result'){return sql.begin(async(tx:any)=>{
   await authorize(tx,p.secret);const requested=clean(p.pin);requireTrue(/^\d{6}$/.test(requested),'Enter a six-digit PIN.');
-  const rows=await tx`select pin,mode,created_at,finished_at,seconds_per_question,players,scores,by_game,rounds from rankriot_results where pin=${requested}`;
+  const rows=await tx`select pin,mode,created_at,finished_at,seconds_per_question,players,scores,by_game,rounds,awards from rankriot_results where pin=${requested}`;
   requireTrue(rows.length,'Saved game not found.');
   const row=rows[0];
-  return {pin:clean(row.pin),mode:row.mode,createdAt:row.created_at,finishedAt:row.finished_at,seconds:row.seconds_per_question,players:row.players,leaderboard:scoreboard(row.scores),byGame:{alex:scoreboard(row.by_game?.alex||{}),doron:scoreboard(row.by_game?.doron||{})},rounds:row.rounds};
+  return {pin:clean(row.pin),mode:row.mode,createdAt:row.created_at,finishedAt:row.finished_at,seconds:row.seconds_per_question,players:row.players,leaderboard:scoreboard(row.scores),byGame:{alex:scoreboard(row.by_game?.alex||{}),doron:scoreboard(row.by_game?.doron||{})},rounds:row.rounds,awards:row.awards?.cards?row.awards:buildAwards(row.rounds,row.scores,row.mode)};
 });}
 if(action==='setup')return sql.begin((tx:any)=>setup(tx,p.secret));
 if(action==='create'){return sql.begin(async(tx:any)=>{await authorize(tx,p.secret);const mode=clean(p.game).toLowerCase(),seconds=Number(p.seconds);requireTrue(['alex','doron','both'].includes(mode),'Select Alex, Doron, or both.');requireTrue(Number.isInteger(seconds)&&(seconds===0||(seconds>=15&&seconds<=120)),'Time must be unlimited or between 15 and 120 seconds.');const games=mode==='both'?['alex','doron']:[mode];for(const g of games){const count=await tx`select count(distinct author)::int as c from rankriot_answers where game=${g}`;requireTrue(count[0].c>=4,`${g} needs at least four authors.`);}let pin='';for(let attempts=0;attempts<20;attempts++){pin=String(100000+crypto.getRandomValues(new Uint32Array(1))[0]%900000);const row=await tx`select pin from rankriot_rooms where pin=${pin}`;if(!row.length)break;pin='';}requireTrue(pin,'Could not allocate a unique PIN.');const s:any={pin,mode,seconds,stage:'lobby',questionIndex:-1,openedAt:0,closesAt:0,players:[],votes:{},options:[],round:null,scores:zero(),byGame:{alex:zero(),doron:zero()},finishedAt:0,history:[],questionText:''};await tx`insert into rankriot_rooms(pin,state) values (${pin},${tx.json(s)})`;return {pin};});}
