@@ -291,16 +291,19 @@ body.tv-mode #app{width:100%;min-height:100vh}
 }
 @media(max-width:420px){.podium-top{grid-template-columns:repeat(3,minmax(0,1fr))}.podium-card{padding-inline:5px}.podium-bottom .podium-card{padding-inline:4px}.podium-votes{font-size:.51rem}.podium-answer{font-size:.75rem}}
 @media(prefers-reduced-motion:reduce){.podium-entry,.podium-champion{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}}
+.spooky-music-actions{display:flex;flex-wrap:wrap;gap:9px;margin:17px 0 8px}
+.spooky-music-actions button{flex:1 1 130px}
 </style>
 </head>
 <body>
 <div class="noise" aria-hidden="true"></div><div class="ambient-orb orb-one" aria-hidden="true"></div><div class="ambient-orb orb-two" aria-hidden="true"></div>
 <header class="masthead"><a class="brand" href="../" aria-label="Friend Group Hub">R<span>★</span>RIOT</a><div class="header-actions"><span class="status-dot" id="connectionStatus">OFFLINE</span><button type="button" class="icon-button" id="soundButton" title="Toggle sound effects" aria-label="Toggle sound effects">♪</button><button type="button" class="icon-button music-toggle" id="musicButton" title="Spooky music settings" aria-label="Spooky music settings">♫</button></div></header>
 <aside class="spooky-music-panel" id="spookyMusicPanel" hidden>
-  <div class="music-dock-header"><div><strong>SPOOKY ARCADE MUSIC</strong><span class="tiny">Original built-in Halloween-style loop · no YouTube</span></div><button type="button" class="icon-button" id="musicClose" aria-label="Close music settings">×</button></div>
+  <div class="music-dock-header"><div><strong>KAHOOT! HALLOWEEN MUSIC</strong><span class="tiny">Official Halloween Lobby Music · plays directly in game</span></div><button type="button" class="icon-button" id="musicClose" aria-label="Close music settings">×</button></div>
   <label class="spooky-volume-label" for="spookyVolume">Music volume <span id="spookyVolumePercent">32%</span></label><input id="spookyVolume" type="range" min="0" max="100" value="32" aria-label="Spooky soundtrack volume">
   <div class="spooky-music-status" id="spookyMusicStatus">Music enabled · begins after your first click</div>
-  <p class="tiny">Music is synthesized in your browser and loops without opening a media player. The official Kahoot! recording is not included.</p>
+  <div class="spooky-music-actions"><button type="button" class="btn ghost small" id="spookyPause">TURN MUSIC OFF</button><button type="button" class="btn alt small" id="spookyPlay">PLAY / RESUME</button></div>
+  <p class="tiny">The official track is downloaded with the site, plays in a seamless loop, and doesn't use YouTube. Your browser may require a click before sound starts.</p>
 </aside>
 <main id="app" aria-live="polite"><section class="shell"><div class="eyebrow">LIVE PARTY GAME / RANKED CHOICE</div><h1 class="display">RANK<br><i>RIOT.</i></h1><p class="lead">Loading...</p></section></main>
 <footer class="site-footer"><a href="../">← Friend Group Hub</a><span>Made for Alex &amp; Doron · 25 questions each · 3 / 2 / 1 points</span></footer>
@@ -339,7 +342,8 @@ body.tv-mode #app{width:100%;min-height:100vh}
     btn.setAttribute('aria-pressed',String(state.musicEnabled));
     btn.setAttribute('title',state.musicEnabled?'Spooky soundtrack on · click for settings':'Spooky soundtrack off · click to enable');
     const status=$('#spookyMusicStatus');
-    if(status)status.textContent=state.musicEnabled?'Enabled · starts after your first interaction':'Off · click the music button to turn on';
+    if(status)status.textContent=state.musicEnabled?'ON · Kahoot! Halloween theme · '+spookyMusic.source:'OFF · click play to resume';
+    const pause=$('#spookyPause');if(pause)pause.disabled=!state.musicEnabled;
   }
   function beginSpookyMusic(){if(state.musicEnabled)spookyMusic.start();}
   let audioContext=null,lastTimerBeep='';
@@ -815,10 +819,17 @@ body.tv-mode #app{width:100%;min-height:100vh}
     spookyMusic.setVolume(state.musicVolume);$('#spookyVolumePercent').textContent=event.target.value+'%';
     if(state.musicEnabled)spookyMusic.start();
   });
-  $('#spookyMusicPanel').addEventListener('dblclick',()=>{
-    state.musicEnabled=false;storage.setItem('rank-riot-spooky-music','off');spookyMusic.enable(false);updateMusicButton();
+  $('#spookyPause').addEventListener('click',()=>{
+    state.musicEnabled=false;storage.setItem('rank-riot-spooky-music','off');
+    spookyMusic.enable(false);updateMusicButton();
+  });
+  $('#spookyPlay').addEventListener('click',()=>{
+    state.musicEnabled=true;storage.setItem('rank-riot-spooky-music','on');
+    spookyMusic.enable(true);updateMusicButton();
   });
   updateMusicButton();
+  document.addEventListener('pointerdown',beginSpookyMusic,{once:true,passive:true});
+  document.addEventListener('keydown',beginSpookyMusic,{once:true});
   $('#testToggle').addEventListener('click',()=>{
     if(testLab?.open)testLab.close();
     else{audioReady();beginSpookyMusic();testLab.openLab();}
