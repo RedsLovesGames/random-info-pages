@@ -284,6 +284,56 @@ test('Award winning honors never use uncast vote counts or fake humor judgments'
   assert.ok(awards.cards.every(c=>typeof c.winner==='string'&&typeof c.detail==='string'));
   assert.ok(!awards.cards.some(c=>/funniest/i.test(c.title)),'Popularity is not an objective measure of humor');
 });
+test('Tiny TEST corner button loads isolated offline preview only',()=>{
+  const lab=fs.readFileSync(path.join(dir,'test-lab.js'),'utf8');
+  assert.match(html,/id="testToggle"/);
+  assert.match(html,/src="test-lab\.js"/);
+  assert.match(css,/\.test-corner\{/);
+  assert.match(css,/\.test-preview\{/);
+  assert.match(app,/testLab=window\.RankRiotTestLab\(/);
+  assert.match(app,/if\(testLab\?\.open\)app\.innerHTML=testLab\.view\(\)/);
+  assert.match(app,/if\(testLab\?\.open\|\|!\['host','player','projector'\]/);
+  assert.match(app,/if\(testLab\?\.open\)return;const s=state\.snapshot/);
+  assert.match(app,/await testLab\.action\(action,target\)/);
+  assert.match(lab,/NO LIVE DATA CHANGED|NO LIVE DATA|No real game|NO LIVE DATA CHANGED|No LIVE DATA CHANGED|NO DATABASE WRITES|NO LIVE DATA CHANGED/i);
+  assert.doesNotMatch(lab, /fetch\(|XMLHttpRequest|supabase\.co|localStorage|\.rpc\(/i);
+  assert.doesNotMatch(lab,/window\.location\s*=|document\.cookie/);
+});
+test('Offline lab stages, mocked snapshots and voting simulation work',async()=>{
+  const lab=fs.readFileSync(path.join(dir,'test-lab.js'),'utf8');
+  const fakeRoot={};
+  vm.runInNewContext(lab,{window:fakeRoot,setInterval:()=>123,clearInterval:()=>{}});
+  assert.equal(typeof fakeRoot.RankRiotTestLab,'function');
+  const seen=[],messages=[];
+  let renderCount=0;
+  const api={
+    esc:v=>String(v),button:(label,action)=>'<button data-action="'+action+'">'+label+'</button>',
+    preview:(scene,role,snapshot,picks)=>{seen.push({scene,role,snapshot,picks:[...picks]});return '<div class="shell tv-stage"><div id="savedRoundScroll"></div><div class="fame-entry"></div><div class="award-card"></div></div>';},
+    render:()=>renderCount++,rankSound:()=>{},lockSound:()=>{},revealSound:()=>{},confetti:()=>{},
+    music:()=>{},soundTest:()=>{},audioSupported:()=>true,testCanWrite:()=>false,notice:x=>messages.push(x)
+  };
+  const instance=fakeRoot.RankRiotTestLab(api);
+  assert.equal(instance.open,false);
+  instance.openLab();
+  assert.equal(instance.open,true);
+  assert.match(instance.view(),/TEST LAB/);
+  assert.match(instance.view(),/FAKE DATA · NOT SAVED/);
+  instance.change({target:{id:'testScene',value:'question'}});
+  instance.change({target:{id:'testRole',value:'player'}});
+  await instance.action('test-pick',{dataset:{id:'demo-0'}}); // self-voting disallowed
+  await instance.action('test-pick',{dataset:{id:'demo-1'}});
+  await instance.action('test-pick',{dataset:{id:'demo-2'}});
+  await instance.action('test-pick',{dataset:{id:'demo-3'}});
+  instance.view();
+  assert.deepEqual(Array.from(seen.at(-1).picks),['demo-1','demo-2','demo-3']);
+  await instance.action('test-vote',{dataset:{}});
+  assert.match(instance.view(),/Rank three answers/);
+  await instance.action('test-checks',{dataset:{}});
+  assert.match(instance.view(),/8\/8 LOCAL CHECKS PASSED/);
+  instance.close();
+  assert.equal(instance.open,false);
+  assert.ok(renderCount>3);
+});
 test('Original mobile game structure and styling remain intact',()=>{
   assert.match(html,/id="app"/);assert.match(html,/id="connectionStatus"/);
   assert.match(css,/\.answer-grid/);assert.match(css,/@media/);
