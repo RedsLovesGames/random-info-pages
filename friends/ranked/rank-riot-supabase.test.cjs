@@ -142,7 +142,8 @@ test('Unlimited rounds accept votes indefinitely and automatically reveal after 
 test('Official Kahoot music plays through visible, optional YouTube player',()=>{
   assert.match(html,/id="kahootMusicDock"/);
   assert.match(html,/id="musicButton"/);
-  assert.match(app,/youtube-nocookie\.com\/embed\/yjwJIjNuniQ/);
+  assert.match(app,/www\.youtube\.com\/embed\/yjwJIjNuniQ/);
+  assert.match(app,/player\.referrerPolicy='strict-origin-when-cross-origin'/);
   assert.match(app,/closeKahootMusic\(\)/);
   assert.match(app,/musicSlot\.append\(player\)/);
   assert.doesNotMatch(html,/<audio[^>]*src=/);
@@ -150,8 +151,11 @@ test('Official Kahoot music plays through visible, optional YouTube player',()=>
 test('Rank selection audio and game-show visual FX use accessible reduced-motion fallback',()=>{
   assert.match(app,/rank-tray-grid/);
   assert.match(app,/slot-medal/);
-  assert.match(app,/\[540,790,1070\]/);
-  assert.match(app,/beep\(900\)/);
+  assert.match(app,/function rankSound\(position,removed=false\)/);
+  assert.match(app,/523\.25,659\.25,783\.99/);
+  assert.match(app,/function lockSound\(\)/);
+  assert.match(app,/function revealSound\(\)/);
+  assert.match(app,/let audioContext=null/);
   assert.match(css,/@keyframes answerCurtain/);
   assert.match(css,/@keyframes scoreSlide/);
   assert.match(css,/@keyframes selectionBounce/);
@@ -169,6 +173,52 @@ test('Hall of Fame uses archived answers with host authorization, rankings, and 
   assert.match(app,/id="fameFilter"/);
   assert.match(app,/id="fameSort"/);
   assert.match(css,/\.fame-podium/);
+});
+test('Hall of Fame reset excludes old matches without deleting history',()=>{
+  assert.match(edge,/key='hall_of_fame_since'/);
+  assert.match(edge,/h\.finished_at>=\$\{since\}::timestamptz/);
+  assert.match(edge,/rankriot_results where finished_at>=\$\{since\}::timestamptz/);
+  assert.match(edge,/if\(action==='history'\)/);
+  assert.match(edge,/if\(action==='result'\)/);
+});
+test('Projector access uses separate unguessable token and does not expose host key',()=>{
+  assert.match(edge,/if\(action==='projector-access'\)/);
+  assert.match(edge,/await authorize\(tx,p\.secret\)/);
+  assert.match(edge,/s\.projectorHash=await hash\(viewerKey\)/);
+  assert.match(edge,/action==='projector-state'/);
+  assert.match(edge,/validSpectator=spectator&&viewerKey\.length===48/);
+  assert.match(edge,/requireTrue\(spectator\?validSpectator:isHost\|\|player/);
+  assert.match(edge,/result=snapshot\(s,Boolean\(isHost\),player,now,questionText\)/);
+  assert.match(edge,/if\(modified\)await tx`update rankriot_rooms/);
+  assert.doesNotMatch(app,/searchParams\.set\('secret'/);
+});
+test('Read-only TV view supports every stage and independent fullscreen projection',()=>{
+  assert.match(html,/<meta name="referrer" content="no-referrer"/);
+  assert.match(app,/u\.searchParams\.set\('display',state\.pin\)/);
+  assert.match(app,/u\.searchParams\.set\('viewer',key\)/);
+  assert.match(app,/case 'open-projector'/);
+  assert.match(app,/case 'copy-projector'/);
+  assert.match(app,/case 'tv-fullscreen'/);
+  assert.match(app,/function tvView\(\)/);
+  assert.match(app,/function tvToolbar\(\)/);
+  assert.match(app,/state\.view==='projector'\)app\.innerHTML=tvView\(\)/);
+  assert.match(app,/rpc\(projector\?'projector-state':'state'/);
+  assert.match(app,/if\(s\.stage==='lobby'\)/);
+  assert.match(app,/if\(s\.stage==='question'\)/);
+  assert.match(app,/if\(s\.stage==='reveal'\)/);
+  assert.match(app,/if\(s\.stage==='leaderboard'\)/);
+  assert.match(app,/if\(s\.stage==='finished'\)/);
+  assert.match(css,/\.tv-stage/);
+  assert.match(css,/body\.tv-mode/);
+});
+test('Shared sound engine is reused and supports countdown and per-rank tones',()=>{
+  assert.match(app,/let audioContext=null/);
+  assert.match(app,/if\(!audioContext\|\|audioContext\.state==='closed'\)audioContext=new AC\(\)/);
+  assert.match(app,/function rankSound\(/);
+  assert.match(app,/function lockSound\(/);
+  assert.match(app,/function revealSound\(/);
+  assert.match(app,/lastTimerBeep/);
+  assert.match(app,/audioReady\(\);const action=target\.dataset\.action/);
 });
 test('Original mobile game structure and styling remain intact',()=>{
   assert.match(html,/id="app"/);assert.match(html,/id="connectionStatus"/);
