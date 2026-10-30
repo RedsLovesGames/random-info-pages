@@ -33,7 +33,7 @@ test('Backend requires host credential and enforces locked, self-free, three-cho
   assert.match(edge,/o\.author!==player\.name/);
   assert.match(edge,/now<s\.closesAt/);
   assert.match(edge,/for update/);
-  assert.match(edge,/if\(s\.stage==='question'&&now>=s\.closesAt\)/);
+  assert.match(edge,/if\(s\.stage==='question'&&s\.seconds>0&&now>=s\.closesAt\)/);
 });
 test('Server keeps answer authors hidden until reveal',()=>{
   assert.match(edge,/\.\.\.\(show\?\{author:o\.author/);
