@@ -22,11 +22,13 @@ create table if not exists public.rankriot_results (
   scores jsonb not null default '{}'::jsonb,
   by_game jsonb not null default '{}'::jsonb,
   rounds jsonb not null default '[]'::jsonb,
+  awards jsonb not null default '{}'::jsonb,
   archived_at timestamptz not null default now(),
   constraint rankriot_results_players_array check (jsonb_typeof(players)='array'),
   constraint rankriot_results_rounds_array check (jsonb_typeof(rounds)='array')
 );
 create index if not exists rankriot_results_finished_at_idx on public.rankriot_results(finished_at desc);
+alter table public.rankriot_results add column if not exists awards jsonb not null default '{}'::jsonb;
 alter table public.rankriot_results enable row level security;
 revoke all on public.rankriot_results from public, anon, authenticated;
 
