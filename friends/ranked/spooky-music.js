@@ -1,6 +1,7 @@
-/* Original spooky arcade music for Rank Riot.
-   No third-party recordings, copyrighted melodies, video players or external audio requests.
-   Starts after a user gesture because browsers block audible autoplay.
+/* Rank Riot spooky music. The official Kahoot Halloween MP3 is downloaded
+   during site deployment and played as a native loop. If unavailable,
+   fall back to Kahoot's own hosted URL, then to the original synth loop.
+   Browsers require a click/gesture before sound can begin.
 */
 (function(root){
   'use strict';
@@ -8,8 +9,10 @@
     let context=null,master=null,loop=null,nextTime=0,step=0,enabled=true,volume=.32,phase='home';
     // This recording is streamed from Kahoot!'s own official public Halloween article.
     // It is never downloaded, mirrored, or embedded as a video by Rank Riot.
-    const officialTrack='https://kahoot.com/files/2022/10/Lobby-Music-Halloween-Edition.mp3';
-    let audio=null,remoteFailed=false,activeSource='pending';
+    // The Pages build downloads a copy under /music/; retain Kahoot's public
+    // source as a fallback if an earlier deployment lacks the local asset.
+    const trackSources=['./music/kahoot-halloween.mp3','https://kahoot.com/files/2022/10/Lobby-Music-Halloween-Edition.mp3'];
+    let audio=null,sourceIndex=0,remoteFailed=false,activeSource='pending';
     const bpm=124,beat=60/bpm,stepTime=beat/4;
     const note=(midi)=>440*Math.pow(2,(midi-69)/12);
     const melody=[76,null,79,78,76,73,75,null,76,83,81,null,79,78,75,73,
@@ -86,15 +89,23 @@
       try{
         if(!audio){
           audio=new root.Audio();
-          audio.src=officialTrack;
+          audio.src=trackSources[sourceIndex];
           audio.loop=true;audio.preload='auto';
           audio.addEventListener('error',()=>{
-            if(enabled){remoteFailed=true;activeSource='original-fallback';startGenerated();}
+            if(!enabled)return;
+            if(sourceIndex<trackSources.length-1){
+              sourceIndex++;
+              audio.src=trackSources[sourceIndex];
+              audio.load();
+              audio.play().then(()=>{activeSource=sourceIndex===0?'kahoot-local':'kahoot-official';}).catch(()=>{remoteFailed=true;startGenerated();});
+            }else{
+              remoteFailed=true;activeSource='original-fallback';startGenerated();
+            }
           });
         }
         audio.volume=targetVolume();
         await audio.play();
-        activeSource='kahoot-official';fade(0);return true;
+        activeSource=sourceIndex===0?'kahoot-local':'kahoot-official';fade(0);return true;
       }catch(e){
         // Some browsers block playback until a user gesture. Do not misidentify
         // this as a broken track and do not evade browser autoplay restrictions.
@@ -114,12 +125,12 @@
     function setVolume(v){
       volume=Math.max(0,Math.min(1,Number(v)||0));
       if(audio)audio.volume=targetVolume();
-      if(enabled&&loop&&activeSource!=='kahoot-official')fade(targetVolume());
+      if(enabled&&loop&&!activeSource.startsWith('kahoot-'))fade(targetVolume());
     }
     function setPhase(next){
       phase=next||'home';
       if(audio)audio.volume=targetVolume();
-      if(enabled&&context)fade(activeSource==='kahoot-official'?0:targetVolume());
+      if(enabled&&context)fade(activeSource.startsWith('kahoot-')?0:targetVolume());
     }
     function dispose(){
       if(loop){root.clearInterval(loop);loop=null}
