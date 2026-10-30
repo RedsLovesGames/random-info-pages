@@ -147,6 +147,21 @@ jobs:
           cp -a computer-src/public/. _site/computer/
           touch _site/.nojekyll
 
+      - name: Download Kahoot Halloween lobby music into Rank Riot site
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site/friends/ranked/music
+          audio="_site/friends/ranked/music/kahoot-halloween.mp3"
+          url="https://kahoot.com/files/2022/10/Lobby-Music-Halloween-Edition.mp3"
+          if curl -fL --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 90 --silent --show-error "$url" -o "$audio" && [ "$(wc -c < "$audio")" -ge 50000 ]; then
+            echo "Official Halloween audio downloaded to the deployed Rank Riot site ($(wc -c < "$audio") bytes)"
+          else
+            rm -f "$audio"
+            echo "::warning::Official MP3 could not be staged; the game will stream directly from Kahoot as fallback."
+          fi
+          test -f _site/friends/ranked/spooky-music.js
+
       - name: Verify staged Random Info Computer
         run: |
           test -f _site/device-worlds/v2.mjs
