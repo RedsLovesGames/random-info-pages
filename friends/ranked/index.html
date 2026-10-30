@@ -71,6 +71,30 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
 .kahoot-music-dock>p{margin:8px 0 0}
 @media(max-width:600px){.rank-tray-grid{grid-template-columns:1fr}.kahoot-music-dock{top:70px;right:8px}.header-actions{gap:9px}}
 @media(prefers-reduced-motion:reduce){#app>section,.answer.selected,.rank-tray-slot.filled,.reveal-answer,.reveal-winner,.scoreboard-entry{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}}
+
+/* Answer Hall of Fame: permanent standout responses from archived rounds. */
+.fame-shell .subhead{margin-bottom:16px}
+.fame-controls{display:grid;grid-template-columns:minmax(180px,1fr) minmax(190px,1fr) auto;align-items:end;gap:16px;margin:27px 0}
+.fame-counter{display:grid;gap:2px;text-align:right;font:.72rem var(--mono);color:var(--muted)}
+.fame-counter strong{font-size:2.2rem;color:var(--green)}
+.fame-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.fame-featured{position:relative;min-height:235px;border:1px solid #b9d66590;background:linear-gradient(155deg,#3c432c,#241c47 80%);border-radius:21px;padding:22px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.fame-featured:nth-child(2){background:linear-gradient(155deg,#34435a,#241c47 80%);border-color:#9dd7ff75}
+.fame-featured:nth-child(3){background:linear-gradient(155deg,#543943,#241c47 80%);border-color:#ffab9480}
+.fame-featured h2{margin:5px 0;font-size:clamp(1rem,1.8vw,1.35rem);line-height:1.3;flex:1;overflow-wrap:anywhere}
+.fame-medal{color:var(--green);font-size:2.4rem;line-height:1}
+.fame-feature-score{font:800 2rem var(--mono);color:var(--green)}
+.fame-feature-score small{font-size:.68rem;color:var(--muted)}
+.fame-scroll{display:grid;gap:10px;max-height:min(72vh,800px);overflow-y:auto;overscroll-behavior:contain;padding:4px 10px 10px 3px;scrollbar-color:var(--green) #17122f}
+.fame-entry{display:grid;grid-template-columns:55px minmax(0,1fr) 118px;gap:15px;align-items:center;background:#211936;border:1px solid var(--stroke);border-radius:16px;padding:17px}
+.fame-place{font:800 1.6rem var(--mono);color:var(--green)}
+.fame-entry-content{min-width:0}
+.fame-entry-content h3{font-size:1.08rem;line-height:1.36;overflow-wrap:anywhere;margin:7px 0}
+.fame-entry-content p{margin:5px 0 0}
+.fame-entry-total{display:grid;gap:3px;text-align:right;font:.72rem var(--mono)}
+.fame-entry-total strong{font-size:1.65rem;color:var(--green)}
+@media(max-width:850px){.fame-podium{grid-template-columns:1fr}.fame-featured{min-height:130px}.fame-controls{grid-template-columns:1fr 1fr}.fame-counter{grid-column:1/-1;text-align:left}}
+@media(max-width:550px){.fame-controls{grid-template-columns:1fr}.fame-counter{grid-column:1}.fame-entry{grid-template-columns:40px minmax(0,1fr);gap:9px;padding:12px}.fame-entry-total{grid-column:2;text-align:left;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -155,10 +179,39 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   function reveal(s){const best=[...s.options].sort((a,b)=>b.tally.sum-a.tally.sum || b.tally.first-a.tally.first);const sorted=[...best].reverse();const first=best[0];return `<section class="shell"><div class="eyebrow">${esc(s.game.toUpperCase())} / QUESTION ${s.number} · ANSWER REVEAL</div><h1 class="reveal-hero"><span class="flair">✹</span> THE RESULTS ARE IN.</h1><p class="copy">Unveiling the answers from last place to first place. Writers earn the points.</p><p class="reveal-winner">TOP ANSWER ★ <strong>${esc(first?.author||'No votes')}</strong> · ${first?.tally.sum||0} POINTS</p><h2 class="subhead" style="font-size:2rem;margin-top:35px">${esc(s.question)}</h2><div class="answer-grid">${sorted.map((o,i)=>`<article class="answer reveal-answer ${i===sorted.length-1?'reveal-top-answer':''}" style="min-height:165px;--reveal-delay:${(i*.48).toFixed(2)}s;--c:${['#cbff4d','#7bdcff','#ff729f','#ffbd6e','#c2a7ff','#a2f0da'][i%6]}"><span class="win">#${sorted.length-i}</span><span>${esc(o.text)}</span><span class="points">${o.tally.sum} pts · ${o.tally.first} first / ${o.tally.second} second / ${o.tally.third} third</span><span class="author">By ${esc(o.author)}</span></article>`).join('')}</div><div style="margin-top:28px;text-align:center">${state.view==='host'?hostActions(s):'<p class="tiny">Waiting for leaderboard…</p>'}</div></section>`;}
   function scoresBoard(scores){const top=Math.max(1,...scores.map(s=>s.sum));return `<div class="scoreboard">${scores.map((p,i)=>`<div class="score-row scoreboard-entry" style="--entry-delay:${(i*.11).toFixed(2)}s"><div class="score-rank">${i+1}</div><div class="score-name">${esc(p.name)}</div><div class="score-bar"><span style="width:${Math.max(0,p.sum/top*100).toFixed(2)}%"></span></div><div class="score-value"><strong class="animated-score" data-score="${p.sum}">${p.sum}</strong><span>PTS</span></div><div class="score-sub">${p.average.toFixed(2)} avg pts/answer · ${p.rounds} scored rounds · ${p.first} first-place votes</div></div>`).join('')}</div>`;}
   function boardView(s){return `<section class="shell"><div class="eyebrow">RANKINGS / AFTER ${esc(s.game.toUpperCase())} QUESTION ${s.number}</div><h1 class="subhead">THE LEADERBOARD<span style="color:var(--green)">.</span></h1><p class="copy">Ranked by total points. First-place votes break ties. Average points per answer is shown below.</p>${scoresBoard(s.leaderboard)}<div class="center" style="margin-top:30px">${state.view==='host'?hostActions(s):'<p class="copy">Next round starting when the host is ready…</p>'}</div></section>`;}
-  function finalView(s){const win=s.leaderboard[0];return `<section class="shell"><div class="center"><div class="eyebrow">COMPETITION COMPLETE / ${esc(s.mode.toUpperCase())}</div><div class="flair" style="font-size:7rem">★</div><h1 class="reveal-hero" style="font-size:clamp(3.4rem,8vw,8rem)">${esc(win.name)} WINS.</h1><p class="lead" style="margin:auto">${win.sum} total points · ${win.average.toFixed(2)} avg points per answer. The crowd has spoken.</p></div><h2 class="subhead" style="margin-top:55px">Final standings</h2>${scoresBoard(s.leaderboard)}${s.mode==='both'?`<div class="two-col" style="margin-top:30px"><div class="panel"><h2>Alex champion: ${esc(s.byGame.alex[0].name)}</h2>${scoresBoard(s.byGame.alex)}</div><div class="panel"><h2>Doron champion: ${esc(s.byGame.doron[0].name)}</h2>${scoresBoard(s.byGame.doron)}</div></div>`:''}<div class="center" style="margin-top:30px">${state.view==='host'?`${button('VIEW QUESTION RANKINGS ↗','open-finished-result','btn')}${button('PLAY AGAIN ↗','view-setup','btn alt')}`:button('BACK TO HOME','view-home')}</div></section>`;}
+  function finalView(s){const win=s.leaderboard[0];return `<section class="shell"><div class="center"><div class="eyebrow">COMPETITION COMPLETE / ${esc(s.mode.toUpperCase())}</div><div class="flair" style="font-size:7rem">★</div><h1 class="reveal-hero" style="font-size:clamp(3.4rem,8vw,8rem)">${esc(win.name)} WINS.</h1><p class="lead" style="margin:auto">${win.sum} total points · ${win.average.toFixed(2)} avg points per answer. The crowd has spoken.</p></div><h2 class="subhead" style="margin-top:55px">Final standings</h2>${scoresBoard(s.leaderboard)}${s.mode==='both'?`<div class="two-col" style="margin-top:30px"><div class="panel"><h2>Alex champion: ${esc(s.byGame.alex[0].name)}</h2>${scoresBoard(s.byGame.alex)}</div><div class="panel"><h2>Doron champion: ${esc(s.byGame.doron[0].name)}</h2>${scoresBoard(s.byGame.doron)}</div></div>`:''}<div class="center" style="margin-top:30px">${state.view==='host'?`${button('VIEW QUESTION RANKINGS ↗','open-finished-result','btn')}${button('HALL OF FAME ★','fame','btn ghost')}${button('PLAY AGAIN ↗','view-setup','btn alt')}`:button('BACK TO HOME','view-home')}</div></section>`;}
   function gameView(){const s=state.snapshot;if(!s)return `<section class="shell"><h1 class="subhead">Connecting to room…</h1></section>`;switch(s.stage){case'lobby':return lobby(s);case'question':return question(s);case'reveal':return reveal(s);case'leaderboard':return boardView(s);case'skipped':return skipped(s);case'finished':return finalView(s);default:return '<div>Unknown room state.</div>';}}
 
   function niceDate(date){const d=new Date(date);return Number.isNaN(d.getTime())?'Unknown date':d.toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});}
+
+  function fameView(){
+    const data=state.fame||{savedGames:0,entries:[]};
+    const filtered=data.entries.filter(e=>state.fameGame==='all'||e.game===state.fameGame);
+    const value=e=>state.fameSort==='first'?e.first_votes:state.fameSort==='average'?(e.points/Math.max(e.appearances,1)):e.points;
+    const winners=[...filtered].sort((a,b)=>value(b)-value(a)||b.points-a.points||b.first_votes-a.first_votes||String(a.author).localeCompare(String(b.author)));
+    const medals=['★','✦','◆'];
+    return `<section class="shell fame-shell">
+      <div class="meta-row"><div>${header('ANSWER HALL OF FAME','LIFETIME LEGENDARY RESPONSES')}</div>${button('← BACK','view-home','btn ghost small')}</div>
+      <p class="copy">The most successful responses from completed Rank Riot games, ranked by earned points. Self-votes never count. Results and first-place votes accumulate across games.</p>
+      <div class="fame-controls"><div class="field"><label for="fameFilter">Questions about</label><select id="fameFilter"><option value="all" ${state.fameGame==='all'?'selected':''}>Both games</option><option value="alex" ${state.fameGame==='alex'?'selected':''}>Alex</option><option value="doron" ${state.fameGame==='doron'?'selected':''}>Doron</option></select></div>
+        <div class="field"><label for="fameSort">Rank by</label><select id="fameSort"><option value="points" ${state.fameSort==='points'?'selected':''}>Total points</option><option value="first" ${state.fameSort==='first'?'selected':''}>First-place votes</option><option value="average" ${state.fameSort==='average'?'selected':''}>Average points per appearance</option></select></div>
+        <div class="fame-counter"><strong>${winners.length}</strong><span>ENTRIES · ${data.savedGames} COMPLETED GAMES</span></div>
+      </div>
+      ${winners.length?`
+        <div class="fame-podium">${winners.slice(0,3).map((e,i)=>`<article class="fame-featured">
+          <div class="fame-medal">${medals[i]}</div><div class="eyebrow">#${i+1} · ${esc(e.author)} · ${esc(e.game.toUpperCase())}</div>
+          <h2>${esc(e.answer)}</h2><div class="fame-feature-score">${state.fameSort==='average'?(e.points/Math.max(1,e.appearances)).toFixed(2):value(e)} <small>${state.fameSort==='first'?'FIRST-PLACE VOTES':state.fameSort==='average'?'AVG PTS':'POINTS'}</small></div>
+          <span class="tiny">${e.points} total pts · ${e.first_votes} first · ${e.appearances} appearances</span>
+        </article>`).join('')}</div>
+        <h2 class="subhead" style="margin-top:38px">All-time rankings</h2>
+        <div class="fame-scroll" role="region" aria-label="Scrollable Hall of Fame entries" tabindex="0">
+          ${winners.map((e,i)=>`<article class="fame-entry"><div class="fame-place">#${i+1}</div>
+            <div class="fame-entry-content"><div class="eyebrow">${esc(e.author)} · ${esc(e.game.toUpperCase())} / Q${e.question_index+1}</div><h3>${esc(e.answer)}</h3><p class="tiny">${esc(e.question||'')} · ${e.appearances} appearances · Best rank #${e.best_rank}</p></div>
+            <div class="fame-entry-total"><strong>${state.fameSort==='average'?(e.points/Math.max(1,e.appearances)).toFixed(2):value(e)}</strong><span>${state.fameSort==='first'?'1ST VOTES':state.fameSort==='average'?'AVG PTS':'POINTS'}</span><span class="tiny">${e.first_votes} gold · ${e.points} total pts</span></div>
+          </article>`).join('')}
+        </div>`:'<div class="empty">No answer rankings have been saved yet. Complete a match to populate the Hall of Fame.</div>'}
+    </section>`;
+  }
   function historyView(){
     const data=state.historyData||{games:[],hasMore:false};
     return `<section class="shell"><div class="meta-row"><div>${header('Past games','PERMANENT GAME ARCHIVE')}</div>${button('← HOST CONTROLS','view-setup','btn ghost small')}</div>
@@ -211,7 +264,7 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
         </div>`:'<div class="empty" style="margin-top:20px">This game finished before per-question rankings were saved. Its final leaderboard is preserved, but individual answer rankings cannot be reconstructed.</div>'}
     </section>`;
   }
-  function render(){if(state.view==='home')app.innerHTML=home();else if(state.view==='setup')app.innerHTML=setupView();else if(state.view==='join')app.innerHTML=joinView();else if(state.view==='history')app.innerHTML=historyView();else if(state.view==='saved-result')app.innerHTML=resultView();else app.innerHTML=gameView();updateTimer();animateScoreCounters();}
+  function render(){if(state.view==='home')app.innerHTML=home();else if(state.view==='setup')app.innerHTML=setupView();else if(state.view==='join')app.innerHTML=joinView();else if(state.view==='history')app.innerHTML=historyView();else if(state.view==='saved-result')app.innerHTML=resultView();else if(state.view==='fame')app.innerHTML=fameView();else app.innerHTML=gameView();updateTimer();animateScoreCounters();}
   function animateScoreCounters(){
     const nodes=app.querySelectorAll('.animated-score');if(!nodes.length)return;
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
@@ -238,6 +291,12 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
     case 'view-home':state.view='home';state.snapshot=null;render();return;
     case 'view-join':state.view='join';render();return;
     case 'view-setup':state.view='setup';state.snapshot=null;render();return;
+    case 'fame':{
+      const secret=fieldValue('hostPass')||state.secret;
+      if(!secret){state.view='setup';render();notify('Enter your host key to open the Hall of Fame.',true);return;}
+      state.fame=await rpc('fame',{secret});
+      state.secret=secret;storage.setItem('rank-riot-host-key',secret);state.view='fame';render();return;
+    }
     case 'history':{
       const secret=fieldValue('hostPass')||state.secret;
       if(!secret){state.view='setup';render();notify('Enter the host key to view saved games.',true);return;}
@@ -329,6 +388,8 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   async function copy(content){try{await navigator.clipboard.writeText(content);notify('Copied to clipboard.');}catch{notify('Copy unavailable. Select the join URL from the address bar.',true);}}
   app.addEventListener('click',async event=>{const target=event.target.closest('[data-action]');if(!target)return;const action=target.dataset.action;try{target.disabled=true;await act(action,target);}catch(err){notify(err.message,true);}finally{if(target.isConnected)target.disabled=false;}});
   app.addEventListener('change',event=>{
+    if(event.target?.id==='fameFilter'){state.fameGame=event.target.value;render();return;}
+    if(event.target?.id==='fameSort'){state.fameSort=event.target.value;render();return;}
     if(event.target?.id!=='savedQuestionJump')return;
     const index=Number(event.target.value);
     if(!Number.isInteger(index))return;
