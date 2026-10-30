@@ -37,11 +37,46 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
 .ranked-answer-stats strong small{font-size:.72rem;letter-spacing:.08em}
 .ranked-answer-stats .tiny{font-size:.7rem}
 @media(max-width:600px){.round-scroll-toolbar .tiny{width:100%}.history-round-scroll{padding:3px 7px 10px 3px;max-height:68vh}.ranked-answer{grid-template-columns:40px minmax(0,1fr);gap:8px;padding:11px}.answer-rank-badge{width:38px;height:38px;font-size:1.05rem}.ranked-answer-stats{grid-column:2;display:flex;flex-wrap:wrap;align-items:baseline;gap:9px;text-align:left}.ranked-answer-stats strong{font-size:1.14rem}.history-question{padding:16px 12px}}
+
+/* Rank Riot stage production and selection feedback */
+#app>section{animation:stageIn .37s cubic-bezier(.16,1,.3,1) both}
+@keyframes stageIn{from{opacity:0;transform:translateY(20px) scale(.985)}to{opacity:1;transform:none}}
+.answer.selected{animation:selectionBounce .28s cubic-bezier(.2,1.7,.35,1) both;box-shadow:0 0 0 4px #ffffff65,0 12px 28px #0007}
+@keyframes selectionBounce{0%{transform:scale(.94)}65%{transform:scale(1.07)}100%{transform:scale(1.015)}}
+.rank-tray{margin-top:22px;background:#201a3a;border:1px solid var(--stroke);border-radius:18px;padding:16px}
+.rank-tray-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.rank-tray-slot{display:flex;align-items:center;gap:10px;min-width:0;background:#131029;border:1px dashed #ffffff55;border-radius:12px;padding:11px;min-height:58px}
+.rank-tray-slot.filled{border:1px solid var(--green);background:#30402a;animation:trayFill .22s ease-out both}
+@keyframes trayFill{from{transform:translateY(7px);opacity:.4}to{transform:none;opacity:1}}
+.slot-medal{flex:none;font:700 .75rem var(--mono);color:var(--green)}
+.slot-answer{font-size:.82rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.unlimited-pill{font:700 .95rem var(--mono);color:var(--green);display:flex;align-items:center;gap:12px}
+.infinity-symbol{font-size:2.5rem;line-height:1}
+.unlimited-bar{height:10px;border-radius:999px;background:#ffffff22;overflow:hidden;margin:20px 0 28px}
+.unlimited-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--green));transition:width .4s ease}
+.reveal-answer{opacity:0;animation:answerCurtain .55s cubic-bezier(.2,.9,.3,1.1) both;animation-delay:var(--reveal-delay,0s)}
+@keyframes answerCurtain{0%{opacity:0;transform:translateY(38px) rotate(-3deg) scale(.92);filter:blur(7px)}70%{opacity:1;transform:translateY(-5px) rotate(1deg) scale(1.03);filter:blur(0)}100%{opacity:1;transform:none;filter:none}}
+.reveal-top-answer{box-shadow:0 0 0 3px var(--green),0 0 44px #cbff4d66;transform-origin:center}
+.reveal-winner{display:inline-block;opacity:0;background:var(--green);color:#15112b;border-radius:10px;padding:10px 16px;font:bold 1rem var(--mono);animation:winnerAppear .5s 3.05s ease-out both}
+@keyframes winnerAppear{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.scoreboard-entry{animation:scoreSlide .44s both;animation-delay:var(--entry-delay,0s)}
+@keyframes scoreSlide{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+.kahoot-music-dock[hidden]{display:none!important}
+.kahoot-music-dock{position:fixed;z-index:35;top:80px;right:18px;width:min(350px,calc(100vw - 36px));background:#211b42;border:1px solid var(--green);box-shadow:0 20px 65px #080519bf;border-radius:17px;padding:14px}
+.music-dock-header{display:flex;align-items:start;justify-content:space-between;gap:10px;margin-bottom:9px}
+.music-dock-header>div{display:grid;gap:5px}
+.music-video{width:100%;aspect-ratio:16/9;background:#0b0920;display:grid;place-items:center;overflow:hidden;border-radius:9px}
+.music-video iframe{border:0;width:100%;height:100%}
+.music-video a{color:var(--green);padding:15px;text-align:center}
+.kahoot-music-dock>p{margin:8px 0 0}
+@media(max-width:600px){.rank-tray-grid{grid-template-columns:1fr}.kahoot-music-dock{top:70px;right:8px}.header-actions{gap:9px}}
+@media(prefers-reduced-motion:reduce){#app>section,.answer.selected,.rank-tray-slot.filled,.reveal-answer,.reveal-winner,.scoreboard-entry{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}}
 </style>
 </head>
 <body>
 <div class="noise" aria-hidden="true"></div>
-<header class="masthead"><a class="brand" href="../" aria-label="Friend Group Hub">R<span>★</span>RIOT</a><div class="header-actions"><span class="status-dot" id="connectionStatus">OFFLINE</span><button type="button" class="icon-button" id="soundButton" title="Toggle sounds" aria-label="Toggle sounds">♪</button></div></header>
+<header class="masthead"><a class="brand" href="../" aria-label="Friend Group Hub">R<span>★</span>RIOT</a><div class="header-actions"><span class="status-dot" id="connectionStatus">OFFLINE</span><button type="button" class="icon-button" id="soundButton" title="Toggle sound effects" aria-label="Toggle sound effects">♪</button><button type="button" class="icon-button music-toggle" id="musicButton" title="Official Kahoot soundtrack" aria-label="Open official Kahoot soundtrack">♫</button></div></header>
+<aside class="kahoot-music-dock" id="kahootMusicDock" hidden><div class="music-dock-header"><div><strong>Kahoot! Lobby Music</strong><span class="tiny">Official YouTube player · audio comes from the video</span></div><button type="button" class="icon-button" id="musicClose" aria-label="Close music player">×</button></div><div id="kahootPlayerSlot" class="music-video"><a href="https://www.youtube.com/watch?v=yjwJIjNuniQ" target="_blank" rel="noopener noreferrer">Open official Kahoot! music on YouTube</a></div><p class="tiny">Use the player controls for volume and playback. The official track plays independently of game screens.</p></aside>
 <main id="app" aria-live="polite"><section class="shell"><div class="eyebrow">LIVE PARTY GAME / RANKED CHOICE</div><h1 class="display">RANK<br><i>RIOT.</i></h1><p class="lead">Loading...</p></section></main>
 <footer class="site-footer"><a href="../">← Friend Group Hub</a><span>Made for Alex &amp; Doron · 25 questions each · 3 / 2 / 1 points</span></footer>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -60,7 +95,7 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   const params = new URLSearchParams(window.location.search);
   const ENDPOINT = 'https://bpudsyyepiminpdxlquz.supabase.co/functions/v1/rank-riot';
   const state = {view:'home',secret:storage.getItem('rank-riot-host-key') || '',pin:params.get('pin') || '',
-    playerKey:'',name:'',snapshot:null,setup:null,rank:[],requesting:false,loading:false,lastStage:'',sound:storage.getItem('rank-riot-sound') !== 'off',networkError:false,historyData:null,savedResult:null};
+    playerKey:'',name:'',snapshot:null,setup:null,rank:[],requesting:false,loading:false,lastStage:'',sound:storage.getItem('rank-riot-sound') !== 'off',networkError:false,historyData:null,savedResult:null,fame:null,fameGame:'all',fameSort:'points'};
   if(state.pin && !/^\d{6}$/.test(state.pin)) state.pin='';
   if(state.pin) state.view='join';
   const esc = (value) => String(value==null?'':value).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -81,7 +116,7 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   }
   function header(title,subtitle=''){return `<div class="eyebrow">${esc(subtitle)}</div><h1 class="subhead">${esc(title)}</h1>`;}
   function button(label,action,cls='btn',extra=''){return `<button type="button" class="${cls}" data-action="${action}" ${extra}>${label}</button>`;}
-  function home(){return `<section class="shell hero-grid"><div><div class="eyebrow">THE ALEX + DORON EDITION / 2026</div><h1 class="display">RANK<br><i>RIOT.</i></h1><p class="lead">Six anonymous answers each round. Three ranked votes. One brutally competitive leaderboard. Your friends wrote the answers. You decide who wins.</p><div class="button-row">${button('JOIN A GAME ↗','view-join')}${button('HOST A GAME ↗','view-setup','btn alt')}${button('PAST GAMES ↗','history','btn ghost')}</div><p class="tiny" style="margin-top:30px">50 ORIGINAL PROMPTS · ALEX / DORON / DOUBLE FEATURE · LIVE ON EVERY PHONE</p></div><div class="orbit" aria-hidden="true"><strong>3<span style="color:white">/</span>2<span style="color:white">/</span>1</strong></div></section>`;}
+  function home(){return `<section class="shell hero-grid"><div><div class="eyebrow">THE ALEX + DORON EDITION / 2026</div><h1 class="display">RANK<br><i>RIOT.</i></h1><p class="lead">Six anonymous answers each round. Three ranked votes. One brutally competitive leaderboard. Your friends wrote the answers. You decide who wins.</p><div class="button-row">${button('JOIN A GAME ↗','view-join')}${button('HOST A GAME ↗','view-setup','btn alt')}${button('PAST GAMES ↗','history','btn ghost')}${button('HALL OF FAME ★','fame','btn ghost')}</div><p class="tiny" style="margin-top:30px">50 ORIGINAL PROMPTS · ALEX / DORON / DOUBLE FEATURE · LIVE ON EVERY PHONE</p></div><div class="orbit" aria-hidden="true"><strong>3<span style="color:white">/</span>2<span style="color:white">/</span>1</strong></div></section>`;}
   function setupView(){
     const stats=state.setup;
     return `<section class="shell"><div class="meta-row"><div>${header('Host control room','MISSION CONTROL / SUPABASE')}</div>${button('← BACK','view-home','btn ghost small')}</div>
@@ -89,16 +124,16 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
       <p class="copy">Supabase is connected directly. Enter your private host key once on this device. Players never need it.</p>
       <div class="field"><label for="hostPass">Host access key</label><input id="hostPass" type="password" autocomplete="off" value="${esc(state.secret)}" placeholder="Enter your private host key"></div>
       ${button('VERIFY HOST ACCESS','inspect')}
-      ${button('VIEW SAVED GAME RESULTS ↗','history','btn ghost full')}
+      ${button('VIEW SAVED GAME RESULTS ↗','history','btn ghost full')}${button('ANSWER HALL OF FAME ★','fame','btn ghost full')}
       <div class="field"><label for="startPin">Existing room PIN</label><input id="startPin" inputmode="numeric" maxlength="6" pattern="[0-9]*" autocomplete="off" value="${esc(storage.getItem('rank-riot-last-host-pin') || '')}" placeholder="6-digit room PIN"></div>
       ${button('START NOW ↗','start-now','btn full')}
       <p class="tiny">Start the first question in an existing lobby right away. If the game is already running, this opens its host controls.</p>
       <p class="tiny">Your key is stored in this browser only. No Google Apps Script URL is required.</p></div>
       <div class="panel stack"><div class="eyebrow">NEW GAME</div>
       <div class="field"><label for="gameMode">Game</label><select id="gameMode"><option value="alex">Alex · 25 questions</option><option value="doron">Doron · 25 questions</option><option value="both">Double feature · 50 questions</option></select></div>
-      <div class="field"><label for="duration">Voting time per question</label><select id="duration"><option value="30">30 seconds</option><option value="45" selected>45 seconds</option><option value="60">60 seconds</option><option value="90">90 seconds</option></select></div>
+      <div class="field"><label for="duration">Voting time per question</label><select id="duration"><option value="0">No time limit · reveal after everyone votes</option><option value="30">30 seconds</option><option value="45" selected>45 seconds</option><option value="60">60 seconds</option><option value="90">90 seconds</option></select></div>
       ${button('CREATE LIVE ROOM ↗','create','btn full')}
-      <p class="tiny">Answer writers earn 3/2/1 points for first, second, and third rankings. Self-voting is blocked.</p></div></div>
+      <p class="tiny">Answer writers earn 3/2/1 points for first, second, and third rankings. Self-voting is blocked. A round reveals immediately when every joined player votes. The host can reveal manually if needed.</p></div></div>
       <div class="panel" style="margin-top:20px"><div class="eyebrow">PRELOADED RESPONSES</div>
       ${stats?`<div class="two-col" style="margin-top:18px">${['alex','doron'].map(game=>{const d=stats.games[game];return `<div><h2>${game==='alex'?'Alex':'Doron'} · ${d.perQuestion.filter(n=>n>=4).length}/25 playable</h2><p class="copy">${d.authors.join(', ')}</p><p class="tiny">${d.perQuestion.reduce((a,b)=>a+b,0)} submitted answers.</p></div>`}).join('')}</div>`:'<p class="copy">The two uploaded response spreadsheets have been imported into the private game database. Verify host access to inspect all 50 rounds.</p>'}
       <p class="tiny">The original Excel submissions are the preloaded snapshot. New Google Forms submissions are not continuously synchronized until an additional Sheets integration is configured.</p></div></section>`;
@@ -106,18 +141,19 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   function joinView(){return `<section class="shell narrow"><div class="meta-row">${header('Enter the arena','JOIN / LIVE GAME')}${button('← HOME','view-home','btn ghost small')}</div><div class="panel stack"><div class="field"><label for="pinInput">Six-digit game PIN</label><input id="pinInput" inputmode="numeric" maxlength="6" pattern="[0-9]*" autocomplete="off" style="font-size:2.8rem;font-family:var(--mono);text-align:center;letter-spacing:.13em" value="${esc(state.pin)}" placeholder="000000"></div><div class="field"><label for="playerName">Which response is yours?</label><select id="playerName"><option value="">Choose your name</option>${PEOPLE.map(name=>`<option ${state.name===name?'selected':''}>${name}</option>`).join('')}</select></div>${button('JOIN ROOM ↗','join','btn full')}<p class="tiny">You will see everyone’s answers, but you cannot rank your own. Pick your favorite three in order.</p></div></section>`;}
   function hostActions(s){if(s.stage==='lobby')return button('START NOW ↗','advance');if(s.stage==='question')return button('REVEAL ANSWERS EARLY ↗','advance','btn alt');if(s.stage==='reveal')return button('SHOW LEADERBOARD ↗','advance');if(s.stage==='leaderboard'||s.stage==='skipped')return button(s.questionIndex===s.count-1?'FINISH GAME ↗':'NEXT QUESTION ↗','advance');return button('NEW GAME','view-setup');}
   function lobby(s){return `<section class="shell center"><div class="eyebrow">ROOM IS LIVE / ${esc(s.mode.toUpperCase())}</div><h1 class="subhead" style="margin-top:23px">Join at <span style="color:var(--green)">Rank Riot</span></h1><p class="copy">Share the link or ask everyone to enter this code.</p><div class="pin">${esc(s.pin)}</div><div class="button-row" style="justify-content:center">${button('COPY JOIN LINK','copy-link','btn ghost')}${button('COPY PIN','copy-pin','btn ghost')}</div><h2 style="margin:50px 0 20px">Players in room <span style="color:var(--green)">${s.players.length}/8</span></h2><div class="player-chips">${s.players.map(n=>`<span class="chip">${esc(n)}</span>`).join('')}</div><p class="tiny" style="margin-top:21px">${s.players.length===0?'Waiting for the first player…':'Waiting for everyone to join…'}</p>${state.view==='host'?`<div style="margin-top:38px">${hostActions(s)}</div>`:'<div class="flair" aria-hidden="true" style="margin-top:44px">✳</div>'}</section>`;}
-  function timer(s){return `<div class="round-header"><div class="pill">${esc(s.game.toUpperCase())} / Q ${s.number} OF 25</div><div class="countdown" id="countdown">${Math.ceil(s.seconds)}</div></div><div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>`;}
+  function timer(s){return s.seconds===0?`<div class="round-header"><div class="pill">${esc(s.game.toUpperCase())} / Q ${s.number} OF 25</div><div class="unlimited-pill"><span class="infinity-symbol">∞</span> NO TIME LIMIT · ${s.voteCount}/${s.players.length} VOTED</div></div><div class="unlimited-bar"><span style="width:${s.players.length?s.voteCount/s.players.length*100:0}%"></span></div>`:
+  `<div class="round-header"><div class="pill">${esc(s.game.toUpperCase())} / Q ${s.number} OF 25</div><div class="countdown" id="countdown">${Math.ceil(s.seconds)}</div></div><div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>`;}
   function answerCards(s){return `<div class="answer-grid">${s.options.map((o,i)=>{
     const rank=state.rank.indexOf(o.id),isPlayer=state.view==='player' && s.stage==='question',canVote=isPlayer&&!o.mine&&!s.voted;
     const ranking=rank>=0?`<span class="rank">${['1ST','2ND','3RD'][rank]} ★</span>`:'';
     const tally=s.stage==='reveal'?`<span class="points">${o.tally.sum} pts · ${o.tally.first} gold</span><span class="author">${esc(o.author)}</span>`:'';
     return `<button type="button" class="answer ${canVote?'clickable':''} ${o.mine&&isPlayer?'mine':''} ${rank>=0?'selected':''}" data-action="pick" data-id="${esc(o.id)}" ${canVote?'':'disabled'}>${s.stage==='reveal'?`<span class="win">${i+1}</span>`:''}<span>${esc(o.text)}</span>${ranking}${tally}<span class="number">${o.mine&&isPlayer?'YOUR ANSWER':'ANSWER '+(i+1)}</span></button>`;
   }).join('')}</div>`;}
-  function rankingFooter(s){return `<div class="vote-footer"><div><div class="eyebrow">YOUR RANKINGS</div><div class="tiny">${state.rank.length}/3 selected · ${state.rank.length===3?'Ready to submit':'Tap any three answers in order'}</div></div>${button(s.voted?'VOTE LOCKED ✓':'LOCK IN MY TOP 3 ↗','vote','btn',`id="voteButton" ${state.rank.length!==3||s.voted?'disabled':''}`)}</div>`;}
+  function rankingFooter(s){return `<div class="rank-tray" role="status" aria-live="polite"><div class="eyebrow">YOUR TOP THREE</div><div class="rank-tray-grid">${[0,1,2].map(i=>{const selected=s.options.find(o=>o.id===state.rank[i]);return `<div class="rank-tray-slot ${selected?'filled':''}"><span class="slot-medal">${['1ST','2ND','3RD'][i]}</span><span class="slot-answer">${selected?esc(selected.text):'Choose an answer'}</span></div>`;}).join('')}</div></div><div class="vote-footer"><div><div class="eyebrow">YOUR RANKINGS</div><div class="tiny">${state.rank.length}/3 selected · ${state.rank.length===3?'Ready to submit':'Tap any three answers in order'}</div></div>${button(s.voted?'VOTE LOCKED ✓':'LOCK IN MY TOP 3 ↗','vote','btn',`id="voteButton" ${state.rank.length!==3||s.voted?'disabled':''}`)}</div>`;}
   function question(s){return `<section class="shell"><div class="meta-row"><span class="eyebrow">LIVE ROUND / ${esc(s.game.toUpperCase())}</span><span class="pill" id="voteCount">${s.voteCount}/${s.players.length} votes received</span></div><h1 class="round-title">${esc(s.question)}</h1>${timer(s)}${answerCards(s)}${state.view==='player'?(s.voted?`<div class="panel center" style="margin-top:20px"><div class="flair">✓</div><h2>VOTE RECEIVED</h2><p class="copy">Waiting for the results. You can’t change your selection after submitting.</p></div>`:rankingFooter(s)):`<div class="meta-row" style="margin-top:27px"><p class="tiny">Players are ranking their top three answers on their own phones.</p>${hostActions(s)}</div>`}</section>`;}
   function skipped(s){return `<section class="shell center narrow"><div class="eyebrow">${esc(s.game.toUpperCase())} / QUESTION ${s.number}</div><h1 class="subhead">Not enough answers</h1><p class="copy">This question has fewer than four assigned, nonempty responses. The round is not scored.</p>${state.view==='host'?hostActions(s):'<p class="tiny">Waiting for the host to continue.</p>'}</section>`;}
-  function reveal(s){const sorted=[...s.options].sort((a,b)=>b.tally.sum-a.tally.sum || b.tally.first-a.tally.first);const first=sorted[0];return `<section class="shell"><div class="eyebrow">${esc(s.game.toUpperCase())} / QUESTION ${s.number} · ANSWER REVEAL</div><h1 class="reveal-hero"><span class="flair">✹</span> THE RESULTS ARE IN.</h1><p class="copy">Top choice: <strong style="color:var(--green)">${esc(first?.author||'No votes')}</strong> · ${first?.tally.sum||0} points. Writers get the points, not the people voting.</p><h2 class="subhead" style="font-size:2rem;margin-top:35px">${esc(s.question)}</h2><div class="answer-grid">${sorted.map((o,i)=>`<article class="answer" style="min-height:165px;--c:${['#cbff4d','#7bdcff','#ff729f','#ffbd6e','#c2a7ff','#a2f0da'][i%6]}"><span class="win">#${i+1}</span><span>${esc(o.text)}</span><span class="points">${o.tally.sum} pts · ${o.tally.first} first / ${o.tally.second} second / ${o.tally.third} third</span><span class="author">By ${esc(o.author)}</span></article>`).join('')}</div><div style="margin-top:28px;text-align:center">${state.view==='host'?hostActions(s):'<p class="tiny">Waiting for leaderboard…</p>'}</div></section>`;}
-  function scoresBoard(scores){const top=Math.max(1,...scores.map(s=>s.sum));return `<div class="scoreboard">${scores.map((p,i)=>`<div class="score-row"><div class="score-rank">${i+1}</div><div class="score-name">${esc(p.name)}</div><div class="score-bar"><span style="width:${Math.max(0,p.sum/top*100).toFixed(2)}%"></span></div><div class="score-value"><strong>${p.sum}</strong><span>PTS</span></div><div class="score-sub">${p.average.toFixed(2)} avg pts/answer · ${p.rounds} scored rounds · ${p.first} first-place votes</div></div>`).join('')}</div>`;}
+  function reveal(s){const best=[...s.options].sort((a,b)=>b.tally.sum-a.tally.sum || b.tally.first-a.tally.first);const sorted=[...best].reverse();const first=best[0];return `<section class="shell"><div class="eyebrow">${esc(s.game.toUpperCase())} / QUESTION ${s.number} · ANSWER REVEAL</div><h1 class="reveal-hero"><span class="flair">✹</span> THE RESULTS ARE IN.</h1><p class="copy">Unveiling the answers from last place to first place. Writers earn the points.</p><p class="reveal-winner">TOP ANSWER ★ <strong>${esc(first?.author||'No votes')}</strong> · ${first?.tally.sum||0} POINTS</p><h2 class="subhead" style="font-size:2rem;margin-top:35px">${esc(s.question)}</h2><div class="answer-grid">${sorted.map((o,i)=>`<article class="answer reveal-answer ${i===sorted.length-1?'reveal-top-answer':''}" style="min-height:165px;--reveal-delay:${(i*.48).toFixed(2)}s;--c:${['#cbff4d','#7bdcff','#ff729f','#ffbd6e','#c2a7ff','#a2f0da'][i%6]}"><span class="win">#${sorted.length-i}</span><span>${esc(o.text)}</span><span class="points">${o.tally.sum} pts · ${o.tally.first} first / ${o.tally.second} second / ${o.tally.third} third</span><span class="author">By ${esc(o.author)}</span></article>`).join('')}</div><div style="margin-top:28px;text-align:center">${state.view==='host'?hostActions(s):'<p class="tiny">Waiting for leaderboard…</p>'}</div></section>`;}
+  function scoresBoard(scores){const top=Math.max(1,...scores.map(s=>s.sum));return `<div class="scoreboard">${scores.map((p,i)=>`<div class="score-row scoreboard-entry" style="--entry-delay:${(i*.11).toFixed(2)}s"><div class="score-rank">${i+1}</div><div class="score-name">${esc(p.name)}</div><div class="score-bar"><span style="width:${Math.max(0,p.sum/top*100).toFixed(2)}%"></span></div><div class="score-value"><strong class="animated-score" data-score="${p.sum}">${p.sum}</strong><span>PTS</span></div><div class="score-sub">${p.average.toFixed(2)} avg pts/answer · ${p.rounds} scored rounds · ${p.first} first-place votes</div></div>`).join('')}</div>`;}
   function boardView(s){return `<section class="shell"><div class="eyebrow">RANKINGS / AFTER ${esc(s.game.toUpperCase())} QUESTION ${s.number}</div><h1 class="subhead">THE LEADERBOARD<span style="color:var(--green)">.</span></h1><p class="copy">Ranked by total points. First-place votes break ties. Average points per answer is shown below.</p>${scoresBoard(s.leaderboard)}<div class="center" style="margin-top:30px">${state.view==='host'?hostActions(s):'<p class="copy">Next round starting when the host is ready…</p>'}</div></section>`;}
   function finalView(s){const win=s.leaderboard[0];return `<section class="shell"><div class="center"><div class="eyebrow">COMPETITION COMPLETE / ${esc(s.mode.toUpperCase())}</div><div class="flair" style="font-size:7rem">★</div><h1 class="reveal-hero" style="font-size:clamp(3.4rem,8vw,8rem)">${esc(win.name)} WINS.</h1><p class="lead" style="margin:auto">${win.sum} total points · ${win.average.toFixed(2)} avg points per answer. The crowd has spoken.</p></div><h2 class="subhead" style="margin-top:55px">Final standings</h2>${scoresBoard(s.leaderboard)}${s.mode==='both'?`<div class="two-col" style="margin-top:30px"><div class="panel"><h2>Alex champion: ${esc(s.byGame.alex[0].name)}</h2>${scoresBoard(s.byGame.alex)}</div><div class="panel"><h2>Doron champion: ${esc(s.byGame.doron[0].name)}</h2>${scoresBoard(s.byGame.doron)}</div></div>`:''}<div class="center" style="margin-top:30px">${state.view==='host'?`${button('VIEW QUESTION RANKINGS ↗','open-finished-result','btn')}${button('PLAY AGAIN ↗','view-setup','btn alt')}`:button('BACK TO HOME','view-home')}</div></section>`;}
   function gameView(){const s=state.snapshot;if(!s)return `<section class="shell"><h1 class="subhead">Connecting to room…</h1></section>`;switch(s.stage){case'lobby':return lobby(s);case'question':return question(s);case'reveal':return reveal(s);case'leaderboard':return boardView(s);case'skipped':return skipped(s);case'finished':return finalView(s);default:return '<div>Unknown room state.</div>';}}
@@ -175,14 +211,21 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
         </div>`:'<div class="empty" style="margin-top:20px">This game finished before per-question rankings were saved. Its final leaderboard is preserved, but individual answer rankings cannot be reconstructed.</div>'}
     </section>`;
   }
-  function render(){if(state.view==='home')app.innerHTML=home();else if(state.view==='setup')app.innerHTML=setupView();else if(state.view==='join')app.innerHTML=joinView();else if(state.view==='history')app.innerHTML=historyView();else if(state.view==='saved-result')app.innerHTML=resultView();else app.innerHTML=gameView();updateTimer();}
-  function updateTimer(){const s=state.snapshot;if(!s||s.stage!=='question')return;const remaining=Math.max(0, s.closesAt - (Date.now()- (state.clientClockSkew||0)));
+  function render(){if(state.view==='home')app.innerHTML=home();else if(state.view==='setup')app.innerHTML=setupView();else if(state.view==='join')app.innerHTML=joinView();else if(state.view==='history')app.innerHTML=historyView();else if(state.view==='saved-result')app.innerHTML=resultView();else app.innerHTML=gameView();updateTimer();animateScoreCounters();}
+  function animateScoreCounters(){
+    const nodes=app.querySelectorAll('.animated-score');if(!nodes.length)return;
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const duration=850,start=performance.now();
+    function tick(now){const p=Math.min(1,(now-start)/duration);const eased=1-Math.pow(1-p,3);nodes.forEach(node=>{if(!node.isConnected)return;node.textContent=String(Math.round(Number(node.dataset.score||0)*eased));});if(p<1&&[...nodes].some(n=>n.isConnected))requestAnimationFrame(tick);}
+    requestAnimationFrame(tick);
+  }
+  function updateTimer(){const s=state.snapshot;if(!s||s.stage!=='question'||s.seconds===0)return;const remaining=Math.max(0, s.closesAt - (Date.now()- (state.clientClockSkew||0)));
     const timerEl=$('#countdown'),bar=$('#timerFill');if(timerEl){timerEl.textContent=String(Math.ceil(remaining/1000));timerEl.classList.toggle('low',remaining<10000);}if(bar)bar.style.width=Math.max(0,Math.min(100,remaining/(s.seconds*1000)*100))+'%';
   }
   function onSnapshot(snapshot){state.clientClockSkew=Date.now()-snapshot.serverNow;const last=state.snapshot;const stageChanged=last?.stage!==snapshot.stage || last?.questionIndex!==snapshot.questionIndex;
     if(last?.questionIndex!==snapshot.questionIndex)state.rank=[];
     state.snapshot=snapshot;
-    if(stageChanged){beep(snapshot.stage==='reveal'?880:520);if(snapshot.stage==='finished')confetti();}
+    if(stageChanged){beep(snapshot.stage==='reveal'?880:snapshot.stage==='leaderboard'?720:520);if(snapshot.stage==='reveal'){setTimeout(()=>beep(1040),180);setTimeout(()=>beep(1280),380);}if(snapshot.stage==='finished')confetti();}
     if(!last || stageChanged || JSON.stringify({...last,serverNow:0})!==JSON.stringify({...snapshot,serverNow:0}))render();
     else updateTimer();
   }
@@ -274,11 +317,11 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
       if(state.rank.includes(id))state.rank=state.rank.filter(n=>n!==id);
       else if(state.rank.length<3)state.rank.push(id);
       else{state.rank.shift();state.rank.push(id);}
-      beep(400+state.rank.length*160);render();return;
+      beep([540,790,1070][Math.max(0,state.rank.indexOf(id))]||440);render();return;
     }
     case 'vote':{
       if(state.rank.length!==3||state.snapshot?.voted)return;
-      await rpc('vote',{pin:state.pin,playerKey:state.playerKey,picks:state.rank});await poll(true);notify('Your top three were recorded.');return;
+      await rpc('vote',{pin:state.pin,playerKey:state.playerKey,picks:state.rank});beep(900);setTimeout(()=>beep(1200),90);await poll(true);notify('Your top three were recorded.');return;
     }
     case 'copy-link':{await copy(joinUrl());return;}
     case 'copy-pin':{await copy(state.pin);return;}
@@ -292,6 +335,17 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
     const selected=document.getElementById('saved-round-'+index);
     if(selected)selected.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
   });
+  const musicDock=$('#kahootMusicDock'),musicSlot=$('#kahootPlayerSlot');
+  function closeKahootMusic(){musicDock.hidden=true;musicSlot.replaceChildren();const a=document.createElement('a');a.href='https://www.youtube.com/watch?v=yjwJIjNuniQ';a.target='_blank';a.rel='noopener noreferrer';a.textContent='Open official Kahoot! music on YouTube';musicSlot.append(a);}
+  $('#musicButton').addEventListener('click',()=>{
+    if(!musicDock.hidden){closeKahootMusic();return;}
+    musicDock.hidden=false;musicSlot.replaceChildren();
+    const player=document.createElement('iframe');
+    player.src='https://www.youtube-nocookie.com/embed/yjwJIjNuniQ?autoplay=1&loop=1&playlist=yjwJIjNuniQ&rel=0';
+    player.title='Official Kahoot! Lobby Music';player.allow='autoplay; encrypted-media; picture-in-picture';player.referrerPolicy='strict-origin-when-cross-origin';player.allowFullscreen=true;
+    musicSlot.append(player);
+  });
+  $('#musicClose').addEventListener('click',closeKahootMusic);
   $('#soundButton').addEventListener('click',()=>{state.sound=!state.sound;storage.setItem('rank-riot-sound',state.sound?'on':'off');$('#soundButton').textContent=state.sound?'♪':'×';if(state.sound)beep();});
   $('#soundButton').textContent=state.sound?'♪':'×';
   // Room join links carry only the public PIN. The host key is never included.
