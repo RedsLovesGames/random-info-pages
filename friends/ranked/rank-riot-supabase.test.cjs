@@ -218,7 +218,7 @@ test('Shared sound engine is reused and supports countdown and per-rank tones',(
   assert.match(app,/function lockSound\(/);
   assert.match(app,/function revealSound\(/);
   assert.match(app,/lastTimerBeep/);
-  assert.match(app,/audioReady\(\);const action=target\.dataset\.action/);
+  assert.match(app,/audioReady\(\);let action=target\.dataset\.action/);
 });
 test('Postgame awards are persistently saved and exposed on final, historical, and TV screens',()=>{
   const awards=fs.readFileSync(path.join(dir,'supabase/awards.mjs'),'utf8');
