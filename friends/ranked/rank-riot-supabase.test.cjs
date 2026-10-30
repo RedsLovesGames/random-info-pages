@@ -52,7 +52,7 @@ test('Total points are the primary leaderboard and winner metric',()=>{
   assert.match(edge,/\.sort\(\(a,b\)=>b\.sum-a\.sum\|\|b\.first-a\.first\|\|b\.average-a\.average/);
   assert.match(app,/const top=Math\.max\(1,\.\.\.scores\.map\(s=>s\.sum\)\)/);
   assert.match(app,/p\.sum\/top\*100/);
-  assert.match(app,/score-value.*<strong>\$\{p\.sum\}<\/strong><span>PTS<\/span>/);
+  assert.match(app,/score-value.*<strong class="animated-score" data-score="\$\{p\.sum\}">\$\{p\.sum\}<\/strong><span>PTS<\/span>/);
   assert.match(app,/\$\{p\.average\.toFixed\(2\)\} avg pts\/answer/);
   assert.match(app,/\$\{win\.sum\} total points/);
 });
@@ -128,6 +128,47 @@ test('Legacy rounds without explicit stored ranks display ties correctly',()=>{
     {author:'Doron',sum:2,first:0,second:1,third:0}
   ]});
   assert.deepEqual(Array.from(placements, r=>r.rank),[1,2,2,4]);
+});
+test('Unlimited rounds accept votes indefinitely and automatically reveal after everyone submits',()=>{
+  assert.match(app,/<option value="0">No time limit/);
+  assert.match(edge,/seconds===0\|\|\(seconds>=15&&seconds<=120\)/);
+  assert.match(edge,/s\.closesAt=s\.seconds===0\?0:s\.openedAt\+s\.seconds\*1000/);
+  assert.match(edge,/s\.stage==='question'&&\(s\.seconds===0\|\|now<s\.closesAt\)/);
+  assert.match(edge,/Object\.keys\(s\.votes\)\.length===s\.players\.length\)await settle\(tx,s\)/);
+  assert.match(edge,/s\.seconds>0&&now>=s\.closesAt/);
+  assert.match(app,/function timer\(s\)\{return s\.seconds===0\?/);
+  assert.match(app,/s\.stage!=='question'\|\|s\.seconds===0/);
+});
+test('Official Kahoot music plays through visible, optional YouTube player',()=>{
+  assert.match(html,/id="kahootMusicDock"/);
+  assert.match(html,/id="musicButton"/);
+  assert.match(app,/youtube-nocookie\.com\/embed\/yjwJIjNuniQ/);
+  assert.match(app,/closeKahootMusic\(\)/);
+  assert.match(app,/musicSlot\.append\(player\)/);
+  assert.doesNotMatch(html,/<audio[^>]*src=/);
+});
+test('Rank selection audio and game-show visual FX use accessible reduced-motion fallback',()=>{
+  assert.match(app,/rank-tray-grid/);
+  assert.match(app,/slot-medal/);
+  assert.match(app,/\[540,790,1070\]/);
+  assert.match(app,/beep\(900\)/);
+  assert.match(css,/@keyframes answerCurtain/);
+  assert.match(css,/@keyframes scoreSlide/);
+  assert.match(css,/@keyframes selectionBounce/);
+  assert.match(css,/prefers-reduced-motion:reduce/);
+  assert.match(app,/function animateScoreCounters\(\)/);
+  assert.match(app,/reveal-winner/);
+});
+test('Hall of Fame uses archived answers with host authorization, rankings, and filters',()=>{
+  assert.match(edge,/if\(action==='fame'\)/);
+  assert.match(edge,/await authorize\(tx,p\.secret\)/);
+  assert.match(edge,/jsonb_array_elements\(h\.rounds\)/);
+  assert.match(edge,/sum\(\(a\.item->>'sum'\)::int\)/);
+  assert.match(app,/function fameView\(\)/);
+  assert.match(app,/case 'fame'/);
+  assert.match(app,/id="fameFilter"/);
+  assert.match(app,/id="fameSort"/);
+  assert.match(css,/\.fame-podium/);
 });
 test('Original mobile game structure and styling remain intact',()=>{
   assert.match(html,/id="app"/);assert.match(html,/id="connectionStatus"/);
