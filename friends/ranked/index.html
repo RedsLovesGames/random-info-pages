@@ -438,7 +438,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
   function answerPodium(s,compact=false){
     const ordered=podiumRanks(s),top=ordered.slice(0,3),lower=ordered.slice(3);
     const upper=[top[0],top[1],top[2]].filter(Boolean);
-    const bases=['silver','gold','bronze'],icons=['♛','★','✦'];
+    const bases=['gold','silver','bronze'],icons=['♛','★','✦'];
     const card=(o,base,topRow,slot='')=>{
       const delay=(Math.max(0,ordered.length-1-o.ordinal+1)*.42).toFixed(2);
       const tally=o.tally;
