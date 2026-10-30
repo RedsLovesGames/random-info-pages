@@ -6,6 +6,10 @@
   'use strict';
   root.RankRiotSpookyMusic=function(){
     let context=null,master=null,loop=null,nextTime=0,step=0,enabled=true,volume=.32,phase='home';
+    // This recording is streamed from Kahoot!'s own official public Halloween article.
+    // It is never downloaded, mirrored, or embedded as a video by Rank Riot.
+    const officialTrack='https://kahoot.com/files/2022/10/Lobby-Music-Halloween-Edition.mp3';
+    let audio=null,remoteFailed=false,activeSource='pending';
     const bpm=124,beat=60/bpm,stepTime=beat/4;
     const note=(midi)=>440*Math.pow(2,(midi-69)/12);
     const melody=[76,null,79,78,76,73,75,null,76,83,81,null,79,78,75,73,
@@ -66,23 +70,62 @@
       master.gain.cancelScheduledValues(context.currentTime);
       master.gain.setTargetAtTime(level,context.currentTime,.12);
     }
-    async function start(){
+    function targetVolume(){return Math.min(1,volume)*(phase==='reveal'?.53:phase==='finished'?.68:phase==='leaderboard'?.74:1);}
+    async function startGenerated(){
       if(!enabled)return false;
       try{
         const ac=ctx();if(!ac)return false;
         await ac.resume();
-        if(!loop){nextTime=ac.currentTime+.08;loop=root.setInterval(schedule,70);}
-        fade(volume);schedule();return ac.state==='running';
+        if(!loop){nextTime=ac.currentTime+.06;loop=root.setInterval(schedule,70);}
+        activeSource='original-fallback';fade(targetVolume());schedule();return ac.state==='running';
       }catch{return false}
     }
-    function stop(){enabled=false;fade(0);}
+    async function start(){
+      if(!enabled)return false;
+      if(remoteFailed||typeof root.Audio!=='function')return startGenerated();
+      try{
+        if(!audio){
+          audio=new root.Audio();
+          audio.src=officialTrack;
+          audio.loop=true;audio.preload='auto';
+          audio.addEventListener('error',()=>{
+            if(enabled){remoteFailed=true;activeSource='original-fallback';startGenerated();}
+          });
+        }
+        audio.volume=targetVolume();
+        await audio.play();
+        activeSource='kahoot-official';fade(0);return true;
+      }catch(e){
+        // Some browsers block playback until a user gesture. Do not misidentify
+        // this as a broken track and do not evade browser autoplay restrictions.
+        if(e?.name==='NotAllowedError')return false;
+        remoteFailed=true;return startGenerated();
+      }
+    }
+    function stop(){
+      enabled=false;
+      if(audio)audio.pause();
+      fade(0);activeSource='muted';
+    }
     function enable(on){
       enabled=Boolean(on);
       if(enabled)start();else stop();
     }
-    function setVolume(v){volume=Math.max(0,Math.min(1,Number(v)||0));if(enabled)fade(volume);}
-    function setPhase(next){phase=next||'home';if(enabled&&context)fade(volume*(phase==='reveal'?.56:phase==='finished'?.75:1));}
-    function dispose(){if(loop){root.clearInterval(loop);loop=null}if(context){context.close().catch(()=>{});context=null;master=null;}}
-    return {start,enable,stop,setPhase,setVolume,dispose,get enabled(){return enabled},get volume(){return volume},get phase(){return phase}};
+    function setVolume(v){
+      volume=Math.max(0,Math.min(1,Number(v)||0));
+      if(audio)audio.volume=targetVolume();
+      if(enabled&&loop&&activeSource!=='kahoot-official')fade(targetVolume());
+    }
+    function setPhase(next){
+      phase=next||'home';
+      if(audio)audio.volume=targetVolume();
+      if(enabled&&context)fade(activeSource==='kahoot-official'?0:targetVolume());
+    }
+    function dispose(){
+      if(loop){root.clearInterval(loop);loop=null}
+      if(audio){audio.pause();audio.src='';audio=null}
+      if(context){context.close().catch(()=>{});context=null;master=null}
+    }
+    return {start,enable,stop,setPhase,setVolume,dispose,get enabled(){return enabled},get volume(){return volume},get phase(){return phase},get source(){return activeSource}};
   };
 })(window);
