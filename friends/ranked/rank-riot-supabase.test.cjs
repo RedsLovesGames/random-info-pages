@@ -139,14 +139,60 @@ test('Unlimited rounds accept votes indefinitely and automatically reveal after 
   assert.match(app,/function timer\(s\)\{return s\.seconds===0\?/);
   assert.match(app,/s\.stage!=='question'\|\|s\.seconds===0/);
 });
-test('Official Kahoot music plays through visible, optional YouTube player',()=>{
-  assert.match(html,/id="kahootMusicDock"/);
+test('Official spooky Kahoot audio is locally staged, default-on, and plays without YouTube',()=>{
+  const music=fs.readFileSync(path.join(dir,'spooky-music.js'),'utf8');
+  const workflow=fs.readFileSync(path.join(dir,'../../.github/workflows/pages.yml'),'utf8');
+  assert.match(html,/id="spookyMusicPanel"/);
   assert.match(html,/id="musicButton"/);
-  assert.match(app,/www\.youtube\.com\/embed\/yjwJIjNuniQ/);
-  assert.match(app,/player\.referrerPolicy='strict-origin-when-cross-origin'/);
-  assert.match(app,/closeKahootMusic\(\)/);
-  assert.match(app,/musicSlot\.append\(player\)/);
-  assert.doesNotMatch(html,/<audio[^>]*src=/);
+  assert.match(html,/src="spooky-music\.js"/);
+  assert.match(html,/id="spookyPlay"/);
+  assert.match(html,/id="spookyPause"/);
+  assert.match(app,/RankRiotSpookyMusic\(\)/);
+  assert.match(app,/rank-riot-spooky-music'\)!=='off'/);
+  assert.match(app,/pointerdown',beginSpookyMusic/);
+  assert.match(app,/keydown',beginSpookyMusic/);
+  assert.match(app,/spookyMusic\.setPhase\(snapshot\.stage\)/);
+  assert.match(music,/\.\/music\/kahoot-halloween\.mp3/);
+  assert.match(music,/https:\/\/kahoot\.com\/files\/2022\/10\/Lobby-Music-Halloween-Edition\.mp3/);
+  assert.match(music,/audio\.loop=true/);
+  assert.match(workflow,/Download Kahoot Halloween lobby music into Rank Riot site/);
+  assert.match(workflow,/music\/kahoot-halloween\.mp3/);
+  assert.doesNotMatch(html,/youtube\.com\/embed|youtube-nocookie\.com/);
+});
+test('Answer reveals use a six-answer podium with all placements and points',()=>{
+  assert.match(app,/function podiumRanks\(s\)/);
+  assert.match(app,/function answerPodium\(s,compact=false\)/);
+  assert.match(app,/const upper=\[top\[1\],top\[0\],top\[2\]\]/);
+  assert.match(app,/podium-top/);
+  assert.match(app,/podium-bottom/);
+  assert.match(app,/podium-score/);
+  assert.match(app,/podium-votes/);
+  assert.match(app,/answerPodium\(s\)/);
+  assert.match(app,/answerPodium\(s,true\)/);
+  assert.match(css,/\.podium-gold \.podium-base\{/);
+  assert.match(css,/\.podium-small/);
+  assert.match(css,/prefers-reduced-motion:reduce/);
+  const start=app.indexOf('  function podiumRanks(s){');
+  const end=app.indexOf('  function scoresBoard(',start);
+  assert.ok(start>=0&&end>start);
+  const portion=app.slice(start,end);
+  const compiled=vm.runInNewContext(portion+'\n({podiumRanks,answerPodium})',{
+    esc:x=>String(x),state:{view:'host'},hostActions:()=>'<button>Next</button>'
+  });
+  const o=(author,sum,first=0,second=0,third=0)=>({author,text:author+' answer',tally:{sum,first,second,third}});
+  const question={game:'alex',number:7,question:'Sample',options:[
+    o('Last',0),o('Second',12,3,1,1),o('Third',9,1,2,2),o('First',14,4,1,0),o('Fifth',3),o('Fourth',7)
+  ]};
+  const ranks=compiled.podiumRanks(question);
+  assert.deepEqual(Array.from(ranks,r=>[r.author,r.place]),[
+    ['First',1],['Second',2],['Third',3],['Fourth',4],['Fifth',5],['Last',6]
+  ]);
+  const output=compiled.answerPodium(question);
+  assert.match(output,/#1/);assert.match(output,/#6/);
+  assert.match(output,/14 <small>PTS<\/small>/);
+  assert.match(output,/4 first/);
+  assert.equal((output.match(/class="podium-entry/g)||[]).length,6);
+  assert.match(output,/podium-top/);assert.match(output,/podium-bottom/);
 });
 test('Rank selection audio and game-show visual FX use accessible reduced-motion fallback',()=>{
   assert.match(app,/rank-tray-grid/);
@@ -161,7 +207,7 @@ test('Rank selection audio and game-show visual FX use accessible reduced-motion
   assert.match(css,/@keyframes selectionBounce/);
   assert.match(css,/prefers-reduced-motion:reduce/);
   assert.match(app,/function animateScoreCounters\(\)/);
-  assert.match(app,/reveal-winner/);
+  assert.match(app,/podium-champion/);
 });
 test('Hall of Fame uses archived answers with host authorization, rankings, and filters',()=>{
   assert.match(edge,/if\(action==='fame'\)/);
