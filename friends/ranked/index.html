@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#131029"><meta name="description" content="Live ranked-choice party quiz for the Alex and Doron forms.">
+<meta name="referrer" content="no-referrer"><meta name="theme-color" content="#131029"><meta name="description" content="Live ranked-choice party quiz for the Alex and Doron forms.">
 <title>Rank Riot | Live Friend Group Game</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
@@ -132,12 +132,40 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
   const storage = window.localStorage;
   const params = new URLSearchParams(window.location.search);
   const ENDPOINT = 'https://bpudsyyepiminpdxlquz.supabase.co/functions/v1/rank-riot';
-  const state = {view:'home',secret:storage.getItem('rank-riot-host-key') || '',pin:params.get('pin') || '',
+  const displayPin=params.get('display')||'',displayKey=params.get('viewer')||'';
+  const state = {view:'home',secret:storage.getItem('rank-riot-host-key') || '',pin:displayPin||params.get('pin') || '',viewerKey:displayKey,projectorError:'',
     playerKey:'',name:'',snapshot:null,setup:null,rank:[],requesting:false,loading:false,lastStage:'',sound:storage.getItem('rank-riot-sound') !== 'off',networkError:false,historyData:null,savedResult:null,fame:null,fameGame:'all',fameSort:'points',overtakes:new Set(),lastBoardOrder:null};
   if(state.pin && !/^\d{6}$/.test(state.pin)) state.pin='';
   if(state.pin) state.view='join';
+  if(displayPin && /^\d{6}$/.test(displayPin))state.view='projector';
   const esc = (value) => String(value==null?'':value).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function beep(pitch=660){if(!state.sound)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ac=new AC(),osc=ac.createOscillator(),gain=ac.createGain();osc.type='triangle';osc.frequency.value=pitch;gain.gain.setValueAtTime(.035,ac.currentTime);gain.gain.exponentialRampToValueAtTime(.0005,ac.currentTime+.16);osc.connect(gain).connect(ac.destination);osc.start();osc.stop(ac.currentTime+.17);setTimeout(()=>ac.close(),260);}catch{}}
+  let audioContext=null,lastTimerBeep='';
+  function audioReady(){
+    if(!state.sound)return null;
+    try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;
+      if(!audioContext||audioContext.state==='closed')audioContext=new AC();
+      if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
+      return audioContext;
+    }catch{return null;}
+  }
+  function beep(pitch=660,duration=.12,delay=0,type='triangle'){
+    const ac=audioReady();if(!ac)return;
+    try{const start=ac.currentTime+Math.max(0,delay),osc=ac.createOscillator(),gain=ac.createGain();
+      osc.type=type;osc.frequency.setValueAtTime(pitch,start);
+      gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(.08,start+.012);
+      gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+      osc.connect(gain);gain.connect(ac.destination);osc.start(start);osc.stop(start+duration+.01);
+      osc.onended=()=>{osc.disconnect();gain.disconnect()};
+    }catch{}
+  }
+  function rankSound(position,removed=false){
+    if(removed){beep(340,.11,0,'sine');return}
+    const notes=[523.25,659.25,783.99];
+    beep(notes[position]||523,.13,0,'triangle');beep((notes[position]||523)*1.5,.09,.07,'sine');
+  }
+  function lockSound(){beep(523,.1);beep(659,.1,.1);beep(784,.11,.2);beep(1047,.24,.31)}
+  function revealSound(){[392,440,523,587,659,784].forEach((n,i)=>beep(n,.12,i*.35,'triangle'));beep(1047,.35,2.15)}
+
   function notify(message,error=false){toast.textContent=message;toast.className='toast visible'+(error?' error':'');clearTimeout(notify.t);notify.t=setTimeout(()=>toast.className='toast',4400);}
   function updateConnection(ok){$('#connectionStatus').textContent=ok?'CONNECTED':'OFFLINE';$('#connectionStatus').classList.toggle('online',ok);}
   function joinUrl(){const u=new URL(window.location.href);u.search='';u.searchParams.set('pin',state.pin);return u.toString();}
@@ -290,6 +318,8 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
     requestAnimationFrame(tick);
   }
   function updateTimer(){const s=state.snapshot;if(!s||s.stage!=='question'||s.seconds===0)return;const remaining=Math.max(0, s.closesAt - (Date.now()- (state.clientClockSkew||0)));
+    const remainingSec=Math.ceil(remaining/1000),tickKey=state.pin+':'+s.questionIndex+':'+remainingSec;
+    if((state.view==='host'||state.view==='projector')&&remainingSec>0&&remainingSec<=5&&tickKey!==lastTimerBeep){lastTimerBeep=tickKey;beep(remainingSec===1?1020:630,.095);}
     const timerEl=$('#countdown'),bar=$('#timerFill');if(timerEl){timerEl.textContent=String(Math.ceil(remaining/1000));timerEl.classList.toggle('low',remaining<10000);}if(bar)bar.style.width=Math.max(0,Math.min(100,remaining/(s.seconds*1000)*100))+'%';
   }
   function onSnapshot(snapshot){state.clientClockSkew=Date.now()-snapshot.serverNow;const last=state.snapshot;const stageChanged=last?.stage!==snapshot.stage || last?.questionIndex!==snapshot.questionIndex;
@@ -299,7 +329,7 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
       state.overtakes=new Set(snapshot.leaderboard.map((p,i)=>state.lastBoardOrder&&state.lastBoardOrder[p.name]!==undefined&&i<state.lastBoardOrder[p.name]?p.name:null).filter(Boolean));
       state.lastBoardOrder=Object.fromEntries(snapshot.leaderboard.map((p,i)=>[p.name,i]));
     }
-    if(stageChanged){beep(snapshot.stage==='reveal'?880:snapshot.stage==='leaderboard'?720:520);if(snapshot.stage==='reveal'){setTimeout(()=>beep(1040),180);setTimeout(()=>beep(1280),380);}if(snapshot.stage==='finished')confetti();}
+    if(stageChanged){if(snapshot.stage==='reveal')revealSound();else if(snapshot.stage==='finished'){lockSound();confetti();}else if(snapshot.stage==='leaderboard')beep(784,.25);else beep(523,.1);lastTimerBeep='';}
     if(!last || stageChanged || JSON.stringify({...last,serverNow:0})!==JSON.stringify({...snapshot,serverNow:0}))render();
     else updateTimer();
   }
@@ -397,17 +427,17 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
       if(state.rank.includes(id))state.rank=state.rank.filter(n=>n!==id);
       else if(state.rank.length<3)state.rank.push(id);
       else{state.rank.shift();state.rank.push(id);}
-      beep([540,790,1070][Math.max(0,state.rank.indexOf(id))]||440);render();return;
+      const place=state.rank.indexOf(id);rankSound(place,place===-1);render();return;
     }
     case 'vote':{
       if(state.rank.length!==3||state.snapshot?.voted)return;
-      await rpc('vote',{pin:state.pin,playerKey:state.playerKey,picks:state.rank});beep(900);setTimeout(()=>beep(1200),90);await poll(true);notify('Your top three were recorded.');return;
+      await rpc('vote',{pin:state.pin,playerKey:state.playerKey,picks:state.rank});lockSound();await poll(true);notify('Your top three were recorded.');return;
     }
     case 'copy-link':{await copy(joinUrl());return;}
     case 'copy-pin':{await copy(state.pin);return;}
   }}
   async function copy(content){try{await navigator.clipboard.writeText(content);notify('Copied to clipboard.');}catch{notify('Copy unavailable. Select the join URL from the address bar.',true);}}
-  app.addEventListener('click',async event=>{const target=event.target.closest('[data-action]');if(!target)return;const action=target.dataset.action;try{target.disabled=true;await act(action,target);}catch(err){notify(err.message,true);}finally{if(target.isConnected)target.disabled=false;}});
+  app.addEventListener('click',async event=>{const target=event.target.closest('[data-action]');if(!target)return;audioReady();const action=target.dataset.action;try{target.disabled=true;await act(action,target);}catch(err){notify(err.message,true);}finally{if(target.isConnected)target.disabled=false;}});
   app.addEventListener('change',event=>{
     if(event.target?.id==='fameFilter'){state.fameGame=event.target.value;render();return;}
     if(event.target?.id==='fameSort'){state.fameSort=event.target.value;render();return;}
@@ -423,13 +453,13 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
     if(!musicDock.hidden){closeKahootMusic();return;}
     musicDock.hidden=false;musicSlot.replaceChildren();
     const player=document.createElement('iframe');
-    player.src='https://www.youtube-nocookie.com/embed/yjwJIjNuniQ?autoplay=1&loop=1&playlist=yjwJIjNuniQ&rel=0';
-    player.title='Official Kahoot! Lobby Music';player.allow='autoplay; encrypted-media; picture-in-picture';player.referrerPolicy='strict-origin-when-cross-origin';player.allowFullscreen=true;
+    player.src='https://www.youtube.com/embed/yjwJIjNuniQ?autoplay=1&playsinline=1&loop=1&playlist=yjwJIjNuniQ&rel=0';
+    player.title='Kahoot! - Lobby Music (Original Soundtrack)';player.allow='autoplay; encrypted-media; picture-in-picture';player.referrerPolicy='no-referrer';player.allowFullscreen=true;player.loading='eager';
     musicSlot.append(player);
   });
   $('#musicClose').addEventListener('click',closeKahootMusic);
-  $('#soundButton').addEventListener('click',()=>{state.sound=!state.sound;storage.setItem('rank-riot-sound',state.sound?'on':'off');$('#soundButton').textContent=state.sound?'♪':'×';if(state.sound)beep();});
-  $('#soundButton').textContent=state.sound?'♪':'×';
+  $('#soundButton').addEventListener('click',()=>{state.sound=!state.sound;storage.setItem('rank-riot-sound',state.sound?'on':'off');$('#soundButton').textContent=state.sound?'♪':'×';$('#soundButton').setAttribute('aria-pressed',String(state.sound));if(state.sound){audioReady();beep(784)}});
+  $('#soundButton').textContent=state.sound?'♪':'×';$('#soundButton').setAttribute('aria-pressed',String(state.sound));
   // Room join links carry only the public PIN. The host key is never included.
   render();rpc('ping').catch(()=>{});setInterval(()=>{poll(false);updateTimer();},1850);setInterval(updateTimer,150);
 })();
