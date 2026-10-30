@@ -169,7 +169,7 @@ test('Answer reveals use a six-answer podium with all placements and points',()=
   assert.match(app,/podium-votes/);
   assert.match(app,/answerPodium\(s\)/);
   assert.match(app,/answerPodium\(s,true\)/);
-  assert.match(css,/\.podium-slot-center \.podium-base\{/);
+  assert.match(css,/\.podium-slot-left \.podium-base\{/);
   assert.match(css,/\.podium-small/);
   assert.match(css,/prefers-reduced-motion:reduce/);
   const start=app.indexOf('  function podiumRanks(s){');
@@ -199,11 +199,11 @@ test('Answer reveals use a six-answer podium with all placements and points',()=
   assert.match(topPart,/podium-gold podium-slot-left/);
   assert.match(topPart,/podium-silver podium-slot-center/);
   assert.match(topPart,/podium-bronze podium-slot-right/);
-  assert.match(css,/\.podium-slot-center \.podium-card\{min-height:260px\}/);
-  assert.match(css,/\.podium-slot-left \.podium-card\{min-height:216px\}/);
-  assert.match(css,/\.podium-slot-center \.podium-base\{height:96px\}/);
-  assert.match(css,/\.podium-slot-left \.podium-base\{height:79px\}/);
-  assert.match(css,/\.result-podium-tv \.podium-slot-center \.podium-card\{min-height:220px\}/);
+  assert.match(css,/\.podium-slot-left \.podium-card\{min-height:260px\}/);
+  assert.match(css,/\.podium-slot-center \.podium-card\{min-height:216px\}/);
+  assert.match(css,/\.podium-slot-left \.podium-base\{height:96px\}/);
+  assert.match(css,/\.podium-slot-center \.podium-base\{height:79px\}/);
+  assert.match(css,/\.result-podium-tv \.podium-slot-left \.podium-card\{min-height:220px\}/);
 });
 test('Rank selection audio and game-show visual FX use accessible reduced-motion fallback',()=>{
   assert.match(app,/rank-tray-grid/);
