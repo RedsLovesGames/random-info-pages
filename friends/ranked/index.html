@@ -150,6 +150,36 @@ body.tv-mode #app{width:100%;min-height:100vh}
 .tv-winner-points small{display:block;font-size:clamp(1rem,2vw,2rem)}
 @media(max-width:760px){.tv-top{gap:10px}.tv-answers{grid-template-columns:1fr}.tv-option{min-height:105px}.tv-reveal-entry{grid-template-columns:49px 1fr auto;gap:8px}.tv-scores .score-row{grid-template-columns:32px 100px 1fr auto;gap:8px}.tv-stage{padding:15px}.tv-host-tools{margin:8px 12px}.tv-pin{font-size:clamp(4rem,16vw,9rem)}}
 @media(prefers-reduced-motion:reduce){.tv-reveal-entry{animation:none!important;opacity:1!important;transform:none!important}}
+
+/* Postgame Awards — shown in player results, host results, projector and saved archives. */
+.awards-panel{margin:46px auto 32px;padding:clamp(18px,3.1vw,38px);border:1px solid #b5a2ff60;border-radius:23px;background:radial-gradient(circle at 95% 0,#542f6d65,transparent 50%),linear-gradient(140deg,#251e47,#18132f);box-shadow:0 20px 60px #0004;overflow:hidden}
+.awards-titlebar{margin-bottom:23px}
+.awards-titlebar .subhead{margin:8px 0 10px;font-size:clamp(2.1rem,4vw,4.4rem)}
+.awards-titlebar .subhead span{color:var(--green)}
+.awards-titlebar .copy{margin:0}
+.awards-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.award-card{display:flex;flex-direction:column;position:relative;min-height:235px;padding:clamp(16px,2vw,25px);border-radius:17px;border:1px solid #ffffff32;background:linear-gradient(148deg,#38315b,#1c1836);overflow:hidden;box-shadow:0 8px 26px #0002;animation:awardPop .5s both;animation-delay:calc(var(--award-order,0)*.1s)}
+.award-card:nth-child(3n+2){background:linear-gradient(150deg,#3c3653,#1d1939)}
+.award-card:nth-child(3n+3){background:linear-gradient(150deg,#334052,#1b1939)}
+.award-card.award-crowd-favorite,.award-card.award-top-answer{border-color:#dcff8c70}
+.award-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.award-symbol{color:#121021;background:var(--green);font-size:1.7rem;display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border-radius:13px;box-shadow:0 0 24px #cbff4d24}
+.award-label{font:700 .83rem var(--mono);color:#d6c8ef;text-transform:uppercase;letter-spacing:.04em}
+.award-winner{font-size:clamp(1.4rem,2vw,2.35rem);letter-spacing:-.035em;line-height:1.16;margin:0 0 5px;overflow-wrap:anywhere}
+.award-stat{font:800 clamp(1.15rem,1.75vw,1.8rem) var(--mono);color:var(--green);line-height:1.25;margin:6px 0 15px;overflow-wrap:anywhere}
+.award-quote{font-size:clamp(.95rem,1.2vw,1.18rem);font-weight:650;line-height:1.46;overflow-wrap:anywhere;margin:0 0 15px;padding:14px;background:#0e0b2570;border-left:3px solid var(--pink);border-radius:8px}
+.award-why{color:var(--muted);font-size:.88rem;line-height:1.55;margin:auto 0 0}
+.award-foot{border-top:1px solid var(--stroke);padding-top:12px;margin-top:17px;color:var(--muted);font:.7rem var(--mono);line-height:1.55;overflow-wrap:anywhere}
+.awards-unavailable{padding:25px}
+.awards-unavailable h2{font-size:1.3rem;margin:10px 0}
+.awards-tv{margin-top:25px;background:#16122c}
+.awards-tv .awards-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.awards-tv .award-card{min-height:175px}
+.awards-tv .award-winner{font-size:clamp(1.5rem,2.4vw,3rem)}
+@keyframes awardPop{from{opacity:0;transform:translateY(25px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:1050px){.awards-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.awards-tv .awards-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.awards-grid,.awards-tv .awards-grid{grid-template-columns:1fr}.award-card{min-height:0}.awards-panel{margin:26px auto 20px;padding:18px}}
+@media(prefers-reduced-motion:reduce){.award-card{animation:none!important;opacity:1!important;transform:none!important}}
 </style>
 </head>
 <body>
@@ -265,7 +295,24 @@ body.tv-mode #app{width:100%;min-height:100vh}
     const sorted=[...placed].reverse();const first=best[0];return `<section class="shell"><div class="eyebrow">${esc(s.game.toUpperCase())} / QUESTION ${s.number} · ANSWER REVEAL</div><h1 class="reveal-hero"><span class="flair">✹</span> THE RESULTS ARE IN.</h1><p class="copy">Unveiling the answers from last place to first place. Writers earn the points.</p><p class="reveal-winner">TOP ANSWER ★ <strong>${esc(first?.author||'No votes')}</strong> · ${first?.tally.sum||0} POINTS</p><h2 class="subhead" style="font-size:2rem;margin-top:35px">${esc(s.question)}</h2><div class="answer-grid">${sorted.map((o,i)=>`<article class="answer reveal-answer ${i===sorted.length-1?'reveal-top-answer':''} ${rankCounts[o.place]>1?'tied-answer':''}" style="min-height:165px;--reveal-delay:${(i*.48).toFixed(2)}s;--c:${['#cbff4d','#7bdcff','#ff729f','#ffbd6e','#c2a7ff','#a2f0da'][i%6]}"><span class="win">#${o.place}${rankCounts[o.place]>1?' · TIE':''}</span><span>${esc(o.text)}</span><span class="points">${o.tally.sum} pts · ${o.tally.first} first / ${o.tally.second} second / ${o.tally.third} third</span><span class="author">By ${esc(o.author)}</span></article>`).join('')}</div><div style="margin-top:28px;text-align:center">${state.view==='host'?hostActions(s):'<p class="tiny">Waiting for leaderboard…</p>'}</div></section>`;}
   function scoresBoard(scores){const top=Math.max(1,...scores.map(s=>s.sum));return `<div class="scoreboard">${scores.map((p,i)=>`<div class="score-row scoreboard-entry ${state.overtakes?.has(p.name)&&['host','player'].includes(state.view)?'overtake-row':''}" style="--entry-delay:${(i*.11).toFixed(2)}s"><div class="score-rank">${i+1}</div><div class="score-name">${esc(p.name)}${state.overtakes?.has(p.name)&&['host','player'].includes(state.view)?' <span class="up-arrow">▲ UP</span>':''}</div><div class="score-bar"><span style="width:${Math.max(0,p.sum/top*100).toFixed(2)}%"></span></div><div class="score-value"><strong class="animated-score" data-score="${p.sum}">${p.sum}</strong><span>PTS</span></div><div class="score-sub">${p.average.toFixed(2)} avg pts/answer · ${p.rounds} scored rounds · ${p.first} first-place votes</div></div>`).join('')}</div>`;}
   function boardView(s){return `<section class="shell"><div class="eyebrow">RANKINGS / AFTER ${esc(s.game.toUpperCase())} QUESTION ${s.number}</div><h1 class="subhead">THE LEADERBOARD<span style="color:var(--green)">.</span></h1><p class="copy">Ranked by total points. First-place votes break ties. Average points per answer is shown below.</p>${s.leaderboard.length>1&&s.leaderboard[0].sum-s.leaderboard[1].sum<=3?`<div class="clutch-alert">⚡ CLUTCH ROUND · ONLY ${s.leaderboard[0].sum-s.leaderboard[1].sum} POINTS SEPARATE THE TOP TWO</div>`:''}${scoresBoard(s.leaderboard)}<div class="center" style="margin-top:30px">${state.view==='host'?hostActions(s):'<p class="copy">Next round starting when the host is ready…</p>'}</div></section>`;}
-  function finalView(s){const win=s.leaderboard[0];return `<section class="shell"><div class="center"><div class="eyebrow">COMPETITION COMPLETE / ${esc(s.mode.toUpperCase())}</div><div class="flair" style="font-size:7rem">★</div><h1 class="reveal-hero" style="font-size:clamp(3.4rem,8vw,8rem)">${esc(win.name)} WINS.</h1><p class="lead" style="margin:auto">${win.sum} total points · ${win.average.toFixed(2)} avg points per answer. The crowd has spoken.</p></div><h2 class="subhead" style="margin-top:55px">Final standings</h2>${scoresBoard(s.leaderboard)}${s.mode==='both'?`<div class="two-col" style="margin-top:30px"><div class="panel"><h2>Alex champion: ${esc(s.byGame.alex[0].name)}</h2>${scoresBoard(s.byGame.alex)}</div><div class="panel"><h2>Doron champion: ${esc(s.byGame.doron[0].name)}</h2>${scoresBoard(s.byGame.doron)}</div></div>`:''}<div class="center" style="margin-top:30px">${state.view==='host'?`${button('VIEW QUESTION RANKINGS ↗','open-finished-result','btn')}${button('HALL OF FAME ★','fame','btn ghost')}${button('PLAY AGAIN ↗','view-setup','btn alt')}`:button('BACK TO HOME','view-home')}</div></section>`;}
+  function postgameAwardsPanel(awards,compact=false){
+    const cardList=Array.isArray(awards?.cards)?awards.cards:[];
+    if(!awards?.complete)return `<section class="awards-panel awards-unavailable"><div class="eyebrow">POSTGAME AWARDS</div><h2>Awards unavailable for this match</h2><p class="copy">${esc(awards?.note||'The game did not save all of its question-by-question results.')}</p></section>`;
+    if(!cardList.length)return `<section class="awards-panel awards-unavailable"><div class="eyebrow">POSTGAME AWARDS</div><h2>No awards this time</h2><p class="copy">${esc(awards.note||'There were not enough scored votes to award any titles.')}</p></section>`;
+    const icons={'crowd-favorite':'♥','top-answer':'✦','first-place-magnet':'★','most-consistent':'◎','biggest-comeback':'↗','underdog':'⚡'};
+    return `<section class="awards-panel ${compact?'awards-tv':''}" aria-label="Postgame awards">
+      <div class="awards-titlebar"><div class="eyebrow">THE CROWD HAS SPOKEN / ${cardList.length} AWARDS</div><h2 class="subhead">POSTGAME <span>AWARDS.</span></h2><p class="copy">Calculated from real votes and scores. Awards do not change the leaderboard.</p></div>
+      <div class="awards-grid">${cardList.map((award,i)=>`<article class="award-card award-${esc(award.id)}" style="--award-order:${i}">
+        <div class="award-top"><span class="award-symbol" aria-hidden="true">${icons[award.id]||'★'}</span><span class="award-label">${esc(award.title)}</span></div>
+        <h3 class="award-winner">${esc(award.winner)}</h3>
+        <div class="award-stat">${esc(award.stat)}</div>
+        ${award.answer?`<blockquote class="award-quote">“${esc(award.answer)}”</blockquote>`:''}
+        <p class="award-why">${esc(award.detail)}</p>
+        ${award.question?`<div class="award-foot">${esc((award.game||'').toUpperCase())} · Q${esc(award.number)} · ${esc(award.question)}</div>`:''}
+      </article>`).join('')}</div>
+    </section>`;
+  }
+  function finalView(s){const win=s.leaderboard[0];return `<section class="shell"><div class="center"><div class="eyebrow">COMPETITION COMPLETE / ${esc(s.mode.toUpperCase())}</div><div class="flair" style="font-size:7rem">★</div><h1 class="reveal-hero" style="font-size:clamp(3.4rem,8vw,8rem)">${esc(win.name)} WINS.</h1><p class="lead" style="margin:auto">${win.sum} total points · ${win.average.toFixed(2)} avg points per answer. The crowd has spoken.</p></div><h2 class="subhead" style="margin-top:55px">Final standings</h2>${scoresBoard(s.leaderboard)}${s.mode==='both'?`<div class="two-col" style="margin-top:30px"><div class="panel"><h2>Alex champion: ${esc(s.byGame.alex[0].name)}</h2>${scoresBoard(s.byGame.alex)}</div><div class="panel"><h2>Doron champion: ${esc(s.byGame.doron[0].name)}</h2>${scoresBoard(s.byGame.doron)}</div></div>`:''}${postgameAwardsPanel(s.awards)}<div class="center" style="margin-top:30px">${state.view==='host'?`${button('VIEW QUESTION RANKINGS ↗','open-finished-result','btn')}${button('HALL OF FAME ★','fame','btn ghost')}${button('PLAY AGAIN ↗','view-setup','btn alt')}`:button('BACK TO HOME','view-home')}</div></section>`;}
 
   function projectorUrl(key){
     const u=new URL(window.location.href);u.search='';u.hash='';
@@ -294,7 +341,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
       return `<section class="tv-stage">${label}<div class="eyebrow">ANSWER REVEAL / QUESTION ${esc(s.number)}</div><h1 class="tv-question">${esc(s.question)}</h1><div class="tv-reveals">${placed.reverse().map((o,i)=>`<div class="tv-reveal-entry ${o.place===1?'tv-winning-answer':''}" style="--reveal-delay:${(i*.44).toFixed(2)}s"><span class="tv-place">#${o.place}</span><div><strong>${esc(o.text)}</strong><span class="tiny">BY ${esc(o.author)}</span></div><div class="tv-point-value">${o.tally.sum}<small>PTS</small></div></div>`).join('')}</div></section>`;
     }
     if(s.stage==='leaderboard')return `<section class="tv-stage">${label}<div class="eyebrow">AFTER QUESTION ${esc(s.number)}</div><h1 class="tv-banner">THE <span>LEADERBOARD.</span></h1><div class="tv-scores">${scoresBoard(s.leaderboard)}</div><p class="tv-footer-note">The host will start the next question.</p></section>`;
-    if(s.stage==='finished'){const w=s.leaderboard[0];return `<section class="tv-stage">${label}<div class="tv-center"><div class="eyebrow">THE FINAL RESULTS ARE IN</div><h1 class="tv-banner tv-winner"><span>${esc(w?.name||'Nobody')}</span> WINS!</h1><div class="tv-winner-points">${w?.sum||0} <small>TOTAL POINTS</small></div><div class="tv-scores">${scoresBoard(s.leaderboard)}</div><p class="tiny">Game archived · ${esc(s.mode.toUpperCase())}</p></div></section>`;}
+    if(s.stage==='finished'){const w=s.leaderboard[0];return `<section class="tv-stage">${label}<div class="tv-center"><div class="eyebrow">THE FINAL RESULTS ARE IN</div><h1 class="tv-banner tv-winner"><span>${esc(w?.name||'Nobody')}</span> WINS!</h1><div class="tv-winner-points">${w?.sum||0} <small>TOTAL POINTS</small></div><div class="tv-scores">${scoresBoard(s.leaderboard)}</div>${postgameAwardsPanel(s.awards,true)}<p class="tiny">Game archived · ${esc(s.mode.toUpperCase())}</p></div></section>`;}
     return `<section class="tv-stage">${label}<div class="tv-center"><h1 class="tv-banner">ROUND <span>SKIPPED.</span></h1><p class="tv-hint">Waiting for the host to continue.</p></div></section>`;
   }
   function gameView(){const s=state.snapshot;if(!s)return `<section class="shell"><h1 class="subhead">Connecting to room…</h1></section>`;
@@ -364,7 +411,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
       </div>
       <h2 class="subhead" style="margin-top:42px">Final standings</h2>${scoresBoard(r.leaderboard)}
       ${r.mode==='both'?`<div class="two-col" style="margin-top:26px"><div class="panel"><h2>Alex standings</h2>${scoresBoard(r.byGame.alex)}</div><div class="panel"><h2>Doron standings</h2>${scoresBoard(r.byGame.doron)}</div></div>`:''}
-      <div class="meta-row" style="margin-top:45px"><div><div class="eyebrow">QUESTION-BY-QUESTION ARCHIVE</div><h2 class="subhead" style="margin:8px 0">Answer rankings</h2></div>${button('EXPORT RESULTS JSON ↓','export-result','btn alt small')}</div>
+      ${postgameAwardsPanel(r.awards)}<div class="meta-row" style="margin-top:45px"><div><div class="eyebrow">QUESTION-BY-QUESTION ARCHIVE</div><h2 class="subhead" style="margin:8px 0">Answer rankings</h2></div>${button('EXPORT RESULTS JSON ↓','export-result','btn alt small')}</div>
       ${rounds.length?`
         ${rounds.some(round=>round.recovered)?'<div class="empty" style="margin:10px 0 18px">Partial historical recovery. Only the last question could be recovered from this older game. Earlier question rankings were never saved.</div>':''}
         <p class="copy">Answers are ranked by points and vote placements. Tied scores with identical vote counts share a rank. Scroll through all ${rounds.length} questions.</p>
