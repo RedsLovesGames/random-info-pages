@@ -169,7 +169,7 @@ test('Answer reveals use a six-answer podium with all placements and points',()=
   assert.match(app,/podium-votes/);
   assert.match(app,/answerPodium\(s\)/);
   assert.match(app,/answerPodium\(s,true\)/);
-  assert.match(css,/\.podium-gold \.podium-base\{/);
+  assert.match(css,/\.podium-slot-center \.podium-base\{/);
   assert.match(css,/\.podium-small/);
   assert.match(css,/prefers-reduced-motion:reduce/);
   const start=app.indexOf('  function podiumRanks(s){');
