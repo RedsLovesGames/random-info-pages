@@ -11,7 +11,8 @@
       'The last slice of pizza at 3 AM',
       'A microwave that only plays jazz',
       'A haunted USB stick full of memes',
-      'A disco ball in a chemistry lab'
+      'A disco ball in a chemistry lab',
+      'Lemon'
     ];
     const awards={complete:true,cards:[
       {id:'crowd-favorite',title:'Crowd Favorite',winner:'Doron',stat:'5 first-place votes',answer:answers[1],detail:'Most first-place votes for a single answer.',question:'Which object has Alex energy?',game:'alex',number:1},
@@ -31,9 +32,11 @@
       });
     }
     function options(){
-      const authors=['Tommy','Doron','Alex','Nora','Jack','Mike'];
-      return answers.map((text,i)=>({id:'demo-'+i,text,author:authors[i],mine:i===0,
-        tally:{sum:[14,12,9,7,3,0][i],first:[4,3,1,1,0,0][i],second:[1,1,2,1,1,0][i],third:[0,1,2,2,1,0][i]}}));
+      const isDoron=t.mode==='doron';
+      const authors=isDoron?['Tommy','Alex','Nora','Jack','Mike','Rita']:['Tommy','Doron','Alex','Nora','Jack','Mike','Ethan'];
+      const text=isDoron?answers.slice(0,6):answers;
+      return text.map((answer,i)=>({id:'demo-'+i,text:answer,author:authors[i],mine:i===0,
+        tally:{sum:[14,12,9,7,3,0,2][i],first:[4,3,1,1,0,0,0][i],second:[1,1,2,1,1,0,1][i],third:[0,1,2,2,1,0,0][i]}}));
     }
     function snapshot(){
       return {pin:'246810',mode:t.mode,stage:t.scene,game:t.mode==='doron'?'doron':'alex',number:7,questionIndex:6,count:t.mode==='both'?50:25,
@@ -65,7 +68,12 @@
     function checks(){
       const result=[];
       const check=(label,fn)=>{try{result.push({label,ok:Boolean(fn())})}catch{result.push({label,ok:false})}};
-      check('Six sample answers',()=>options().length===6);
+      check('Seven Alex responses including Ethan; six Doron responses',()=>{
+        const initial=t.mode;
+        try{t.mode='alex';const alex=options();t.mode='doron';const doron=options();
+          return alex.length===7&&alex.some(o=>o.author==='Ethan'&&o.text==='Lemon')&&doron.length===6;
+        }finally{t.mode=initial}
+      });
       check('Self-votes marked unavailable',()=>options().filter(o=>o.mine).length===1);
       check('Unlimited and timed mode available',()=>[0,15,45].includes(t.timer));
       check('Player, host and projector screens render',()=>{
@@ -75,7 +83,12 @@
       check('Saved results and Hall of Fame render',()=>
         api.preview('archive','player',snapshot(),[],saved(),fame()).includes('savedRoundScroll')&&
         api.preview('fame','player',snapshot(),[],saved(),fame()).includes('fame-entry'));
-      check('Six mock postgame awards',()=>awards.cards.length===6&&api.preview('finished','player',snapshotFor('finished'),[],saved(),fame()).includes('award-card'));
+      check('Seven-answer reveal and postgame awards',()=>{
+        const initial=t.mode;
+        try{t.mode='alex';return api.preview('reveal','player',snapshotFor('reveal'),[],saved(),fame()).includes('podium-bottom-four')
+          &&awards.cards.length===6&&api.preview('finished','player',snapshotFor('finished'),[],saved(),fame()).includes('award-card');
+        }finally{t.mode=initial}
+      });
       check('Sound-effect API available',()=>api.audioSupported());
       check('Test actions cannot call room API',()=>!api.testCanWrite());
       return result;
