@@ -399,6 +399,12 @@ test('TEST lab uses current seven-answer Alex roster including Ethan and six-ans
   assert.match(lab,/Seven Alex responses including Ethan; six Doron responses/);
   assert.match(lab,/podium-bottom-four/);
 });
+test('Voting shows seven Alex answers on mobile and visibly counts all options',()=>{
+  assert.match(app,/\$\{s\.options\.length\} ANSWERS/);
+  assert.match(css,/\.answer:nth-child\(7\)\{--c:/);
+  assert.match(css,/@media\(max-width:700px\)\{\s*\.answer-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(css,/\.answer-grid \.answer:nth-child\(7\):last-child\{grid-column:1\/-1/);
+});
 test('Seven-answer Alex rounds have four lower podiums and mobile wrapping',()=>{
   assert.match(app,/lower\.length===4\?'podium-bottom-four'/);
   assert.match(css,/\.podium-bottom-four\{grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
