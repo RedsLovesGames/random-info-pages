@@ -391,6 +391,20 @@ test('Offline lab stages, mocked snapshots and voting simulation work',async()=>
   assert.equal(instance.open,false);
   assert.ok(renderCount>3);
 });
+test('Seven-answer Alex rounds have four lower podiums and mobile wrapping',()=>{
+  assert.match(app,/lower\.length===4\?'podium-bottom-four'/);
+  assert.match(css,/\.podium-bottom-four\{grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+  assert.match(css,/\.podium-small:nth-child\(4\)/);
+  assert.match(css,/@media\(max-width:760px\)\{\s*\.podium-bottom-four\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  const a=app.indexOf('  function podiumRanks(s){');
+  const b=app.indexOf('  function reveal(s){',a);
+  const fn=vm.runInNewContext(app.slice(a,b)+'\nanswerPodium',{esc:String,state:{view:'player'}});
+  const options=Array.from({length:7},(_,i)=>({author:'Person '+i,text:'Answer '+i,tally:{sum:18-i*3,first:7-i,second:0,third:0}}));
+  const html=fn({options});
+  assert.equal((html.match(/class="podium-entry/g)||[]).length,7);
+  assert.match(html,/podium-bottom-four/);
+  assert.match(html,/>#7</);
+});
 test('Original mobile game structure and styling remain intact',()=>{
   assert.match(html,/id="app"/);assert.match(html,/id="connectionStatus"/);
   assert.match(css,/\.answer-grid/);assert.match(css,/@media/);
