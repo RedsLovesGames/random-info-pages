@@ -39,7 +39,7 @@
         tally:{sum:[14,12,9,7,3,0,2][i],first:[4,3,1,1,0,0,0][i],second:[1,1,2,1,1,0,1][i],third:[0,1,2,2,1,0,0][i]}}));
     }
     function snapshot(){
-      return {pin:'246810',mode:t.mode,stage:t.scene,game:t.mode==='doron'?'doron':'alex',number:7,questionIndex:6,count:t.mode==='both'?50:25,
+      return {pin:'246810',mode:t.mode,stage:t.scene,game:t.mode==='doron'?'doron':'alex',number:1,questionIndex:0,count:t.mode==='both'?50:25,
         question:'If Alex were an inanimate object, which one would he be?',options:options(),players:names,seconds:t.timer,
         openedAt:Date.now(),closesAt:t.timer?Date.now()+t.timer*1000:0,voteCount:t.locked?6:4,
         voted:t.locked,picks:[...t.picks],viewer:'Tommy',leaderboard:scores(),
