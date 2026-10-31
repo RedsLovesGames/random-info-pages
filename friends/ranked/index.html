@@ -232,6 +232,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
 .podium-small:nth-child(1){--podium-color:#ff74b1;--podium-tint:#ff80c3;--podium-rgb:255,116,177}
 .podium-small:nth-child(2){--podium-color:#7bdcff;--podium-tint:#7bdcff;--podium-rgb:123,220,255}
 .podium-small:nth-child(3){--podium-color:#cbff4d;--podium-tint:#c6ff4d;--podium-rgb:203,255,77}
+.podium-small:nth-child(4){--podium-color:#9f9bff;--podium-tint:#b5b2ff;--podium-rgb:159,155,255}
 .podium-card{position:relative;flex:1;min-height:198px;display:flex;flex-direction:column;justify-content:center;gap:7px;text-align:center;padding:24px 18px 14px;color:#170f2b;background:var(--podium-tint);border:2px solid #fffffff5;border-radius:18px 18px 12px 12px;box-shadow:0 0 26px rgba(var(--podium-rgb),.24),inset 0 3px #ffffff80}
 .podium-rank{position:absolute;top:-21px;left:50%;transform:translateX(-50%);display:grid;place-items:center;border:3px solid var(--podium-color);box-shadow:0 5px 16px #0005;background:#19122f;color:var(--podium-color);width:55px;height:55px;border-radius:50%;font:800 1.4rem var(--mono)}
 .podium-answer{font-size:clamp(.95rem,1.6vw,1.55rem);font-weight:800;letter-spacing:-.035em;line-height:1.19;overflow-wrap:anywhere;margin-top:13px}
@@ -251,6 +252,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
 .podium-slot-right .podium-base{height:69px}
 .podium-winner .podium-card{box-shadow:0 0 0 3px var(--podium-color),0 0 44px #cbff4d63}
 .podium-bottom{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:clamp(10px,2vw,25px);margin-top:22px;padding-inline:clamp(0px,3vw,45px)}
+.podium-bottom-four{grid-template-columns:repeat(4,minmax(0,1fr));padding-inline:0}
 .podium-bottom .podium-card{min-height:133px;padding:20px 12px 10px;gap:4px}
 .podium-bottom .podium-answer{font-size:clamp(.92rem,1.2vw,1.2rem);margin-top:7px}
 .podium-bottom .podium-score{font-size:clamp(1.23rem,1.8vw,1.8rem)}
@@ -268,6 +270,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
 .result-podium-tv .podium-answer{font-size:clamp(1rem,1.8vw,1.7rem)}
 .result-podium-tv .podium-bottom .podium-answer{font-size:clamp(.84rem,1.2vw,1.2rem)}
 @media(max-width:760px){
+ .podium-bottom-four{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:24px}
  .podium-top{gap:7px;padding-top:19px}
  .podium-card{min-height:155px;padding:22px 7px 9px;gap:5px;border-radius:12px}
  .podium-slot-left .podium-card{min-height:203px}
@@ -455,7 +458,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
     };
     return `<div class="result-podium ${compact?'result-podium-tv':''}" aria-label="All ${ordered.length} answers by ranked points">
       <div class="podium-top">${upper.map((o,i)=>card(o,bases[o.ordinal-1]||'silver',true,['left','center','right'][i])).join('')}</div>
-      ${lower.length?`<div class="podium-bottom">${lower.map(o=>card(o,'lower',false)).join('')}</div>`:''}
+      ${lower.length?`<div class="podium-bottom ${lower.length===4?'podium-bottom-four':''}">${lower.map(o=>card(o,'lower',false)).join('')}</div>`:''}
     </div>`;
   }
   function reveal(s){
