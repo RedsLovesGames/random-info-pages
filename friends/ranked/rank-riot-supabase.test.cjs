@@ -365,7 +365,7 @@ test('Offline lab stages, mocked snapshots and voting simulation work',async()=>
   let renderCount=0;
   const api={
     esc:v=>String(v),button:(label,action)=>'<button data-action="'+action+'">'+label+'</button>',
-    preview:(scene,role,snapshot,picks)=>{seen.push({scene,role,snapshot,picks:[...picks]});return '<div class="shell tv-stage"><div id="savedRoundScroll"></div><div class="fame-entry"></div><div class="award-card"></div></div>';},
+    preview:(scene,role,snapshot,picks)=>{seen.push({scene,role,snapshot,picks:[...picks]});return '<div class="shell tv-stage"><div id="savedRoundScroll"></div><div class="fame-entry"></div><div class="award-card"></div><div class="podium-bottom-four"></div></div>';},
     render:()=>renderCount++,rankSound:()=>{},lockSound:()=>{},revealSound:()=>{},confetti:()=>{},
     music:()=>{},soundTest:()=>{},audioSupported:()=>true,testCanWrite:()=>false,notice:x=>messages.push(x)
   };
