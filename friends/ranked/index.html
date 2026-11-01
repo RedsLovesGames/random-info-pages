@@ -705,10 +705,8 @@ body.tv-mode #app{width:100%;min-height:100vh}
     case 'view-join':state.view='join';render();return;
     case 'view-setup':state.view='setup';state.snapshot=null;render();return;
     case 'fame':{
-      const secret=fieldValue('hostPass')||state.secret;
-      if(!secret){state.view='setup';render();notify('Enter your host key to open the Hall of Fame.',true);return;}
-      state.fame=await rpc('fame',{secret});
-      state.secret=secret;storage.setItem('rank-riot-host-key',secret);state.view='fame';render();return;
+      state.fame=await rpc('fame',{});
+      state.view='fame';render();return;
     }
     case 'history':{
       const secret=fieldValue('hostPass')||state.secret;
