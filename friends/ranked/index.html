@@ -756,7 +756,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
     }
     case 'public-open-result':{
       const pin=target.dataset.pin;
-      if(!/^\\d{6}$/.test(pin))throw new Error('Invalid match PIN.');
+      if(!/^\d{6}$/.test(pin))throw new Error('Invalid match PIN.');
       state.publicResult=await rpc('public-result',{pin});state.view='public-result';render();return;
     }
     case 'history':{
