@@ -77,6 +77,29 @@ if(action==='fame'){return sql.begin(async(tx:any)=>{
     limit 100`;
   return {savedGames:games[0].count,entries:rows};
 });}
+if(action==='public-results'){return sql.begin(async(tx:any)=>{
+  const cutoff=await tx`select value from rankriot_config where key='hall_of_fame_since'`;
+  const since=cutoff[0]?.value||'1970-01-01T00:00:00Z';
+  const limit=p.limit===undefined?20:Number(p.limit),offset=p.offset===undefined?0:Number(p.offset);
+  requireTrue(Number.isInteger(limit)&&limit>=1&&limit<=50&&Number.isInteger(offset)&&offset>=0&&offset<=100000,'Invalid results page.');
+  const rows=await tx`select pin,mode,created_at,finished_at,players,scores,jsonb_array_length(rounds)::int as rounds_recorded
+    from rankriot_results where finished_at>=${since}::timestamptz order by finished_at desc,pin desc limit ${limit+1} offset ${offset}`;
+  return {games:rows.slice(0,limit).map(savedGameSummary),hasMore:rows.length>limit,nextOffset:offset+Math.min(rows.length,limit)};
+});}
+if(action==='public-result'){return sql.begin(async(tx:any)=>{
+  const requested=clean(p.pin);
+  requireTrue(/^\d{6}$/.test(requested),'Enter a six-digit game PIN.');
+  const cutoff=await tx`select value from rankriot_config where key='hall_of_fame_since'`;
+  const since=cutoff[0]?.value||'1970-01-01T00:00:00Z';
+  const rows=await tx`select pin,mode,created_at,finished_at,seconds_per_question,players,scores,by_game,rounds,awards
+    from rankriot_results where pin=${requested} and finished_at>=${since}::timestamptz`;
+  requireTrue(rows.length,'Public game not found.');
+  const row=rows[0];
+  return {pin:clean(row.pin),mode:row.mode,createdAt:row.created_at,finishedAt:row.finished_at,seconds:row.seconds_per_question,
+    players:row.players,leaderboard:scoreboard(row.scores),
+    byGame:{alex:scoreboard(row.by_game?.alex||{}),doron:scoreboard(row.by_game?.doron||{})},
+    rounds:row.rounds,awards:row.awards?.cards?row.awards:buildAwards(row.rounds,row.scores,row.mode)};
+});}
 if(action==='history'){return sql.begin(async(tx:any)=>{
   await authorize(tx,p.secret);
   const limit=p.limit===undefined?20:Number(p.limit),offset=p.offset===undefined?0:Number(p.offset);
@@ -117,4 +140,4 @@ else if(action==='state'||action==='projector-state'){
   requireTrue(spectator?validSpectator:isHost||player,'Join first, or sign in as host.');if(s.stage==='question'&&s.seconds>0&&now>=s.closesAt){await settle(tx,s);modified=true;}let questionText='';if(s.questionIndex>=0&&s.stage!=='finished'){const seq=sequence(s);const prompts=await tx`select prompt from rankriot_questions where game=${seq.game} and question_index=${seq.index}`;questionText=prompts[0]?.prompt||'Missing question';}result=snapshot(s,Boolean(isHost),player,now,questionText);}
 else fail('Unsupported action.');
 if(modified)await tx`update rankriot_rooms set state=${tx.json(s)},updated_at=now() where pin=${pin}`;return result;});}
-Deno.serve(async req=>{if(req.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});if(req.method!=='POST')return respond('Use POST',405);try{const p=await req.json();requireTrue(p&&typeof p==='object'&&!Array.isArray(p),'Invalid request.');const action=clean(p.action);requireTrue(['ping','setup','create','join','vote','advance','state','history','result','fame','projector-access','projector-state'].includes(action),'Unsupported action.');return respond(await perform(action,p));}catch(e){const message=e instanceof Error?e.message:String(e);console.error('Rank Riot request error',message);return respond(message,/(invalid|not found|already|cannot|closed|required|choose|select|join|taken|start|host|full|unknown|missing|expired)/i.test(message)?400:500);}});
+Deno.serve(async req=>{if(req.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});if(req.method!=='POST')return respond('Use POST',405);try{const p=await req.json();requireTrue(p&&typeof p==='object'&&!Array.isArray(p),'Invalid request.');const action=clean(p.action);requireTrue(['ping','setup','create','join','vote','advance','state','history','result','fame','public-results','public-result','projector-access','projector-state'].includes(action),'Unsupported action.');return respond(await perform(action,p));}catch(e){const message=e instanceof Error?e.message:String(e);console.error('Rank Riot request error',message);return respond(message,/(invalid|not found|already|cannot|closed|required|choose|select|join|taken|start|host|full|unknown|missing|expired)/i.test(message)?400:500);}});
