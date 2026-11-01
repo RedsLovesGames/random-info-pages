@@ -233,6 +233,25 @@ test('Hall of Fame allows public read-only access, rankings, and filters',()=>{
   assert.match(app,/id="fameSort"/);
   assert.match(css,/\.fame-podium/);
 });
+test('Hall of Fame includes public match-by-match questions, votes, leaderboards and awards',()=>{
+  const publicList=edge.slice(edge.indexOf("if(action==='public-results')"),edge.indexOf("if(action==='history')"));
+  assert.match(publicList,/if\(action==='public-results'\)/);
+  assert.match(publicList,/if\(action==='public-result'\)/);
+  assert.doesNotMatch(publicList,/await authorize/);
+  assert.match(publicList,/finished_at>=\$\{since\}::timestamptz/);
+  assert.match(publicList,/rounds:row\.rounds,awards:/);
+  assert.match(edge,/if\(action==='history'\)\{return sql\.begin\(async\(tx:any\)=>\{\s*await authorize/);
+  assert.match(edge,/if\(action==='result'\)\{return sql\.begin\(async\(tx:any\)=>\{\s*await authorize/);
+  assert.match(app,/function publicGamesView\(\)/);
+  assert.match(app,/function publicGameDetailView\(\)/);
+  assert.match(app,/rpc\('public-results',\{limit:20,offset:0\}\)/);
+  assert.match(app,/rpc\('public-result',\{pin\}\)/);
+  assert.match(app,/id="publicQuestionJump"/);
+  assert.match(app,/answerPlacements\(round\)/);
+  assert.match(app,/postgameAwardsPanel\(r\.awards\)/);
+  assert.match(app,/scoresBoard\(r\.leaderboard\|\|\[\]\)/);
+  assert.match(app,/case 'public-open-result'/);
+});
 test('Hall of Fame reset excludes old matches without deleting history',()=>{
   assert.match(edge,/key='hall_of_fame_since'/);
   assert.match(edge,/h\.finished_at>=\$\{since\}::timestamptz/);
