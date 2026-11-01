@@ -51,7 +51,6 @@ if(seq&&s.stage!=='finished'){result.game=seq.game;result.number=seq.index+1;res
 if(s.stage==='finished'){result.byGame={alex:scoreboard(s.byGame.alex),doron:scoreboard(s.byGame.doron)};result.awards=s.awards?.cards?s.awards:buildAwards(s.history||[],s.scores,s.mode);}return result;}
 async function perform(action:string,p:any){if(action==='ping'){const rows=await sql`select (select count(*)::int from rankriot_questions) as questions, (select count(*)::int from rankriot_answers) as answers`;return {connected:true,provider:'Supabase',questions:rows[0].questions,answers:rows[0].answers};}
 if(action==='fame'){return sql.begin(async(tx:any)=>{
-  await authorize(tx,p.secret);
   const cutoff=await tx`select value from rankriot_config where key='hall_of_fame_since'`;
   const since=cutoff[0]?.value||'1970-01-01T00:00:00Z';
   const games=await tx`select count(*)::int as count from rankriot_results where finished_at>=${since}::timestamptz`;
