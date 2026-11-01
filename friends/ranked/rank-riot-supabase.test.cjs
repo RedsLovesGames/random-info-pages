@@ -391,12 +391,14 @@ test('Offline lab stages, mocked snapshots and voting simulation work',async()=>
   assert.equal(instance.open,false);
   assert.ok(renderCount>3);
 });
-test('TEST lab uses current seven-answer Alex roster including Ethan and six-answer Doron roster',()=>{
+test('TEST lab uses seven-answer Alex and Doron rosters including Ethan',()=>{
   const lab=fs.readFileSync(path.join(dir,'test-lab.js'),'utf8');
   assert.match(lab,/const authors=isDoron\?/);
   assert.match(lab,/\['Tommy','Doron','Alex','Nora','Jack','Mike','Ethan'\]/);
-  assert.match(lab,/\['Tommy','Alex','Nora','Jack','Mike','Rita'\]/);
-  assert.match(lab,/Seven Alex responses including Ethan; six Doron responses/);
+  assert.match(lab,/\['Tommy','Alex','Nora','Jack','Mike','Rita','Ethan'\]/);
+  assert.match(lab,/Seven answers in both games, including Ethan/);
+  assert.match(lab,/const doronAnswers=/);
+  assert.match(lab,/A raisin/);
   assert.match(lab,/podium-bottom-four/);
 });
 test('Voting shows seven Alex answers on mobile and visibly counts all options',()=>{
