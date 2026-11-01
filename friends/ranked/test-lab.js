@@ -14,7 +14,7 @@
       'A disco ball in a chemistry lab',
       'Lemon'
     ];
-    const doronAnswers=['Epstein aviators','The pillory','A textbook','Pipe bomb','Banana','Jeffrey Dahmer’s Glasses','A raisin'];
+    const doronAnswers=['Epstein aviators','The pillory','A textbook','Pipe bomb','Jeffrey Dahmer’s Glasses','Banana','A raisin'];
     const awards={complete:true,cards:[
       {id:'crowd-favorite',title:'Crowd Favorite',winner:'Doron',stat:'5 first-place votes',answer:answers[1],detail:'Most first-place votes for a single answer.',question:'Which object has Alex energy?',game:'alex',number:1},
       {id:'top-answer',title:'Biggest Hit',winner:'Tommy',stat:'14 points',answer:answers[0],detail:'Highest-scoring individual answer.',question:'Which object has Alex energy?',game:'alex',number:1},
