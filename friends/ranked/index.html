@@ -39,14 +39,14 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
 @media(max-width:600px){.round-scroll-toolbar .tiny{width:100%}.history-round-scroll{padding:3px 7px 10px 3px;max-height:68vh}.ranked-answer{grid-template-columns:40px minmax(0,1fr);gap:8px;padding:11px}.answer-rank-badge{width:38px;height:38px;font-size:1.05rem}.ranked-answer-stats{grid-column:2;display:flex;flex-wrap:wrap;align-items:baseline;gap:9px;text-align:left}.ranked-answer-stats strong{font-size:1.14rem}.history-question{padding:16px 12px}}
 
 /* Rank Riot stage production and selection feedback */
-#app>section{animation:stageIn .37s cubic-bezier(.16,1,.3,1) both}
+#app>section{animation:none}
 @keyframes stageIn{from{opacity:0;transform:translateY(20px) scale(.985)}to{opacity:1;transform:none}}
-.answer.selected{animation:selectionBounce .28s cubic-bezier(.2,1.7,.35,1) both;box-shadow:0 0 0 4px #ffffff65,0 12px 28px #0007}
+.answer.selected{animation:none;box-shadow:0 0 0 3px #ffffff7d,0 8px 20px #0005}
 @keyframes selectionBounce{0%{transform:scale(.94)}65%{transform:scale(1.07)}100%{transform:scale(1.015)}}
 .rank-tray{margin-top:22px;background:#201a3a;border:1px solid var(--stroke);border-radius:18px;padding:16px}
 .rank-tray-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
 .rank-tray-slot{display:flex;align-items:center;gap:10px;min-width:0;background:#131029;border:1px dashed #ffffff55;border-radius:12px;padding:11px;min-height:58px}
-.rank-tray-slot.filled{border:1px solid var(--green);background:#30402a;animation:trayFill .22s ease-out both}
+.rank-tray-slot.filled{border:1px solid var(--green);background:#30402a;animation:none}
 @keyframes trayFill{from{transform:translateY(7px);opacity:.4}to{transform:none;opacity:1}}
 .slot-medal{flex:none;font:700 .75rem var(--mono);color:var(--green)}
 .slot-answer{font-size:.82rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -438,6 +438,26 @@ body.tv-mode #app{width:100%;min-height:100vh}
     const tally=s.stage==='reveal'?`<span class="points">${o.tally.sum} pts · ${o.tally.first} gold</span><span class="author">${esc(o.author)}</span>`:'';
     return `<button type="button" class="answer ${canVote?'clickable':''} ${o.mine&&isPlayer?'mine':''} ${rank>=0?'selected':''}" data-action="pick" data-id="${esc(o.id)}" ${canVote?'':'disabled'}>${s.stage==='reveal'?`<span class="win">${i+1}</span>`:''}<span>${esc(o.text)}</span>${ranking}${tally}<span class="number">${o.mine&&isPlayer?'YOUR ANSWER':'ANSWER '+(i+1)}</span></button>`;
   }).join('')}</div>`;}
+  function refreshRankSelection(){
+    const s=state.snapshot;if(!s||s.stage!=='question')return;
+    const cards=app.querySelectorAll('.answer-grid .answer');
+    cards.forEach(card=>{
+      const place=state.rank.indexOf(card.dataset.id);
+      card.classList.toggle('selected',place>=0);
+      const badge=card.querySelector('.rank');
+      if(place<0){badge?.remove();return;}
+      if(badge){badge.textContent=['1ST','2ND','3RD'][place]+' ★';return;}
+      const span=document.createElement('span');span.className='rank';span.textContent=['1ST','2ND','3RD'][place]+' ★';card.appendChild(span);
+    });
+    const footer=app.querySelector('.vote-footer');
+    const tray=app.querySelector('.rank-tray');
+    if(!footer||!tray)return;
+    const t=document.createElement('template');t.innerHTML=rankingFooter(s);
+    const updatedTray=t.content.querySelector('.rank-tray');
+    const updatedFooter=t.content.querySelector('.vote-footer');
+    if(updatedTray)tray.replaceChildren(...updatedTray.childNodes);
+    if(updatedFooter)footer.replaceChildren(...updatedFooter.childNodes);
+  }
   function rankingFooter(s){return `<div class="rank-tray" role="status" aria-live="polite"><div class="eyebrow">YOUR TOP THREE</div><div class="rank-tray-grid">${[0,1,2].map(i=>{const selected=s.options.find(o=>o.id===state.rank[i]);return `<div class="rank-tray-slot ${selected?'filled':''}"><span class="slot-medal">${['1ST','2ND','3RD'][i]}</span><span class="slot-answer">${selected?esc(selected.text):'Choose an answer'}</span></div>`;}).join('')}</div></div><div class="vote-footer"><div><div class="eyebrow">YOUR RANKINGS</div><div class="tiny">${state.rank.length}/3 selected · ${state.rank.length===3?'Ready to submit':'Tap any three answers in order'}</div></div>${button(s.voted?'VOTE LOCKED ✓':'LOCK IN MY TOP 3 ↗','vote','btn',`id="voteButton" ${state.rank.length!==3||s.voted?'disabled':''}`)}</div>`;}
   function question(s){return `<section class="shell"><div class="meta-row"><span class="eyebrow">LIVE ROUND / ${esc(s.game.toUpperCase())}</span><span class="pill" id="voteCount">${s.voteCount}/${s.players.length} votes received</span></div><h1 class="round-title">${esc(s.question)}</h1>${timer(s)}<div class="answer-count-strip"><strong>${s.options.length} ANSWERS</strong><span>Choose your top three · scroll to see all options ↓</span></div>${answerCards(s)}${state.view==='player'?(s.voted?`<div class="panel center" style="margin-top:20px"><div class="flair">✓</div><h2>VOTE RECEIVED</h2><p class="copy">Waiting for the results. You can’t change your selection after submitting.</p></div>`:rankingFooter(s)):`<div class="meta-row" style="margin-top:27px"><p class="tiny">Players are ranking their top three answers on their own phones.</p>${hostActions(s)}</div>`}</section>`;}
   function skipped(s){return `<section class="shell center narrow"><div class="eyebrow">${esc(s.game.toUpperCase())} / QUESTION ${s.number}</div><h1 class="subhead">Not enough answers</h1><p class="copy">This question has fewer than four assigned, nonempty responses. The round is not scored.</p>${state.view==='host'?hostActions(s):'<p class="tiny">Waiting for the host to continue.</p>'}</section>`;}
@@ -789,7 +809,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
       if(state.rank.includes(id))state.rank=state.rank.filter(n=>n!==id);
       else if(state.rank.length<3)state.rank.push(id);
       else{state.rank.shift();state.rank.push(id);}
-      const place=state.rank.indexOf(id);rankSound(place,place===-1);render();return;
+      const place=state.rank.indexOf(id);rankSound(place,place===-1);refreshRankSelection();return;
     }
     case 'vote':{
       if(state.rank.length!==3||state.snapshot?.voted)return;
