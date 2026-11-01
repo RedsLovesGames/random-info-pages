@@ -309,6 +309,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
  .answer-count-strip span{text-align:left}
 }
 @media(max-width:340px){.answer-grid{grid-template-columns:1fr}.answer-grid .answer:nth-child(7):last-child{grid-column:auto}}
+.fame-public-link{margin:20px 0 26px}.public-result-overview{margin-top:22px}.public-result-overview h2{margin:12px 0;font-size:clamp(1.5rem,3vw,2.4rem)}.public-results-page .history-card{gap:18px}@media(max-width:600px){.public-results-page .history-card{flex-wrap:wrap}.fame-public-link .btn{width:100%}}
 </style>
 </head>
 <body>
@@ -343,7 +344,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
   const ENDPOINT = 'https://bpudsyyepiminpdxlquz.supabase.co/functions/v1/rank-riot';
   const displayPin=params.get('display')||'',displayKey=params.get('viewer')||'';
   const state = {view:'home',secret:storage.getItem('rank-riot-host-key') || '',pin:displayPin||params.get('pin') || '',viewerKey:displayKey,projectorError:'',
-    playerKey:'',name:'',snapshot:null,setup:null,rank:[],requesting:false,loading:false,lastStage:'',sound:storage.getItem('rank-riot-sound') !== 'off',networkError:false,historyData:null,savedResult:null,fame:null,fameGame:'all',fameSort:'points',overtakes:new Set(),lastBoardOrder:null,musicEnabled:storage.getItem('rank-riot-spooky-music')!=='off',musicVolume:Number(storage.getItem('rank-riot-spooky-volume')||32)/100};
+    playerKey:'',name:'',snapshot:null,setup:null,rank:[],requesting:false,loading:false,lastStage:'',sound:storage.getItem('rank-riot-sound') !== 'off',networkError:false,historyData:null,savedResult:null,fame:null,fameGame:'all',fameSort:'points',publicGames:null,publicResult:null,overtakes:new Set(),lastBoardOrder:null,musicEnabled:storage.getItem('rank-riot-spooky-music')!=='off',musicVolume:Number(storage.getItem('rank-riot-spooky-volume')||32)/100};
   let testLab=null;
   if(state.pin && !/^\d{6}$/.test(state.pin)) state.pin='';
   if(state.pin) state.view='join';
@@ -574,7 +575,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
     const medals=['★','✦','◆'];
     return `<section class="shell fame-shell">
       <div class="meta-row"><div>${header('ANSWER HALL OF FAME','LIFETIME LEGENDARY RESPONSES')}</div>${button('← BACK','view-home','btn ghost small')}</div>
-      <p class="copy">The most successful responses from completed Rank Riot games, ranked by earned points. Self-votes never count. Results and first-place votes accumulate across games.</p>
+      <p class="copy">The most successful responses from completed Rank Riot games, ranked by earned points. Self-votes never count. Results and first-place votes accumulate across games.</p><div class="fame-public-link">${button('BROWSE ALL QUESTIONS, RESULTS & AWARDS ↗','public-games','btn alt')}</div>
       <div class="fame-controls"><div class="field"><label for="fameFilter">Questions about</label><select id="fameFilter"><option value="all" ${state.fameGame==='all'?'selected':''}>Both games</option><option value="alex" ${state.fameGame==='alex'?'selected':''}>Alex</option><option value="doron" ${state.fameGame==='doron'?'selected':''}>Doron</option></select></div>
         <div class="field"><label for="fameSort">Rank by</label><select id="fameSort"><option value="points" ${state.fameSort==='points'?'selected':''}>Total points</option><option value="first" ${state.fameSort==='first'?'selected':''}>First-place votes</option><option value="average" ${state.fameSort==='average'?'selected':''}>Average points per appearance</option></select></div>
         <div class="fame-counter"><strong>${winners.length}</strong><span>ENTRIES · ${data.savedGames} COMPLETED GAMES</span></div>
@@ -592,6 +593,42 @@ body.tv-mode #app{width:100%;min-height:100vh}
             <div class="fame-entry-total"><strong>${state.fameSort==='average'?(e.points/Math.max(1,e.appearances)).toFixed(2):value(e)}</strong><span>${state.fameSort==='first'?'1ST VOTES':state.fameSort==='average'?'AVG PTS':'POINTS'}</span><span class="tiny">${e.first_votes} gold · ${e.points} total pts</span></div>
           </article>`).join('')}
         </div>`:'<div class="empty">No answer rankings have been saved yet. Complete a match to populate the Hall of Fame.</div>'}
+    </section>`;
+  }
+  function publicGamesView(){
+    const data=state.publicGames||{games:[],hasMore:false};
+    return `<section class="shell public-results-page">
+      <div class="meta-row"><div>${header('Hall of Fame / Games','PUBLIC QUESTION ARCHIVE')}</div>${button('← HALL OF FAME','fame','btn ghost small')}</div>
+      <p class="copy">Explore each completed match since the Hall of Fame reset. Open a game for every recorded question, ranked answers, first/second/third votes, total points, leaderboards and postgame awards.</p>
+      <div class="history-list">${data.games.length?data.games.map(g=>`<article class="history-card"><div><div class="eyebrow">${esc(g.mode.toUpperCase())} · MATCH ${esc(g.pin)}</div><h2>${esc(g.winner?.name||'No winner')} · ${esc(g.winner?.sum||0)} points</h2><p class="tiny">${esc(niceDate(g.finishedAt))} · ${esc(g.playerCount)} players · ${esc(g.roundsRecorded)} recorded rounds</p></div>${button('VIEW ALL RESULTS ↗','public-open-result','btn alt small',`data-pin="${esc(g.pin)}"`)}</article>`).join(''):'<div class="empty">No games have been completed since the Hall of Fame reset. Once one finishes, its question rankings, leaderboard and awards will appear here.</div>'}</div>
+      ${data.hasMore?`<div class="center" style="margin-top:24px">${button('LOAD MORE GAMES','public-more','btn ghost')}</div>`:''}
+    </section>`;
+  }
+  function publicGameDetailView(){
+    const r=state.publicResult;
+    if(!r)return `<section class="shell"><h2>Loading match results…</h2></section>`;
+    const rounds=Array.isArray(r.rounds)?r.rounds:[];
+    return `<section class="shell public-results-page">
+      <div class="meta-row"><div>${header('Match '+esc(r.pin),'HALL OF FAME / '+esc(r.mode.toUpperCase()))}</div>${button('← ALL GAMES','public-games','btn ghost small')}</div>
+      <div class="panel public-result-overview"><div class="eyebrow">COMPLETED ${esc(niceDate(r.finishedAt))}</div>
+        <h2>${esc(r.leaderboard?.[0]?.name||'No winner')} · ${esc(r.leaderboard?.[0]?.sum||0)} points</h2>
+        <p class="tiny">${(r.players||[]).map(esc).join(', ')} · ${rounds.length} recorded questions</p></div>
+      <h2 class="subhead" style="margin-top:36px">Final leaderboard</h2>${scoresBoard(r.leaderboard||[])}
+      ${r.mode==='both'?`<div class="two-col" style="margin-top:25px"><div class="panel"><h2>Alex leaderboard</h2>${scoresBoard(r.byGame?.alex||[])}</div><div class="panel"><h2>Doron leaderboard</h2>${scoresBoard(r.byGame?.doron||[])}</div></div>`:''}
+      ${postgameAwardsPanel(r.awards)}
+      <h2 class="subhead" style="margin-top:38px">All questions and answers</h2>
+      <p class="copy">Every answer is listed by its question rank, author, total points, and first-, second-, and third-place votes. Individual voters are not identified.</p>
+      ${rounds.length?`<div class="round-scroll-toolbar"><label for="publicQuestionJump">JUMP TO QUESTION</label><select id="publicQuestionJump">${rounds.map((round,i)=>`<option value="${i}">${esc(round.game.toUpperCase())} Q${esc(round.number)} · ${esc(round.question||'Question')}</option>`).join('')}</select><span class="tiny">${rounds.length} rounds saved</span></div>
+        <div class="history-rounds history-round-scroll" id="publicQuestionScroll" role="region" tabindex="0" aria-label="Scrollable public question rankings">
+        ${rounds.map((round,i)=>`<article class="history-question" id="public-round-${i}">
+          <div class="meta-row"><span class="eyebrow">${esc(round.game.toUpperCase())} · QUESTION ${esc(round.number)}</span><span class="pill">${round.status==='skipped'?'SKIPPED':esc(round.votes)+' VOTES'}</span></div>
+          <h3>${esc(round.question||'Untitled question')}</h3>
+          ${round.status==='skipped'?'<p class="tiny">Question skipped. No scored votes.</p>':`<ol class="ranked-answer-list">${answerPlacements(round).map(opt=>`<li class="ranked-answer ${opt.rank===1?'first-answer':''}">
+            <span class="answer-rank-badge">#${opt.rank}</span>
+            <div class="ranked-answer-copy"><strong>${esc(opt.answer)}</strong><span class="tiny">By ${esc(opt.author)}</span></div>
+            <div class="ranked-answer-stats"><strong>${esc(opt.sum)} <small>PTS</small></strong><span class="tiny">${esc(opt.first)} first · ${esc(opt.second)} second · ${esc(opt.third)} third</span></div>
+          </li>`).join('')}</ol>`}
+        </article>`).join('')}</div>`:'<div class="empty">This older match has no recorded question-level results. Its final standings are available above.</div>'}
     </section>`;
   }
   function historyView(){
@@ -662,7 +699,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
       state.savedResult=old.savedResult;state.fame=old.fame;state.historyData=old.historyData;
     }
   }
-  function render(){spookyMusic.setPhase(testLab?.open?'lobby':state.snapshot?.stage||'home');document.body.classList.toggle('tv-mode',!testLab?.open&&state.view==='projector');$('#testToggle').setAttribute('aria-pressed',String(Boolean(testLab?.open)));if(testLab?.open)app.innerHTML=testLab.view();else if(state.view==='home')app.innerHTML=home();else if(state.view==='setup')app.innerHTML=setupView();else if(state.view==='join')app.innerHTML=joinView();else if(state.view==='history')app.innerHTML=historyView();else if(state.view==='saved-result')app.innerHTML=resultView();else if(state.view==='fame')app.innerHTML=fameView();else if(state.view==='projector')app.innerHTML=tvView();else app.innerHTML=gameView();updateTimer();animateScoreCounters();}
+  function render(){spookyMusic.setPhase(testLab?.open?'lobby':state.snapshot?.stage||'home');document.body.classList.toggle('tv-mode',!testLab?.open&&state.view==='projector');$('#testToggle').setAttribute('aria-pressed',String(Boolean(testLab?.open)));if(testLab?.open)app.innerHTML=testLab.view();else if(state.view==='home')app.innerHTML=home();else if(state.view==='setup')app.innerHTML=setupView();else if(state.view==='join')app.innerHTML=joinView();else if(state.view==='history')app.innerHTML=historyView();else if(state.view==='saved-result')app.innerHTML=resultView();else if(state.view==='fame')app.innerHTML=fameView();else if(state.view==='public-games')app.innerHTML=publicGamesView();else if(state.view==='public-result')app.innerHTML=publicGameDetailView();else if(state.view==='projector')app.innerHTML=tvView();else app.innerHTML=gameView();updateTimer();animateScoreCounters();}
   function animateScoreCounters(){
     const nodes=app.querySelectorAll('.animated-score');if(!nodes.length)return;
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
@@ -707,6 +744,20 @@ body.tv-mode #app{width:100%;min-height:100vh}
     case 'fame':{
       state.fame=await rpc('fame',{});
       state.view='fame';render();return;
+    }
+    case 'public-games':{
+      state.publicGames=await rpc('public-results',{limit:20,offset:0});state.view='public-games';render();return;
+    }
+    case 'public-more':{
+      if(!state.publicGames?.hasMore)return;
+      const more=await rpc('public-results',{limit:20,offset:state.publicGames.nextOffset});
+      state.publicGames={games:[...state.publicGames.games,...more.games],hasMore:more.hasMore,nextOffset:more.nextOffset};
+      render();return;
+    }
+    case 'public-open-result':{
+      const pin=target.dataset.pin;
+      if(!/^\\d{6}$/.test(pin))throw new Error('Invalid match PIN.');
+      state.publicResult=await rpc('public-result',{pin});state.view='public-result';render();return;
     }
     case 'history':{
       const secret=fieldValue('hostPass')||state.secret;
@@ -833,6 +884,10 @@ body.tv-mode #app{width:100%;min-height:100vh}
     if(testLab?.open){testLab.change(event);return;}
     if(event.target?.id==='fameFilter'){state.fameGame=event.target.value;render();return;}
     if(event.target?.id==='fameSort'){state.fameSort=event.target.value;render();return;}
+    if(event.target?.id==='publicQuestionJump'){
+      const i=Number(event.target.value);const el=document.getElementById('public-round-'+i);
+      if(Number.isInteger(i)&&el)el.scrollIntoView({behavior:'smooth',block:'start'});return;
+    }
     if(event.target?.id!=='savedQuestionJump')return;
     const index=Number(event.target.value);
     if(!Number.isInteger(index))return;
