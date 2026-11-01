@@ -421,6 +421,17 @@ test('Seven-answer Alex rounds have four lower podiums and mobile wrapping',()=>
   assert.match(html,/podium-bottom-four/);
   assert.match(html,/>#7</);
 });
+test('Rank selection updates in place without flashing or replaying entrance animation',()=>{
+  assert.match(app,/function refreshRankSelection\(\)/);
+  assert.match(app,/refreshRankSelection\(\);return;/);
+  assert.match(app,/card\.classList\.toggle\('selected',place>=0\)/);
+  assert.match(app,/tray\.replaceChildren/);
+  assert.match(app,/footer\.replaceChildren/);
+  assert.match(css,/\.answer\.selected\{animation:none/);
+  assert.match(css,/\.rank-tray-slot\.filled\{[^}]*animation:none/);
+  assert.match(css,/#app>section\{animation:none\}/);
+  assert.doesNotMatch(app,/rankSound\(place,place===-1\);render\(\)/);
+});
 test('Original mobile game structure and styling remain intact',()=>{
   assert.match(html,/id="app"/);assert.match(html,/id="connectionStatus"/);
   assert.match(css,/\.answer-grid/);assert.match(css,/@media/);
