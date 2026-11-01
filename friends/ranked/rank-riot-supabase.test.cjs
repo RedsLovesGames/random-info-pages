@@ -220,9 +220,11 @@ test('Rank selection audio and game-show visual FX use accessible reduced-motion
   assert.match(app,/function animateScoreCounters\(\)/);
   assert.match(app,/podium-champion/);
 });
-test('Hall of Fame uses archived answers with host authorization, rankings, and filters',()=>{
+test('Hall of Fame allows public read-only access, rankings, and filters',()=>{
   assert.match(edge,/if\(action==='fame'\)/);
-  assert.match(edge,/await authorize\(tx,p\.secret\)/);
+  const publicAction=edge.slice(edge.indexOf("if(action==='fame')"),edge.indexOf("if(action==='history')"));
+  assert.doesNotMatch(publicAction,/await authorize/);
+  assert.match(app,/rpc\('fame',\{\}\)/);
   assert.match(edge,/jsonb_array_elements\(h\.rounds\)/);
   assert.match(edge,/sum\(\(a\.item->>'sum'\)::int\)/);
   assert.match(app,/function fameView\(\)/);
