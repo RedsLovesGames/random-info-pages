@@ -4,7 +4,7 @@
   root.RankRiotTestLab=function(api){
     const stages=['lobby','question','reveal','leaderboard','finished','skipped','archive','history','fame'];
     const stagesLabel=['Lobby / join PIN','Rank three answers','Answer reveal / FX','Leaderboard / overtakes','Winner + postgame awards','Skipped question','Saved match + answer ranks','Past game archive','Answer Hall of Fame'];
-    const names=['Tommy','Alex','Doron','Jack','Mike','Nora'];
+    const names=['Tommy','Alex','Doron','Jack','Mike','Nora','Ethan'];
     const answers=[
       'An alarm clock that argues back',
       'A shopping cart with a jet engine',
@@ -14,6 +14,7 @@
       'A disco ball in a chemistry lab',
       'Lemon'
     ];
+    const doronAnswers=['Epstein aviators','The pillory','A textbook','Pipe bomb','Banana','Jeffrey Dahmer’s Glasses','A raisin'];
     const awards={complete:true,cards:[
       {id:'crowd-favorite',title:'Crowd Favorite',winner:'Doron',stat:'5 first-place votes',answer:answers[1],detail:'Most first-place votes for a single answer.',question:'Which object has Alex energy?',game:'alex',number:1},
       {id:'top-answer',title:'Biggest Hit',winner:'Tommy',stat:'14 points',answer:answers[0],detail:'Highest-scoring individual answer.',question:'Which object has Alex energy?',game:'alex',number:1},
@@ -33,14 +34,14 @@
     }
     function options(){
       const isDoron=t.mode==='doron';
-      const authors=isDoron?['Tommy','Alex','Nora','Jack','Mike','Rita']:['Tommy','Doron','Alex','Nora','Jack','Mike','Ethan'];
-      const text=isDoron?answers.slice(0,6):answers;
+      const authors=isDoron?['Tommy','Alex','Nora','Jack','Mike','Rita','Ethan']:['Tommy','Doron','Alex','Nora','Jack','Mike','Ethan'];
+      const text=isDoron?doronAnswers:answers;
       return text.map((answer,i)=>({id:'demo-'+i,text:answer,author:authors[i],mine:i===0,
         tally:{sum:[14,12,9,7,3,0,2][i],first:[4,3,1,1,0,0,0][i],second:[1,1,2,1,1,0,1][i],third:[0,1,2,2,1,0,0][i]}}));
     }
     function snapshot(){
       return {pin:'246810',mode:t.mode,stage:t.scene,game:t.mode==='doron'?'doron':'alex',number:1,questionIndex:0,count:t.mode==='both'?50:25,
-        question:'If Alex were an inanimate object, which one would he be?',options:options(),players:names,seconds:t.timer,
+        question:t.mode==='doron'?'What inanimate object has the same energy as Doron?':'If Alex were an inanimate object, which one would he be?',options:options(),players:names,seconds:t.timer,
         openedAt:Date.now(),closesAt:t.timer?Date.now()+t.timer*1000:0,voteCount:t.locked?6:4,
         voted:t.locked,picks:[...t.picks],viewer:'Tommy',leaderboard:scores(),
         byGame:{alex:scores(),doron:scores().map(p=>({...p,sum:Math.max(0,p.sum-18)}))},awards};
@@ -68,10 +69,10 @@
     function checks(){
       const result=[];
       const check=(label,fn)=>{try{result.push({label,ok:Boolean(fn())})}catch{result.push({label,ok:false})}};
-      check('Seven Alex responses including Ethan; six Doron responses',()=>{
+      check('Seven answers in both games, including Ethan',()=>{
         const initial=t.mode;
         try{t.mode='alex';const alex=options();t.mode='doron';const doron=options();
-          return alex.length===7&&alex.some(o=>o.author==='Ethan'&&o.text==='Lemon')&&doron.length===6;
+          return alex.length===7&&alex.some(o=>o.author==='Ethan'&&o.text==='Lemon')&&doron.length===7&&doron.some(o=>o.author==='Ethan'&&o.text==='A raisin');
         }finally{t.mode=initial}
       });
       check('Self-votes marked unavailable',()=>options().filter(o=>o.mine).length===1);
