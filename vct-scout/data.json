@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-03T17:02:16+00:00",
+  "generated_at": "2026-11-04T01:20:35+00:00",
   "window_start": "2026-07-01",
-  "window_end": "2026-11-03",
+  "window_end": "2026-11-04",
   "status": "live",
   "source_note": "Public VLR match data, filtered to 2026 top-level VCT events. Team-side map observations are used for composition and agent rates.",
   "map_pool": [
