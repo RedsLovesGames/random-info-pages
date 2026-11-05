@@ -96,6 +96,37 @@ a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}button:di
 @media(max-width:850px){.fame-podium{grid-template-columns:1fr}.fame-featured{min-height:130px}.fame-controls{grid-template-columns:1fr 1fr}.fame-counter{grid-column:1/-1;text-align:left}}
 @media(max-width:550px){.fame-controls{grid-template-columns:1fr}.fame-counter{grid-column:1}.fame-entry{grid-template-columns:40px minmax(0,1fr);gap:9px;padding:12px}.fame-entry-total{grid-column:2;text-align:left;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}}
 
+
+/* Cumulative leaderboard of answer authors, separate from the per-answer Hall of Fame. */
+.player-board{margin:34px 0 44px}
+.player-board-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:18px}
+.player-board-head .field{min-width:205px}
+.player-board-head select{font-size:.9rem}
+.player-board-totals{display:flex;gap:18px;flex-wrap:wrap;margin:19px 0 24px}
+.player-board-total{display:grid;gap:4px;padding:12px 18px;background:#282043;border:1px solid var(--stroke);border-radius:13px}
+.player-board-total strong{color:var(--green);font:700 1.65rem var(--mono);font-variant-numeric:tabular-nums}
+.player-board-total span{font:.73rem var(--mono);color:var(--muted)}
+.player-board-list{display:grid;gap:14px}
+.player-board-card{min-width:0;padding:19px 22px;border:1px solid var(--stroke);background:linear-gradient(125deg,#2b234d,#201a3c);border-radius:19px}
+.player-board-card:first-child{border-color:#b8d65f9c;background:linear-gradient(125deg,#35402d,#221b40)}
+.player-board-top{display:grid;grid-template-columns:50px minmax(110px,1fr) minmax(115px,auto) minmax(100px,auto);align-items:center;gap:14px}
+.player-board-place{font:700 1.75rem var(--mono);color:var(--green)}
+.player-board-name{font-size:clamp(1.18rem,2.3vw,1.6rem);overflow-wrap:anywhere}
+.player-board-points{display:grid;gap:2px;text-align:right}
+.player-board-points strong{font:700 clamp(1.22rem,2.5vw,1.8rem) var(--mono);font-variant-numeric:tabular-nums}
+.player-board-points.adjusted strong{color:var(--green)}
+.player-board-points span{font:.65rem var(--mono);color:var(--muted);letter-spacing:.055em}
+.player-board-stats{display:flex;gap:8px 18px;flex-wrap:wrap;margin:14px 0 0;font:.72rem/1.6 var(--mono);color:var(--muted)}
+.player-board-stats b{color:var(--text)}
+.player-board-best{display:grid;gap:8px;margin-top:17px;padding-top:14px;border-top:1px solid var(--stroke)}
+.player-board-best .eyebrow{font-size:.66rem}
+.player-board-best blockquote{margin:0;font-size:clamp(1rem,1.8vw,1.22rem);font-weight:700;line-height:1.42;overflow-wrap:anywhere}
+.player-board-best .tiny{overflow-wrap:anywhere}
+.player-board-games{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.player-board-games span{border:1px solid var(--stroke);border-radius:9px;padding:6px 9px;font:.69rem var(--mono);color:var(--muted)}
+.player-board-games b{color:var(--text)}
+@media(max-width:640px){.player-board-head{align-items:stretch}.player-board-head .field{width:100%}.player-board-total{flex:1 1 130px}.player-board-card{padding:15px}.player-board-top{grid-template-columns:33px minmax(0,1fr) auto;gap:9px}.player-board-points{grid-row:2;text-align:left}.player-board-points.adjusted{grid-column:2}.player-board-points.raw{grid-column:3}.player-board-place{font-size:1.2rem}.player-board-name{grid-column:2/-1}.player-board-stats{gap:7px 13px}}
+
 /* Additional game show visual atmosphere, ties, clutch moments, overtakes. */
 .ambient-orb{position:fixed;z-index:0;pointer-events:none;width:26vw;min-width:230px;aspect-ratio:1;border-radius:50%;filter:blur(110px);opacity:.18;animation:orbFloat 18s ease-in-out infinite alternate}
 .orb-one{top:15vh;left:-10vw;background:#ff6da9}
@@ -344,7 +375,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
   const ENDPOINT = 'https://bpudsyyepiminpdxlquz.supabase.co/functions/v1/rank-riot';
   const displayPin=params.get('display')||'',displayKey=params.get('viewer')||'';
   const state = {view:'home',secret:storage.getItem('rank-riot-host-key') || '',pin:displayPin||params.get('pin') || '',viewerKey:displayKey,projectorError:'',
-    playerKey:'',name:'',snapshot:null,setup:null,rank:[],requesting:false,loading:false,lastStage:'',sound:storage.getItem('rank-riot-sound') !== 'off',networkError:false,historyData:null,savedResult:null,fame:null,fameGame:'all',fameSort:'points',publicGames:null,publicResult:null,overtakes:new Set(),lastBoardOrder:null,musicEnabled:storage.getItem('rank-riot-spooky-music')!=='off',musicVolume:Number(storage.getItem('rank-riot-spooky-volume')||32)/100};
+    playerKey:'',name:'',snapshot:null,setup:null,rank:[],requesting:false,loading:false,lastStage:'',sound:storage.getItem('rank-riot-sound') !== 'off',networkError:false,historyData:null,savedResult:null,fame:null,fameGame:'all',fameSort:'points',playerFameSort:'adjusted',publicGames:null,publicResult:null,overtakes:new Set(),lastBoardOrder:null,musicEnabled:storage.getItem('rank-riot-spooky-music')!=='off',musicVolume:Number(storage.getItem('rank-riot-spooky-volume')||32)/100};
   let testLab=null;
   if(state.pin && !/^\d{6}$/.test(state.pin)) state.pin='';
   if(state.pin) state.view='join';
@@ -567,6 +598,22 @@ body.tv-mode #app{width:100%;min-height:100vh}
 
   function niceDate(date){const d=new Date(date);return Number.isNaN(d.getTime())?'Unknown date':d.toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});}
 
+  function playerFameView(data){
+    const people=Array.isArray(data.players)?[...data.players]:[];
+    const num=v=>Number(v)||0;
+    const format=v=>num(v).toLocaleString('en-US',{maximumFractionDigits:2});
+    const metric=p=>state.playerFameSort==='actual'?num(p.actual_points):state.playerFameSort==='gold'?num(p.first_votes):state.playerFameSort==='wins'?num(p.top_answers):state.playerFameSort==='average'?num(p.avg_adjusted_per_answer):num(p.adjusted_points);
+    const ranked=people.sort((a,b)=>metric(b)-metric(a)||num(b.adjusted_points)-num(a.adjusted_points)||String(a.author).localeCompare(String(b.author)));
+    const actualTotal=people.reduce((t,p)=>t+num(p.actual_points),0);
+    const adjustedTotal=people.reduce((t,p)=>t+num(p.adjusted_points),0);
+    const cards=ranked.map((p,i)=>{
+      const best=p.best_answer||null,by=p.by_game||{};
+      const breakdown=['alex','doron'].filter(game=>by[game]).map(game=>`<span>${esc(game.toUpperCase())} QUESTIONS · <b>${format(by[game].adjusted)} adjusted</b> / ${format(by[game].raw)} actual</span>`).join('');
+      const bestBlock=best?`<div class='player-board-best'><div class='eyebrow'>HIGHEST-SCORING ANSWER · ${esc(String(best.game||'').toUpperCase())} Q${Number(best.questionIndex)+1} · RANK #${esc(best.rank)}</div><blockquote>${esc(best.answer)}</blockquote><div class='tiny'>${esc(best.question||'')} · ${format(best.adjustedPoints)} adjusted / ${format(best.rawPoints)} actual points · ${esc(best.firstVotes)} first-place votes</div></div>`:'';
+      return `<article class='player-board-card'><div class='player-board-top'><span class='player-board-place'>#${i+1}</span><strong class='player-board-name'>${esc(p.author)}</strong><div class='player-board-points adjusted'><strong>${format(p.adjusted_points)}</strong><span>ADJUSTED POINTS</span></div><div class='player-board-points raw'><strong>${format(p.actual_points)}</strong><span>ACTUAL POINTS</span></div></div><div class='player-board-stats'><span><b>${esc(p.answer_count)}</b> answers</span><span><b>${esc(p.top_answers)}</b> top-ranked answers</span><span><b>${esc(p.first_votes)}</b> 1st-place votes</span><span><b>${format(p.avg_adjusted_per_answer)}</b> adjusted pts / answer</span><span><b>${esc(p.games)}</b> archived matches</span></div>${bestBlock}<div class='player-board-games'>${breakdown}</div></article>`;
+    }).join('');
+    return `<section class='player-board' aria-label='Cumulative player leaderboard'><div class='player-board-head'><div><div class='eyebrow'>ALL-TIME AUTHOR TOTALS</div><h2 class='subhead'>CUMULATIVE PLAYER LEADERBOARD.</h2></div><div class='field'><label for='playerFameSort'>Sort players by</label><select id='playerFameSort'><option value='adjusted' ${state.playerFameSort==='adjusted'?'selected':''}>Adjusted points</option><option value='actual' ${state.playerFameSort==='actual'?'selected':''}>Actual points</option><option value='wins' ${state.playerFameSort==='wins'?'selected':''}>Top-ranked answers</option><option value='gold' ${state.playerFameSort==='gold'?'selected':''}>First-place votes</option><option value='average' ${state.playerFameSort==='average'?'selected':''}>Average adjusted points</option></select></div></div><p class='copy'>Totals across archived scored answers since the Hall of Fame reset. Actual points are the recorded votes. The six-player match (PIN 143043) uses an 8/6 multiplier only for adjusted points; the vote counts and original results are unchanged.</p><div class='player-board-totals'><div class='player-board-total'><strong>${format(actualTotal)}</strong><span>ACTUAL POINTS</span></div><div class='player-board-total'><strong>${format(adjustedTotal)}</strong><span>ADJUSTED POINTS</span></div><div class='player-board-total'><strong>${people.length}</strong><span>ANSWER AUTHORS</span></div></div><div class='player-board-list'>${cards||'<div class="empty">Complete a match to build the player leaderboard.</div>'}</div></section>`;
+  }
   function fameView(){
     const data=state.fame||{savedGames:0,entries:[]};
     const filtered=data.entries.filter(e=>state.fameGame==='all'||e.game===state.fameGame);
@@ -580,6 +627,8 @@ body.tv-mode #app{width:100%;min-height:100vh}
     return `<section class="shell fame-shell">
       <div class="meta-row"><div>${header('ANSWER HALL OF FAME','LIFETIME LEGENDARY RESPONSES')}</div>${button('← BACK','view-home','btn ghost small')}</div>
       <p class="copy">The most successful responses from completed Rank Riot games, ranked by earned points. Self-votes never count. Results and first-place votes accumulate across games. The completed 6/8-player match is normalized to 8/8 for points (×1.333); raw scores and vote counts are preserved.</p><div class="fame-public-link">${button('BROWSE ALL QUESTIONS, RESULTS & AWARDS ↗','public-games','btn alt')}</div>
+      ${playerFameView(data)}
+      <h2 class="subhead" style="margin-top:42px">INDIVIDUAL ANSWER HALL OF FAME</h2>
       <div class="fame-controls"><div class="field"><label for="fameFilter">Questions about</label><select id="fameFilter"><option value="all" ${state.fameGame==='all'?'selected':''}>Both games</option><option value="alex" ${state.fameGame==='alex'?'selected':''}>Alex</option><option value="doron" ${state.fameGame==='doron'?'selected':''}>Doron</option></select></div>
         <div class="field"><label for="fameSort">Rank by</label><select id="fameSort"><option value="points" ${state.fameSort==='points'?'selected':''}>Total points</option><option value="first" ${state.fameSort==='first'?'selected':''}>First-place votes</option><option value="average" ${state.fameSort==='average'?'selected':''}>Average points per appearance</option></select></div>
         <div class="fame-counter"><strong>${winners.length}</strong><span>ENTRIES · ${data.savedGames} COMPLETED GAMES</span></div>
@@ -888,6 +937,7 @@ body.tv-mode #app{width:100%;min-height:100vh}
     if(testLab?.open){testLab.change(event);return;}
     if(event.target?.id==='fameFilter'){state.fameGame=event.target.value;render();return;}
     if(event.target?.id==='fameSort'){state.fameSort=event.target.value;render();return;}
+    if(event.target?.id==='playerFameSort'){state.playerFameSort=event.target.value;render();return;}
     if(event.target?.id==='publicQuestionJump'){
       const i=Number(event.target.value);const el=document.getElementById('public-round-'+i);
       if(Number.isInteger(i)&&el)el.scrollIntoView({behavior:'smooth',block:'start'});return;
