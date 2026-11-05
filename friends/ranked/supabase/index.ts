@@ -77,7 +77,47 @@ if(action==='fame'){return sql.begin(async(tx:any)=>{
     group by a.item->>'author',a.item->>'answer',r.item->>'game',r.item->>'questionIndex',r.item->>'question'
     order by adjusted_points desc,first_votes desc,appearances desc,author asc
     limit 100`;
-  return {savedGames:games[0].count,entries:rows};
+  // Aggregate scored answers across all archived games since the Hall of Fame reset.
+  // The 6/8 multiplier is limited to verified match 143043; raw results are never changed.
+  const players=await tx`
+    with scored as (
+      select h.pin, r.item->>'game' as game, (r.item->>'questionIndex')::int as question_index,
+             r.item->>'question' as question, a.item->>'author' as author, a.item->>'answer' as answer,
+             coalesce((a.item->>'sum')::numeric,0) as raw_points,
+             coalesce((a.item->>'first')::int,0) as first_votes,
+             coalesce((a.item->>'second')::int,0) as second_votes,
+             coalesce((a.item->>'third')::int,0) as third_votes,
+             coalesce((a.item->>'rank')::int,999) as answer_rank,
+             coalesce((a.item->>'sum')::numeric,0) *
+               case when h.pin='143043' and jsonb_array_length(h.players)=6 then 8.0/6.0 else 1 end as adjusted_points
+      from rankriot_results h
+      cross join lateral jsonb_array_elements(h.rounds) r(item)
+      cross join lateral jsonb_array_elements(coalesce(r.item->'results','[]'::jsonb)) a(item)
+      where h.finished_at>=${since}::timestamptz and r.item->>'status'='scored'
+    ), totals as (
+      select author, sum(raw_points)::int as actual_points, round(sum(adjusted_points),2) as adjusted_points,
+             count(*)::int as answer_count, sum(first_votes)::int as first_votes,
+             sum(second_votes)::int as second_votes, sum(third_votes)::int as third_votes,
+             count(*) filter(where answer_rank=1 and raw_points>0)::int as top_answers,
+             count(distinct pin)::int as games,
+             round(sum(adjusted_points)/nullif(count(*),0),2) as avg_adjusted_per_answer
+      from scored group by author
+    ), best as (
+      select distinct on(author) author,
+             jsonb_build_object('answer',answer,'question',question,'game',game,
+               'questionIndex',question_index,'rawPoints',raw_points::int,
+               'adjustedPoints',round(adjusted_points,2),'firstVotes',first_votes,'rank',answer_rank) as best_answer
+      from scored
+      order by author,adjusted_points desc,first_votes desc,raw_points desc,game asc,question_index asc
+    ), by_game as (
+      select author,jsonb_object_agg(game,jsonb_build_object('raw',raw_points,'adjusted',adjusted_points)) as by_game
+      from (select author,game,sum(raw_points)::int as raw_points,round(sum(adjusted_points),2) as adjusted_points
+            from scored group by author,game) g group by author
+    )
+    select t.*,best.best_answer,by_game.by_game from totals t
+    join best using(author) join by_game using(author)
+    order by t.adjusted_points desc,t.actual_points desc,t.first_votes desc,t.author asc`;
+  return {savedGames:games[0].count,entries:rows,players};
 });}
 if(action==='public-results'){return sql.begin(async(tx:any)=>{
   const cutoff=await tx`select value from rankriot_config where key='hall_of_fame_since'`;
