@@ -570,12 +570,16 @@ body.tv-mode #app{width:100%;min-height:100vh}
   function fameView(){
     const data=state.fame||{savedGames:0,entries:[]};
     const filtered=data.entries.filter(e=>state.fameGame==='all'||e.game===state.fameGame);
-    const value=e=>state.fameSort==='first'?e.first_votes:state.fameSort==='average'?(e.points/Math.max(e.appearances,1)):e.points;
-    const winners=[...filtered].sort((a,b)=>value(b)-value(a)||b.points-a.points||b.first_votes-a.first_votes||String(a.author).localeCompare(String(b.author)));
+    const adjustedPoints=e=>Number(e.adjusted_points??e.points);
+    const formatPoints=n=>Number.isInteger(n)?String(n):n.toFixed(1);
+    const value=e=>state.fameSort==='first'?e.first_votes:state.fameSort==='average'?(adjustedPoints(e)/Math.max(e.appearances,1)):adjustedPoints(e);
+    const displayValue=e=>state.fameSort==='average'?value(e).toFixed(2):formatPoints(value(e));
+    const pointDetail=e=>Math.abs(adjustedPoints(e)-Number(e.points))>0.00001?`${formatPoints(adjustedPoints(e))} adjusted pts · ${e.points} raw pts`:`${e.points} total pts`;
+    const winners=[...filtered].sort((a,b)=>value(b)-value(a)||adjustedPoints(b)-adjustedPoints(a)||b.first_votes-a.first_votes||String(a.author).localeCompare(String(b.author)));
     const medals=['★','✦','◆'];
     return `<section class="shell fame-shell">
       <div class="meta-row"><div>${header('ANSWER HALL OF FAME','LIFETIME LEGENDARY RESPONSES')}</div>${button('← BACK','view-home','btn ghost small')}</div>
-      <p class="copy">The most successful responses from completed Rank Riot games, ranked by earned points. Self-votes never count. Results and first-place votes accumulate across games.</p><div class="fame-public-link">${button('BROWSE ALL QUESTIONS, RESULTS & AWARDS ↗','public-games','btn alt')}</div>
+      <p class="copy">The most successful responses from completed Rank Riot games, ranked by earned points. Self-votes never count. Results and first-place votes accumulate across games. The completed 6/8-player match is normalized to 8/8 for points (×1.333); raw scores and vote counts are preserved.</p><div class="fame-public-link">${button('BROWSE ALL QUESTIONS, RESULTS & AWARDS ↗','public-games','btn alt')}</div>
       <div class="fame-controls"><div class="field"><label for="fameFilter">Questions about</label><select id="fameFilter"><option value="all" ${state.fameGame==='all'?'selected':''}>Both games</option><option value="alex" ${state.fameGame==='alex'?'selected':''}>Alex</option><option value="doron" ${state.fameGame==='doron'?'selected':''}>Doron</option></select></div>
         <div class="field"><label for="fameSort">Rank by</label><select id="fameSort"><option value="points" ${state.fameSort==='points'?'selected':''}>Total points</option><option value="first" ${state.fameSort==='first'?'selected':''}>First-place votes</option><option value="average" ${state.fameSort==='average'?'selected':''}>Average points per appearance</option></select></div>
         <div class="fame-counter"><strong>${winners.length}</strong><span>ENTRIES · ${data.savedGames} COMPLETED GAMES</span></div>
@@ -583,14 +587,14 @@ body.tv-mode #app{width:100%;min-height:100vh}
       ${winners.length?`
         <div class="fame-podium">${winners.slice(0,3).map((e,i)=>`<article class="fame-featured">
           <div class="fame-medal">${medals[i]}</div><div class="eyebrow">#${i+1} · ${esc(e.author)} · ${esc(e.game.toUpperCase())}</div>
-          <h2>${esc(e.answer)}</h2><div class="fame-feature-score">${state.fameSort==='average'?(e.points/Math.max(1,e.appearances)).toFixed(2):value(e)} <small>${state.fameSort==='first'?'FIRST-PLACE VOTES':state.fameSort==='average'?'AVG PTS':'POINTS'}</small></div>
-          <span class="tiny">${e.points} total pts · ${e.first_votes} first · ${e.appearances} appearances</span>
+          <h2>${esc(e.answer)}</h2><div class="fame-feature-score">${displayValue(e)} <small>${state.fameSort==='first'?'FIRST-PLACE VOTES':state.fameSort==='average'?'AVG PTS':'POINTS'}</small></div>
+          <span class="tiny">${pointDetail(e)} · ${e.first_votes} first · ${e.appearances} appearances</span>
         </article>`).join('')}</div>
         <h2 class="subhead" style="margin-top:38px">All-time rankings</h2>
         <div class="fame-scroll" role="region" aria-label="Scrollable Hall of Fame entries" tabindex="0">
           ${winners.map((e,i)=>`<article class="fame-entry"><div class="fame-place">#${i+1}</div>
             <div class="fame-entry-content"><div class="eyebrow">${esc(e.author)} · ${esc(e.game.toUpperCase())} / Q${e.question_index+1}</div><h3>${esc(e.answer)}</h3><p class="tiny">${esc(e.question||'')} · ${e.appearances} appearances · Best rank #${e.best_rank}</p></div>
-            <div class="fame-entry-total"><strong>${state.fameSort==='average'?(e.points/Math.max(1,e.appearances)).toFixed(2):value(e)}</strong><span>${state.fameSort==='first'?'1ST VOTES':state.fameSort==='average'?'AVG PTS':'POINTS'}</span><span class="tiny">${e.first_votes} gold · ${e.points} total pts</span></div>
+            <div class="fame-entry-total"><strong>${displayValue(e)}</strong><span>${state.fameSort==='first'?'1ST VOTES':state.fameSort==='average'?'AVG PTS':'POINTS'}</span><span class="tiny">${e.first_votes} gold · ${pointDetail(e)}</span></div>
           </article>`).join('')}
         </div>`:'<div class="empty">No answer rankings have been saved yet. Complete a match to populate the Hall of Fame.</div>'}
     </section>`;
