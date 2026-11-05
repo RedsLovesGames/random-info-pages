@@ -63,6 +63,8 @@ if(action==='fame'){return sql.begin(async(tx:any)=>{
            count(distinct h.pin)::int as game_count,
            count(*)::int as appearances,
            sum((a.item->>'sum')::int)::int as points,
+           -- Normalize only the verified six-of-eight-player match for Hall of Fame comparisons.
+           sum((a.item->>'sum')::numeric * case when h.pin='143043' and jsonb_array_length(h.players)=6 then 8.0/6.0 else 1 end) as adjusted_points,
            sum((a.item->>'first')::int)::int as first_votes,
            sum((a.item->>'second')::int)::int as second_votes,
            sum((a.item->>'third')::int)::int as third_votes,
@@ -73,7 +75,7 @@ if(action==='fame'){return sql.begin(async(tx:any)=>{
     cross join lateral jsonb_array_elements(coalesce(r.item->'results','[]'::jsonb)) as a(item)
     where h.finished_at>=${since}::timestamptz and r.item->>'status'='scored'
     group by a.item->>'author',a.item->>'answer',r.item->>'game',r.item->>'questionIndex',r.item->>'question'
-    order by points desc,first_votes desc,appearances desc,author asc
+    order by adjusted_points desc,first_votes desc,appearances desc,author asc
     limit 100`;
   return {savedGames:games[0].count,entries:rows};
 });}
