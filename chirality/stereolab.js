@@ -4,7 +4,7 @@
    No silent guesses for undefined stereochemistry. */
 (() => {
   const $ = id => document.getElementById(id);
-  const state = { rd: null, editor: null, last: null };
+  const state = { rd: null, editor: null, ketcher: null, last: null };
   const fmt = value => Number(value).toFixed(2).replace(/\.00$/, '');
   const safe = value => String(value ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const show = (id, message, warning=false, error=false) => {
@@ -43,31 +43,36 @@
       legendFontSize:14,atomHighlightsAreCircles:true
     }));
   }
-  function refreshEditor(molfile){
-    if(!state.editor)throw new Error('Sketch canvas not ready.');
-    state.editor.importMol(molfile);
+  async function refreshEditor(molfile){
+    if(state.ketcher){await state.ketcher.setMolecule(molfile);return;}
+    if(state.editor){state.editor.importMol(molfile);return;}
+    throw new Error('Ketcher editor is still loading. Wait for the editor status before importing.');
   }
-  function importSmiles(smiles){
+  async function importSmiles(smiles){
     const source=smiles.trim();
     if(!source)throw new Error('Enter a SMILES string.');
-    withMol(source,mol=>{
+    const molfile=withMol(source,mol=>{
       if(!mol.has_coords())mol.set_new_coords();
-      refreshEditor(mol.get_v2Kmolblock());
+      return mol.get_v2Kmolblock();
     });
+    await refreshEditor(molfile);
   }
   function fromEditor(){
-    if(!state.editor||!state.editor.atoms.length)throw new Error('Draw a molecule before analyzing.');
+    if(!state.editor||!state.editor.atoms.length)throw new Error('Draw a molecule first.');
     return state.editor.exportMol();
   }
-  function currentSource(){
-    if(state.editor&&state.editor.atoms.length)return fromEditor();
-    const source=$('smiInput').value.trim();
-    if(source)return source;
-    throw new Error('Draw a structure or paste a valid SMILES string.');
+  async function freshSource(){
+    if(state.ketcher){
+      const source=await state.ketcher.getMolfile();
+      if(typeof source==='string' && source.includes('M  END') && !/^\\s*0\\s+0/.test(source.split(/\\r?\\n/)[3]||''))return source;
+      throw new Error('Draw a molecular structure in Ketcher first.');
+    }
+    if(state.editor)return fromEditor();
+    throw new Error('The Ketcher editor is still loading. If it fails to initialize, choose basic drawing mode.');
   }
-  function analyze() {
+  async function analyze() {
     try {
-      const source=currentSource();
+      const source=await freshSource();
       const output=withMol(source,mol=>{
         const t=tags(mol),smiles=mol.get_smiles();
         return {t,smiles,svg:depicted(mol,t),c:chirality(smiles,t)};
@@ -105,9 +110,9 @@
     catch(e){ $('compoundName').textContent=e.message+' You can still use the canonical SMILES above.'; }
     finally{btn.disabled=false;}
   }
-  function downloadMol() {
+  async function downloadMol() {
     try {
-      const source=currentSource(), data=withMol(source,m=>m.get_v2Kmolblock());
+      const source=await freshSource(), data=withMol(source,m=>m.get_v2Kmolblock());
       const url=URL.createObjectURL(new Blob([data],{type:'chemical/x-mdl-molfile'}));
       const a=document.createElement('a');a.href=url;a.download='stereolab.mol';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
     } catch(e){show('analysisExplanation',e.message,false,true);}
@@ -135,10 +140,10 @@
     }
     return lines.join('\n');
   }
-  function enumerate() {
+  async function enumerate() {
     const grid=$('isomerCards');grid.replaceChildren();
     try{
-      const src=currentSource(),base=withMol(src,m=>m.get_smiles());
+      const src=await freshSource(),base=withMol(src,m=>m.get_smiles());
       const skeleton=withoutAtomStereo(base);
       const baseMol=getMol(skeleton);
       let block,t;
@@ -269,17 +274,54 @@
     $('analyzeBtn').onclick=analyze;$('enumerateBtn').onclick=enumerate;$('compareBtn').onclick=compare;
     $('nameBtn').onclick=lookupName;$('saveMol').onclick=downloadMol;$('fischerBtn').onclick=fischer;
     $('eeBtn').onclick=ee;$('forwardBtn').onclick=forward;
-    $('loadSmile').onclick=()=>{try{importSmiles($('smiInput').value);$('status').textContent='SMILES loaded. Edit the drawing or analyze it.';}catch(e){$('status').textContent=e.message;}};
-    $('clearMol').onclick=()=>{try{state.editor?.clear();$('smiInput').value='';state.last=null;$('analysisResults').hidden=true;$('status').textContent='Drawing cleared.';}catch(e){$('status').textContent=e.message;}};
-    $('exampleMeso').onclick=()=>{try{$('smiInput').value='C[C@H](O)[C@H](O)C';importSmiles($('smiInput').value);analyze();}catch(e){$('status').textContent=e.message;}};
-    for(const key of ['A','B'])$('loadFromEditor'+key).onclick=()=>{try{
-      $(key==='A'?'compareA':'compareB').value=withMol(currentSource(),m=>m.get_smiles());
+    $('loadSmile').onclick=async()=>{try{await importSmiles($('smiInput').value);$('status').textContent='SMILES loaded. Use the full drawing tools or analyze.';}catch(e){$('status').textContent=e.message;}};
+    $('clearMol').onclick=async()=>{try{
+      if(state.ketcher)await state.ketcher.setMolecule('');
+      else if(state.editor)state.editor.clear();
+      $('smiInput').value='';state.last=null;$('analysisResults').hidden=true;$('status').textContent='Drawing cleared.';
+    }catch(e){$('status').textContent=e.message;}};
+    $('exampleMeso').onclick=async()=>{try{
+      $('smiInput').value='C[C@H](O)[C@H](O)C';await importSmiles($('smiInput').value);await analyze();
+    }catch(e){$('status').textContent=e.message;}};
+    for(const key of ['A','B'])$('loadFromEditor'+key).onclick=async()=>{try{
+      $(key==='A'?'compareA':'compareB').value=withMol(await freshSource(),m=>m.get_smiles());
       switchTab('compare');
     }catch(e){show('comparison',e.message,false,true);}};
     ee();forward();
-    try{ state.editor=new window.StereoSketch($('composer')); $('status').textContent='Sketch canvas ready. R/S chemistry engine loading…'; }
-    catch(e){$('status').textContent='Drawing editor failed: '+e.message;}
-    if(state.editor)$('status').textContent='Drawing ready. Loading R/S chemistry engine…';
+    const frame=$('ifKetcher');
+    const fallback=$('fallbackEditor');
+    let fallbackMode=false;
+    const connect=()=>{
+      if(fallbackMode||!frame?.contentWindow)return false;
+      let instance=null;
+      try{instance=frame.contentWindow.ketcher;}catch{return false;}
+      if(!instance||typeof instance.getMolfile!=='function')return false;
+      state.ketcher=instance;
+      state.editor=null;
+      $('status').textContent=state.rd?'Ketcher drawing editor and R/S analyzer ready.':'Ketcher drawing editor ready. Loading R/S analyzer…';
+      fallback.hidden=true;
+      return true;
+    };
+    window.addEventListener('message',event=>{
+      if(event.source!==frame?.contentWindow||event.origin!==location.origin)return;
+      if(event.data?.source!=='stereolab-ketcher')return;
+      if(event.data?.eventType==='init')connect();
+      if(event.data?.eventType==='error'){
+        $('status').textContent='Full drawing editor error: '+String(event.data.message||'unknown error');
+        fallback.hidden=false;
+      }
+    });
+    frame?.addEventListener('load',()=>{setTimeout(connect,400);});
+    setTimeout(()=>{if(!state.ketcher&&!fallbackMode){fallback.hidden=false;$('status').textContent='Full editor has not initialized. You can keep waiting or use basic drawing mode.';}},20000);
+    fallback.onclick=()=>{
+      fallbackMode=true;
+      state.ketcher=null;
+      try{state.editor=new window.StereoSketch($('composer'));
+        fallback.hidden=true;
+        $('status').textContent='Basic editor active. Ketcher can be restored by refreshing the page.';
+      }catch(e){$('status').textContent='Unable to start basic drawing mode: '+e.message;}
+    };
+    $('status').textContent='Loading full Ketcher molecular editor and RDKit chemistry engine…';
     const waitFor=(check,flag,name,limit=30000)=>new Promise((resolve,reject)=>{
       const deadline=Date.now()+limit;
       const tick=()=>{
@@ -295,10 +337,9 @@
         window.initRDKitModule(),
         new Promise((_,reject)=>setTimeout(()=>reject(new Error('RDKit WebAssembly initialization timed out.')),30000))
       ]);
-      $('status').textContent='Drawing and RDKit.js ready ('+state.rd.version()+').';
-      analyze();
+      $('status').textContent=state.ketcher?'Ketcher and RDKit ready ('+state.rd.version()+').':'RDKit ready. Waiting for full Ketcher editor…';
     }catch(e){
-      $('status').textContent='Drawing works. R/S analysis engine unavailable: '+e.message+'. MOL export and optical rotation/Fischer calculators still work.';
+      $('status').textContent='R/S analysis engine unavailable: '+e.message+'. Ketcher drawing and file export remain available.';
       return;
     }
 
