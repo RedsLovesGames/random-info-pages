@@ -16,6 +16,11 @@
     if(!mol || !mol.is_valid()) { if(mol)mol.delete(); throw new Error('Invalid structure. Check atom connectivity, valence, and stereochemical notation.'); }
     return mol;
   }
+  function getMolBlock(mol){
+    if(typeof mol.get_v2Kmolblock==='function') return mol.get_v2Kmolblock();
+    if(typeof mol.get_molblock==='function') return mol.get_molblock();
+    throw new Error('RDKit Molfile output is unavailable in this version.');
+  }
   function withMol(text, fn) { const mol=getMol(text); try{return fn(mol);}finally{mol.delete();} }
   function tags(mol) {
     let raw={};
@@ -53,7 +58,7 @@
     if(!source)throw new Error('Enter a SMILES string.');
     const molfile=withMol(source,mol=>{
       if(!mol.has_coords())mol.set_new_coords();
-      return mol.get_v2Kmolblock();
+      return getMolBlock(mol);
     });
     await refreshEditor(molfile);
   }
@@ -112,7 +117,7 @@
   }
   async function downloadMol() {
     try {
-      const source=await freshSource(), data=withMol(source,m=>m.get_v2Kmolblock());
+      const source=await freshSource(), data=withMol(source,m=>getMolBlock(m));
       const url=URL.createObjectURL(new Blob([data],{type:'chemical/x-mdl-molfile'}));
       const a=document.createElement('a');a.href=url;a.download='stereolab.mol';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
     } catch(e){show('analysisExplanation',e.message,false,true);}
@@ -150,7 +155,7 @@
       try {
         t=tags(baseMol);
         if(!baseMol.has_coords())baseMol.set_new_coords();
-        block=baseMol.get_v2Kmolblock();
+        block=getMolBlock(baseMol);
       }finally{baseMol.delete();}
       if(t.bonds.some(x=>!['E','Z'].includes(x[2]))){
         throw new Error('This structure contains unspecified double-bond stereochemistry. Complete E/Z enumeration is not implemented; no exhaustive count is claimed.');
