@@ -132,6 +132,19 @@ jobs:
         shell: pwsh
         run: ./scripts/import-henry-win95.ps1
 
+      - name: Set up Node for Ketcher molecular editor
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.20.0
+
+      - name: Build StereoLab Ketcher editor
+        working-directory: chirality/ketcher-src
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+          test -f dist/index.html
+          find dist -type f | wc -l
+
       - name: Stage static site
         run: |
           rm -rf _site
@@ -142,8 +155,12 @@ jobs:
             --exclude '_site' \
             --exclude 'computer-src' \
             --exclude 'os-src' \
+            --exclude 'chirality/ketcher-src' \
             --exclude '_computer-smoke-site' \
             ./ _site/
+          mkdir -p _site/chirality/ketcher-ui
+          cp -a chirality/ketcher-src/dist/. _site/chirality/ketcher-ui/
+          test -f _site/chirality/ketcher-ui/index.html
           mkdir -p _site/computer
           cp -a computer-src/public/. _site/computer/
           touch _site/.nojekyll
