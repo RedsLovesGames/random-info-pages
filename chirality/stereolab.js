@@ -4,7 +4,7 @@
    No silent guesses for undefined stereochemistry. */
 (() => {
   const $ = id => document.getElementById(id);
-  const state = { rd: null, editor: null, ketcher: null, last: null };
+  const state = { rd: null, editor: null, ketcher: null, last: null, changeTimer: null };
   const fmt = value => Number(value).toFixed(2).replace(/\.00$/, '');
   const safe = value => String(value ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const show = (id, message, warning=false, error=false) => {
@@ -311,10 +311,31 @@
       let instance=null;
       try{instance=frame.contentWindow.ketcher;}catch{return false;}
       if(!instance||typeof instance.getMolfile!=='function')return false;
+      if(state.ketcher===instance)return true;
       state.ketcher=instance;
       state.editor=null;
       $('status').textContent=state.rd?'Ketcher drawing editor and R/S analyzer ready.':'Ketcher drawing editor ready. Loading R/S analyzer…';
       fallback.hidden=true;
+      try{
+        if(typeof instance.editor?.subscribe==='function'){
+          instance.editor.subscribe('change',()=>{
+            clearTimeout(state.changeTimer);
+            state.changeTimer=setTimeout(async()=>{
+              if(state.ketcher!==instance||!state.rd)return;
+              try{
+                const molfile=await instance.getMolfile();
+                if(molfileAtomCount(molfile)===0){
+                  state.last=null;
+                  $('analysisResults').hidden=true;
+                  $('analysisPrompt').hidden=false;
+                  return;
+                }
+                await analyze();
+              }catch(e){$('status').textContent='Drawing updated, but analysis could not run: '+String(e.message||e);}
+            },650);
+          });
+        }
+      }catch(e){console.warn('Ketcher live analysis subscription unavailable',e);}
       return true;
     };
     window.addEventListener('message',event=>{
