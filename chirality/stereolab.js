@@ -66,14 +66,24 @@
     if(!state.editor||!state.editor.atoms.length)throw new Error('Draw a molecule first.');
     return state.editor.exportMol();
   }
+  function molfileAtomCount(source){
+    if(typeof source!=='string'||!source.includes('M  END'))return 0;
+    const lines=source.split(/\r?\n/);
+    const countsLine=lines.find(line=>/V(?:2000|3000)/.test(line))||lines[3]||'';
+    if(countsLine.includes('V3000')){
+      const match=source.match(/M\s+V30\s+COUNTS\s+(\d+)/);
+      return match?Number(match[1]):0;
+    }
+    return Number(countsLine.slice(0,3))||0;
+  }
   async function freshSource(){
     if(state.ketcher){
       const source=await state.ketcher.getMolfile();
-      if(typeof source==='string' && source.includes('M  END') && !/^\\s*0\\s+0/.test(source.split(/\\r?\\n/)[3]||''))return source;
-      throw new Error('Draw a molecular structure in Ketcher first.');
+      if(molfileAtomCount(source)>0)return source;
+      throw new Error('Draw a molecule in Ketcher before analyzing.');
     }
     if(state.editor)return fromEditor();
-    throw new Error('The Ketcher editor is still loading. If it fails to initialize, choose basic drawing mode.');
+    throw new Error('Molecular drawing editor is still loading. Use basic drawing mode if needed.');
   }
   async function analyze() {
     try {
