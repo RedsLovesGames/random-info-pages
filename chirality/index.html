@@ -17,9 +17,9 @@ main{padding-top:28px;padding-bottom:64px}.eyebrow{font-size:11px;letter-spacing
 .calcgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.calcgrid>div{min-width:0}.biganswer{font-size:34px;font-weight:800;letter-spacing:-.05em}.kicker{font-weight:800;color:var(--blue);font-size:12px;letter-spacing:.07em;text-transform:uppercase}.example{border:1px dashed #a7b2e2;background:#f6f8ff;border-radius:7px;padding:12px;font-size:13px;margin:12px 0}.projection{display:grid;grid-template-columns:repeat(3,70px);gap:10px;align-items:center;justify-content:center;margin:20px auto}.projection .field{text-align:center;padding:7px}.projcenter{display:grid;place-items:center;font-size:23px;font-weight:800}.footnote{font-size:12px;color:var(--muted);line-height:1.6;margin-top:22px}footer{border-top:1px solid var(--line);padding:24px 0;font-size:12px;color:var(--muted)}
 @media(max-width:850px){.layout{grid-template-columns:1fr}#composer{height:370px}.tabs{scrollbar-width:thin}}@media(max-width:550px){.comparegrid,.calcgrid{grid-template-columns:1fr}.inputrow{flex-wrap:wrap}.inputrow .btn{width:100%}.gridstats{grid-template-columns:1fr 1fr}}
 </style>
-<script defer src="https://cdn.jsdelivr.net/npm/kekule@1.0.4/dist/kekule.min.js"></script>
-<script defer src="https://unpkg.com/@rdkit/rdkit@2025.3.3-1.0.0/dist/RDKit_minimal.js"></script>
 <script defer src="./stereolab.js"></script>
+<script async src="https://cdn.jsdelivr.net/npm/kekule@1.0.4/dist/kekule.min.js" onerror="window.kekuleLoadError=true"></script>
+<script async src="https://unpkg.com/@rdkit/rdkit@2025.3.3-1.0.0/dist/RDKit_minimal.js" onerror="window.rdkitLoadError=true"></script>
 </head>
 <body><header><div class="shell"><a class="brand" href="../"><span class="mark">R</span> RANDOM INFO PAGES <span class="muted">/ StereoLab</span></a><a class="back" href="../">← All pages</a></div></header>
 <main class="shell"><div class="eyebrow">CHEMISTRY / INTERACTIVE TOOL</div><h1>StereoLab<span style="color:var(--blue)">.</span></h1><p class="lede">Sketch a molecule, inspect stereocenters and CIP assignments, generate unique stereoisomers, compare two structures, or solve optical rotation problems. Built for stereochemistry practice, with uncertainty shown explicitly.</p>
