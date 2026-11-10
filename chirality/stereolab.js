@@ -43,36 +43,26 @@
       legendFontSize:14,atomHighlightsAreCircles:true
     }));
   }
-  function refreshEditor(molfile) {
-    if(!state.editor || !window.Kekule) throw new Error('The drawing editor could not load.');
-    const molecule=Kekule.IO.loadFormatData(molfile, 'mol');
-    if(!molecule)throw new Error('Could not import a structure into the editor.');
-    state.editor.setChemObj(molecule);
+  function refreshEditor(molfile){
+    if(!state.editor)throw new Error('Sketch canvas not ready.');
+    state.editor.importMol(molfile);
   }
-  function importSmiles(smiles) {
-    const value=smiles.trim();
-    if(!value)throw new Error('Enter a SMILES string.');
-    const mol=getMol(value);
-    try {
-      if(!mol.has_coords()) mol.set_new_coords();
+  function importSmiles(smiles){
+    const source=smiles.trim();
+    if(!source)throw new Error('Enter a SMILES string.');
+    withMol(source,mol=>{
+      if(!mol.has_coords())mol.set_new_coords();
       refreshEditor(mol.get_v2Kmolblock());
-    } finally { mol.delete(); }
+    });
   }
-  function fromEditor() {
-    if(!state.editor)throw new Error('The drawing editor is unavailable. Import an isomeric SMILES instead.');
-    const parts=state.editor.exportObjs(Kekule.Molecule);
-    if(parts.length!==1) throw new Error(parts.length?'Select only one connected molecular structure.':'Draw a molecule first.');
-    const molfile=Kekule.IO.saveFormatData(parts[0],'mol');
-    if(!molfile)throw new Error('The editor could not export that molecule.');
-    return molfile;
+  function fromEditor(){
+    if(!state.editor||!state.editor.atoms.length)throw new Error('Draw a molecule before analyzing.');
+    return state.editor.exportMol();
   }
-  function currentSource() {
-    if(state.editor) {
-      const parts=state.editor.exportObjs(Kekule.Molecule);
-      if(parts.length) return fromEditor();
-    }
-    const s=$('smiInput').value.trim();
-    if(s)return s;
+  function currentSource(){
+    if(state.editor&&state.editor.atoms.length)return fromEditor();
+    const source=$('smiInput').value.trim();
+    if(source)return source;
     throw new Error('Draw a structure or paste a valid SMILES string.');
   }
   function analyze() {
@@ -280,14 +270,16 @@
     $('nameBtn').onclick=lookupName;$('saveMol').onclick=downloadMol;$('fischerBtn').onclick=fischer;
     $('eeBtn').onclick=ee;$('forwardBtn').onclick=forward;
     $('loadSmile').onclick=()=>{try{importSmiles($('smiInput').value);$('status').textContent='SMILES loaded. Edit the drawing or analyze it.';}catch(e){$('status').textContent=e.message;}};
-    $('clearMol').onclick=()=>{try{state.editor?.setChemObj(null);$('smiInput').value='';state.last=null;$('analysisResults').hidden=true;$('status').textContent='Drawing cleared.';}catch(e){$('status').textContent=e.message;}};
+    $('clearMol').onclick=()=>{try{state.editor?.clear();$('smiInput').value='';state.last=null;$('analysisResults').hidden=true;$('status').textContent='Drawing cleared.';}catch(e){$('status').textContent=e.message;}};
     $('exampleMeso').onclick=()=>{try{$('smiInput').value='C[C@H](O)[C@H](O)C';importSmiles($('smiInput').value);analyze();}catch(e){$('status').textContent=e.message;}};
     for(const key of ['A','B'])$('loadFromEditor'+key).onclick=()=>{try{
       $(key==='A'?'compareA':'compareB').value=withMol(currentSource(),m=>m.get_smiles());
       switchTab('compare');
     }catch(e){show('comparison',e.message,false,true);}};
     ee();forward();
-    $('status').textContent='Optical rotation and Fischer tools are ready. Loading molecular chemistry engine…';
+    try{ state.editor=new window.StereoSketch($('composer')); $('status').textContent='Sketch canvas ready. R/S chemistry engine loading…'; }
+    catch(e){$('status').textContent='Drawing editor failed: '+e.message;}
+    if(state.editor)$('status').textContent='Drawing ready. Loading R/S chemistry engine…';
     const waitFor=(check,flag,name,limit=30000)=>new Promise((resolve,reject)=>{
       const deadline=Date.now()+limit;
       const tick=()=>{
@@ -303,22 +295,13 @@
         window.initRDKitModule(),
         new Promise((_,reject)=>setTimeout(()=>reject(new Error('RDKit WebAssembly initialization timed out.')),30000))
       ]);
-      $('status').textContent='RDKit.js '+state.rd.version()+' ready. Loading drawing editor…';
+      $('status').textContent='Drawing and RDKit.js ready ('+state.rd.version()+').';
       analyze();
     }catch(e){
-      $('status').textContent='Molecule engine unavailable: '+e.message+'. Optical rotation and Fischer practice remain usable.';
+      $('status').textContent='Drawing works. R/S analysis engine unavailable: '+e.message+'. MOL export and optical rotation/Fischer calculators still work.';
       return;
     }
-    try {
-      await waitFor(()=>Boolean(window.Kekule?.Editor?.Composer),'kekuleLoadError','Kekule drawing editor');
-      state.editor=new Kekule.Editor.Composer($('composer'));
-      state.editor.setDimension('100%','100%');
-      importSmiles($('smiInput').value);
-      $('status').textContent='Editor and RDKit ready. Use solid/hashed wedges to define stereochemistry.';
-      analyze();
-    }catch(e){
-      $('status').textContent='RDKit analysis works with SMILES, but the drawing editor is unavailable: '+e.message;
-    }
+
   }
   window.addEventListener('DOMContentLoaded',init);
 })();
