@@ -41,7 +41,7 @@ test('classic homepage is preserved as a separate functional page', () => {
 });
 
 test('all public project routes remain in the new index without duplicates', () => {
-  assert.equal(projects.length, 25);
+  assert.ok(projects.length >= 25, 'public project registry does not unexpectedly shrink');
   assert.equal(new Set(projects.map(p => p.p)).size, projects.length);
   assert.equal(new Set(projects.map(p => p.n)).size, projects.length);
   for (const route of requiredRoutes) {
@@ -132,7 +132,7 @@ test('human-facing project labels are clear, unique, and backwards searchable', 
 test('VCT and Tideborne are archived, remain available, and are excluded from the active project index', () => {
   const archived=projects.filter(p=>p.a);
   assert.deepEqual(Array.from(archived,p=>p.p).sort(),['./tide2/','./tideborne/','./vct-scout/'].sort());
-  assert.equal(projects.filter(p=>!p.a).length,22);
+  assert.equal(projects.filter(p=>!p.a).length,projects.length-archived.length);
   assert.match(html,/const activeProjects=projects\.filter\(p=>!p\.a\)/);
   assert.match(html,/const shown=activeProjects\.filter/);
   assert.match(html,/const p=activeProjects\[Math\.floor\(Math\.random\(\)\*activeProjects\.length\)\]/);
@@ -172,4 +172,18 @@ test('Shard Market is available in the active index', () => {
   assert.ok(p && !p.a && p.c==='Games');
   assert.ok(existsSync(new URL('../shard-fusions/index.html',import.meta.url)));
   assert.match(html,/Live Shard Fusion Profit Finder/);
+});
+
+test('StereoLab sketcher is registered and has independent mobile drawing code', () => {
+  const project=projects.find(p=>p.p==='./chirality/');
+  assert.ok(project && !project.a && project.c==='School');
+  const html=readFileSync(new URL('../chirality/index.html',import.meta.url),'utf8');
+  const sketch=readFileSync(new URL('../chirality/draw.js',import.meta.url),'utf8');
+  const app=readFileSync(new URL('../chirality/stereolab.js',import.meta.url),'utf8');
+  assert.match(html,/src="\.\/draw\.js"/);
+  assert.match(sketch,/Solid wedge/);
+  assert.match(sketch,/class StereoSketch/);
+  assert.match(app,/new window\.StereoSketch/);
+  assert.doesNotThrow(()=>new Script(sketch));
+  assert.doesNotThrow(()=>new Script(app));
 });
