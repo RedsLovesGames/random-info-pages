@@ -67,7 +67,10 @@
     return molfile;
   }
   function currentSource() {
-    if(state.editor) return fromEditor();
+    if(state.editor) {
+      const parts=state.editor.exportObjs(Kekule.Molecule);
+      if(parts.length) return fromEditor();
+    }
     const s=$('smiInput').value.trim();
     if(s)return s;
     throw new Error('Draw a structure or paste a valid SMILES string.');
@@ -277,29 +280,45 @@
     $('nameBtn').onclick=lookupName;$('saveMol').onclick=downloadMol;$('fischerBtn').onclick=fischer;
     $('eeBtn').onclick=ee;$('forwardBtn').onclick=forward;
     $('loadSmile').onclick=()=>{try{importSmiles($('smiInput').value);$('status').textContent='SMILES loaded. Edit the drawing or analyze it.';}catch(e){$('status').textContent=e.message;}};
-    $('clearMol').onclick=()=>{try{state.editor?.setChemObj(null);state.last=null;$('analysisResults').hidden=true;$('status').textContent='Drawing cleared.';}catch(e){$('status').textContent=e.message;}};
+    $('clearMol').onclick=()=>{try{state.editor?.setChemObj(null);$('smiInput').value='';state.last=null;$('analysisResults').hidden=true;$('status').textContent='Drawing cleared.';}catch(e){$('status').textContent=e.message;}};
     $('exampleMeso').onclick=()=>{try{$('smiInput').value='C[C@H](O)[C@H](O)C';importSmiles($('smiInput').value);analyze();}catch(e){$('status').textContent=e.message;}};
     for(const key of ['A','B'])$('loadFromEditor'+key).onclick=()=>{try{
       $(key==='A'?'compareA':'compareB').value=withMol(currentSource(),m=>m.get_smiles());
       switchTab('compare');
     }catch(e){show('comparison',e.message,false,true);}};
     ee();forward();
-    if(typeof window.initRDKitModule!=='function'){$('status').textContent='RDKit.js could not load. Check the connection or CDN.';return;}
-    try{
-      state.rd=await initRDKitModule();
-      $('status').textContent='RDKit.js '+state.rd.version()+' ready. Starting drawing editor…';
-    }catch(e){$('status').textContent='Chemistry engine failed to load: '+e.message;return;}
-    if(!window.Kekule||!Kekule.Editor?.Composer){
-      $('status').textContent='Chemistry engine ready, but drawing editor could not load. You can still analyze by importing SMILES after reloading the page.';
+    $('status').textContent='Optical rotation and Fischer tools are ready. Loading molecular chemistry engine…';
+    const waitFor=(check,flag,name,limit=30000)=>new Promise((resolve,reject)=>{
+      const deadline=Date.now()+limit;
+      const tick=()=>{
+        if(check())return resolve();
+        if(window[flag])return reject(new Error(name+' download failed (CDN error).'));
+        if(Date.now()>deadline)return reject(new Error(name+' did not finish downloading within 30 seconds.'));
+        setTimeout(tick,250);
+      };tick();
+    });
+    try {
+      await waitFor(()=>typeof window.initRDKitModule==='function','rdkitLoadError','RDKit.js');
+      state.rd=await Promise.race([
+        window.initRDKitModule(),
+        new Promise((_,reject)=>setTimeout(()=>reject(new Error('RDKit WebAssembly initialization timed out.')),30000))
+      ]);
+      $('status').textContent='RDKit.js '+state.rd.version()+' ready. Loading drawing editor…';
+      analyze();
+    }catch(e){
+      $('status').textContent='Molecule engine unavailable: '+e.message+'. Optical rotation and Fischer practice remain usable.';
       return;
     }
-    try{
+    try {
+      await waitFor(()=>Boolean(window.Kekule?.Editor?.Composer),'kekuleLoadError','Kekule drawing editor');
       state.editor=new Kekule.Editor.Composer($('composer'));
       state.editor.setDimension('100%','100%');
       importSmiles($('smiInput').value);
-      $('status').textContent='Editor and chemistry engine ready. Wedges and dashes specify R/S.';
+      $('status').textContent='Editor and RDKit ready. Use solid/hashed wedges to define stereochemistry.';
       analyze();
-    }catch(e){$('status').textContent='Editor startup issue: '+e.message;}
+    }catch(e){
+      $('status').textContent='RDKit analysis works with SMILES, but the drawing editor is unavailable: '+e.message;
+    }
   }
   window.addEventListener('DOMContentLoaded',init);
 })();
