@@ -1,0 +1,20 @@
+{
+  "name": "stereolab-ketcher",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build && node scripts/copy-resources.mjs"
+  },
+  "dependencies": {
+    "ketcher-core": "3.18.0",
+    "ketcher-react": "3.18.0",
+    "ketcher-standalone": "3.18.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "vite": "7.2.0",
+    "@vitejs/plugin-react": "5.1.1"
+  }
+}
