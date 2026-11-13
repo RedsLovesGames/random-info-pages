@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0b0a"><meta name="color-scheme" content="dark">
-<meta name="description" content="Type your letters and instantly find the longest words and longest palindromes.">
-<title>Word Solver | Random Info Pages</title>
+<meta name="description" content="An easy word finder. Enter your letters and see the longest words and palindromes instantly.">
+<title>Word Finder | Random Info Pages</title>
 <link rel="stylesheet" href="../shared/toolbox.css">
 <link rel="stylesheet" href="./words.css">
 <link rel="stylesheet" href="../../design-system/rip.css">
@@ -14,36 +14,37 @@
 </head>
 <body data-rip-page="tools-words">
 <header class="tb-top"><nav class="tb-shell tb-nav" aria-label="Navigation">
-  <a class="tb-brand" href="../../">RIP/26 · WORDS</a>
-  <a class="tb-back" href="../">← Toolbox</a>
+  <a class="tb-brand" href="../../"><span class="ws-logo">w.</span> Random Info Pages</a>
+  <a class="tb-back" href="../">← All tools</a>
 </nav></header>
 <main class="ws-shell">
   <header class="ws-intro">
-    <div class="tb-kicker">14 / WORD GAMES</div>
-    <h1>WORD <em>SOLVER.</em></h1>
-    <p>Enter your letters. See every match, longest first.</p>
+    <div class="tb-kicker">A little help for your next word game</div>
+    <h1>Find your <em>best word.</em></h1>
+    <p>Type any letters and see what you can make. The longest words and palindromes appear automatically.</p>
   </header>
 
   <section class="ws-search-section" aria-label="Find words">
-    <label class="ws-search-label" for="rackInput">YOUR LETTERS</label>
+    <label class="ws-search-label" for="rackInput">Your letters</label>
     <div class="ws-input-row">
       <input id="rackInput" type="text" maxlength="80" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text"
-        placeholder="Type letters here…" aria-describedby="rackHint dictionaryStatus" aria-label="Letters to find words from">
+        placeholder="e.g. R A C E C A R" aria-describedby="rackHint dictionaryStatus" aria-label="Letters to find words from">
       <button id="clearButton" class="ws-clear" type="button" aria-label="Clear letters">Clear <span aria-hidden="true">×</span></button>
     </div>
     <div class="ws-input-help">
-      <span id="rackHint">Searches as you type. Use <strong>?</strong> for a blank tile; spaces are ignored.</span>
-      <button id="sampleButton" type="button" class="ws-inline-button">Try example letters</button>
+      <span id="rackHint">Results appear as you type. Use <strong>?</strong> for a wildcard; spaces are optional.</span>
+      <button id="sampleButton" type="button" class="ws-inline-button">Try an example</button>
     </div>
     <p id="dictionaryStatus" class="ws-status" role="status" aria-live="polite">Loading English dictionary…</p>
 
     <details class="ws-advanced" id="advancedOptions">
-      <summary>Options <span aria-hidden="true">⌄</span></summary>
+      <summary>More options <span aria-hidden="true">⌄</span></summary>
       <div class="ws-options-body">
         <div class="ws-options-grid">
-          <label>Dictionary
+          <label>Word list
             <select id="dictionaryMode">
-              <option value="broad">Broad English (both lists)</option>
+              <option value="enable">ENABLE (also on WordSolver)</option>
+              <option value="broad">Broad English (combined)</option>
               <option value="standard">Scrabble-style list</option>
               <option value="expanded">Expanded English list</option>
             </select>
@@ -65,7 +66,7 @@
           </label>
           <button id="reloadDictionary" class="ws-inline-button" type="button">Use selected dictionary</button>
         </div>
-        <p class="ws-options-help">The standard mode uses each tile at most once. In repeat mode, available letters can be reused. Word lists differ from game to game.</p>
+        <p class="ws-options-help">ENABLE is a public-domain word list also offered by WordSolver under WWF. It is <strong>not</strong> WordSolver’s US English (TWL) dictionary. By default, each letter can only be used as many times as you entered it.</p>
       </div>
     </details>
   </section>
@@ -73,7 +74,7 @@
   <section class="ws-columns" aria-label="Words you can make">
     <article class="ws-column" aria-labelledby="palHeading">
       <div class="ws-col-head">
-        <div><small>01 / SYMMETRICAL WORDS</small><h2 id="palHeading">LONGEST<br>PALINDROMES</h2></div>
+        <div><small>Reads the same both ways</small><h2 id="palHeading">Longest<br>palindromes</h2></div>
         <span id="palCount" class="ws-count">0</span>
       </div>
       <p class="ws-best" id="bestPal">Longest palindrome appears here</p>
@@ -86,7 +87,7 @@
 
     <article class="ws-column" aria-labelledby="allHeading">
       <div class="ws-col-head">
-        <div><small>02 / EVERY VALID WORD</small><h2 id="allHeading">LONGEST<br>EVERYTHING</h2></div>
+        <div><small>All matching words</small><h2 id="allHeading">Longest<br>everything</h2></div>
         <span id="allCount" class="ws-count">0</span>
       </div>
       <p class="ws-best" id="bestAll">Longest word appears here</p>
@@ -97,8 +98,8 @@
       </div>
     </article>
   </section>
-  <p class="ws-copy-hint">Select any word to copy it. Both lists include all matching words, arranged from longest to shortest. Scroll within each column to see more.</p>
-  <footer class="ws-footer">Dictionary sources: <a href="https://github.com/redbo/scrabble" target="_blank" rel="noopener noreferrer">redbo/scrabble</a> and <a href="https://github.com/dwyl/english-words" target="_blank" rel="noopener noreferrer">dwyl/english-words</a>. This tool is independent of other word-solving sites.</footer>
+  <p class="ws-copy-hint">Tap a word to copy it. Both lists show the longest matches first, and you can scroll for more.</p>
+  <footer class="ws-footer"><strong>About the word lists</strong><p>The default is the public-domain <a href="https://github.com/dolph/dictionary/blob/master/enable1.txt" target="_blank" rel="noopener noreferrer">ENABLE</a> dictionary, also available as a dictionary choice on <a href="https://wordsolver.net/app/" target="_blank" rel="noopener noreferrer">WordSolver</a> (WWF). This is an independently hosted copy, not WordSolver’s official TWL data or API. Optional lists come from <a href="https://github.com/redbo/scrabble" target="_blank" rel="noopener noreferrer">redbo/scrabble</a> and <a href="https://github.com/dwyl/english-words" target="_blank" rel="noopener noreferrer">dwyl/english-words</a>.</p></footer>
 </main>
 <script type="module" src="./words-app.js"></script>
 </body>
