@@ -1,6 +1,7 @@
 import { normalizeRack, parseDictionary, solveRack } from './words-core.js';
 
 const WORD_LISTS = Object.freeze({
+  enable: 'https://raw.githubusercontent.com/dolph/dictionary/694bf9529e986f9175dcbf5fe5875d111941b708/enable1.txt',
   standard: 'https://raw.githubusercontent.com/redbo/scrabble/45d4022a1a19130e3b848b868c408771b7f342ff/dictionary.txt',
   expanded: 'https://raw.githubusercontent.com/dwyl/english-words/8179fe68775df3f553ef19520db065228e65d1d3/words_alpha.txt'
 });
@@ -30,20 +31,20 @@ function savedSettings() {
 function restoreState() {
   const saved = savedSettings();
   if (typeof saved.rack === 'string') input.value = saved.rack;
-  // Old versions exposed different scoring rules. Do not silently carry them
-  // into this new length-only, exact-letter default experience.
-  if (saved.simpleMode !== true) return;
+  // Preserve the letters but reset older dictionary/filter selections.
+  // v3 defaults to the public-domain ENABLE list used by WordSolver's WWF mode.
+  if (saved.uiVersion !== 3) return;
   for (const id of optionIds) {
     if (saved[id] === undefined) continue;
     const control = el(id);
     if (control.type === 'checkbox') control.checked = saved[id] === true;
     else control.value = saved[id];
   }
-  if (!['broad','standard','expanded'].includes(el('dictionaryMode').value)) el('dictionaryMode').value = 'broad';
+  if (!['enable','broad','standard','expanded'].includes(el('dictionaryMode').value)) el('dictionaryMode').value = 'enable';
 }
 function persist() {
   try {
-    const values = { ...savedSettings(), rack: input.value, simpleMode:true };
+    const values = { ...savedSettings(), rack: input.value, simpleMode:true, uiVersion:3 };
     for (const id of optionIds) values[id] = el(id).type === 'checkbox' ? el(id).checked : el(id).value;
     localStorage.setItem(storageKey, JSON.stringify(values));
   } catch { /* Private browsing / storage restrictions must not block searching. */ }
@@ -139,7 +140,7 @@ function solve() {
   const palindrome = all.filter(item => item.palindrome);
   updateColumn(columns.pal, palindrome, 'No palindromes match those letters.');
   updateColumn(columns.all, all, 'No words match those letters.');
-  setStatus(all.length.toLocaleString() + ' words · ' + palindrome.length.toLocaleString() + ' palindromes · ' + dictionaryLabel);
+  setStatus('Found ' + all.length.toLocaleString() + ' words, including ' + palindrome.length.toLocaleString() + ' palindromes · ' + dictionaryLabel);
 }
 function queueSolve() {
   clearTimeout(solveTimer);
@@ -171,7 +172,8 @@ async function loadDefault() {
       throw new Error(results.map(x => x.reason?.message || 'Network error').join('; '));
     }
     dictionary = [...new Set(available.flat())];
-    dictionaryLabel = dictionary.length.toLocaleString() + ' dictionary entries'
+    const sourceName = { enable:'ENABLE', standard:'Scrabble-style', expanded:'Expanded English', broad:'Broad English' }[selected];
+    dictionaryLabel = sourceName + ' · ' + dictionary.length.toLocaleString() + ' dictionary words'
       + (available.length < kinds.length ? ' (one list unavailable)' : '');
     loading = false;
     solve();
@@ -206,7 +208,7 @@ async function loadUpload(file) {
 async function copyWord(word) {
   try {
     await navigator.clipboard.writeText(word);
-    setStatus('Copied ' + word + ' · ' + dictionaryLabel);
+    setStatus('Copied “' + word.toLowerCase() + '” to your clipboard.');
   } catch {
     setStatus('Could not copy automatically. Select the word to copy it.', true);
   }

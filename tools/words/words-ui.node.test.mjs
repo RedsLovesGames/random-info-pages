@@ -9,8 +9,10 @@ const css = readFileSync(new URL('./words.css', import.meta.url), 'utf8');
 
 test('main screen has a single input and two labeled columns', () => {
   assert.match(html, /id="rackInput"/);
-  assert.match(html, /id="palHeading"[^>]*>LONGEST/);
-  assert.match(html, /id="allHeading"[^>]*>LONGEST/);
+  assert.match(html, /Find your <em>best word/);
+  assert.match(html, /value="enable">ENABLE/);
+  assert.match(html, /id="palHeading"[^>]*>Longest/);
+  assert.match(html, /id="allHeading"[^>]*>Longest/);
   assert.match(html, /id="palScroller"/);
   assert.match(html, /id="allScroller"/);
   assert.match(html, /id="palWords"/);
@@ -25,7 +27,9 @@ test('results automatically update, are grouped by length and scroll to load eve
   assert.match(app, /column\.scroller\.addEventListener\('scroll'/);
   assert.match(app, /appendNext\(column\)/);
   assert.match(css, /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
-  assert.match(css, /@media\(max-width:640px\)/);
+  assert.match(css, /@media\(max-width:650px\)/);
+  assert.match(css, /background:#f7f9f7/);
+  assert.match(app, /enable1\.txt/);
 });
 test('every matching word is in all column and palindrome subset is sorted by descending length', () => {
   const dictionary = ['TENET','DETENTION','NEOTENY','TOY','NON','NUN','DEED','X'];
