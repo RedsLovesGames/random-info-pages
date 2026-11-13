@@ -183,6 +183,16 @@ export const TOOLBOX_REGISTRY = [
     ],
   },
   {
+    id: 'words', title: 'Word & Palindrome Solver', route: './words/',
+    description: 'Find longest playable words from a tile rack and apply palindrome multipliers.',
+    type: 'input', privacy: 'Local solving; dictionary downloaded', available: true,
+    keywords: ['scrabble','word finder','anagram','palindrome','word game','letter rack','wildcard'],
+    actions: [
+      action('solve','Solve Letter Rack','words',['find words','longest word','anagram solver','word game solver'], {available:true}),
+      action('palindromes','Palindrome Finder','words',['palindrome bonus','palindrome words'], {available:true})
+    ],
+  },
+  {
     id: 'network', title: 'Network & System Lab', route: './network/', description: 'Subnet, storage, transfer, display, and device calculations.',
     type: 'input', privacy: 'Local', available: true, keywords: ['network', 'subnet', 'cidr', 'ipv4', 'ipv6', 'bandwidth', 'storage', 'ppi', 'browser capabilities'],
     actions: [
