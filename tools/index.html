@@ -22,13 +22,13 @@
   <p class="tb-lede">The useful parts of single-purpose utility sites, without the ads, accounts, or clutter. Most work happens entirely on your device.</p>
   <label><span style="position:absolute;clip:rect(0 0 0 0)">Filter tools</span><input id="toolSearch" class="tb-search" type="search" placeholder="Find a tool or action…" autocomplete="off"></label>
   <div class="tb-workflows" role="group" aria-label="Browse tools by task">
-  <button type="button" class="tb-workflow active" data-workflow="all" aria-pressed="true">Everything <span>13</span></button>
-  <button type="button" class="tb-workflow" data-workflow="create" aria-pressed="false">Create & edit <span>4</span></button>
+  <button type="button" class="tb-workflow active" data-workflow="all" aria-pressed="true">Everything <span>14</span></button>
+  <button type="button" class="tb-workflow" data-workflow="create" aria-pressed="false">Create & edit <span>5</span></button>
   <button type="button" class="tb-workflow" data-workflow="plan" aria-pressed="false">Plan & calculate <span>4</span></button>
   <button type="button" class="tb-workflow" data-workflow="technical" aria-pressed="false">Data & technical <span>5</span></button>
 </div>
 <div class="tb-toolbar">
-  <div class="tb-toolbar-start"><button id="favoritesOnly" class="tb-toolbutton" type="button" aria-pressed="false">☆ Favorites</button><span class="tb-result-count" id="resultCount" aria-live="polite">13 tools available</span></div>
+  <div class="tb-toolbar-start"><button id="favoritesOnly" class="tb-toolbutton" type="button" aria-pressed="false">☆ Favorites</button><span class="tb-result-count" id="resultCount" aria-live="polite">14 tools available</span></div>
   <div id="recentTools" class="tb-recent" aria-label="Recently used tools"></div>
 </div>
 </section>
@@ -46,13 +46,14 @@
   <article class="tb-card-shell" data-group="plan" data-tool="random weighted picker shuffle sample teams groups numbers dice chance probability seed seeded reproducible decision"><a class="tb-card" href="./random/"><small>11 / Random</small><h2>Random Pickers & Team Generator</h2><p>Pick with weights, shuffle, sample, make balanced teams, generate numbers, roll dice, and reproduce outcomes with seeds.</p><div class="tb-meta"><span class="tb-pill local">Fully local</span><span class="tb-pill">Seedable</span></div></a><button class="tb-favorite" type="button" data-favorite="./random/" aria-label="Favorite Random & Decision Lab">☆</button></article>
   <article class="tb-card-shell" data-group="technical" data-tool="codes generator qr wifi vcard barcode code128 ean upc data matrix scan password passphrase uuid guid token secure"><a class="tb-card" href="./codes/"><small>12 / Codes</small><h2>QR Codes, Barcodes & Passwords</h2><p>Generate QR/barcodes, scan supported codes, and create secure passwords, passphrases, UUIDs, and tokens.</p><div class="tb-meta"><span class="tb-pill local">Local generation</span><span class="tb-pill">Web Crypto</span></div></a><button class="tb-favorite" type="button" data-favorite="./codes/" aria-label="Favorite Codes & Generator Lab">☆</button></article>
   <article class="tb-card-shell" data-group="technical" data-tool="network system ipv4 ipv6 cidr subnet storage bits bytes bandwidth transfer download upload bitrate media size display ppi aspect ratio browser device capabilities webgpu codecs"><a class="tb-card" href="./network/"><small>13 / Network + System</small><h2>Network & Storage Calculators</h2><p>Calculate subnets, data sizes, transfer time, media storage, PPI/aspect ratio, and inspect browser capabilities.</p><div class="tb-meta"><span class="tb-pill local">Fully local</span><span class="tb-pill">No lookup API</span></div></a><button class="tb-favorite" type="button" data-favorite="./network/" aria-label="Favorite Network & System Lab">☆</button></article>
+  <article class="tb-card-shell" data-group="create" data-tool="word finder anagram scrabble palindrome letter rack word game solver longest word bonus wildcard vocabulary dictionary"><a class="tb-card" href="./words/"><small>14 / Word Games</small><h2>Word & Palindrome Solver</h2><p>Find words from your exact letters, rank the longest plays, and calculate palindrome multipliers.</p><div class="tb-meta"><span class="tb-pill">Dictionary powered</span><span class="tb-pill local">Local solving</span></div></a><button class="tb-favorite" type="button" data-favorite="./words/" aria-label="Favorite Word Solver">☆</button></article>
 </section>
 <p id="empty" class="tb-empty">No tools match the selected filters. <button type="button" id="clearFilters" class="tb-clear">Show all tools ↗</button></p>
 </main>
 <script src="./shared/toolbox.js"></script>
 <script>
 const input=document.getElementById('toolSearch'),shells=[...document.querySelectorAll('.tb-card-shell')],empty=document.getElementById('empty'),favoritesOnly=document.getElementById('favoritesOnly'),recentTools=document.getElementById('recentTools'),resultCount=document.getElementById('resultCount'),workflowButtons=[...document.querySelectorAll('[data-workflow]')];let favoriteFilter=false,activeWorkflow='all';
-const names={'./time/':'Time','./image/':'Image','./money/':'Money','./text/':'Text','./pdf/':'PDF','./files/':'Files','./media/':'Media','./data/':'Data','./developer/':'Developer','./math/':'Math','./random/':'Random','./codes/':'Codes','./network/':'Network'};
+const names={'./time/':'Time','./image/':'Image','./money/':'Money','./text/':'Text','./pdf/':'PDF','./files/':'Files','./media/':'Media','./data/':'Data','./developer/':'Developer','./math/':'Math','./random/':'Random','./codes/':'Codes','./network/':'Network','./words/':'Words'};
 function renderRecent(){const recent=window.Toolbox?.readState()?.recent||[];recentTools.innerHTML=recent.length?'<span>Recent</span>':'';recent.forEach(route=>{if(!names[route])return;const a=document.createElement('a');a.href=route;a.textContent=names[route];a.addEventListener('click',()=>window.Toolbox?.recordRecent(route));recentTools.append(a)})}
 function renderFavorites(){document.querySelectorAll('[data-favorite]').forEach(button=>{const active=window.Toolbox?.isFavorite(button.dataset.favorite);button.classList.toggle('active',active);button.textContent=active?'★':'☆';button.setAttribute('aria-pressed',String(active))})}
 function filter(){

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0a"><meta name="color-scheme" content="dark">
+<meta name="description" content="Find the longest words you can build from your letters and maximize configurable palindrome bonuses.">
+<title>Letter Rack & Palindrome Solver | Random Info Pages</title>
+<link rel="stylesheet" href="../shared/toolbox.css">
+<link rel="stylesheet" href="./words.css">
+<link rel="stylesheet" href="../../design-system/rip.css">
+<link rel="stylesheet" href="../../design-system/project-polish.css">
+<script src="../../design-system/rip.js" defer></script>
+</head>
+<body data-rip-page="tools-words">
+<header class="tb-top"><nav class="tb-shell tb-nav" aria-label="Navigation">
+  <a class="tb-brand" href="../../">RIP/26 · WORDS</a><a class="tb-back" href="../">← Toolbox</a>
+</nav></header>
+<main class="ws-shell">
+  <header class="ws-hero">
+    <div class="tb-kicker">14 / Word games · letter-constrained search</div>
+    <h1>WORD<br><em>FINDER.</em></h1>
+    <p>Find every dictionary word you can build from a rack. Sort by length or letter points, and make palindrome bonuses count.</p>
+  </header>
+
+  <section class="ws-panel" aria-label="Your letter rack">
+    <div class="ws-section-top"><div><span class="ws-overline">01 / INPUT</span><h2>Your letters</h2></div><span class="ws-overline">? = wild tile</span></div>
+    <label class="ws-field" for="rackInput">Enter tiles in any order, with or without spaces</label>
+    <input id="rackInput" class="ws-rack-input" type="text" maxlength="120" autocapitalize="characters" autocomplete="off" spellcheck="false" value="X O Y E N T N U I D T E" placeholder="E.g. X O Y E N T N U I D T E">
+    <div id="tileRack" class="ws-tiles" aria-label="Your letter tiles"></div>
+    <div class="ws-actions"><button id="solveButton" type="button" class="ws-primary">Find words <span aria-hidden="true">↗</span></button><button id="sampleButton" type="button" class="ws-secondary">Example rack</button><button id="clearButton" type="button" class="ws-secondary">Clear</button></div>
+  </section>
+
+  <section class="ws-panel" aria-label="Scoring and search settings">
+    <div class="ws-section-top"><div><span class="ws-overline">02 / RULES</span><h2>Rank the results</h2></div></div>
+    <div class="ws-settings">
+      <label class="ws-setting">Primary score <select id="scoreMode"><option value="length">Word length</option><option value="tiles">Scrabble letter points</option></select></label>
+      <label class="ws-setting">Palindrome multiplier <div class="ws-inline"><input type="number" id="palBonus" min="1" max="20" step="0.5" value="2"><span>×</span></div></label>
+      <label class="ws-setting">Minimum word length <input id="minLength" type="number" min="2" max="30" value="3"></label>
+    </div>
+    <div class="ws-switches"><label><input id="exactOnly" type="checkbox"> Must use every tile</label><label><input id="palOnly" type="checkbox"> Palindromes only</label></div>
+    <p class="ws-rule-note">Score = length or standard English Scrabble tile points, multiplied for palindromes. ? wildcards are worth zero tile points. No board multipliers or bonus for using every tile.</p>
+  </section>
+
+  <section class="ws-results" aria-label="Solver results">
+    <div class="ws-section-top"><div><span class="ws-overline">03 / RESULTS</span><h2>The best moves</h2></div><button id="copyButton" class="ws-secondary" type="button" disabled>Copy results</button></div>
+    <p id="dictionaryStatus" class="ws-status" role="status" aria-live="polite">Loading word dictionary…</p>
+    <div class="ws-highlights" id="highlights" hidden>
+      <article><small>HIGHEST SCORE</small><strong id="bestScore">—</strong><span id="bestScoreDetail"></span></article>
+      <article><small>LONGEST WORD</small><strong id="bestLong">—</strong><span id="bestLongDetail"></span></article>
+      <article><small>BEST PALINDROME</small><strong id="bestPal">—</strong><span id="bestPalDetail"></span></article>
+      <article><small>MATCHES</small><strong id="matchCount">0</strong><span id="matchDetail"></span></article>
+    </div>
+    <div class="ws-result-heading"><span>WORD</span><span>LETTERS LEFT</span><span>LEN.</span><span>SCORE</span></div>
+    <ol id="wordResults" class="ws-list" aria-live="polite"></ol>
+    <button id="moreButton" class="ws-secondary ws-more" type="button" hidden>Show more results</button>
+    <p id="emptyResults" class="ws-empty" hidden>No matching words. Try a shorter minimum, turn off an exact/palindrome filter, or use more letters.</p>
+  </section>
+
+  <footer class="ws-footer">
+    <div><strong>Dictionary</strong><p>Uses a community Scrabble-style word list of roughly 179,000 entries, fetched once by the browser and reused from its cache. Lists vary by game, so a word shown here may not be accepted by your game.</p>
+    <p>Source: <a href="https://github.com/redbo/scrabble" target="_blank" rel="noopener noreferrer">redbo/scrabble</a>, dictionary revision 45d4022. No dictionary text is sent to this site.</p></div>
+    <div><label class="ws-upload" for="dictionaryUpload">Use a different word list <span>.txt, one word per line</span></label><input id="dictionaryUpload" type="file" accept=".txt,text/plain"><button id="reloadDictionary" class="ws-secondary" type="button">Reload default dictionary</button></div>
+  </footer>
+</main>
+<script type="module" src="./words-app.js"></script>
+</body>
+</html>
