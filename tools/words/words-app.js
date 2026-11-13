@@ -1,242 +1,248 @@
-import { normalizeRack, parseDictionary, solveRack, TILE_VALUES } from './words-core.js';
+import { normalizeRack, parseDictionary, solveRack } from './words-core.js';
 
 const WORD_LISTS = Object.freeze({
   standard: 'https://raw.githubusercontent.com/redbo/scrabble/45d4022a1a19130e3b848b868c408771b7f342ff/dictionary.txt',
   expanded: 'https://raw.githubusercontent.com/dwyl/english-words/8179fe68775df3f553ef19520db065228e65d1d3/words_alpha.txt'
 });
-const dictionaryCache = new Map();
 const el = id => document.getElementById(id);
-const rackInput = el('rackInput');
-const settings = ['dictionaryMode','scoreMode','palBonus','minLength','exactOnly','palOnly','allowRepeats','keepOrder','showLeftovers','wordLength','startsWith','contains','maxLength'];
-const sampleRack = 'X O Y E N T N U I D T E';
+const input = el('rackInput');
+const storageKey = 'rip.words.v1';
+const sourceCache = new Map();
+const optionIds = ['dictionaryMode','minLength','wordLength','startsWith','contains','maxLength','exactOnly','allowRepeats','keepOrder'];
+const sample = 'X O Y E N T N U I D T E';
+const PAGE_SIZE = 120;
+const columns = {
+  pal: { scroller:el('palScroller'), list:el('palWords'), count:el('palCount'), best:el('bestPal'), empty:el('palEmpty'), end:el('palEnd'), items:[], cursor:0, lastLength:null },
+  all: { scroller:el('allScroller'), list:el('allWords'), count:el('allCount'), best:el('bestAll'), empty:el('allEmpty'), end:el('allEnd'), items:[], cursor:0, lastLength:null }
+};
 let dictionary = [];
-let dictionaryName = '';
-let matches = [];
-let shown = 0;
-let schedule;
+let dictionaryLabel = '';
+let loading = true;
 let loadVersion = 0;
-const PAGE = 80;
+let solveTimer = null;
 
-function safeStorageRead() {
-  try { return JSON.parse(localStorage.getItem('rip.words.v1') || '{}'); }
-  catch { return {}; }
-}
-function saveSettings() {
+function savedSettings() {
   try {
-    const values = { rack: rackInput.value };
-    for (const id of settings) values[id] = el(id).type === 'checkbox' ? el(id).checked : el(id).value;
-    localStorage.setItem('rip.words.v1', JSON.stringify(values));
-  } catch {}
+    const parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch { return {}; }
 }
-function restoreSettings() {
-  const saved = safeStorageRead();
-  if (typeof saved.rack === 'string') rackInput.value = saved.rack;
-  for (const id of settings) if (saved[id] !== undefined) {
-    if (el(id).type === 'checkbox') el(id).checked = saved[id] === true;
-    else el(id).value = saved[id];
+function restoreState() {
+  const saved = savedSettings();
+  if (typeof saved.rack === 'string') input.value = saved.rack;
+  // Old versions exposed different scoring rules. Do not silently carry them
+  // into this new length-only, exact-letter default experience.
+  if (saved.simpleMode !== true) return;
+  for (const id of optionIds) {
+    if (saved[id] === undefined) continue;
+    const control = el(id);
+    if (control.type === 'checkbox') control.checked = saved[id] === true;
+    else control.value = saved[id];
   }
+  if (!['broad','standard','expanded'].includes(el('dictionaryMode').value)) el('dictionaryMode').value = 'broad';
 }
-function options() {
-  return {
-    mode: el('scoreMode').value,
-    bonus: el('palBonus').value,
-    minLength: el('minLength').value,
-    exact: el('exactOnly').checked,
-    palindromeOnly: el('palOnly').checked,
-    allowRepeats: el('allowRepeats').checked,
-    keepOrder: el('keepOrder').checked,
-    wordLength: el('wordLength').value,
-    startsWith: el('startsWith').value,
-    contains: el('contains').value,
-    maxLength: el('maxLength').value
-  };
+function persist() {
+  try {
+    const values = { ...savedSettings(), rack: input.value, simpleMode:true };
+    for (const id of optionIds) values[id] = el(id).type === 'checkbox' ? el(id).checked : el(id).value;
+    localStorage.setItem(storageKey, JSON.stringify(values));
+  } catch { /* Private browsing / storage restrictions must not block searching. */ }
 }
-function renderTiles() {
-  const letters = normalizeRack(rackInput.value);
-  const target = el('tileRack');
-  target.replaceChildren();
-  for (const char of letters.slice(0, 36)) {
-    const tile = document.createElement('span');
-    tile.className = 'ws-tile' + (char === '?' ? ' wild' : (TILE_VALUES[char] >= 4 ? ' high' : ''));
-    tile.textContent = char;
-    const point = document.createElement('small');
-    point.textContent = char === '?' ? '0' : String(TILE_VALUES[char]);
-    tile.append(point);
-    target.append(tile);
-  }
-  if (letters.length > 36) {
-    const note = document.createElement('span');
-    note.textContent = '+' + (letters.length - 36) + ' more';
-    target.append(note);
-  }
-}
-function status(message, error = false) {
+function setStatus(text, error = false) {
   const node = el('dictionaryStatus');
-  node.textContent = message;
+  node.textContent = text;
   node.classList.toggle('error', error);
 }
-function detail(word, other = '') {
-  return word ? word.length + ' letters · ' + word.score.toLocaleString() + ' pts' + other : 'No match';
-}
-function updateHighlights() {
-  const all = matches;
-  const longest = [...all].sort((a, b) => b.length - a.length || b.score - a.score || a.word.localeCompare(b.word))[0];
-  const palindrome = all.find(w => w.palindrome);
-  const best = all[0];
-  const fill = (id, textId, item, suffix = '') => {
-    el(id).textContent = item ? item.word : '—';
-    el(textId).textContent = detail(item, suffix);
+function searchOptions() {
+  return {
+    mode:'length', bonus:1, palindromeOnly:false,
+    exact:el('exactOnly').checked,
+    allowRepeats:el('allowRepeats').checked,
+    keepOrder:el('keepOrder').checked,
+    minLength:el('minLength').value,
+    wordLength:el('wordLength').value,
+    startsWith:el('startsWith').value,
+    contains:el('contains').value,
+    maxLength:el('maxLength').value
   };
-  fill('bestScore','bestScoreDetail',best);
-  fill('bestLong','bestLongDetail',longest);
-  fill('bestPal','bestPalDetail',palindrome);
-  el('matchCount').textContent = all.length.toLocaleString();
-  el('matchDetail').textContent = dictionaryName;
-  el('highlights').hidden = false;
 }
-function renderRows(reset = false) {
-  const target = el('wordResults');
-  if (reset) { target.replaceChildren(); shown = 0; }
-  const fragment = document.createDocumentFragment();
-  for (const item of matches.slice(shown, shown + PAGE)) {
-    const li = document.createElement('li'); li.className = 'ws-result-row';
-    const main = document.createElement('div'); main.className = 'ws-word';
-    const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = item.word;
-    copy.title = 'Copy ' + item.word;
-    copy.setAttribute('aria-label', 'Copy ' + item.word);
-    copy.addEventListener('click', () => copyText(item.word));
-    main.append(copy);
-    if (item.palindrome) {
-      const tag = document.createElement('span'); tag.className = 'ws-pal-tag';
-      tag.textContent = 'PALINDROME'; main.append(tag);
-    }
-    const left = document.createElement('span'); left.className = 'ws-left';
-    left.textContent = !el('showLeftovers').checked ? '—' : (item.leftovers == null ? 'N/A' : (item.leftovers || '—'));
-    const length = document.createElement('span'); length.className = 'ws-length'; length.textContent = item.length;
-    const score = document.createElement('strong'); score.className = 'ws-score'; score.textContent = String(item.score);
-    li.append(main,left,length,score); fragment.append(li);
+function updateColumn(column, items, emptyMessage) {
+  column.items = items;
+  column.cursor = 0;
+  column.lastLength = null;
+  column.scroller.scrollTop = 0;
+  column.list.replaceChildren();
+  column.count.textContent = items.length.toLocaleString();
+  column.best.replaceChildren();
+  if (items.length) {
+    const strong = document.createElement('strong');
+    strong.textContent = items[0].word;
+    column.best.append('Longest: ', strong, ' · ', items[0].length, ' letters');
+  } else {
+    column.best.textContent = 'No matching words';
   }
-  target.append(fragment);
-  shown = Math.min(matches.length, shown + PAGE);
-  el('moreButton').hidden = shown >= matches.length;
-  el('moreButton').textContent = 'Show more (' + (matches.length - shown).toLocaleString() + ' remaining)';
-  el('emptyResults').hidden = matches.length !== 0;
-  el('copyButton').disabled = matches.length === 0;
+  column.empty.hidden = items.length > 0;
+  column.empty.textContent = emptyMessage;
+  column.end.hidden = !items.length;
+  if (items.length) appendNext(column);
+}
+function appendNext(column) {
+  if (column.cursor >= column.items.length) return;
+  const fragment = document.createDocumentFragment();
+  const end = Math.min(column.items.length, column.cursor + PAGE_SIZE);
+  for (let i = column.cursor; i < end; i++) {
+    const item = column.items[i];
+    if (item.length !== column.lastLength) {
+      const separator = document.createElement('li');
+      separator.className = 'ws-length-header';
+      separator.textContent = item.length + (item.length === 1 ? ' LETTER' : ' LETTERS');
+      fragment.append(separator);
+      column.lastLength = item.length;
+    }
+    const row = document.createElement('li');
+    row.className = 'ws-word-row';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = item.word;
+    button.dataset.word = item.word;
+    button.title = 'Copy ' + item.word;
+    button.setAttribute('aria-label', 'Copy ' + item.word);
+    const length = document.createElement('span');
+    length.textContent = String(item.length);
+    row.append(button, length);
+    fragment.append(row);
+  }
+  column.list.append(fragment);
+  column.cursor = end;
+  column.end.hidden = column.cursor < column.items.length;
+}
+function renderEmpty(message) {
+  updateColumn(columns.pal, [], message);
+  updateColumn(columns.all, [], message);
 }
 function solve() {
-  clearTimeout(schedule);
-  renderTiles();
-  saveSettings();
+  clearTimeout(solveTimer);
+  persist();
+  const rack = normalizeRack(input.value);
+  if (!rack.length || (rack.length < 2 && !el('allowRepeats').checked)) {
+    renderEmpty('Enter at least two letters to see answers.');
+    setStatus(loading ? 'Loading word lists…' : (dictionaryLabel ? dictionaryLabel + ' · Ready for letters' : 'Enter letters to search.'));
+    return;
+  }
   if (!dictionary.length) {
-    el('highlights').hidden = true;
-    el('wordResults').replaceChildren();
-    el('moreButton').hidden = true;
-    el('copyButton').disabled = true;
+    renderEmpty('Loading the word list…');
+    if (!loading) setStatus('No dictionary is loaded. Choose a dictionary in Options.', true);
     return;
   }
-  const rack = normalizeRack(rackInput.value);
-  if (rack.length < 2 && !(el('allowRepeats').checked && rack.length === 1)) {
-    matches = []; renderRows(true); el('highlights').hidden = true;
-    status('Enter at least two letters, or enable repeats with one letter. Dictionary ready: ' + dictionaryName);
-    return;
-  }
-  matches = solveRack(dictionary, rack, options());
-  updateHighlights();
-  renderRows(true);
-  status(dictionaryName + ' · ' + matches.length.toLocaleString() + ' valid words found. Results are sorted by score, then length.');
+  // The visible UI always sorts by length. Palindromes are separately highlighted.
+  const all = solveRack(dictionary, rack, searchOptions());
+  const palindrome = all.filter(item => item.palindrome);
+  updateColumn(columns.pal, palindrome, 'No palindromes match those letters.');
+  updateColumn(columns.all, all, 'No words match those letters.');
+  setStatus(all.length.toLocaleString() + ' words · ' + palindrome.length.toLocaleString() + ' palindromes · ' + dictionaryLabel);
 }
 function queueSolve() {
-  clearTimeout(schedule);
-  renderTiles();
-  schedule = setTimeout(solve, 130);
+  clearTimeout(solveTimer);
+  solveTimer = setTimeout(solve, 140);
 }
-async function getWords(kind) {
-  if (dictionaryCache.has(kind)) return dictionaryCache.get(kind);
-  const response = await fetch(WORD_LISTS[kind], { cache: 'force-cache' });
-  if (!response.ok) throw new Error(kind + ' list HTTP ' + response.status);
+async function getDictionary(kind) {
+  if (sourceCache.has(kind)) return sourceCache.get(kind);
+  const response = await fetch(WORD_LISTS[kind], { cache:'force-cache' });
+  if (!response.ok) throw new Error('Could not load ' + kind + ' dictionary (' + response.status + ')');
   const words = parseDictionary(await response.text());
-  if (words.length < 100000) throw new Error(kind + ' word list is incomplete');
-  dictionaryCache.set(kind, words);
+  if (words.length < 100000) throw new Error(kind + ' dictionary appears incomplete');
+  sourceCache.set(kind, words);
   return words;
 }
 async function loadDefault() {
   const token = ++loadVersion;
-  const mode = el('dictionaryMode').value;
+  loading = true;
   dictionary = [];
-  matches = [];
-  el('solveButton').disabled = true;
-  status('Loading ' + mode + ' dictionary… The first download may take a moment.');
-  el('highlights').hidden = true;
-  el('wordResults').replaceChildren();
-  el('moreButton').hidden = true;
-  el('copyButton').disabled = true;
-  const kinds = mode === 'broad' ? ['standard','expanded'] : [mode];
+  dictionaryLabel = '';
+  const selected = el('dictionaryMode').value;
+  const kinds = selected === 'broad' ? ['standard','expanded'] : [selected];
+  setStatus('Loading ' + selected + ' dictionary…');
+  if (normalizeRack(input.value)) renderEmpty('Loading the word list…');
   try {
-    const outcomes = await Promise.allSettled(kinds.map(getWords));
+    const results = await Promise.allSettled(kinds.map(getDictionary));
     if (token !== loadVersion) return;
-    const successful = outcomes.filter(item => item.status === 'fulfilled').map(item => item.value);
-    if (!successful.length) throw new Error(outcomes.map(item => item.reason?.message || 'network error').join('; '));
-    dictionary = [...new Set(successful.flat())];
-    dictionaryName = dictionary.length.toLocaleString() + ' entries · ' + mode
-      + (successful.length !== kinds.length ? ' (one source unavailable)' : '');
-    el('solveButton').disabled = false;
+    const available = results.filter(x => x.status === 'fulfilled').map(x => x.value);
+    if (!available.length) {
+      throw new Error(results.map(x => x.reason?.message || 'Network error').join('; '));
+    }
+    dictionary = [...new Set(available.flat())];
+    dictionaryLabel = dictionary.length.toLocaleString() + ' dictionary entries'
+      + (available.length < kinds.length ? ' (one list unavailable)' : '');
+    loading = false;
     solve();
   } catch (error) {
     if (token !== loadVersion) return;
-    status('Could not load the dictionary (' + error.message + '). Reload or upload a .txt file below.', true);
-    el('solveButton').disabled = true;
+    loading = false;
+    setStatus('Dictionary load failed: ' + error.message + '. Open Options to retry or upload a word list.', true);
+    renderEmpty('Dictionary unavailable.');
   }
 }
 async function loadUpload(file) {
   if (!file) return;
   const token = ++loadVersion;
-  el('solveButton').disabled = true;
-  status('Reading ' + file.name + '…');
+  loading = true;
+  setStatus('Reading ' + file.name + '…');
   try {
-    if (file.size > 15 * 1024 * 1024) throw new Error('Maximum dictionary size is 15 MB.');
+    if (file.size > 15 * 1024 * 1024) throw new Error('Maximum file size is 15 MB');
     const words = parseDictionary(await file.text());
-    if (!words.length) throw new Error('No words found. Use one plain-English word per line.');
     if (token !== loadVersion) return;
+    if (!words.length) throw new Error('No valid words found. Use one word per line.');
     dictionary = words;
-    dictionaryName = file.name + ' (' + words.length.toLocaleString() + ' entries)';
-    el('solveButton').disabled = false;
+    dictionaryLabel = file.name + ' · ' + words.length.toLocaleString() + ' entries';
+    loading = false;
     solve();
-  } catch (error) { status(error.message, true); el('solveButton').disabled = !dictionary.length; }
+  } catch (error) {
+    if (token !== loadVersion) return;
+    loading = false;
+    setStatus('Could not read custom dictionary: ' + error.message, true);
+    if (!dictionary.length) renderEmpty('Dictionary unavailable.');
+  }
 }
-async function copyText(text) {
+async function copyWord(word) {
   try {
-    await navigator.clipboard.writeText(text);
-    status('Copied to clipboard. ' + dictionaryName);
+    await navigator.clipboard.writeText(word);
+    setStatus('Copied ' + word + ' · ' + dictionaryLabel);
   } catch {
-    status('Clipboard access was blocked by the browser.', true);
+    setStatus('Could not copy automatically. Select the word to copy it.', true);
   }
 }
-restoreSettings();
-renderTiles();
-rackInput.addEventListener('input', queueSolve);
-rackInput.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); solve(); } });
-for (const id of settings) {
-  if (id !== 'dictionaryMode') el(id).addEventListener('change', queueSolve);
-}
-for (const id of ['startsWith','contains','wordLength','maxLength']) el(id).addEventListener('input', queueSolve);
-function syncExclusive(lastChanged = null) {
-  if (el('exactOnly').checked && el('allowRepeats').checked) {
-    if (lastChanged === 'allowRepeats') el('exactOnly').checked = false;
-    else el('allowRepeats').checked = false;
-  }
-  el('maxLength').disabled = !el('allowRepeats').checked;
-}
-for (const id of ['exactOnly','allowRepeats']) el(id).addEventListener('change', () => {
-  syncExclusive(id);
-  queueSolve();
+
+restoreState();
+if (el('exactOnly').checked && el('allowRepeats').checked) el('allowRepeats').checked = false;
+el('maxLength').disabled = !el('allowRepeats').checked;
+input.addEventListener('input', queueSolve);
+input.addEventListener('keydown', event => {
+  if (event.key === 'Enter') { event.preventDefault(); solve(); }
 });
-syncExclusive();
-el('solveButton').addEventListener('click', solve);
-el('sampleButton').addEventListener('click', () => { rackInput.value = sampleRack; solve(); });
-el('clearButton').addEventListener('click', () => { rackInput.value = ''; solve(); rackInput.focus(); });
-el('moreButton').addEventListener('click', () => renderRows(false));
-el('copyButton').addEventListener('click', () => copyText(matches.map(m => m.word + '\t' + m.score + '\t' + m.length + (m.palindrome ? '\tPALINDROME' : '')).join('\n')));
-el('dictionaryUpload').addEventListener('change', event => loadUpload(event.target.files[0]));
+el('sampleButton').addEventListener('click', () => { input.value = sample; solve(); input.focus(); });
+el('clearButton').addEventListener('click', () => { input.value = ''; solve(); input.focus(); });
+for (const id of optionIds) {
+  if (id === 'dictionaryMode') continue;
+  const control = el(id);
+  control.addEventListener('change', () => {
+    if (id === 'exactOnly' && control.checked) el('allowRepeats').checked = false;
+    if (id === 'allowRepeats' && control.checked) el('exactOnly').checked = false;
+    el('maxLength').disabled = !el('allowRepeats').checked;
+    queueSolve();
+  });
+  if (['minLength','wordLength','startsWith','contains','maxLength'].includes(id)) control.addEventListener('input', queueSolve);
+}
+el('dictionaryMode').addEventListener('change', () => { persist(); el('dictionaryUpload').value = ''; loadDefault(); });
+el('dictionaryUpload').addEventListener('change', event => loadUpload(event.target.files?.[0]));
 el('reloadDictionary').addEventListener('click', () => { el('dictionaryUpload').value = ''; loadDefault(); });
-el('dictionaryMode').addEventListener('change', () => { el('dictionaryUpload').value = ''; loadDefault(); });
+for (const column of Object.values(columns)) {
+  column.scroller.addEventListener('scroll', () => {
+    if (column.scroller.scrollHeight - column.scroller.scrollTop - column.scroller.clientHeight < 450) appendNext(column);
+  }, { passive:true });
+  column.list.addEventListener('click', event => {
+    const button = event.target.closest('button[data-word]');
+    if (button) copyWord(button.dataset.word);
+  });
+}
+renderEmpty('Enter letters above to see answers.');
 loadDefault();

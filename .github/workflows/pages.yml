@@ -50,7 +50,8 @@ jobs:
           node --check shard-fusions/calculator.mjs
           node --test tests/subpage-design.test.mjs
           node --test tests/deep-redesign.test.mjs
-          node --test tools/words/words-core.node.test.mjs
+          node --test tools/words/*.node.test.mjs
+          node --check tools/words/words-app.js
           node --test tests/third-pass-redesign.test.mjs
           node --test tests/fourth-pass-redesign.test.mjs
           node --test tests/fifth-pass-redesign.test.mjs
@@ -215,6 +216,8 @@ jobs:
           base="${SITE_URL%/}"
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/word-solver.html "$base/tools/words/"
           grep -Fq 'id="rackInput"' /tmp/word-solver.html
+          grep -Fq 'id="palScroller"' /tmp/word-solver.html
+          grep -Fq 'id="allScroller"' /tmp/word-solver.html
           grep -Fq 'words-app.js' /tmp/word-solver.html
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/home.html "$base/"
           grep -Fq 'id="fluidCanvas"' /tmp/home.html
