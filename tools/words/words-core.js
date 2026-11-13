@@ -87,9 +87,9 @@ export function followsRackOrder(word, rack, allowRepeats = false) {
 
 export function solveRack(words, rack, options = {}) {
   const letters = normalizeRack(rack);
-  if (letters.length < 2) return [];
   const exact = Boolean(options.exact);
   const repeats = Boolean(options.allowRepeats) && !exact;
+  if (!letters.length || (letters.length < 2 && !repeats)) return [];
   const keepOrder = Boolean(options.keepOrder);
   const palindromeOnly = Boolean(options.palindromeOnly);
   const minInput = Number(options.minLength);
