@@ -11,8 +11,8 @@ test('main screen has a single input and two labeled columns', () => {
   assert.match(html, /id="rackInput"/);
   assert.match(html, /Find your <em>best word/);
   assert.match(html, /value="enable">ENABLE/);
-  assert.match(html, /id="palHeading"[^>]*>LONGEST/);
-  assert.match(html, /id="allHeading"[^>]*>LONGEST/);
+  assert.match(html, /id="palHeading"[^>]*>Longest/);
+  assert.match(html, /id="allHeading"[^>]*>Longest/);
   assert.match(html, /id="palScroller"/);
   assert.match(html, /id="allScroller"/);
   assert.match(html, /id="palWords"/);
