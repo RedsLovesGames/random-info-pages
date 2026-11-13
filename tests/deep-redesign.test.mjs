@@ -8,11 +8,11 @@ const read=p=>readFileSync(new URL(p,root),'utf8');
 const script=p=>assert.doesNotThrow(()=>new Script(read(p)),p+' must parse');
 const assertRefs=(html,paths)=>{for(const p of paths){assert.ok(html.includes(p),'Expected '+p);assert.ok(existsSync(new URL(p.replace(/^\.\.\//,'').replace(/^\.\//,''),root))||existsSync(new URL(p,root)),'Local file exists '+p)}};
 
-test('Toolbox task filters cover all 13 utilities and preserve existing favorite storage',()=>{
+test('Toolbox task filters cover all 14 utilities and preserve existing favorite storage',()=>{
  const html=read('tools/index.html');
  const cards=[...html.matchAll(/<article class="tb-card-shell" data-group="([^"]+)" data-tool="[^"]+"[^>]*><a class="tb-card" href="\.\/([^/]+)\/"/g)];
- assert.equal(cards.length,13);
- const groups={create:4,plan:4,technical:5};
+ assert.equal(cards.length,14);
+ const groups={create:5,plan:4,technical:5};
  for(const [group,count] of Object.entries(groups))assert.equal(cards.filter(c=>c[1]===group).length,count);
  assert.match(html,/data-workflow="all"/);
  assert.match(html,/data-workflow="plan"/);
