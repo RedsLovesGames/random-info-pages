@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0b0a"><meta name="color-scheme" content="dark">
-<meta name="description" content="Find the longest words you can build from your letters and maximize configurable palindrome bonuses.">
-<title>Letter Rack & Palindrome Solver | Random Info Pages</title>
+<meta name="description" content="Type your letters and instantly find the longest words and longest palindromes.">
+<title>Word Solver | Random Info Pages</title>
 <link rel="stylesheet" href="../shared/toolbox.css">
 <link rel="stylesheet" href="./words.css">
 <link rel="stylesheet" href="../../design-system/rip.css">
@@ -14,68 +14,91 @@
 </head>
 <body data-rip-page="tools-words">
 <header class="tb-top"><nav class="tb-shell tb-nav" aria-label="Navigation">
-  <a class="tb-brand" href="../../">RIP/26 · WORDS</a><a class="tb-back" href="../">← Toolbox</a>
+  <a class="tb-brand" href="../../">RIP/26 · WORDS</a>
+  <a class="tb-back" href="../">← Toolbox</a>
 </nav></header>
 <main class="ws-shell">
-  <header class="ws-hero">
-    <div class="tb-kicker">14 / Word games · letter-constrained search</div>
-    <h1>WORD<br><em>FINDER.</em></h1>
-    <p>Find every dictionary word you can build from a rack. Sort by length or letter points, and make palindrome bonuses count.</p>
+  <header class="ws-intro">
+    <div class="tb-kicker">14 / WORD GAMES</div>
+    <h1>WORD <em>SOLVER.</em></h1>
+    <p>Enter your letters. See every match, longest first.</p>
   </header>
 
-  <section class="ws-panel" aria-label="Your letter rack">
-    <div class="ws-section-top"><div><span class="ws-overline">01 / INPUT</span><h2>Your letters</h2></div><span class="ws-overline">? = wild tile</span></div>
-    <label class="ws-field" for="rackInput">Enter tiles in any order, with or without spaces</label>
-    <input id="rackInput" class="ws-rack-input" type="text" maxlength="120" autocapitalize="characters" autocomplete="off" spellcheck="false" value="X O Y E N T N U I D T E" placeholder="E.g. X O Y E N T N U I D T E">
-    <div id="tileRack" class="ws-tiles" aria-label="Your letter tiles"></div>
-    <div class="ws-actions"><button id="solveButton" type="button" class="ws-primary">Find words <span aria-hidden="true">↗</span></button><button id="sampleButton" type="button" class="ws-secondary">Example rack</button><button id="clearButton" type="button" class="ws-secondary">Clear</button></div>
+  <section class="ws-search-section" aria-label="Find words">
+    <label class="ws-search-label" for="rackInput">YOUR LETTERS</label>
+    <div class="ws-input-row">
+      <input id="rackInput" type="text" maxlength="80" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text"
+        placeholder="Type letters here…" aria-describedby="rackHint dictionaryStatus" aria-label="Letters to find words from">
+      <button id="clearButton" class="ws-clear" type="button" aria-label="Clear letters">Clear <span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ws-input-help">
+      <span id="rackHint">Searches as you type. Use <strong>?</strong> for a blank tile; spaces are ignored.</span>
+      <button id="sampleButton" type="button" class="ws-inline-button">Try example letters</button>
+    </div>
+    <p id="dictionaryStatus" class="ws-status" role="status" aria-live="polite">Loading English dictionary…</p>
+
+    <details class="ws-advanced" id="advancedOptions">
+      <summary>Options <span aria-hidden="true">⌄</span></summary>
+      <div class="ws-options-body">
+        <div class="ws-options-grid">
+          <label>Dictionary
+            <select id="dictionaryMode">
+              <option value="broad">Broad English (both lists)</option>
+              <option value="standard">Scrabble-style list</option>
+              <option value="expanded">Expanded English list</option>
+            </select>
+          </label>
+          <label>Minimum letters <input id="minLength" type="number" min="2" max="40" value="2"></label>
+          <label>Exact word length <input id="wordLength" type="number" min="2" max="40" placeholder="Any"></label>
+          <label>Starts with <input id="startsWith" type="text" maxlength="40" placeholder="Any" autocomplete="off"></label>
+          <label>Contains <input id="contains" type="text" maxlength="40" placeholder="Any" autocomplete="off"></label>
+          <label>Max length with repeats <input id="maxLength" type="number" min="2" max="40" value="20"></label>
+        </div>
+        <div class="ws-checks">
+          <label><input id="exactOnly" type="checkbox"> Use every tile</label>
+          <label><input id="allowRepeats" type="checkbox"> Allow repeated letters</label>
+          <label><input id="keepOrder" type="checkbox"> Preserve tile order</label>
+        </div>
+        <div class="ws-dictionary-settings">
+          <label class="ws-upload">Custom dictionary (.txt, one word per line)
+            <input id="dictionaryUpload" type="file" accept=".txt,text/plain">
+          </label>
+          <button id="reloadDictionary" class="ws-inline-button" type="button">Use selected dictionary</button>
+        </div>
+        <p class="ws-options-help">The standard mode uses each tile at most once. In repeat mode, available letters can be reused. Word lists differ from game to game.</p>
+      </div>
+    </details>
   </section>
 
-  <section class="ws-panel" aria-label="Scoring and search settings">
-    <div class="ws-section-top"><div><span class="ws-overline">02 / RULES</span><h2>Rank the results</h2></div></div>
-    <div class="ws-settings">
-      <label class="ws-setting">Dictionary <select id="dictionaryMode"><option value="broad">Broad English · two lists</option><option value="standard">Scrabble-style · focused</option><option value="expanded">General English · expanded</option></select></label>
-      <label class="ws-setting">Primary score <select id="scoreMode"><option value="length">Word length</option><option value="tiles">Scrabble letter points</option></select></label>
-      <label class="ws-setting">Palindrome multiplier <div class="ws-inline"><input type="number" id="palBonus" min="1" max="20" step="0.5" value="2"><span>×</span></div></label>
-      <label class="ws-setting">Minimum word length <input id="minLength" type="number" min="2" max="30" value="3"></label>
-    </div>
-    <div class="ws-switches">
-      <label><input id="exactOnly" type="checkbox"> Must use every tile</label>
-      <label><input id="palOnly" type="checkbox"> Palindromes only</label>
-      <label><input id="allowRepeats" type="checkbox"> Letters may repeat</label>
-      <label><input id="keepOrder" type="checkbox"> Keep tile order</label>
-      <label><input id="showLeftovers" type="checkbox" checked> Show unused letters</label>
-    </div>
-    <div class="ws-section-top ws-filter-heading"><div><span class="ws-overline">MORE FILTERS</span><h2>Refine matches</h2></div></div>
-    <div class="ws-settings">
-      <label class="ws-setting">Exact word length <input id="wordLength" type="number" min="2" max="40" placeholder="Any"></label>
-      <label class="ws-setting">Starts with <input id="startsWith" type="text" maxlength="40" autocapitalize="characters" placeholder="Any"></label>
-      <label class="ws-setting">Contains sequence <input id="contains" type="text" maxlength="40" autocapitalize="characters" placeholder="Any"></label>
-      <label class="ws-setting">Max word length when repeating <input id="maxLength" type="number" min="2" max="40" value="20"></label>
-    </div>
-    <p class="ws-rule-note">Score = word length or standard Scrabble tile points, multiplied for palindromes. A ? wildcard scores zero. Repeat mode lets a listed letter appear more often; each ? still covers only one other letter. Exact-use and repetition cannot be on together. No board multipliers.</p>
-  </section>
+  <section class="ws-columns" aria-label="Words you can make">
+    <article class="ws-column" aria-labelledby="palHeading">
+      <div class="ws-col-head">
+        <div><small>01 / SYMMETRICAL WORDS</small><h2 id="palHeading">LONGEST<br>PALINDROMES</h2></div>
+        <span id="palCount" class="ws-count">0</span>
+      </div>
+      <p class="ws-best" id="bestPal">Longest palindrome appears here</p>
+      <div class="ws-scroll" id="palScroller" role="region" tabindex="0" aria-label="Palindrome results, longest first">
+        <ol class="ws-word-list" id="palWords"></ol>
+        <p class="ws-empty" id="palEmpty">Enter letters to find palindromes.</p>
+        <p class="ws-list-end" id="palEnd" hidden>All palindromes shown</p>
+      </div>
+    </article>
 
-  <section class="ws-results" aria-label="Solver results">
-    <div class="ws-section-top"><div><span class="ws-overline">03 / RESULTS</span><h2>The best moves</h2></div><button id="copyButton" class="ws-secondary" type="button" disabled>Copy results</button></div>
-    <p id="dictionaryStatus" class="ws-status" role="status" aria-live="polite">Loading word dictionary…</p>
-    <div class="ws-highlights" id="highlights" hidden>
-      <article><small>HIGHEST SCORE</small><strong id="bestScore">—</strong><span id="bestScoreDetail"></span></article>
-      <article><small>LONGEST WORD</small><strong id="bestLong">—</strong><span id="bestLongDetail"></span></article>
-      <article><small>BEST PALINDROME</small><strong id="bestPal">—</strong><span id="bestPalDetail"></span></article>
-      <article><small>MATCHES</small><strong id="matchCount">0</strong><span id="matchDetail"></span></article>
-    </div>
-    <div class="ws-result-heading"><span>WORD</span><span>LETTERS LEFT</span><span>LEN.</span><span>SCORE</span></div>
-    <ol id="wordResults" class="ws-list" aria-live="polite"></ol>
-    <button id="moreButton" class="ws-secondary ws-more" type="button" hidden>Show more results</button>
-    <p id="emptyResults" class="ws-empty" hidden>No matching words. Try a shorter minimum, turn off an exact/palindrome filter, or use more letters.</p>
+    <article class="ws-column" aria-labelledby="allHeading">
+      <div class="ws-col-head">
+        <div><small>02 / EVERY VALID WORD</small><h2 id="allHeading">LONGEST<br>EVERYTHING</h2></div>
+        <span id="allCount" class="ws-count">0</span>
+      </div>
+      <p class="ws-best" id="bestAll">Longest word appears here</p>
+      <div class="ws-scroll" id="allScroller" role="region" tabindex="0" aria-label="All word results, longest first">
+        <ol class="ws-word-list" id="allWords"></ol>
+        <p class="ws-empty" id="allEmpty">Enter letters to find words.</p>
+        <p class="ws-list-end" id="allEnd" hidden>All words shown</p>
+      </div>
+    </article>
   </section>
-
-  <footer class="ws-footer">
-    <div><strong>Dictionary</strong><p>Broad English combines the <a href="https://github.com/redbo/scrabble" target="_blank" rel="noopener noreferrer">redbo/scrabble</a> word list with the <a href="https://github.com/dwyl/english-words" target="_blank" rel="noopener noreferrer">dwyl/english-words</a> general dictionary. Each can be selected separately. Lists are downloaded from public GitHub sources, parsed in your browser and cached. Some unusual or non-game-legal entries may appear.</p>
-    <p>Independent implementation. dCode's private backend and data are not used. For comparison, <a href="https://www.dcode.fr/longest-word-solver" target="_blank" rel="noopener noreferrer">open dCode's official solver</a> manually.</p></div>
-    <div><label class="ws-upload" for="dictionaryUpload">Use a different word list <span>.txt, one word per line</span></label><input id="dictionaryUpload" type="file" accept=".txt,text/plain"><button id="reloadDictionary" class="ws-secondary" type="button">Reload selected dictionary</button></div>
-  </footer>
+  <p class="ws-copy-hint">Select any word to copy it. Both lists include all matching words, arranged from longest to shortest. Scroll within each column to see more.</p>
+  <footer class="ws-footer">Dictionary sources: <a href="https://github.com/redbo/scrabble" target="_blank" rel="noopener noreferrer">redbo/scrabble</a> and <a href="https://github.com/dwyl/english-words" target="_blank" rel="noopener noreferrer">dwyl/english-words</a>. This tool is independent of other word-solving sites.</footer>
 </main>
 <script type="module" src="./words-app.js"></script>
 </body>
