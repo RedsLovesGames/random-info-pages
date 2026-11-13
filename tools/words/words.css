@@ -63,3 +63,10 @@
 button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--acid);outline-offset:3px}
 @media(max-width:800px){.ws-highlights{grid-template-columns:repeat(2,minmax(0,1fr))}.ws-settings{grid-template-columns:1fr 1fr}.ws-hero{padding-top:44px}}
 @media(max-width:520px){.ws-shell{width:min(100% - 24px,1150px)}.ws-hero h1{font-size:clamp(4.1rem,17vw,7rem)}.ws-settings{grid-template-columns:1fr}.ws-highlights{gap:7px}.ws-highlights article{padding:12px}.ws-result-heading,.ws-result-row{grid-template-columns:minmax(120px,2fr) 44px 66px;gap:6px;padding-inline:5px}.ws-result-heading span:nth-child(2),.ws-left{display:none}.ws-pal-tag{display:block;margin:3px 0 0}.ws-word{font-size:1rem}.ws-footer{grid-template-columns:1fr;gap:15px}}
+
+/* Advanced word filters and dictionary selection. */
+.ws-filter-heading{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}
+.ws-setting input[type=text]{text-transform:uppercase}
+.ws-setting input:disabled{opacity:.48;cursor:not-allowed}
+.ws-switches label:has(input:disabled){opacity:.55}
+.ws-rule-note{margin-top:22px}

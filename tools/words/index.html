@@ -34,12 +34,26 @@
   <section class="ws-panel" aria-label="Scoring and search settings">
     <div class="ws-section-top"><div><span class="ws-overline">02 / RULES</span><h2>Rank the results</h2></div></div>
     <div class="ws-settings">
+      <label class="ws-setting">Dictionary <select id="dictionaryMode"><option value="broad">Broad English · two lists</option><option value="standard">Scrabble-style · focused</option><option value="expanded">General English · expanded</option></select></label>
       <label class="ws-setting">Primary score <select id="scoreMode"><option value="length">Word length</option><option value="tiles">Scrabble letter points</option></select></label>
       <label class="ws-setting">Palindrome multiplier <div class="ws-inline"><input type="number" id="palBonus" min="1" max="20" step="0.5" value="2"><span>×</span></div></label>
       <label class="ws-setting">Minimum word length <input id="minLength" type="number" min="2" max="30" value="3"></label>
     </div>
-    <div class="ws-switches"><label><input id="exactOnly" type="checkbox"> Must use every tile</label><label><input id="palOnly" type="checkbox"> Palindromes only</label></div>
-    <p class="ws-rule-note">Score = length or standard English Scrabble tile points, multiplied for palindromes. ? wildcards are worth zero tile points. No board multipliers or bonus for using every tile.</p>
+    <div class="ws-switches">
+      <label><input id="exactOnly" type="checkbox"> Must use every tile</label>
+      <label><input id="palOnly" type="checkbox"> Palindromes only</label>
+      <label><input id="allowRepeats" type="checkbox"> Letters may repeat</label>
+      <label><input id="keepOrder" type="checkbox"> Keep tile order</label>
+      <label><input id="showLeftovers" type="checkbox" checked> Show unused letters</label>
+    </div>
+    <div class="ws-section-top ws-filter-heading"><div><span class="ws-overline">MORE FILTERS</span><h2>Refine matches</h2></div></div>
+    <div class="ws-settings">
+      <label class="ws-setting">Exact word length <input id="wordLength" type="number" min="2" max="40" placeholder="Any"></label>
+      <label class="ws-setting">Starts with <input id="startsWith" type="text" maxlength="40" autocapitalize="characters" placeholder="Any"></label>
+      <label class="ws-setting">Contains sequence <input id="contains" type="text" maxlength="40" autocapitalize="characters" placeholder="Any"></label>
+      <label class="ws-setting">Max word length when repeating <input id="maxLength" type="number" min="2" max="40" value="20"></label>
+    </div>
+    <p class="ws-rule-note">Score = word length or standard Scrabble tile points, multiplied for palindromes. A ? wildcard scores zero. Repeat mode lets a listed letter appear more often; each ? still covers only one other letter. Exact-use and repetition cannot be on together. No board multipliers.</p>
   </section>
 
   <section class="ws-results" aria-label="Solver results">
@@ -58,9 +72,9 @@
   </section>
 
   <footer class="ws-footer">
-    <div><strong>Dictionary</strong><p>Uses a community Scrabble-style word list of roughly 179,000 entries, fetched once by the browser and reused from its cache. Lists vary by game, so a word shown here may not be accepted by your game.</p>
-    <p>Source: <a href="https://github.com/redbo/scrabble" target="_blank" rel="noopener noreferrer">redbo/scrabble</a>, dictionary revision 45d4022. No dictionary text is sent to this site.</p></div>
-    <div><label class="ws-upload" for="dictionaryUpload">Use a different word list <span>.txt, one word per line</span></label><input id="dictionaryUpload" type="file" accept=".txt,text/plain"><button id="reloadDictionary" class="ws-secondary" type="button">Reload default dictionary</button></div>
+    <div><strong>Dictionary</strong><p>Broad English combines the <a href="https://github.com/redbo/scrabble" target="_blank" rel="noopener noreferrer">redbo/scrabble</a> word list with the <a href="https://github.com/dwyl/english-words" target="_blank" rel="noopener noreferrer">dwyl/english-words</a> general dictionary. Each can be selected separately. Lists are downloaded from public GitHub sources, parsed in your browser and cached. Some unusual or non-game-legal entries may appear.</p>
+    <p>Independent implementation. dCode's private backend and data are not used. For comparison, <a href="https://www.dcode.fr/longest-word-solver" target="_blank" rel="noopener noreferrer">open dCode's official solver</a> manually.</p></div>
+    <div><label class="ws-upload" for="dictionaryUpload">Use a different word list <span>.txt, one word per line</span></label><input id="dictionaryUpload" type="file" accept=".txt,text/plain"><button id="reloadDictionary" class="ws-secondary" type="button">Reload selected dictionary</button></div>
   </footer>
 </main>
 <script type="module" src="./words-app.js"></script>
