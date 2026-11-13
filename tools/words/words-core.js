@@ -50,11 +50,11 @@ export function leftoverLetters(word, rack) {
   return Object.keys(pool).sort().map(char => char.repeat(pool[char])).join('');
 }
 
-export function tileScore(word, rack) {
+export function tileScore(word, rack, allowRepeats = false) {
   const pool = counts(normalizeRack(rack));
   let sum = 0;
   for (const char of String(word).toUpperCase()) {
-    if (pool[char] > 0) { pool[char]--; sum += TILE_VALUES[char] || 0; }
+    if (pool[char] > 0) { if (!allowRepeats) pool[char]--; sum += TILE_VALUES[char] || 0; }
     else if (pool['?'] > 0) pool['?']--;
   }
   return sum;
@@ -63,45 +63,85 @@ export function tileScore(word, rack) {
 export function scoreWord(word, rack, options = {}) {
   const palindrome = isPalindrome(word);
   const mode = options.mode === 'tiles' ? 'tiles' : 'length';
-  const base = mode === 'tiles' ? tileScore(word, rack) : word.length;
+  const base = mode === 'tiles' ? tileScore(word, rack, Boolean(options.allowRepeats) && !options.exact) : word.length;
   const rawBonus = Number(options.bonus);
   const bonus = Number.isFinite(rawBonus) ? Math.max(1, Math.min(20, rawBonus)) : 2;
   return { base, score: base * (palindrome ? bonus : 1), palindrome };
 }
 
+
+/** Word must follow tile order. When repeats are enabled, adjacent repeats
+ * may reuse an exact tile, but wildcards are always consumed once. */
+export function followsRackOrder(word, rack, allowRepeats = false) {
+  const letters = normalizeRack(rack);
+  let position = 0, previous = '', previousIndex = -1;
+  for (const char of String(word).toUpperCase()) {
+    if (allowRepeats && char === previous && letters[previousIndex] === char) continue;
+    while (position < letters.length && letters[position] !== char && letters[position] !== '?') position++;
+    if (position === letters.length) return false;
+    previousIndex = position++;
+    previous = char;
+  }
+  return true;
+}
+
 export function solveRack(words, rack, options = {}) {
   const letters = normalizeRack(rack);
-  const minimum = Number.isFinite(Number(options.minLength))
-    ? Math.max(2, Math.min(letters.length, Number(options.minLength))) : 2;
   const exact = Boolean(options.exact);
+  const repeats = Boolean(options.allowRepeats) && !exact;
+  if (!letters.length || (letters.length < 2 && !repeats)) return [];
+  const keepOrder = Boolean(options.keepOrder);
   const palindromeOnly = Boolean(options.palindromeOnly);
-  const output = [];
-  if (letters.length < 2) return output;
-  const pool = counts(letters);
+  const minInput = Number(options.minLength);
+  const minimum = Number.isFinite(minInput) ? Math.max(2, Math.floor(minInput)) : 2;
+  const maxInput = Number(options.maxLength);
+  const maximum = repeats
+    ? Number.isFinite(maxInput) && maxInput >= 2 ? Math.min(40, Math.floor(maxInput)) : 20
+    : letters.length;
+  const lengthInput = Number(options.wordLength);
+  const wordLength = options.wordLength !== '' && options.wordLength != null &&
+    Number.isInteger(lengthInput) && lengthInput >= 2 ? lengthInput : null;
+  const prefix = String(options.startsWith || '').trim().toUpperCase().replace(/[^A-Z]/g, '');
+  const contains = String(options.contains || '').trim().toUpperCase().replace(/[^A-Z]/g, '');
+  const pool = counts(letters), blanks = pool['?'] || 0;
+  const found = [], seen = new Set();
+
   for (const original of words) {
     const word = String(original).trim().toUpperCase();
-    if (!/^[A-Z]{2,}$/.test(word) || word.length < minimum || word.length > letters.length) continue;
+    if (seen.has(word)) continue;
+    seen.add(word);
+    if (!/^[A-Z]{2,}$/.test(word) || word.length < minimum || word.length > maximum) continue;
+    if (wordLength != null && word.length !== wordLength) continue;
     if (exact && word.length !== letters.length) continue;
-    const pal = isPalindrome(word);
-    if (palindromeOnly && !pal) continue;
-    const used = Object.create(null);
-    let excess = 0;
-    let valid = true;
-    for (const char of word) {
-      const count = (used[char] || 0) + 1;
-      used[char] = count;
-      if (count > (pool[char] || 0)) {
-        excess++;
-        if (excess > (pool['?'] || 0)) { valid = false; break; }
+    if (prefix && !word.startsWith(prefix)) continue;
+    if (contains && !word.includes(contains)) continue;
+    const palindrome = isPalindrome(word);
+    if (palindromeOnly && !palindrome) continue;
+    let usedBlanks = 0, valid = true;
+    if (repeats) {
+      for (const char of word) {
+        if (pool[char]) continue;
+        if (++usedBlanks > blanks) { valid = false; break; }
+      }
+    } else {
+      const used = Object.create(null);
+      for (const char of word) {
+        const count = (used[char] || 0) + 1;
+        used[char] = count;
+        if (count > (pool[char] || 0) && ++usedBlanks > blanks) {
+          valid = false;
+          break;
+        }
       }
     }
-    if (!valid) continue;
+    if (!valid || (keepOrder && !followsRackOrder(word, letters, repeats))) continue;
     const result = scoreWord(word, letters, options);
-    output.push({
-      word, length: word.length, palindrome: result.palindrome,
-      base: result.base, score: result.score, leftovers: leftoverLetters(word, letters)
+    found.push({
+      word, length: word.length, palindrome,
+      base: result.base, score: result.score,
+      leftovers: repeats ? null : leftoverLetters(word, letters)
     });
   }
-  output.sort((a,b) => b.score - a.score || b.length - a.length || a.word.localeCompare(b.word));
-  return output;
+  found.sort((a,b) => b.score - a.score || b.length - a.length || a.word.localeCompare(b.word));
+  return found;
 }

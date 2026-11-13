@@ -24,3 +24,22 @@ assert.equal(results.find(x=>x.word==='DETENTION').score,9);
 assert.equal(solveRack(['TENET','TOY'],rack,{exact:true}).length,0);
 assert.deepEqual(solveRack(['TOY','TENET'],rack,{palindromeOnly:true}).map(x=>x.word),['TENET']);
 console.log('PASS word solver rack, palindrome, wildcard, duplicate, scoring and filtering tests');
+
+assert.deepEqual(solveRack(['DETENTION','TENET','TOY','TOY'],rack,{startsWith:'TE'}).map(x=>x.word),['TENET']);
+assert.deepEqual(solveRack(['DETENTION','TENET','TOY'],rack,{contains:'TION'}).map(x=>x.word),['DETENTION']);
+assert.deepEqual(solveRack(['DETENTION','TENET','TOY'],rack,{wordLength:5}).map(x=>x.word),['TENET']);
+assert.deepEqual(solveRack(['DETENTION','TENET'],rack,{minLength:12}).map(x=>x.word),[]);
+assert.deepEqual(solveRack(['ABA','ABBA','BAA'],'AB',{allowRepeats:true,mode:'length',bonus:1}).map(x=>x.word),['ABBA','ABA','BAA']);
+assert.deepEqual(solveRack(['ABA','ABBA','BAA'],'AB',{mode:'length',bonus:1}).map(x=>x.word),[]);
+assert.deepEqual(solveRack(['ACT','CAT'],'CAT',{keepOrder:true}).map(x=>x.word),['CAT']);
+assert.deepEqual(solveRack(['ABBBC','ABBC','ACB'],'ABC',{keepOrder:true,allowRepeats:true,mode:'length',bonus:1}).map(x=>x.word),['ABBBC','ABBC']);
+assert.deepEqual(solveRack(['TEST','TSET'],'TEST',{keepOrder:true,exact:true}).map(x=>x.word),['TEST']);
+assert.deepEqual(solveRack(['CAT','CATS'],'C?T',{allowRepeats:true,mode:'length',bonus:1}).map(x=>x.word),['CAT']);
+assert.deepEqual(solveRack(['ABBA','ABA'],'AB',{allowRepeats:true,maxLength:3,mode:'length',bonus:1}).map(x=>x.word),['ABA']);
+assert.deepEqual(solveRack(['TENET','DETENTION'],rack,{palindromeOnly:true,contains:'E'}).map(x=>x.word),['TENET']);
+console.log('PASS advanced dictionary-independent word matching, repetition, and word filters');
+
+assert.deepEqual(solveRack(['AAA','AA','A'],'A',{allowRepeats:true}).map(x=>x.word),['AAA','AA']);
+assert.deepEqual(solveRack(['AAA','AA'],'A').map(x=>x.word),[]);
+assert.equal(tileScore('ABBBC','ABC',true),13);
+assert.equal(scoreWord('ABBBC','ABC',{mode:'tiles',allowRepeats:true,bonus:1}).score,13);

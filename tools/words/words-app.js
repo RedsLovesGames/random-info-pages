@@ -1,9 +1,13 @@
 import { normalizeRack, parseDictionary, solveRack, TILE_VALUES } from './words-core.js';
 
-const DICTIONARY_URL = 'https://raw.githubusercontent.com/redbo/scrabble/45d4022a1a19130e3b848b868c408771b7f342ff/dictionary.txt';
+const WORD_LISTS = Object.freeze({
+  standard: 'https://raw.githubusercontent.com/redbo/scrabble/45d4022a1a19130e3b848b868c408771b7f342ff/dictionary.txt',
+  expanded: 'https://raw.githubusercontent.com/dwyl/english-words/8179fe68775df3f553ef19520db065228e65d1d3/words_alpha.txt'
+});
+const dictionaryCache = new Map();
 const el = id => document.getElementById(id);
 const rackInput = el('rackInput');
-const settings = ['scoreMode','palBonus','minLength','exactOnly','palOnly'];
+const settings = ['dictionaryMode','scoreMode','palBonus','minLength','exactOnly','palOnly','allowRepeats','keepOrder','showLeftovers','wordLength','startsWith','contains','maxLength'];
 const sampleRack = 'X O Y E N T N U I D T E';
 let dictionary = [];
 let dictionaryName = '';
@@ -38,7 +42,13 @@ function options() {
     bonus: el('palBonus').value,
     minLength: el('minLength').value,
     exact: el('exactOnly').checked,
-    palindromeOnly: el('palOnly').checked
+    palindromeOnly: el('palOnly').checked,
+    allowRepeats: el('allowRepeats').checked,
+    keepOrder: el('keepOrder').checked,
+    wordLength: el('wordLength').value,
+    startsWith: el('startsWith').value,
+    contains: el('contains').value,
+    maxLength: el('maxLength').value
   };
 }
 function renderTiles() {
@@ -101,7 +111,7 @@ function renderRows(reset = false) {
       tag.textContent = 'PALINDROME'; main.append(tag);
     }
     const left = document.createElement('span'); left.className = 'ws-left';
-    left.textContent = item.leftovers || '—';
+    left.textContent = !el('showLeftovers').checked ? '—' : (item.leftovers == null ? 'N/A' : (item.leftovers || '—'));
     const length = document.createElement('span'); length.className = 'ws-length'; length.textContent = item.length;
     const score = document.createElement('strong'); score.className = 'ws-score'; score.textContent = String(item.score);
     li.append(main,left,length,score); fragment.append(li);
@@ -125,9 +135,9 @@ function solve() {
     return;
   }
   const rack = normalizeRack(rackInput.value);
-  if (rack.length < 2) {
+  if (rack.length < 2 && !(el('allowRepeats').checked && rack.length === 1)) {
     matches = []; renderRows(true); el('highlights').hidden = true;
-    status('Enter at least two letters. Dictionary ready: ' + dictionaryName);
+    status('Enter at least two letters, or enable repeats with one letter. Dictionary ready: ' + dictionaryName);
     return;
   }
   matches = solveRack(dictionary, rack, options());
@@ -140,28 +150,40 @@ function queueSolve() {
   renderTiles();
   schedule = setTimeout(solve, 130);
 }
+async function getWords(kind) {
+  if (dictionaryCache.has(kind)) return dictionaryCache.get(kind);
+  const response = await fetch(WORD_LISTS[kind], { cache: 'force-cache' });
+  if (!response.ok) throw new Error(kind + ' list HTTP ' + response.status);
+  const words = parseDictionary(await response.text());
+  if (words.length < 100000) throw new Error(kind + ' word list is incomplete');
+  dictionaryCache.set(kind, words);
+  return words;
+}
 async function loadDefault() {
   const token = ++loadVersion;
+  const mode = el('dictionaryMode').value;
   dictionary = [];
+  matches = [];
   el('solveButton').disabled = true;
-  status('Loading community dictionary… The first download may take a moment.');
+  status('Loading ' + mode + ' dictionary… The first download may take a moment.');
   el('highlights').hidden = true;
   el('wordResults').replaceChildren();
   el('moreButton').hidden = true;
+  el('copyButton').disabled = true;
+  const kinds = mode === 'broad' ? ['standard','expanded'] : [mode];
   try {
-    const response = await fetch(DICTIONARY_URL, { cache: 'force-cache' });
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    const text = await response.text();
-    const words = parseDictionary(text);
-    if (words.length < 100000) throw new Error('Downloaded word list is incomplete.');
+    const outcomes = await Promise.allSettled(kinds.map(getWords));
     if (token !== loadVersion) return;
-    dictionary = words;
-    dictionaryName = words.length.toLocaleString() + ' dictionary entries';
+    const successful = outcomes.filter(item => item.status === 'fulfilled').map(item => item.value);
+    if (!successful.length) throw new Error(outcomes.map(item => item.reason?.message || 'network error').join('; '));
+    dictionary = [...new Set(successful.flat())];
+    dictionaryName = dictionary.length.toLocaleString() + ' entries · ' + mode
+      + (successful.length !== kinds.length ? ' (one source unavailable)' : '');
     el('solveButton').disabled = false;
     solve();
   } catch (error) {
     if (token !== loadVersion) return;
-    status('Could not load the default dictionary (' + error.message + '). Click Reload or upload a .txt list below.', true);
+    status('Could not load the dictionary (' + error.message + '). Reload or upload a .txt file below.', true);
     el('solveButton').disabled = true;
   }
 }
@@ -193,7 +215,22 @@ restoreSettings();
 renderTiles();
 rackInput.addEventListener('input', queueSolve);
 rackInput.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); solve(); } });
-for (const id of settings) el(id).addEventListener('change', queueSolve);
+for (const id of settings) {
+  if (id !== 'dictionaryMode') el(id).addEventListener('change', queueSolve);
+}
+for (const id of ['startsWith','contains','wordLength','maxLength']) el(id).addEventListener('input', queueSolve);
+function syncExclusive(lastChanged = null) {
+  if (el('exactOnly').checked && el('allowRepeats').checked) {
+    if (lastChanged === 'allowRepeats') el('exactOnly').checked = false;
+    else el('allowRepeats').checked = false;
+  }
+  el('maxLength').disabled = !el('allowRepeats').checked;
+}
+for (const id of ['exactOnly','allowRepeats']) el(id).addEventListener('change', () => {
+  syncExclusive(id);
+  queueSolve();
+});
+syncExclusive();
 el('solveButton').addEventListener('click', solve);
 el('sampleButton').addEventListener('click', () => { rackInput.value = sampleRack; solve(); });
 el('clearButton').addEventListener('click', () => { rackInput.value = ''; solve(); rackInput.focus(); });
@@ -201,4 +238,5 @@ el('moreButton').addEventListener('click', () => renderRows(false));
 el('copyButton').addEventListener('click', () => copyText(matches.map(m => m.word + '\t' + m.score + '\t' + m.length + (m.palindrome ? '\tPALINDROME' : '')).join('\n')));
 el('dictionaryUpload').addEventListener('change', event => loadUpload(event.target.files[0]));
 el('reloadDictionary').addEventListener('click', () => { el('dictionaryUpload').value = ''; loadDefault(); });
+el('dictionaryMode').addEventListener('change', () => { el('dictionaryUpload').value = ''; loadDefault(); });
 loadDefault();
