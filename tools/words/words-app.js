@@ -30,6 +30,9 @@ function savedSettings() {
 function restoreState() {
   const saved = savedSettings();
   if (typeof saved.rack === 'string') input.value = saved.rack;
+  // Old versions exposed different scoring rules. Do not silently carry them
+  // into this new length-only, exact-letter default experience.
+  if (saved.simpleMode !== true) return;
   for (const id of optionIds) {
     if (saved[id] === undefined) continue;
     const control = el(id);
@@ -40,7 +43,7 @@ function restoreState() {
 }
 function persist() {
   try {
-    const values = { ...savedSettings(), rack: input.value };
+    const values = { ...savedSettings(), rack: input.value, simpleMode:true };
     for (const id of optionIds) values[id] = el(id).type === 'checkbox' ? el(id).checked : el(id).value;
     localStorage.setItem(storageKey, JSON.stringify(values));
   } catch { /* Private browsing / storage restrictions must not block searching. */ }
