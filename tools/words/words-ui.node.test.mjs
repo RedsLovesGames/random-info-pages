@@ -28,7 +28,11 @@ test('results automatically update, are grouped by length and scroll to load eve
   assert.match(app, /appendNext\(column\)/);
   assert.match(css, /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(css, /@media\(max-width:650px\)/);
-  assert.match(css, /background:#f7f9f7/);
+  assert.match(css, /background:#171d23/);
+  assert.match(css, /color-scheme:dark/);
+  assert.match(css, /background:linear-gradient\(116deg,#263d3d/);
+  assert.match(css, /\.ws-columns\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(html, /name="theme-color" content="#171d23"/);
   assert.match(app, /enable1\.txt/);
 });
 test('every matching word is in all column and palindrome subset is sorted by descending length', () => {
