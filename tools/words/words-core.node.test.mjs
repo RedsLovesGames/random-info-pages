@@ -38,3 +38,8 @@ assert.deepEqual(solveRack(['CAT','CATS'],'C?T',{allowRepeats:true,mode:'length'
 assert.deepEqual(solveRack(['ABBA','ABA'],'AB',{allowRepeats:true,maxLength:3,mode:'length',bonus:1}).map(x=>x.word),['ABA']);
 assert.deepEqual(solveRack(['TENET','DETENTION'],rack,{palindromeOnly:true,contains:'E'}).map(x=>x.word),['TENET']);
 console.log('PASS advanced dictionary-independent word matching, repetition, and word filters');
+
+assert.deepEqual(solveRack(['AAA','AA','A'],'A',{allowRepeats:true}).map(x=>x.word),['AAA','AA']);
+assert.deepEqual(solveRack(['AAA','AA'],'A').map(x=>x.word),[]);
+assert.equal(tileScore('ABBBC','ABC',true),13);
+assert.equal(scoreWord('ABBBC','ABC',{mode:'tiles',allowRepeats:true,bonus:1}).score,13);
