@@ -22,6 +22,7 @@ REQUIRED = [
     'tools/random/index.html','tools/random/random.css','tools/random/random-core.js','tools/random/random-app.js',
     'tools/codes/index.html','tools/codes/codes.css','tools/codes/codes-core.js','tools/codes/codes-app.js',
     'tools/network/index.html','tools/network/network.css','tools/network/network-core.js','tools/network/network-app.js',
+    'tools/words/index.html','tools/words/words.css','tools/words/words-core.js','tools/words/words-app.js','tools/words/words-core.node.test.mjs',
     'tools/OPEN_SOURCE.md','tools/DATA_OPEN_SOURCE.md','tools/DEVELOPER_OPEN_SOURCE.md',
 ]
 
@@ -36,7 +37,7 @@ for relative in REQUIRED:
 home = (ROOT / 'index.html').read_text(encoding='utf-8')
 if 'href="./tools/"' not in home: fail('homepage does not link ./tools/')
 
-routes = ('time','image','money','text','pdf','files','media','data','developer','math','random','codes','network')
+routes = ('time','image','money','text','pdf','files','media','data','developer','math','random','codes','network','words')
 hub = (ROOT / 'tools/index.html').read_text(encoding='utf-8')
 for name in routes:
     route = f'./{name}/'
@@ -63,6 +64,7 @@ asset_guards = {
     'random': ('random.css','random-app.js'),
     'codes': ('codes.css','codes-app.js'),
     'network': ('network.css','network-app.js'),
+    'words': ('words.css','words-app.js'),
 }
 for name, assets in asset_guards.items():
     text = (ROOT / f'tools/{name}/index.html').read_text(encoding='utf-8')

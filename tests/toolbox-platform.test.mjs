@@ -12,14 +12,14 @@ import { createWorkspaceState, readRequestedAction } from '../tools/shared/works
 import { getContextualActions } from '../tools/shared/actions.js';
 import { formatBytes, safeFilename } from '../tools/shared/files.js';
 
-test('registry defines 13 in-scope workspaces and excludes web/design', () => {
-  assert.equal(TOOLBOX_REGISTRY.length, 13);
+test('registry defines 14 in-scope workspaces and excludes web/design', () => {
+  assert.equal(TOOLBOX_REGISTRY.length, 14);
   assert.equal(TOOLBOX_REGISTRY.some(workspace => workspace.id === 'web-design'), false);
-  for (const id of ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer', 'math', 'random', 'codes', 'network']) assert.ok(getWorkspace(id), `missing workspace ${id}`);
+  for (const id of ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer', 'math', 'random', 'codes', 'words', 'network']) assert.ok(getWorkspace(id), `missing workspace ${id}`);
 });
 
-test('step 9 publishes all 13 in-scope workspaces', () => {
-  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer', 'math', 'random', 'codes', 'network']);
+test('step 9 publishes all 14 in-scope workspaces', () => {
+  assert.deepEqual(getVisibleWorkspaces().map(workspace => workspace.id), ['time', 'image', 'money', 'text', 'pdf', 'files', 'media', 'data', 'developer', 'math', 'random', 'codes', 'words', 'network']);
 });
 
 test('Step 7 publishes all Time and Money subtools through global search', () => {
