@@ -21,7 +21,7 @@
   <header class="ws-intro">
     <div class="tb-kicker">A little help for your next word game</div>
     <h1>Find your <em>best word.</em></h1>
-    <p>Type your letters to see all five Towers of Babble word categories, longest first.</p>
+    <p>Type your letters to see Towers of Babble word categories, longest first.</p>
   </header>
 
   <section class="ws-search-section" aria-label="Find words">
@@ -132,8 +132,21 @@
         <p class="ws-list-end" id="quadEnd" hidden>All quadruple-letter words shown</p>
       </div>
     </article>
+    <article class="ws-column ws-column--cursed" aria-labelledby="cursedHeading">
+      <div class="ws-col-head">
+        <div><small>Game-specific cursed words</small><h2 id="cursedHeading">Cursed Words</h2></div>
+        <span id="cursedCount" class="ws-count">0</span>
+      </div>
+      <p class="ws-best" id="cursedBest">Longest cursed word appears here</p>
+      <div class="ws-scroll" id="cursedScroller" role="region" tabindex="0" aria-label="Cursed word results, longest first">
+        <ol class="ws-word-list" id="cursedWords"></ol>
+        <p class="ws-empty" id="cursedEmpty">Enter letters to find cursed words.</p>
+        <p class="ws-list-end" id="cursedEnd" hidden>All cursed words shown</p>
+      </div>
+    </article>
   </section>
-  <p class="ws-swipe-hint">Swipe sideways to see all five categories on narrow screens.</p>
+  <p class="ws-swipe-hint">Swipe sideways to see all six categories on narrow screens.</p>
+  <p class="ws-quest-link"><a href="./quests.html">Explore all word quests, combined filters, scores and exports →</a></p>
   <p class="ws-copy-hint">Tap a word to copy it. Every category shows longest matches first; scroll its list for more.</p>
   <p class="ws-offline-link"><a href="./offline.html" download="word-finder-offline.html">Download the fully offline Word Finder</a><span>One HTML file with the entire dictionary. Works without internet or a server.</span></p>
   <footer class="ws-footer"><strong>About the word lists</strong><p>The <a href="./dictionaries/towers-of-babble.txt" download="Towers_of_Babble_words_playable.txt">Towers of Babble word list</a> is bundled locally and assembled from your uploaded source and 49 game-specific cursed entries. It contains 195,415 words of 3+ letters. <a href="./offline.html" download="word-finder-offline.html">Download the standalone offline version</a>. Some quest results also depend on level-specific conditions.</p></footer>
