@@ -15,10 +15,10 @@ test('main screen has a single input and two labeled columns', () => {
   assert.match(html, /id="fewConsonantsFilter"/);
   assert.match(html, /id="vowelHeavyFilter"/);
   assert.match(html, /id="showAllSpecial"/);
-  assert.match(html, /6\+ letters, at least 60% vowels/);
+  assert.match(html, /5\+ letters, at most 1 consonant/);
   assert.match(html, /id="resetFilters"/);
   assert.match(html, /Find your <em>best word/);
-  assert.match(html, /ENABLE · 172,823 words/);
+  assert.match(html, /Towers of Babble · 195,415 words/);
   assert.match(html, /download="word-finder-offline\.html"/);
   assert.match(html, /id="palHeading"[^>]*>Longest/);
   assert.match(html, /id="allHeading"[^>]*>Longest/);
@@ -85,6 +85,6 @@ test('special categories classify 6+ letter words and keep longest-first sorting
   ];
   const vowelHeavy = words.filter(word => classifySpecialWord(word).vowelHeavy);
   const fewConsonants = words.filter(word => classifySpecialWord(word).fewConsonants);
-  assert.deepEqual(vowelHeavy, ['REINITIATE','EUGENIA','ADIEUS','INERTIAE','AEIOUY']);
+  assert.deepEqual(vowelHeavy, ['AEIOUY']);
   assert.deepEqual(fewConsonants, ['EUGENIA','ADIEUS','AEIOUY']);
 });

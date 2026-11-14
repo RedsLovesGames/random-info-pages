@@ -10,12 +10,12 @@ export function normalizeRack(text) {
 
 export function parseDictionary(text) {
   return [...new Set(String(text || '').toUpperCase().split(/\r?\n/)
-    .map(word => word.trim()).filter(word => /^[A-Z]{2,}$/.test(word)))];
+    .map(word => word.trim()).filter(word => /^[A-Z]{3,}$/.test(word)))];
 }
 
 export function isPalindrome(word) {
   const text = String(word || '').toUpperCase();
-  return text.length >= 2 && text === [...text].reverse().join('');
+  return text.length >= 3 && text === [...text].reverse().join('');
 }
 
 export function counts(text) {
@@ -27,7 +27,7 @@ export function counts(text) {
 export function fitsRack(word, rack, exact = false) {
   const w = String(word || '').toUpperCase();
   const letters = normalizeRack(rack);
-  if (!/^[A-Z]{2,}$/.test(w) || w.length > letters.length) return false;
+  if (!/^[A-Z]{3,}$/.test(w) || w.length > letters.length) return false;
   if (exact && w.length !== letters.length) return false;
   const pool = counts(letters);
   let wildcards = pool['?'] || 0;
@@ -93,7 +93,7 @@ export function solveRack(words, rack, options = {}) {
   const keepOrder = Boolean(options.keepOrder);
   const palindromeOnly = Boolean(options.palindromeOnly);
   const minInput = Number(options.minLength);
-  const minimum = Number.isFinite(minInput) ? Math.max(2, Math.floor(minInput)) : 2;
+  const minimum = Number.isFinite(minInput) ? Math.max(3, Math.floor(minInput)) : 3;
   const maxInput = Number(options.maxLength);
   const maximum = repeats
     ? Number.isFinite(maxInput) && maxInput >= 2 ? Math.min(40, Math.floor(maxInput)) : 20
@@ -110,7 +110,7 @@ export function solveRack(words, rack, options = {}) {
     const word = String(original).trim().toUpperCase();
     if (seen.has(word)) continue;
     seen.add(word);
-    if (!/^[A-Z]{2,}$/.test(word) || word.length < minimum || word.length > maximum) continue;
+    if (!/^[A-Z]{3,}$/.test(word) || word.length < minimum || word.length > maximum) continue;
     if (wordLength != null && word.length !== wordLength) continue;
     if (exact && word.length !== letters.length) continue;
     if (prefix && !word.startsWith(prefix)) continue;
@@ -147,18 +147,19 @@ export function solveRack(words, rack, options = {}) {
 }
 
 /**
- * Classify special vowel-rich words. Y is deliberately treated as a consonant.
- * Both categories require at least 6 letters. The categories may overlap.
+ * Towers of Babble vowel-heavy quests. Y counts as a vowel.
+ * Current quest: 6+ letters, <=2 consonants; alternate: 5+ letters, <=1 consonant.
  */
 export function classifySpecialWord(text) {
   const word = String(text || '').trim().toUpperCase();
-  if (!/^[A-Z]{6,}$/.test(word)) {
+  if (!/^[A-Z]{3,}$/.test(word)) {
     return { fewConsonants:false, vowelHeavy:false };
   }
-  let vowels = 0;
-  for (const letter of word) if ('AEIOU'.includes(letter)) vowels++;
+  // The Towers of Babble vowel-heavy quest counts Y as a vowel.
+  let consonants = 0;
+  for (const letter of word) if (!'AEIOUY'.includes(letter)) consonants++;
   return {
-    fewConsonants: word.length - vowels <= 2,
-    vowelHeavy: vowels * 5 >= word.length * 3
+    fewConsonants: word.length >= 6 && consonants <= 2, // current quest
+    vowelHeavy: word.length >= 5 && consonants <= 1      // alternate variant
   };
 }
