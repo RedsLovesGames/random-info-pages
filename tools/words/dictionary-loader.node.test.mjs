@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { loadLocalDictionary, validateLocalDictionary, LOCAL_DICTIONARY_URL, EXPECTED_WORD_COUNT } from './dictionary-loader.js';
-import { solveRack, classifySpecialWord } from './words-core.js';
+import { solveRack, classifySpecialWord, isQuadrupleLetter } from './words-core.js';
 
 const dictionary = readFileSync(new URL('./dictionaries/towers-of-babble.txt', import.meta.url), 'utf8');
 test('full Towers of Babble dictionary is stored locally in repository', () => {
@@ -15,6 +15,7 @@ test('full Towers of Babble dictionary is stored locally in repository', () => {
   assert.ok(!words.includes('AA'));
   assert.equal(words.filter(word => classifySpecialWord(word).fewConsonants).length,551);
   assert.equal(words.filter(word => classifySpecialWord(word).vowelHeavy).length,50);
+  assert.equal(words.filter(isQuadrupleLetter).length,4821);
   assert.equal(words.filter(word => word === [...word].reverse().join('')).length,129);
   assert.ok(words.includes('TENET'));
   assert.equal(solveRack(words, 'XOYENTNUIDTE', {minLength:2,mode:'length',bonus:1})[0].word,'DETENTION');

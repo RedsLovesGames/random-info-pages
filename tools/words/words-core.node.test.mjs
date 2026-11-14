@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {normalizeRack,parseDictionary,isPalindrome,fitsRack,leftoverLetters,tileScore,scoreWord,solveRack,classifySpecialWord} from './words-core.js';
+import {normalizeRack,parseDictionary,isPalindrome,fitsRack,leftoverLetters,tileScore,scoreWord,solveRack,classifySpecialWord,isQuadrupleLetter} from './words-core.js';
 const rack='X O Y E N T N U I D T E';
 assert.equal(normalizeRack(rack),'XOYENTNUIDTE');
 assert.equal(isPalindrome('TENET'),true);
@@ -58,3 +58,13 @@ assert.equal(isPalindrome('AA'),false);
 assert.deepEqual(parseDictionary('aa\naba\nABBA\n'),['ABA','ABBA']);
 assert.deepEqual(classifySpecialWord('AIIYY'),{fewConsonants:false,vowelHeavy:true});
 assert.deepEqual(classifySpecialWord('BEEYYA'),{fewConsonants:true,vowelHeavy:true});
+
+assert.equal(isQuadrupleLetter('ABRACADABRA'),true); // nonadjacent repeated A
+assert.equal(isQuadrupleLetter('ABRASIVENESSES'),true);
+assert.equal(isQuadrupleLetter('AAABAAA'),true);
+assert.equal(isQuadrupleLetter('AAAB'),false);
+assert.equal(isQuadrupleLetter('BEEYYA'),false);
+assert.equal(isQuadrupleLetter('AAA'),false);
+assert.equal(isQuadrupleLetter('aaaab'),true);
+assert.equal(isQuadrupleLetter('AA-AABB'),false);
+console.log('PASS quadruple letter category requires 4 occurrences anywhere');

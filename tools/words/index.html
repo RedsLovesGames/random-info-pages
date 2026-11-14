@@ -21,7 +21,7 @@
   <header class="ws-intro">
     <div class="tb-kicker">A little help for your next word game</div>
     <h1>Find your <em>best word.</em></h1>
-    <p>Type your letters to find Towers of Babble words, palindromes, and special quest matches.</p>
+    <p>Type your letters to see all five Towers of Babble word categories, longest first.</p>
   </header>
 
   <section class="ws-search-section" aria-label="Find words">
@@ -67,36 +67,26 @@
     </details>
   </section>
 
-  <section class="ws-special" aria-labelledby="specialHeading">
-    <div class="ws-special-head">
-      <div>
-        <h2 id="specialHeading">Special finds</h2>
-        <p>Vowel-rich words worth checking. Select a category to filter both lists.</p>
-      </div>
-      <button id="showAllSpecial" type="button" class="ws-inline-button" hidden>Show all words</button>
-    </div>
-    <div class="ws-special-grid">
-      <button id="fewConsonantsFilter" type="button" class="ws-special-card" aria-pressed="false" aria-describedby="fewConsonantsRule">
-        <span class="ws-special-card-top"><span class="ws-special-name">Vowel-heavy quest</span><span class="ws-special-count" id="fewConsonantsCount">0</span></span>
-        <span class="ws-special-rule" id="fewConsonantsRule">6+ letters, at most 2 consonants</span>
-        <span class="ws-special-examples" id="fewConsonantsExamples">Enter letters to see matches</span>
-      </button>
-      <button id="vowelHeavyFilter" type="button" class="ws-special-card" aria-pressed="false" aria-describedby="vowelHeavyRule">
-        <span class="ws-special-card-top"><span class="ws-special-name">Extra vowel-heavy</span><span class="ws-special-count" id="vowelHeavyCount">0</span></span>
-        <span class="ws-special-rule" id="vowelHeavyRule">5+ letters, at most 1 consonant</span>
-        <span class="ws-special-examples" id="vowelHeavyExamples">Enter letters to see matches</span>
-      </button>
-    </div>
-    <p class="ws-special-note">For these quests, Y counts as a vowel. The second category is an alternate rule present in the game code, not the current quest.</p>
-  </section>
-
-  <section class="ws-columns" aria-label="Words you can make">
-    <article class="ws-column" aria-labelledby="palHeading">
+  <section class="ws-columns" aria-label="Word results from Normal to Quadruple letter" tabindex="0">
+    <article class="ws-column ws-column--all" aria-labelledby="allHeading">
       <div class="ws-col-head">
-        <div><small>Reads the same both ways</small><h2 id="palHeading">Longest<br>palindromes</h2></div>
+        <div><small>All playable words</small><h2 id="allHeading">Normal</h2></div>
+        <span id="allCount" class="ws-count">0</span>
+      </div>
+      <p class="ws-best" id="allBest">Longest word appears here</p>
+      <div class="ws-scroll" id="allScroller" role="region" tabindex="0" aria-label="Normal results, longest first">
+        <ol class="ws-word-list" id="allWords"></ol>
+        <p class="ws-empty" id="allEmpty">Enter letters to find words.</p>
+        <p class="ws-list-end" id="allEnd" hidden>All words shown</p>
+      </div>
+    </article>
+
+    <article class="ws-column ws-column--pal" aria-labelledby="palHeading">
+      <div class="ws-col-head">
+        <div><small>Same forward and backward</small><h2 id="palHeading">Palindrome</h2></div>
         <span id="palCount" class="ws-count">0</span>
       </div>
-      <p class="ws-best" id="bestPal">Longest palindrome appears here</p>
+      <p class="ws-best" id="palBest">Longest palindrome appears here</p>
       <div class="ws-scroll" id="palScroller" role="region" tabindex="0" aria-label="Palindrome results, longest first">
         <ol class="ws-word-list" id="palWords"></ol>
         <p class="ws-empty" id="palEmpty">Enter letters to find palindromes.</p>
@@ -104,20 +94,47 @@
       </div>
     </article>
 
-    <article class="ws-column" aria-labelledby="allHeading">
+    <article class="ws-column ws-column--rich" aria-labelledby="richHeading">
       <div class="ws-col-head">
-        <div><small>All matching words</small><h2 id="allHeading">Longest<br>everything</h2></div>
-        <span id="allCount" class="ws-count">0</span>
+        <div><small>6+ letters · ≤2 consonants</small><h2 id="richHeading">Vowel rich</h2></div>
+        <span id="richCount" class="ws-count">0</span>
       </div>
-      <p class="ws-best" id="bestAll">Longest word appears here</p>
-      <div class="ws-scroll" id="allScroller" role="region" tabindex="0" aria-label="All word results, longest first">
-        <ol class="ws-word-list" id="allWords"></ol>
-        <p class="ws-empty" id="allEmpty">Enter letters to find words.</p>
-        <p class="ws-list-end" id="allEnd" hidden>All words shown</p>
+      <p class="ws-best" id="richBest">Longest vowel-rich word appears here</p>
+      <div class="ws-scroll" id="richScroller" role="region" tabindex="0" aria-label="Vowel rich results, longest first">
+        <ol class="ws-word-list" id="richWords"></ol>
+        <p class="ws-empty" id="richEmpty">Enter letters to find vowel-rich words.</p>
+        <p class="ws-list-end" id="richEnd" hidden>All vowel-rich words shown</p>
+      </div>
+    </article>
+
+    <article class="ws-column ws-column--heavy" aria-labelledby="heavyHeading">
+      <div class="ws-col-head">
+        <div><small>5+ letters · ≤1 consonant</small><h2 id="heavyHeading">Vowel heavy</h2></div>
+        <span id="heavyCount" class="ws-count">0</span>
+      </div>
+      <p class="ws-best" id="heavyBest">Longest vowel-heavy word appears here</p>
+      <div class="ws-scroll" id="heavyScroller" role="region" tabindex="0" aria-label="Vowel heavy results, longest first">
+        <ol class="ws-word-list" id="heavyWords"></ol>
+        <p class="ws-empty" id="heavyEmpty">Enter letters to find vowel-heavy words.</p>
+        <p class="ws-list-end" id="heavyEnd" hidden>All vowel-heavy words shown</p>
+      </div>
+    </article>
+
+    <article class="ws-column ws-column--quad" aria-labelledby="quadHeading">
+      <div class="ws-col-head">
+        <div><small>Any letter appears 4+ times</small><h2 id="quadHeading">Quadruple letter</h2></div>
+        <span id="quadCount" class="ws-count">0</span>
+      </div>
+      <p class="ws-best" id="quadBest">Longest quadruple-letter word appears here</p>
+      <div class="ws-scroll" id="quadScroller" role="region" tabindex="0" aria-label="Quadruple letter results, longest first">
+        <ol class="ws-word-list" id="quadWords"></ol>
+        <p class="ws-empty" id="quadEmpty">Enter letters to find quadruple-letter words.</p>
+        <p class="ws-list-end" id="quadEnd" hidden>All quadruple-letter words shown</p>
       </div>
     </article>
   </section>
-  <p class="ws-copy-hint">Tap a word to copy it. Both lists show the longest matches first, and you can scroll for more.</p>
+  <p class="ws-swipe-hint">Swipe sideways to see all five categories on narrow screens.</p>
+  <p class="ws-copy-hint">Tap a word to copy it. Every category shows longest matches first; scroll its list for more.</p>
   <p class="ws-offline-link"><a href="./offline.html" download="word-finder-offline.html">Download the fully offline Word Finder</a><span>One HTML file with the entire dictionary. Works without internet or a server.</span></p>
   <footer class="ws-footer"><strong>About the word lists</strong><p>The <a href="./dictionaries/towers-of-babble.txt" download="Towers_of_Babble_words_playable.txt">Towers of Babble word list</a> is bundled locally and assembled from your uploaded source and 49 game-specific cursed entries. It contains 195,415 words of 3+ letters. <a href="./offline.html" download="word-finder-offline.html">Download the standalone offline version</a>. Some quest results also depend on level-specific conditions.</p></footer>
 </main>
