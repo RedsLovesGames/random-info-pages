@@ -1,11 +1,11 @@
 import { normalizeRack, parseDictionary, solveRack } from './words-core.js';
-import { loadDictionaryWithFallback } from './dictionary-loader.js';
+import { loadLocalDictionary } from './dictionary-loader.js';
 
 const el = id => document.getElementById(id);
 const input = el('rackInput');
 const storageKey = 'rip.words.v1';
 const sourceCache = new Map();
-const optionIds = ['dictionaryMode','minLength','wordLength','startsWith','contains','maxLength','exactOnly','allowRepeats','keepOrder'];
+const optionIds = ['minLength','wordLength','startsWith','contains','maxLength','exactOnly','allowRepeats','keepOrder'];
 const sample = 'X O Y E N T N U I D T E';
 const PAGE_SIZE = 120;
 const columns = {
@@ -27,20 +27,18 @@ function savedSettings() {
 function restoreState() {
   const saved = savedSettings();
   if (typeof saved.rack === 'string') input.value = saved.rack;
-  // Preserve the letters but reset older dictionary/filter selections.
-  // v3 defaults to the public-domain ENABLE list used by WordSolver's WWF mode.
-  if (saved.uiVersion !== 3) return;
+  // Preserve the rack and compatible filters from the previous version.
+  if (saved.uiVersion !== 3 && saved.uiVersion !== 4) return;
   for (const id of optionIds) {
     if (saved[id] === undefined) continue;
     const control = el(id);
     if (control.type === 'checkbox') control.checked = saved[id] === true;
     else control.value = saved[id];
   }
-  if (!['enable','broad','standard','expanded'].includes(el('dictionaryMode').value)) el('dictionaryMode').value = 'enable';
 }
 function persist() {
   try {
-    const values = { ...savedSettings(), rack: input.value, simpleMode:true, uiVersion:3 };
+    const values = { ...savedSettings(), rack: input.value, simpleMode:true, uiVersion:4 };
     for (const id of optionIds) values[id] = el(id).type === 'checkbox' ? el(id).checked : el(id).value;
     localStorage.setItem(storageKey, JSON.stringify(values));
   } catch { /* Private browsing / storage restrictions must not block searching. */ }
@@ -144,8 +142,8 @@ function queueSolve() {
 }
 async function getDictionary(kind) {
   if (sourceCache.has(kind)) return sourceCache.get(kind);
-  // Use the persistent browser cache first, then primary and alternate hosts.
-  const result = await loadDictionaryWithFallback(kind);
+  // The dictionary is a versioned static asset served from this site.
+  const result = await loadLocalDictionary();
   sourceCache.set(kind, result);
   return result;
 }
@@ -154,24 +152,13 @@ async function loadDefault() {
   loading = true;
   dictionary = [];
   dictionaryLabel = '';
-  const selected = el('dictionaryMode').value;
-  const kinds = selected === 'broad' ? ['standard','expanded'] : [selected];
-  setStatus('Loading ' + selected + ' dictionary…');
-  if (normalizeRack(input.value)) renderEmpty('Loading the word list…');
+  setStatus('Loading the included ENABLE dictionary…');
+  if (normalizeRack(input.value)) renderEmpty('Loading the dictionary…');
   try {
-    const results = await Promise.allSettled(kinds.map(getDictionary));
+    const result = await getDictionary('enable');
     if (token !== loadVersion) return;
-    const available = results.filter(x => x.status === 'fulfilled').map(x => x.value);
-    if (!available.length) {
-      throw new Error(results.map(x => x.reason?.message || 'Network error').join('; '));
-    }
-    dictionary = [...new Set(available.flatMap(result => result.words))];
-    const sourceName = { enable:'ENABLE', standard:'Scrabble-style', expanded:'Expanded English', broad:'Broad English' }[selected];
-    const cached = available.some(result => result.origin === 'cached');
-    const mirrored = available.some(result => result.origin === 'mirror');
-    dictionaryLabel = sourceName + ' · ' + dictionary.length.toLocaleString() + ' dictionary words'
-      + (cached ? ' · saved for offline use' : mirrored ? ' · backup source' : '')
-      + (available.length < kinds.length ? ' (one list unavailable)' : '');
+    dictionary = result.words;
+    dictionaryLabel = 'ENABLE · ' + dictionary.length.toLocaleString() + ' words · stored on this site';
     loading = false;
     solve();
   } catch (error) {
@@ -221,7 +208,6 @@ input.addEventListener('keydown', event => {
 el('sampleButton').addEventListener('click', () => { input.value = sample; solve(); input.focus(); });
 el('clearButton').addEventListener('click', () => { input.value = ''; solve(); input.focus(); });
 for (const id of optionIds) {
-  if (id === 'dictionaryMode') continue;
   const control = el(id);
   control.addEventListener('change', () => {
     if (id === 'exactOnly' && control.checked) el('allowRepeats').checked = false;
@@ -231,7 +217,6 @@ for (const id of optionIds) {
   });
   if (['minLength','wordLength','startsWith','contains','maxLength'].includes(id)) control.addEventListener('input', queueSolve);
 }
-el('dictionaryMode').addEventListener('change', () => { persist(); el('dictionaryUpload').value = ''; loadDefault(); });
 el('dictionaryUpload').addEventListener('change', event => loadUpload(event.target.files?.[0]));
 el('reloadDictionary').addEventListener('click', () => { el('dictionaryUpload').value = ''; loadDefault(); });
 for (const column of Object.values(columns)) {
@@ -245,3 +230,10 @@ for (const column of Object.values(columns)) {
 }
 renderEmpty('Enter letters above to see answers.');
 loadDefault();
+
+// Once the page is loaded online, precache the entire tool for offline use.
+// file:// standalone downloads don't require or register a service worker.
+if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator &&
+    typeof location !== 'undefined' && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}

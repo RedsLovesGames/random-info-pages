@@ -41,14 +41,7 @@
       <summary>More options <span aria-hidden="true">⌄</span></summary>
       <div class="ws-options-body">
         <div class="ws-options-grid">
-          <label>Word list
-            <select id="dictionaryMode">
-              <option value="enable">ENABLE (also on WordSolver)</option>
-              <option value="broad">Broad English (combined)</option>
-              <option value="standard">Scrabble-style list</option>
-              <option value="expanded">Expanded English list</option>
-            </select>
-          </label>
+          <div class="ws-local-dictionary">Dictionary<strong>ENABLE · 172,823 words</strong><span>Included with this site, no third-party downloads</span></div>
           <label>Minimum letters <input id="minLength" type="number" min="2" max="40" value="2"></label>
           <label>Exact word length <input id="wordLength" type="number" min="2" max="40" placeholder="Any"></label>
           <label>Starts with <input id="startsWith" type="text" maxlength="40" placeholder="Any" autocomplete="off"></label>
@@ -64,9 +57,9 @@
           <label class="ws-upload">Custom dictionary (.txt, one word per line)
             <input id="dictionaryUpload" type="file" accept=".txt,text/plain">
           </label>
-          <button id="reloadDictionary" class="ws-inline-button" type="button">Use selected dictionary</button>
+          <button id="reloadDictionary" class="ws-inline-button" type="button">Restore included dictionary</button>
         </div>
-        <p class="ws-options-help">ENABLE is a public-domain word list also offered by WordSolver under WWF. It is <strong>not</strong> WordSolver’s US English (TWL) dictionary. By default, each letter can only be used as many times as you entered it.</p>
+        <p class="ws-options-help">The public-domain ENABLE dictionary is stored within Random Info Pages. No external dictionary service is required. Each letter can only be used as many times as you entered it, unless you enable repetition.</p>
       </div>
     </details>
   </section>
@@ -99,7 +92,8 @@
     </article>
   </section>
   <p class="ws-copy-hint">Tap a word to copy it. Both lists show the longest matches first, and you can scroll for more.</p>
-  <footer class="ws-footer"><strong>About the word lists</strong><p>The default is the public-domain <a href="https://github.com/dolph/dictionary/blob/master/enable1.txt" target="_blank" rel="noopener noreferrer">ENABLE</a> dictionary, also available as a dictionary choice on <a href="https://wordsolver.net/app/" target="_blank" rel="noopener noreferrer">WordSolver</a> (WWF). This is an independently hosted copy, not WordSolver’s official TWL data or API. Optional lists come from <a href="https://github.com/redbo/scrabble" target="_blank" rel="noopener noreferrer">redbo/scrabble</a> and <a href="https://github.com/dwyl/english-words" target="_blank" rel="noopener noreferrer">dwyl/english-words</a>.</p></footer>
+  <p class="ws-offline-link"><a href="./offline.html" download="word-finder-offline.html">Download the fully offline Word Finder</a><span>One HTML file with the entire dictionary. Works without internet or a server.</span></p>
+  <footer class="ws-footer"><strong>About the word lists</strong><p>The public-domain <a href="./dictionaries/enable.txt" download="enable.txt">ENABLE dictionary</a> is bundled locally. Source: <a href="https://github.com/dolph/dictionary" target="_blank" rel="noopener noreferrer">dolph/dictionary</a>. You can also <a href="./offline.html" download="word-finder-offline.html">download a standalone offline version</a>. WordSolver offers ENABLE as its WWF dictionary, but this tool does not use WordSolver's servers or proprietary TWL data.</p></footer>
 </main>
 <script type="module" src="./words-app.js"></script>
 </body>
