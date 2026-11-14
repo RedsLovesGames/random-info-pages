@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#171d23"><meta name="color-scheme" content="dark">
-<meta name="description" content="An easy word finder. Enter your letters and see the longest words and palindromes instantly.">
-<title>Word Finder | Random Info Pages</title>
+<meta name="description" content="Towers of Babble word finder with the game's locally bundled playable dictionary.">
+<title>Towers of Babble Word Finder | Random Info Pages</title>
 <link rel="stylesheet" href="../shared/toolbox.css">
 <link rel="stylesheet" href="./words.css">
 <link rel="stylesheet" href="../../design-system/rip.css">
@@ -21,7 +21,7 @@
   <header class="ws-intro">
     <div class="tb-kicker">A little help for your next word game</div>
     <h1>Find your <em>best word.</em></h1>
-    <p>Type any letters and see what you can make. The longest words and palindromes appear automatically.</p>
+    <p>Type your letters to find Towers of Babble words, palindromes, and special quest matches.</p>
   </header>
 
   <section class="ws-search-section" aria-label="Find words">
@@ -36,7 +36,7 @@
       <button id="sampleButton" type="button" class="ws-inline-button">Try an example</button>
     </div>
     <div class="ws-status-row">
-      <p id="dictionaryStatus" class="ws-status" role="status" aria-live="polite">Loading English dictionary…</p>
+      <p id="dictionaryStatus" class="ws-status" role="status" aria-live="polite">Loading Towers of Babble dictionary…</p>
       <button type="button" id="resetFilters" class="ws-inline-button" hidden>Reset filters</button>
     </div>
 
@@ -44,9 +44,9 @@
       <summary>More options <span aria-hidden="true">⌄</span></summary>
       <div class="ws-options-body">
         <div class="ws-options-grid">
-          <div class="ws-local-dictionary">Dictionary<strong>ENABLE · 172,823 words</strong><span>Included with this site, no third-party downloads</span></div>
-          <label>Minimum letters <input id="minLength" type="number" min="2" max="40" value="2"></label>
-          <label>Exact word length <input id="wordLength" type="number" min="2" max="40" placeholder="Any"></label>
+          <div class="ws-local-dictionary">Dictionary<strong>Towers of Babble · 195,415 words</strong><span>Playable game words, including cursed entries. Fully local.</span></div>
+          <label>Minimum letters <input id="minLength" type="number" min="3" max="40" value="3"></label>
+          <label>Exact word length <input id="wordLength" type="number" min="3" max="40" placeholder="Any"></label>
           <label>Starts with <input id="startsWith" type="text" maxlength="40" placeholder="Any" autocomplete="off"></label>
           <label>Contains <input id="contains" type="text" maxlength="40" placeholder="Any" autocomplete="off"></label>
           <label>Max length with repeats <input id="maxLength" type="number" min="2" max="40" value="20"></label>
@@ -62,7 +62,7 @@
           </label>
           <button id="reloadDictionary" class="ws-inline-button" type="button">Restore included dictionary</button>
         </div>
-        <p class="ws-options-help">The public-domain ENABLE dictionary is stored within Random Info Pages. No external dictionary service is required. Each letter can only be used as many times as you entered it, unless you enable repetition.</p>
+        <p class="ws-options-help">The Towers of Babble dictionary is stored locally. Playable words require at least 3 letters, and level restrictions can apply. By default, letters cannot be used more often than entered.</p>
       </div>
     </details>
   </section>
@@ -77,17 +77,17 @@
     </div>
     <div class="ws-special-grid">
       <button id="fewConsonantsFilter" type="button" class="ws-special-card" aria-pressed="false" aria-describedby="fewConsonantsRule">
-        <span class="ws-special-card-top"><span class="ws-special-name">2 or fewer consonants</span><span class="ws-special-count" id="fewConsonantsCount">0</span></span>
-        <span class="ws-special-rule" id="fewConsonantsRule">6+ letters, with at most 2 consonants</span>
+        <span class="ws-special-card-top"><span class="ws-special-name">Vowel-heavy quest</span><span class="ws-special-count" id="fewConsonantsCount">0</span></span>
+        <span class="ws-special-rule" id="fewConsonantsRule">6+ letters, at most 2 consonants</span>
         <span class="ws-special-examples" id="fewConsonantsExamples">Enter letters to see matches</span>
       </button>
       <button id="vowelHeavyFilter" type="button" class="ws-special-card" aria-pressed="false" aria-describedby="vowelHeavyRule">
-        <span class="ws-special-card-top"><span class="ws-special-name">Vowel-heavy</span><span class="ws-special-count" id="vowelHeavyCount">0</span></span>
-        <span class="ws-special-rule" id="vowelHeavyRule">6+ letters, at least 60% vowels</span>
+        <span class="ws-special-card-top"><span class="ws-special-name">Extra vowel-heavy</span><span class="ws-special-count" id="vowelHeavyCount">0</span></span>
+        <span class="ws-special-rule" id="vowelHeavyRule">5+ letters, at most 1 consonant</span>
         <span class="ws-special-examples" id="vowelHeavyExamples">Enter letters to see matches</span>
       </button>
     </div>
-    <p class="ws-special-note">Vowels are A, E, I, O and U. Y counts as a consonant. Categories can overlap.</p>
+    <p class="ws-special-note">For these quests, Y counts as a vowel. The second category is an alternate rule present in the game code, not the current quest.</p>
   </section>
 
   <section class="ws-columns" aria-label="Words you can make">
@@ -119,7 +119,7 @@
   </section>
   <p class="ws-copy-hint">Tap a word to copy it. Both lists show the longest matches first, and you can scroll for more.</p>
   <p class="ws-offline-link"><a href="./offline.html" download="word-finder-offline.html">Download the fully offline Word Finder</a><span>One HTML file with the entire dictionary. Works without internet or a server.</span></p>
-  <footer class="ws-footer"><strong>About the word lists</strong><p>The public-domain <a href="./dictionaries/enable.txt" download="enable.txt">ENABLE dictionary</a> is bundled locally. Source: <a href="https://github.com/dolph/dictionary" target="_blank" rel="noopener noreferrer">dolph/dictionary</a>. You can also <a href="./offline.html" download="word-finder-offline.html">download a standalone offline version</a>. WordSolver offers ENABLE as its WWF dictionary, but this tool does not use WordSolver's servers or proprietary TWL data.</p></footer>
+  <footer class="ws-footer"><strong>About the word lists</strong><p>The <a href="./dictionaries/towers-of-babble.txt" download="Towers_of_Babble_words_playable.txt">Towers of Babble word list</a> is bundled locally and assembled from your uploaded source and 49 game-specific cursed entries. It contains 195,415 words of 3+ letters. <a href="./offline.html" download="word-finder-offline.html">Download the standalone offline version</a>. Some quest results also depend on level-specific conditions.</p></footer>
 </main>
 <script type="module" src="./words-app.js"></script>
 </body>

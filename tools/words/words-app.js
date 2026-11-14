@@ -7,7 +7,7 @@ const storageKey = 'rip.words.v1';
 const sourceCache = new Map();
 const optionIds = ['minLength','wordLength','startsWith','contains','maxLength','exactOnly','allowRepeats','keepOrder'];
 const defaultFilters = Object.freeze({
-  minLength:'2', wordLength:'', startsWith:'', contains:'', maxLength:'20',
+  minLength:'3', wordLength:'', startsWith:'', contains:'', maxLength:'20',
   exactOnly:false, allowRepeats:false, keepOrder:false
 });
 const sample = 'X O Y E N T N U I D T E';
@@ -161,7 +161,7 @@ function solve() {
   }
   if (!dictionary.length) {
     renderEmpty('Loading the word list…');
-    if (!loading) setStatus('No dictionary is loaded. Choose a dictionary in Options.', true);
+    if (!loading) setStatus('No dictionary loaded. Restore the included dictionary under More options.', true);
     return;
   }
   // The visible UI always sorts by length. Palindromes are separately highlighted.
@@ -179,7 +179,7 @@ function solve() {
     ? palindrome : visible.filter(item => item.palindrome);
   updateColumn(columns.pal, visiblePalindromes, activeFilters ? 'No palindromes match these filters.' : 'No palindromes match those letters.');
   updateColumn(columns.all, visible, activeFilters ? 'No words match these filters. Use Reset filters to show all matches.' : 'No words match those letters.');
-  const modeLabel = specialMode === 'few' ? ' · 2 or fewer consonants' : specialMode === 'heavy' ? ' · vowel-heavy' : '';
+  const modeLabel = specialMode === 'few' ? ' · vowel-heavy quest' : specialMode === 'heavy' ? ' · alternate vowel-heavy quest' : '';
   setStatus((!visible.length && activeFilters ? 'No matches with current filters · ' :
     'Found ' + visible.length.toLocaleString() + ' words, including ' +
     visiblePalindromes.length.toLocaleString() + ' palindromes' + modeLabel + ' · ') + dictionaryLabel);
@@ -200,13 +200,13 @@ async function loadDefault() {
   loading = true;
   dictionary = [];
   dictionaryLabel = '';
-  setStatus('Loading the included ENABLE dictionary…');
+  setStatus('Loading the included Towers of Babble dictionary…');
   if (normalizeRack(input.value)) renderEmpty('Loading the dictionary…');
   try {
     const result = await getDictionary('enable');
     if (token !== loadVersion) return;
     dictionary = result.words;
-    dictionaryLabel = 'ENABLE · ' + dictionary.length.toLocaleString() + ' words · stored on this site';
+    dictionaryLabel = 'Towers of Babble · ' + dictionary.length.toLocaleString() + ' playable words · local';
     loading = false;
     solve();
   } catch (error) {
