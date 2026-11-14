@@ -34,6 +34,11 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Assemble Towers of Babble playable dictionary
+        run: |
+          node tools/words/build-dictionary.mjs
+          test -s tools/words/dictionaries/towers-of-babble.txt
+
       - name: Build standalone offline Word Finder
         run: |
           node tools/words/build-offline.mjs
@@ -59,8 +64,9 @@ jobs:
           node --test tools/words/*.node.test.mjs
           node --check tools/words/words-app.js
           node --check tools/words/dictionary-loader.js
+          node --check tools/words/build-dictionary.mjs
           node --check tools/words/sw.js
-          test -s tools/words/dictionaries/enable.txt
+          test -s tools/words/dictionaries/towers-of-babble.txt
           test -s tools/words/offline.html
           node --test tests/third-pass-redesign.test.mjs
           node --test tests/fourth-pass-redesign.test.mjs
@@ -230,8 +236,8 @@ jobs:
           grep -Fq 'id="allScroller"' /tmp/word-solver.html
           grep -Fq 'words-app.js' /tmp/word-solver.html
           grep -Fq 'download="word-finder-offline.html"' /tmp/word-solver.html
-          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wordfinder-enable.txt "$base/tools/words/dictionaries/enable.txt"
-          test "$(grep -c . /tmp/wordfinder-enable.txt)" -eq 172823
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wordfinder-enable.txt "$base/tools/words/dictionaries/towers-of-babble.txt"
+          test "$(grep -c . /tmp/wordfinder-enable.txt)" -eq 195415
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wordfinder-offline.html "$base/tools/words/offline.html"
           grep -Fq 'id="embeddedDictionary"' /tmp/wordfinder-offline.html
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wordfinder-sw.js "$base/tools/words/sw.js"

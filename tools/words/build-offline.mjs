@@ -7,7 +7,7 @@ const rootDir = resolve(wordsDir, '../..');
 
 export async function buildStandalone(destination = join(wordsDir, 'offline.html')) {
   let html = await readFile(join(wordsDir, 'index.html'), 'utf8');
-  const dictionary = await readFile(join(wordsDir, 'dictionaries/enable.txt'), 'utf8');
+  const dictionary = await readFile(join(wordsDir, 'dictionaries/towers-of-babble.txt'), 'utf8');
   const core = await readFile(join(wordsDir, 'words-core.js'), 'utf8');
   const app = await readFile(join(wordsDir, 'words-app.js'), 'utf8');
   const css = (await Promise.all([
@@ -19,7 +19,7 @@ export async function buildStandalone(destination = join(wordsDir, 'offline.html
     // Standalone files must never request Google Fonts or other remote assets.
     .replace(/@import\s+url\([^)]*\);\s*/g, '');
 
-  if (dictionary.split(/\r?\n/).filter(Boolean).length !== 172823) {
+  if (dictionary.split(/\r?\n/).filter(Boolean).length !== 195415) {
     throw Error('Unexpected dictionary size; refusing to generate offline file.');
   }
   if (/<\/script/i.test(dictionary)) {
@@ -58,7 +58,7 @@ export async function buildStandalone(destination = join(wordsDir, 'offline.html
     throw Error('Standalone document unexpectedly references an external script or stylesheet');
   }
   await writeFile(destination, html);
-  return { file: destination, bytes: Buffer.byteLength(html), entries: 172823 };
+  return { file: destination, bytes: Buffer.byteLength(html), entries: 195415 };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

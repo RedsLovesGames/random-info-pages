@@ -1,5 +1,5 @@
 /* Keep Word Finder usable offline after one successful online visit. */
-const VERSION = 'rip-word-finder-offline-v3';
+const VERSION = 'rip-word-finder-offline-v4';
 const PREFIX = 'rip-word-finder-offline-';
 const ROOT = new URL('./', self.location.href);
 const ASSETS = [
@@ -9,7 +9,7 @@ const ASSETS = [
   './words-app.js',
   './words-core.js',
   './dictionary-loader.js',
-  './dictionaries/enable.txt',
+  './dictionaries/towers-of-babble.txt',
   '../shared/toolbox.css',
   '../../design-system/rip.css',
   '../../design-system/project-polish.css',
