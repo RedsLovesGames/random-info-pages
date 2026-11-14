@@ -67,6 +67,29 @@
     </details>
   </section>
 
+  <section class="ws-special" aria-labelledby="specialHeading">
+    <div class="ws-special-head">
+      <div>
+        <h2 id="specialHeading">Special finds</h2>
+        <p>Vowel-rich words worth checking. Select a category to filter both lists.</p>
+      </div>
+      <button id="showAllSpecial" type="button" class="ws-inline-button" hidden>Show all words</button>
+    </div>
+    <div class="ws-special-grid">
+      <button id="fewConsonantsFilter" type="button" class="ws-special-card" aria-pressed="false" aria-describedby="fewConsonantsRule">
+        <span class="ws-special-card-top"><span class="ws-special-name">2 or fewer consonants</span><span class="ws-special-count" id="fewConsonantsCount">0</span></span>
+        <span class="ws-special-rule" id="fewConsonantsRule">6+ letters, with at most 2 consonants</span>
+        <span class="ws-special-examples" id="fewConsonantsExamples">Enter letters to see matches</span>
+      </button>
+      <button id="vowelHeavyFilter" type="button" class="ws-special-card" aria-pressed="false" aria-describedby="vowelHeavyRule">
+        <span class="ws-special-card-top"><span class="ws-special-name">Vowel-heavy</span><span class="ws-special-count" id="vowelHeavyCount">0</span></span>
+        <span class="ws-special-rule" id="vowelHeavyRule">6+ letters, at least 60% vowels</span>
+        <span class="ws-special-examples" id="vowelHeavyExamples">Enter letters to see matches</span>
+      </button>
+    </div>
+    <p class="ws-special-note">Vowels are A, E, I, O and U. Y counts as a consonant. Categories can overlap.</p>
+  </section>
+
   <section class="ws-columns" aria-label="Words you can make">
     <article class="ws-column" aria-labelledby="palHeading">
       <div class="ws-col-head">

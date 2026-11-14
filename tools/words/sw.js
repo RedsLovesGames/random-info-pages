@@ -1,5 +1,5 @@
 /* Keep Word Finder usable offline after one successful online visit. */
-const VERSION = 'rip-word-finder-offline-v2';
+const VERSION = 'rip-word-finder-offline-v3';
 const PREFIX = 'rip-word-finder-offline-';
 const ROOT = new URL('./', self.location.href);
 const ASSETS = [
