@@ -35,7 +35,10 @@
       <span id="rackHint">Results appear as you type. Use <strong>?</strong> for a wildcard; spaces are optional.</span>
       <button id="sampleButton" type="button" class="ws-inline-button">Try an example</button>
     </div>
-    <p id="dictionaryStatus" class="ws-status" role="status" aria-live="polite">Loading English dictionary…</p>
+    <div class="ws-status-row">
+      <p id="dictionaryStatus" class="ws-status" role="status" aria-live="polite">Loading English dictionary…</p>
+      <button type="button" id="resetFilters" class="ws-inline-button" hidden>Reset filters</button>
+    </div>
 
     <details class="ws-advanced" id="advancedOptions">
       <summary>More options <span aria-hidden="true">⌄</span></summary>

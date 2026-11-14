@@ -11,6 +11,7 @@ const sw = readFileSync(new URL('./sw.js', import.meta.url), 'utf8');
 
 test('main screen has a single input and two labeled columns', () => {
   assert.match(html, /id="rackInput"/);
+  assert.match(html, /id="resetFilters"/);
   assert.match(html, /Find your <em>best word/);
   assert.match(html, /ENABLE · 172,823 words/);
   assert.match(html, /download="word-finder-offline\.html"/);
@@ -25,6 +26,12 @@ test('main screen has a single input and two labeled columns', () => {
 });
 test('results automatically update, are grouped by length and scroll to load everything', () => {
   assert.match(app, /input\.addEventListener\('input', queueSolve\)/);
+  assert.match(app, /function resetFilters\(\)/);
+  assert.match(app, /function filtersActive\(\)/);
+  assert.match(app, /resetFilters\(\);/);
+  assert.match(app, /uiVersion:5/);
+  assert.doesNotMatch(app, /values\[id\] = el\(id\)/);
+  assert.match(sw, /rip-word-finder-offline-v2/);
   assert.match(app, /mode:'length', bonus:1/);
   assert.match(app, /all\.filter\(item => item\.palindrome\)/);
   assert.match(app, /column\.scroller\.addEventListener\('scroll'/);
@@ -52,4 +59,14 @@ test('every matching word is in all column and palindrome subset is sorted by de
   assert.ok(!all.find(word => word.word==='DEED')); // only two Ds? rack has just one D.
   assert.ok(all.every((word,i) => i===0 || all[i-1].length >= word.length));
   assert.ok(palindrome.every(word => word.palindrome));
+});
+
+test('a large rack finds words unless an advanced filter restricts them', () => {
+  const dictionary = ['UNDERESTIMATING','INTERMEDIATING','PREDESTINATING','TENET','TUT','TOY'];
+  const rack = 'adeegiiijmnnprsttuyz';
+  const all = solveRack(dictionary, rack, {mode:'length',bonus:1,minLength:2});
+  const filtered = solveRack(dictionary, rack, {mode:'length',bonus:1,minLength:2,exact:true});
+  assert.equal(all[0].word,'UNDERESTIMATING');
+  assert.ok(all.find(w => w.word === 'TENET' && w.palindrome));
+  assert.equal(filtered.length,0);
 });
