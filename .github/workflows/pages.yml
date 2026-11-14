@@ -34,6 +34,12 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Build standalone offline Word Finder
+        run: |
+          node tools/words/build-offline.mjs
+          test -s tools/words/offline.html
+          grep -Fq 'id="embeddedDictionary"' tools/words/offline.html
+
       - name: Verify archive home
         run: |
           node --test tests/home-index.test.mjs
@@ -52,6 +58,10 @@ jobs:
           node --test tests/deep-redesign.test.mjs
           node --test tools/words/*.node.test.mjs
           node --check tools/words/words-app.js
+          node --check tools/words/dictionary-loader.js
+          node --check tools/words/sw.js
+          test -s tools/words/dictionaries/enable.txt
+          test -s tools/words/offline.html
           node --test tests/third-pass-redesign.test.mjs
           node --test tests/fourth-pass-redesign.test.mjs
           node --test tests/fifth-pass-redesign.test.mjs
@@ -219,6 +229,99 @@ jobs:
           grep -Fq 'id="palScroller"' /tmp/word-solver.html
           grep -Fq 'id="allScroller"' /tmp/word-solver.html
           grep -Fq 'words-app.js' /tmp/word-solver.html
+          grep -Fq 'download="word-finder-offline.html"' /tmp/word-solver.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wordfinder-enable.txt "$base/tools/words/dictionaries/enable.txt"
+          test "$(grep -cve '^
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/home.html "$base/"
+          grep -Fq 'id="fluidCanvas"' /tmp/home.html
+          grep -Fq 'id="projectList"' /tmp/home.html
+          grep -Fq 'id="searchDialog"' /tmp/home.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/classic-home.html "$base/classic.html"
+          grep -Fq 'data-archive-home' /tmp/classic-home.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/archive-home.html "$base/archive/"
+          grep -Fq 'href="../tideborne/"' /tmp/archive-home.html
+          grep -Fq 'href="../vct-scout/"' /tmp/archive-home.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid.html "$base/political-grid/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid-app.js "$base/political-grid/app.js"
+          grep -Fq 'id="statement-board"' /tmp/political-grid.html
+          grep -Fq 'political_grid_stats' /tmp/political-grid-app.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid-overlap.js "$base/political-grid/overlap.js"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/political-grid-overlap.css "$base/political-grid/overlap.css"
+          grep -Fq 'id="overlap-box-grid"' /tmp/political-grid.html
+          if grep -Fq 'id="public-visible"' /tmp/political-grid.html; then
+            echo 'Obsolete public/private switch is still rendered'
+            exit 1
+          fi
+          grep -Fq 'Saved names and X marks are visible to anyone with this page link' /tmp/political-grid.html
+          grep -Fq 'political_grid_visible' /tmp/political-grid-overlap.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/shard-market.html "$base/shard-fusions/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/shard-calculator.js "$base/shard-fusions/calculator.mjs"
+          grep -Fq 'HYPIXEL SKYBLOCK' /tmp/shard-market.html
+          grep -Fq 'computeRankings' /tmp/shard-calculator.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/device-worlds.html "$base/device-worlds/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/device-worlds.js "$base/device-worlds/app.mjs"
+          grep -Fq 'id="worldChooser"' /tmp/device-worlds.html
+          grep -Fq 'export function detectOS' /tmp/device-worlds.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/device-worlds-v2.js "$base/device-worlds/v2.mjs"
+          grep -Fq 'createSignalStore' /tmp/device-worlds-v2.js
+          grep -Fq './device-worlds/' /tmp/home.html
+          grep -Fq './wheel/' /tmp/home.html
+          grep -Fq './friends/' /tmp/home.html
+
+      - name: Check Random Info Computer
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          base="${SITE_URL%/}"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/computer.html "$base/computer/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/os.html "$base/os/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/os-main.js "$(grep -oE 'src="\./static/js/main\.[a-f0-9]+\.js"' /tmp/os.html | head -1 | cut -d'"' -f2 | sed "s#^\.#$base/os#")"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/doom.jsdos "$base/os/doom.jsdos"
+          grep -Fq 'computer-fallback' /tmp/computer.html
+          grep -Fq 'RANDOM INFO OS' /tmp/os.html
+          grep -Fq 'Random Info Explorer' /tmp/os-main.js
+          test -s /tmp/doom.jsdos
+
+      - name: Check school schedule
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          base="${SITE_URL%/}"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/school.html "$base/school-schedule/"
+          grep -Fq 'Class & Assignment Planner' /tmp/school.html
+
+      - name: Check wheel
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          base="${SITE_URL%/}"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wheel.html "$base/wheel/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wheel-app.js "$base/wheel/app.js"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wheel-css.css "$base/wheel/styles.css"
+          grep -Fq 'Random Choice Wheel | Random Info Pages' /tmp/wheel.html
+          grep -Fq 'id="entriesInput"' /tmp/wheel.html
+          grep -Fq 'pickWeightedEntry' /tmp/wheel-app.js
+          grep -Fq '.wheel-stage' /tmp/wheel-css.css
+          grep -Fq '.side-panel' /tmp/wheel-css.css
+
+      - name: Check VCT tactical planner
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          base="${SITE_URL%/}"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/vct.html "$base/vct-scout/"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/v3.js "$base/vct-scout/tactical-renderer-v3.js"
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/team-logos.json "$base/vct-scout/team-logos.json"
+          grep -Fq 'Our Comp Lab' /tmp/vct.html
+          grep -Fq 'Recommended Play' /tmp/vct.html
+          grep -Fq 'Observed VCT Round' /tmp/vct.html
+          grep -Fq 'buildModel' /tmp/v3.js
+          grep -Fq '"120"' /tmp/team-logos.json
+ /tmp/wordfinder-enable.txt)" -eq 172823
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wordfinder-offline.html "$base/tools/words/offline.html"
+          grep -Fq 'id="embeddedDictionary"' /tmp/wordfinder-offline.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wordfinder-sw.js "$base/tools/words/sw.js"
+          grep -Fq 'cache.addAll(ASSETS)' /tmp/wordfinder-sw.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/home.html "$base/"
           grep -Fq 'id="fluidCanvas"' /tmp/home.html
           grep -Fq 'id="projectList"' /tmp/home.html

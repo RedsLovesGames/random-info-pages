@@ -7,11 +7,13 @@ const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const app = readFileSync(new URL('./words-app.js', import.meta.url), 'utf8');
 const css = readFileSync(new URL('./words.css', import.meta.url), 'utf8');
 const loader = readFileSync(new URL('./dictionary-loader.js', import.meta.url), 'utf8');
+const sw = readFileSync(new URL('./sw.js', import.meta.url), 'utf8');
 
 test('main screen has a single input and two labeled columns', () => {
   assert.match(html, /id="rackInput"/);
   assert.match(html, /Find your <em>best word/);
-  assert.match(html, /value="enable">ENABLE/);
+  assert.match(html, /ENABLE · 172,823 words/);
+  assert.match(html, /download="word-finder-offline\.html"/);
   assert.match(html, /id="palHeading"[^>]*>Longest/);
   assert.match(html, /id="allHeading"[^>]*>Longest/);
   assert.match(html, /id="palScroller"/);
@@ -34,8 +36,11 @@ test('results automatically update, are grouped by length and scroll to load eve
   assert.match(css, /background:linear-gradient\(116deg,#263d3d/);
   assert.match(css, /\.ws-columns\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(html, /name="theme-color" content="#171d23"/);
-  assert.match(app, /loadDictionaryWithFallback/);
-  assert.match(loader, /enable1\.txt/);
+  assert.match(app, /loadLocalDictionary/);
+  assert.match(loader, /\.\/dictionaries\/enable\.txt/);
+  assert.match(sw, /cache\.addAll\(ASSETS\)/);
+  assert.match(sw, /\.\/dictionaries\/enable\.txt/);
+  assert.doesNotMatch(app, /raw\.githubusercontent\.com|cdn\.jsdelivr\.net/);
 });
 test('every matching word is in all column and palindrome subset is sorted by descending length', () => {
   const dictionary = ['TENET','DETENTION','NEOTENY','TOY','NON','NUN','DEED','X'];

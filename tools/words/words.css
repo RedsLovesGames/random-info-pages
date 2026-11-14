@@ -108,3 +108,5 @@ body[data-rip-page="tools-words"] :where(button,summary,input,select,a):focus-vi
  .ws-input-help{font-size:.78rem}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+.ws-local-dictionary{display:flex;flex-direction:column;gap:6px;color:#bdcecd;font-size:.8rem;font-weight:650}.ws-local-dictionary strong{font-size:1rem;color:#e1f3e9}.ws-local-dictionary span{font-size:.75rem;color:#a6c8b7;font-weight:450}.ws-offline-link{margin:16px 4px 0;display:flex;flex-wrap:wrap;align-items:center;gap:9px;font-size:.82rem}.ws-offline-link a{display:inline-block;background:#33534c;border:1px solid #618c7f;border-radius:9px;padding:9px 12px;color:#d5f6e7;font-weight:750;text-decoration:none}.ws-offline-link a:hover{background:#42685e}.ws-offline-link span{color:#acbfbd}
