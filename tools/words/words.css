@@ -53,7 +53,7 @@ body[data-rip-page="tools-words"] .tb-kicker{color:#b0d9cb;letter-spacing:.01em;
 .ws-upload{max-width:375px}
 .ws-upload input{max-width:100%;font-size:.78rem}
 .ws-options-help{max-width:770px;margin:16px 0 0;color:#acbfbd;font-size:.8rem;line-height:1.55}
-.ws-columns{display:grid;grid-template-columns:repeat(5,minmax(218px,1fr));gap:13px;overflow-x:auto;scroll-snap-type:x proximity;overscroll-behavior-x:contain;padding:2px 0 13px;scrollbar-color:#59706d transparent}
+.ws-columns{display:grid;grid-template-columns:repeat(6,minmax(218px,1fr));gap:13px;overflow-x:auto;scroll-snap-type:x proximity;overscroll-behavior-x:contain;padding:2px 0 13px;scrollbar-color:#59706d transparent}
 .ws-column{min-width:0;scroll-snap-align:start;display:flex;flex-direction:column;border:1px solid #425254;border-radius:20px;background:#28333a;overflow:hidden;box-shadow:0 10px 35px rgba(0,0,0,.13)}
 
 .ws-col-head{display:flex;align-items:flex-start;justify-content:space-between;gap:7px;padding:18px 12px 12px;min-height:111px;background:#293f3c}
@@ -106,7 +106,7 @@ body[data-rip-page="tools-words"] :where(button,summary,input,select,a):focus-vi
  #rackInput{height:62px;font-size:1.32rem;border-radius:12px;padding:0 13px}
  .ws-clear{min-width:72px;border-radius:12px;padding:0 8px;font-size:.78rem}
  .ws-clear span{display:none}
-  .ws-columns{grid-template-columns:repeat(5,minmax(225px,72vw));gap:12px}
+  .ws-columns{grid-template-columns:repeat(6,minmax(225px,72vw));gap:12px}
  .ws-scroll{height:390px;min-height:260px}
  .ws-col-head h2{font-size:1.4rem}
  .ws-options-grid{grid-template-columns:1fr}
@@ -118,3 +118,6 @@ body[data-rip-page="tools-words"] :where(button,summary,input,select,a):focus-vi
 
 .ws-status-row{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}.ws-status-row .ws-status{flex:1;margin-bottom:5px}.ws-status-row #resetFilters{white-space:nowrap;padding:6px 3px}
 
+
+/* Cursed words and quest explorer entry, matching the existing word-column treatment. */
+.ws-column--cursed{border-color:#755b65}.ws-column--cursed .ws-col-head{background:#493340}.ws-column--cursed .ws-col-head small{color:#e4b8cd}.ws-column--cursed .ws-col-head h2{color:#f9d8e5}.ws-column--cursed .ws-count{border-color:#916b7b;color:#ffd4e4}.ws-quest-link{margin:18px 0 8px}.ws-quest-link a{display:inline-block;background:#2d5146;color:#e5fff1;border:1px solid #659d85;border-radius:12px;padding:12px 16px;font-weight:750;text-decoration:none}.ws-quest-link a:hover,.ws-quest-link a:focus-visible{background:#3b6757}
