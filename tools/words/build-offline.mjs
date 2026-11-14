@@ -15,7 +15,9 @@ export async function buildStandalone(destination = join(wordsDir, 'offline.html
     join(wordsDir, 'words.css'),
     join(rootDir, 'design-system/rip.css'),
     join(rootDir, 'design-system/project-polish.css')
-  ].map(path => readFile(path, 'utf8')))).join('\n');
+  ].map(path => readFile(path, 'utf8')))).join('\n')
+    // Standalone files must never request Google Fonts or other remote assets.
+    .replace(/@import\s+url\([^)]*\);\s*/g, '');
 
   if (dictionary.split(/\r?\n/).filter(Boolean).length !== 172823) {
     throw Error('Unexpected dictionary size; refusing to generate offline file.');
