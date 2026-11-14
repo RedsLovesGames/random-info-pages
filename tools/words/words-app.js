@@ -1,10 +1,6 @@
 import { normalizeRack, parseDictionary, solveRack } from './words-core.js';
+import { loadDictionaryWithFallback } from './dictionary-loader.js';
 
-const WORD_LISTS = Object.freeze({
-  enable: 'https://raw.githubusercontent.com/dolph/dictionary/694bf9529e986f9175dcbf5fe5875d111941b708/enable1.txt',
-  standard: 'https://raw.githubusercontent.com/redbo/scrabble/45d4022a1a19130e3b848b868c408771b7f342ff/dictionary.txt',
-  expanded: 'https://raw.githubusercontent.com/dwyl/english-words/8179fe68775df3f553ef19520db065228e65d1d3/words_alpha.txt'
-});
 const el = id => document.getElementById(id);
 const input = el('rackInput');
 const storageKey = 'rip.words.v1';
@@ -148,12 +144,10 @@ function queueSolve() {
 }
 async function getDictionary(kind) {
   if (sourceCache.has(kind)) return sourceCache.get(kind);
-  const response = await fetch(WORD_LISTS[kind], { cache:'force-cache' });
-  if (!response.ok) throw new Error('Could not load ' + kind + ' dictionary (' + response.status + ')');
-  const words = parseDictionary(await response.text());
-  if (words.length < 100000) throw new Error(kind + ' dictionary appears incomplete');
-  sourceCache.set(kind, words);
-  return words;
+  // Use the persistent browser cache first, then primary and alternate hosts.
+  const result = await loadDictionaryWithFallback(kind);
+  sourceCache.set(kind, result);
+  return result;
 }
 async function loadDefault() {
   const token = ++loadVersion;
@@ -171,9 +165,12 @@ async function loadDefault() {
     if (!available.length) {
       throw new Error(results.map(x => x.reason?.message || 'Network error').join('; '));
     }
-    dictionary = [...new Set(available.flat())];
+    dictionary = [...new Set(available.flatMap(result => result.words))];
     const sourceName = { enable:'ENABLE', standard:'Scrabble-style', expanded:'Expanded English', broad:'Broad English' }[selected];
+    const cached = available.some(result => result.origin === 'cached');
+    const mirrored = available.some(result => result.origin === 'mirror');
     dictionaryLabel = sourceName + ' · ' + dictionary.length.toLocaleString() + ' dictionary words'
+      + (cached ? ' · saved for offline use' : mirrored ? ' · backup source' : '')
       + (available.length < kinds.length ? ' (one list unavailable)' : '');
     loading = false;
     solve();
