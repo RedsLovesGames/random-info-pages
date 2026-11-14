@@ -6,6 +6,7 @@ import { solveRack } from './words-core.js';
 const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const app = readFileSync(new URL('./words-app.js', import.meta.url), 'utf8');
 const css = readFileSync(new URL('./words.css', import.meta.url), 'utf8');
+const loader = readFileSync(new URL('./dictionary-loader.js', import.meta.url), 'utf8');
 
 test('main screen has a single input and two labeled columns', () => {
   assert.match(html, /id="rackInput"/);
@@ -33,7 +34,8 @@ test('results automatically update, are grouped by length and scroll to load eve
   assert.match(css, /background:linear-gradient\(116deg,#263d3d/);
   assert.match(css, /\.ws-columns\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(html, /name="theme-color" content="#171d23"/);
-  assert.match(app, /enable1\.txt/);
+  assert.match(app, /loadDictionaryWithFallback/);
+  assert.match(loader, /enable1\.txt/);
 });
 test('every matching word is in all column and palindrome subset is sorted by descending length', () => {
   const dictionary = ['TENET','DETENTION','NEOTENY','TOY','NON','NUN','DEED','X'];
