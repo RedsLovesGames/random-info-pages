@@ -6,6 +6,10 @@ const input = el('rackInput');
 const storageKey = 'rip.words.v1';
 const sourceCache = new Map();
 const optionIds = ['minLength','wordLength','startsWith','contains','maxLength','exactOnly','allowRepeats','keepOrder'];
+const defaultFilters = Object.freeze({
+  minLength:'2', wordLength:'', startsWith:'', contains:'', maxLength:'20',
+  exactOnly:false, allowRepeats:false, keepOrder:false
+});
 const sample = 'X O Y E N T N U I D T E';
 const PAGE_SIZE = 120;
 const columns = {
@@ -24,23 +28,32 @@ function savedSettings() {
     return parsed && typeof parsed === 'object' ? parsed : {};
   } catch { return {}; }
 }
+function resetFilters() {
+  for (const id of optionIds) {
+    const control = el(id);
+    if (control.type === 'checkbox') control.checked = defaultFilters[id];
+    else control.value = defaultFilters[id];
+  }
+  el('maxLength').disabled = true;
+}
+function filtersActive() {
+  return optionIds.some(id => {
+    const control = el(id);
+    return control.type === 'checkbox'
+      ? control.checked !== defaultFilters[id]
+      : String(control.value).trim() !== defaultFilters[id];
+  });
+}
 function restoreState() {
   const saved = savedSettings();
   if (typeof saved.rack === 'string') input.value = saved.rack;
-  // Preserve the rack and compatible filters from the previous version.
-  if (saved.uiVersion !== 3 && saved.uiVersion !== 4) return;
-  for (const id of optionIds) {
-    if (saved[id] === undefined) continue;
-    const control = el(id);
-    if (control.type === 'checkbox') control.checked = saved[id] === true;
-    else control.value = saved[id];
-  }
+  // Advanced filters deliberately reset on each visit. Old persisted filters,
+  // especially "Use every tile", caused apparently broken searches.
+  resetFilters();
 }
 function persist() {
   try {
-    const values = { ...savedSettings(), rack: input.value, simpleMode:true, uiVersion:4 };
-    for (const id of optionIds) values[id] = el(id).type === 'checkbox' ? el(id).checked : el(id).value;
-    localStorage.setItem(storageKey, JSON.stringify(values));
+    localStorage.setItem(storageKey, JSON.stringify({ rack:input.value, uiVersion:5 }));
   } catch { /* Private browsing / storage restrictions must not block searching. */ }
 }
 function setStatus(text, error = false) {
@@ -118,6 +131,8 @@ function renderEmpty(message) {
 function solve() {
   clearTimeout(solveTimer);
   persist();
+  const activeFilters = filtersActive();
+  el('resetFilters').hidden = !activeFilters;
   const rack = normalizeRack(input.value);
   if (!rack.length || (rack.length < 2 && !el('allowRepeats').checked)) {
     renderEmpty('Enter at least two letters to see answers.');
@@ -132,9 +147,9 @@ function solve() {
   // The visible UI always sorts by length. Palindromes are separately highlighted.
   const all = solveRack(dictionary, rack, searchOptions());
   const palindrome = all.filter(item => item.palindrome);
-  updateColumn(columns.pal, palindrome, 'No palindromes match those letters.');
-  updateColumn(columns.all, all, 'No words match those letters.');
-  setStatus('Found ' + all.length.toLocaleString() + ' words, including ' + palindrome.length.toLocaleString() + ' palindromes · ' + dictionaryLabel);
+  updateColumn(columns.pal, palindrome, activeFilters ? 'No palindromes match these filters.' : 'No palindromes match those letters.');
+  updateColumn(columns.all, all, activeFilters ? 'No words match these filters. Use Reset filters to show all matches.' : 'No words match those letters.');
+  setStatus((!all.length && activeFilters ? 'No matches with current filters · ' : 'Found ' + all.length.toLocaleString() + ' words, including ' + palindrome.length.toLocaleString() + ' palindromes · ') + dictionaryLabel);
 }
 function queueSolve() {
   clearTimeout(solveTimer);
@@ -206,6 +221,7 @@ input.addEventListener('keydown', event => {
   if (event.key === 'Enter') { event.preventDefault(); solve(); }
 });
 el('sampleButton').addEventListener('click', () => { input.value = sample; solve(); input.focus(); });
+el('resetFilters').addEventListener('click', () => { resetFilters(); solve(); input.focus(); });
 el('clearButton').addEventListener('click', () => { input.value = ''; solve(); input.focus(); });
 for (const id of optionIds) {
   const control = el(id);
