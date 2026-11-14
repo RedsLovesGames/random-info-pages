@@ -12,12 +12,14 @@ const defaultFilters = Object.freeze({
 });
 const sample = 'X O Y E N T N U I D T E';
 const PAGE_SIZE = 120;
+const CURSED_WORDS = new Set(["ASSHAT","ASSHATS","ASSHOLE","ASSHOLES","ASSWIPE","ASSWIPES","BATSHIT","BITCH","BITCHES","BITCHY","BOFA","BRAINROT","BULLSHIT","BULLSHITTER","BUSSIN","BUSSY","CHUD","CHUNGUS","COOM","COOMER","COOMERS","COOMS","COPIUM","CUNT","CUNTS","CUNTY","DELULU","DOUCHEBAG","DOUCHEBAGS","DUMBASS","DUMBASSES","FUCK","FUCKED","FUCKER","FUCKFACE","FUCKING","FUCKWIT","GIGACHAD","GIGACHADS","GODDAMMIT","GODDAMN","GOON","GOONER","GOONERS","GOONING","GOONS","GYATT","HORSESHIT","JACKASS","JACKASSES","LIGMA","MALD","MALDING","MAXXING","MOTHERFUCKER","MOTHERFUCKERS","MOTHERFUCKING","POG","POGCHAMP","POGCHAMPS","POGGERS","POGGING","RIZZ","RIZZES","RIZZLER","RIZZLORD","SHIT","SHITBAG","SHITFACE","SHITHEAD","SHITSHOW","SHITTY","SOYJAK","SOYJAKS","SUGMA","SUS","SUSSY","UNC","UWU","WOJAK","WOJAKS","YEET","YEETS"]);
 const columns = {
   all: { scroller:el('allScroller'), list:el('allWords'), count:el('allCount'), best:el('allBest'), empty:el('allEmpty'), end:el('allEnd'), items:[], cursor:0, lastLength:null },
   pal: { scroller:el('palScroller'), list:el('palWords'), count:el('palCount'), best:el('palBest'), empty:el('palEmpty'), end:el('palEnd'), items:[], cursor:0, lastLength:null },
   rich: { scroller:el('richScroller'), list:el('richWords'), count:el('richCount'), best:el('richBest'), empty:el('richEmpty'), end:el('richEnd'), items:[], cursor:0, lastLength:null },
   heavy: { scroller:el('heavyScroller'), list:el('heavyWords'), count:el('heavyCount'), best:el('heavyBest'), empty:el('heavyEmpty'), end:el('heavyEnd'), items:[], cursor:0, lastLength:null },
-  quad: { scroller:el('quadScroller'), list:el('quadWords'), count:el('quadCount'), best:el('quadBest'), empty:el('quadEmpty'), end:el('quadEnd'), items:[], cursor:0, lastLength:null }
+  quad: { scroller:el('quadScroller'), list:el('quadWords'), count:el('quadCount'), best:el('quadBest'), empty:el('quadEmpty'), end:el('quadEnd'), items:[], cursor:0, lastLength:null },
+  cursed: { scroller:el('cursedScroller'), list:el('cursedWords'), count:el('cursedCount'), best:el('cursedBest'), empty:el('cursedEmpty'), end:el('cursedEnd'), items:[], cursor:0, lastLength:null }
 };
 let dictionary = [];
 let dictionaryLabel = '';
@@ -153,13 +155,14 @@ function solve() {
   // Solve once, then classify the *same* valid matches into five length-sorted lists.
   // Categories can overlap, and none of the category rules changes the rack filter.
   const all = solveRack(dictionary, rack, searchOptions());
-  const groups = { all, pal:[], rich:[], heavy:[], quad:[] };
+  const groups = { all, pal:[], rich:[], heavy:[], quad:[], cursed:[] };
   for (const item of all) {
     if (item.palindrome) groups.pal.push(item);
     const kinds = classifySpecialWord(item.word);
     if (kinds.fewConsonants) groups.rich.push(item);
     if (kinds.vowelHeavy) groups.heavy.push(item);
     if (isQuadrupleLetter(item.word)) groups.quad.push(item);
+    if (CURSED_WORDS.has(item.word)) groups.cursed.push(item);
   }
 
   for (const [key, column] of Object.entries(columns)) {
@@ -172,7 +175,8 @@ function solve() {
     groups.pal.length.toLocaleString() + ' palindromes · ' +
     groups.rich.length.toLocaleString() + ' vowel rich · ' +
     groups.heavy.length.toLocaleString() + ' vowel heavy · ' +
-    groups.quad.length.toLocaleString() + ' quadruple letter · ') + dictionaryLabel);
+    groups.quad.length.toLocaleString() + ' quadruple letter · ' +
+    groups.cursed.length.toLocaleString() + ' cursed · ') + dictionaryLabel);
 }
 function queueSolve() {
   clearTimeout(solveTimer);
