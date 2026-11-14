@@ -159,8 +159,9 @@ function solve() {
   for (const item of all) {
     if (item.palindrome) groups.pal.push(item);
     const kinds = classifySpecialWord(item.word);
-    if (kinds.fewConsonants) groups.rich.push(item);
-    if (kinds.vowelHeavy) groups.heavy.push(item);
+    const vowelCount = [...item.word].filter(letter => 'AEIOUY'.includes(letter)).length;
+    if (vowelCount >= 4 && vowelCount / item.length >= 0.6) groups.rich.push(item);
+    if (kinds.fewConsonants) groups.heavy.push(item);
     if (isQuadrupleLetter(item.word)) groups.quad.push(item);
     if (CURSED_WORDS.has(item.word)) groups.cursed.push(item);
   }
