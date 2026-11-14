@@ -33,7 +33,7 @@ export async function buildStandalone(destination = join(wordsDir, 'offline.html
   html = html.replace(/<p class="ws-offline-link">[\s\S]*?<\/p>/,
     '<p class="ws-offline-link"><strong>Offline edition.</strong> All words and search code are inside this one file. You do not need an internet connection.</p>');
   html = html.replace(/<footer class="ws-footer">[\s\S]*?<\/footer>/,
-    '<footer class="ws-footer">Includes the 172,823-word public-domain ENABLE dictionary. Saved as a standalone offline HTML document.</footer>');
+    '<footer class="ws-footer">Includes the 195,415-word Towers of Babble playable dictionary. Saved as a standalone offline HTML document.</footer>');
   html = html.replace(/<button id="reloadDictionary"[\s\S]*?<\/button>/,
     '<button id="reloadDictionary" class="ws-inline-button" type="button">Restore included dictionary</button>');
   html = html.replace('</head>', '<style>\n' + css + '\n</style>\n</head>');
