@@ -36,7 +36,7 @@ test('results automatically update, are grouped by length and scroll to load eve
   assert.match(app, /resetFilters\(\);/);
   assert.match(app, /uiVersion:5/);
   assert.doesNotMatch(app, /values\[id\] = el\(id\)/);
-  assert.match(sw, /rip-word-finder-offline-v3/);
+  assert.match(sw, /rip-word-finder-offline-v4/);
   assert.match(app, /classifySpecialWord\(item.word\)/);
   assert.match(app, /function updateSpecialFinds\(groups\)/);
   assert.match(css, /\.ws-special-grid\{display:grid;grid-template-columns:repeat\(2/);
@@ -52,9 +52,9 @@ test('results automatically update, are grouped by length and scroll to load eve
   assert.match(css, /\.ws-columns\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(html, /name="theme-color" content="#171d23"/);
   assert.match(app, /loadLocalDictionary/);
-  assert.match(loader, /\.\/dictionaries\/enable\.txt/);
+  assert.match(loader, /\.\/dictionaries\/towers-of-babble\.txt/);
   assert.match(sw, /cache\.addAll\(ASSETS\)/);
-  assert.match(sw, /\.\/dictionaries\/enable\.txt/);
+  assert.match(sw, /\.\/dictionaries\/towers-of-babble\.txt/);
   assert.doesNotMatch(app, /raw\.githubusercontent\.com|cdn\.jsdelivr\.net/);
 });
 test('every matching word is in all column and palindrome subset is sorted by descending length', () => {

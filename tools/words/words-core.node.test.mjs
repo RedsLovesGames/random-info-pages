@@ -44,8 +44,8 @@ assert.deepEqual(solveRack(['AAA','AA'],'A').map(x=>x.word),[]);
 assert.equal(tileScore('ABBBC','ABC',true),13);
 assert.equal(scoreWord('ABBBC','ABC',{mode:'tiles',allowRepeats:true,bonus:1}).score,13);
 
-assert.deepEqual(classifySpecialWord('EUGENIA'), {fewConsonants:true,vowelHeavy:true});
-assert.deepEqual(classifySpecialWord('ADIEUS'), {fewConsonants:true,vowelHeavy:true});
+assert.deepEqual(classifySpecialWord('EUGENIA'), {fewConsonants:true,vowelHeavy:false});
+assert.deepEqual(classifySpecialWord('ADIEUS'), {fewConsonants:true,vowelHeavy:false});
 assert.deepEqual(classifySpecialWord('REINITIATE'), {fewConsonants:false,vowelHeavy:false});
 assert.deepEqual(classifySpecialWord('INERTIAE'), {fewConsonants:false,vowelHeavy:false});
 assert.deepEqual(classifySpecialWord('TENET'), {fewConsonants:false,vowelHeavy:false});
@@ -57,4 +57,4 @@ console.log('PASS game vowel-rich quest classification and Y as vowel');
 assert.equal(isPalindrome('AA'),false);
 assert.deepEqual(parseDictionary('aa\naba\nABBA\n'),['ABA','ABBA']);
 assert.deepEqual(classifySpecialWord('AIIYY'),{fewConsonants:false,vowelHeavy:true});
-assert.deepEqual(classifySpecialWord('BEEYYA'),{fewConsonants:true,vowelHeavy:false});
+assert.deepEqual(classifySpecialWord('BEEYYA'),{fewConsonants:true,vowelHeavy:true});
