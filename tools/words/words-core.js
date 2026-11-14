@@ -163,3 +163,15 @@ export function classifySpecialWord(text) {
     vowelHeavy: word.length >= 5 && consonants <= 1      // alternate variant
   };
 }
+
+/** Quadruple-letter quest: any one letter occurs at least four times, not necessarily together. */
+export function isQuadrupleLetter(text) {
+  const word = String(text || '').trim().toUpperCase();
+  if (!/^[A-Z]{4,}$/.test(word)) return false;
+  const frequencies = Object.create(null);
+  for (const letter of word) {
+    frequencies[letter] = (frequencies[letter] || 0) + 1;
+    if (frequencies[letter] >= 4) return true;
+  }
+  return false;
+}

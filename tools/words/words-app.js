@@ -1,4 +1,4 @@
-import { normalizeRack, parseDictionary, solveRack, classifySpecialWord } from './words-core.js';
+import { normalizeRack, parseDictionary, solveRack, classifySpecialWord, isQuadrupleLetter } from './words-core.js';
 import { loadLocalDictionary } from './dictionary-loader.js';
 
 const el = id => document.getElementById(id);
@@ -13,15 +13,17 @@ const defaultFilters = Object.freeze({
 const sample = 'X O Y E N T N U I D T E';
 const PAGE_SIZE = 120;
 const columns = {
-  pal: { scroller:el('palScroller'), list:el('palWords'), count:el('palCount'), best:el('bestPal'), empty:el('palEmpty'), end:el('palEnd'), items:[], cursor:0, lastLength:null },
-  all: { scroller:el('allScroller'), list:el('allWords'), count:el('allCount'), best:el('bestAll'), empty:el('allEmpty'), end:el('allEnd'), items:[], cursor:0, lastLength:null }
+  all: { scroller:el('allScroller'), list:el('allWords'), count:el('allCount'), best:el('allBest'), empty:el('allEmpty'), end:el('allEnd'), items:[], cursor:0, lastLength:null },
+  pal: { scroller:el('palScroller'), list:el('palWords'), count:el('palCount'), best:el('palBest'), empty:el('palEmpty'), end:el('palEnd'), items:[], cursor:0, lastLength:null },
+  rich: { scroller:el('richScroller'), list:el('richWords'), count:el('richCount'), best:el('richBest'), empty:el('richEmpty'), end:el('richEnd'), items:[], cursor:0, lastLength:null },
+  heavy: { scroller:el('heavyScroller'), list:el('heavyWords'), count:el('heavyCount'), best:el('heavyBest'), empty:el('heavyEmpty'), end:el('heavyEnd'), items:[], cursor:0, lastLength:null },
+  quad: { scroller:el('quadScroller'), list:el('quadWords'), count:el('quadCount'), best:el('quadBest'), empty:el('quadEmpty'), end:el('quadEnd'), items:[], cursor:0, lastLength:null }
 };
 let dictionary = [];
 let dictionaryLabel = '';
 let loading = true;
 let loadVersion = 0;
 let solveTimer = null;
-let specialMode = 'all';
 
 function savedSettings() {
   try {
@@ -30,7 +32,6 @@ function savedSettings() {
   } catch { return {}; }
 }
 function resetFilters() {
-  specialMode = 'all';
   for (const id of optionIds) {
     const control = el(id);
     if (control.type === 'checkbox') control.checked = defaultFilters[id];
@@ -39,7 +40,7 @@ function resetFilters() {
   el('maxLength').disabled = true;
 }
 function filtersActive() {
-  return specialMode !== 'all' || optionIds.some(id => {
+  return optionIds.some(id => {
     const control = el(id);
     return control.type === 'checkbox'
       ? control.checked !== defaultFilters[id]
@@ -127,36 +128,20 @@ function appendNext(column) {
   column.end.hidden = column.cursor < column.items.length;
 }
 
-function updateSpecialFinds(groups) {
-  const modes = [
-    ['few', 'fewConsonantsFilter', 'fewConsonantsCount', 'fewConsonantsExamples'],
-    ['heavy', 'vowelHeavyFilter', 'vowelHeavyCount', 'vowelHeavyExamples']
-  ];
-  for (const [mode, buttonId, countId, examplesId] of modes) {
-    const items = groups[mode];
-    el(buttonId).setAttribute('aria-pressed', String(specialMode === mode));
-    el(countId).textContent = items.length.toLocaleString();
-    el(examplesId).textContent = items.length
-      ? items.slice(0, 3).map(item => item.word.toLowerCase()).join(' · ')
-      : 'No matches for these letters';
-  }
-  el('showAllSpecial').hidden = specialMode === 'all';
+function renderEmpty(message) {
+  for (const column of Object.values(columns)) updateColumn(column, [], message);
 }
 
-function renderEmpty(message) {
-  updateColumn(columns.pal, [], message);
-  updateColumn(columns.all, [], message);
-  updateSpecialFinds({ few:[], heavy:[] });
-}
 function solve() {
   clearTimeout(solveTimer);
   persist();
   const activeFilters = filtersActive();
   el('resetFilters').hidden = !activeFilters;
   const rack = normalizeRack(input.value);
-  if (!rack.length || (rack.length < 2 && !el('allowRepeats').checked)) {
-    renderEmpty('Enter at least two letters to see answers.');
-    setStatus(loading ? 'Loading word lists…' : (dictionaryLabel ? dictionaryLabel + ' · Ready for letters' : 'Enter letters to search.'));
+  if (!rack.length || (rack.length < 3 && !el('allowRepeats').checked)) {
+    renderEmpty('Enter at least three letters to see answers.');
+    setStatus(loading ? 'Loading the word list…' : (dictionaryLabel
+      ? dictionaryLabel + ' · Ready for letters' : 'Enter letters to search.'));
     return;
   }
   if (!dictionary.length) {
@@ -164,25 +149,30 @@ function solve() {
     if (!loading) setStatus('No dictionary loaded. Restore the included dictionary under More options.', true);
     return;
   }
-  // The visible UI always sorts by length. Palindromes are separately highlighted.
+
+  // Solve once, then classify the *same* valid matches into five length-sorted lists.
+  // Categories can overlap, and none of the category rules changes the rack filter.
   const all = solveRack(dictionary, rack, searchOptions());
-  const palindrome = all.filter(item => item.palindrome);
-  const groups = { few:[], heavy:[] };
+  const groups = { all, pal:[], rich:[], heavy:[], quad:[] };
   for (const item of all) {
-    const flags = classifySpecialWord(item.word);
-    if (flags.fewConsonants) groups.few.push(item);
-    if (flags.vowelHeavy) groups.heavy.push(item);
+    if (item.palindrome) groups.pal.push(item);
+    const kinds = classifySpecialWord(item.word);
+    if (kinds.fewConsonants) groups.rich.push(item);
+    if (kinds.vowelHeavy) groups.heavy.push(item);
+    if (isQuadrupleLetter(item.word)) groups.quad.push(item);
   }
-  updateSpecialFinds(groups);
-  const visible = specialMode === 'all' ? all : groups[specialMode];
-  const visiblePalindromes = specialMode === 'all'
-    ? palindrome : visible.filter(item => item.palindrome);
-  updateColumn(columns.pal, visiblePalindromes, activeFilters ? 'No palindromes match these filters.' : 'No palindromes match those letters.');
-  updateColumn(columns.all, visible, activeFilters ? 'No words match these filters. Use Reset filters to show all matches.' : 'No words match those letters.');
-  const modeLabel = specialMode === 'few' ? ' · vowel-heavy quest' : specialMode === 'heavy' ? ' · alternate vowel-heavy quest' : '';
-  setStatus((!visible.length && activeFilters ? 'No matches with current filters · ' :
-    'Found ' + visible.length.toLocaleString() + ' words, including ' +
-    visiblePalindromes.length.toLocaleString() + ' palindromes' + modeLabel + ' · ') + dictionaryLabel);
+
+  for (const [key, column] of Object.entries(columns)) {
+    updateColumn(column, groups[key], activeFilters
+      ? 'No matching words with these filters. Use Reset filters to show all matches.'
+      : 'No matching words in this category.');
+  }
+  setStatus((!all.length && activeFilters ? 'No matches with current filters · ' :
+    'Found ' + all.length.toLocaleString() + ' words · ' +
+    groups.pal.length.toLocaleString() + ' palindromes · ' +
+    groups.rich.length.toLocaleString() + ' vowel rich · ' +
+    groups.heavy.length.toLocaleString() + ' vowel heavy · ' +
+    groups.quad.length.toLocaleString() + ' quadruple letter · ') + dictionaryLabel);
 }
 function queueSolve() {
   clearTimeout(solveTimer);
@@ -203,7 +193,7 @@ async function loadDefault() {
   setStatus('Loading the included Towers of Babble dictionary…');
   if (normalizeRack(input.value)) renderEmpty('Loading the dictionary…');
   try {
-    const result = await getDictionary('enable');
+    const result = await getDictionary('towers-of-babble');
     if (token !== loadVersion) return;
     dictionary = result.words;
     dictionaryLabel = 'Towers of Babble · ' + dictionary.length.toLocaleString() + ' playable words · local';
@@ -255,15 +245,6 @@ input.addEventListener('keydown', event => {
 });
 el('sampleButton').addEventListener('click', () => { input.value = sample; solve(); input.focus(); });
 el('resetFilters').addEventListener('click', () => { resetFilters(); solve(); input.focus(); });
-el('showAllSpecial').addEventListener('click', () => { specialMode = 'all'; solve(); });
-el('fewConsonantsFilter').addEventListener('click', () => {
-  specialMode = specialMode === 'few' ? 'all' : 'few';
-  solve();
-});
-el('vowelHeavyFilter').addEventListener('click', () => {
-  specialMode = specialMode === 'heavy' ? 'all' : 'heavy';
-  solve();
-});
 el('clearButton').addEventListener('click', () => { input.value = ''; solve(); input.focus(); });
 for (const id of optionIds) {
   const control = el(id);
