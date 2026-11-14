@@ -145,3 +145,20 @@ export function solveRack(words, rack, options = {}) {
   found.sort((a,b) => b.score - a.score || b.length - a.length || a.word.localeCompare(b.word));
   return found;
 }
+
+/**
+ * Classify special vowel-rich words. Y is deliberately treated as a consonant.
+ * Both categories require at least 6 letters. The categories may overlap.
+ */
+export function classifySpecialWord(text) {
+  const word = String(text || '').trim().toUpperCase();
+  if (!/^[A-Z]{6,}$/.test(word)) {
+    return { fewConsonants:false, vowelHeavy:false };
+  }
+  let vowels = 0;
+  for (const letter of word) if ('AEIOU'.includes(letter)) vowels++;
+  return {
+    fewConsonants: word.length - vowels <= 2,
+    vowelHeavy: vowels * 5 >= word.length * 3
+  };
+}

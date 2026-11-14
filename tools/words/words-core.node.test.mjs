@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {normalizeRack,parseDictionary,isPalindrome,fitsRack,leftoverLetters,tileScore,scoreWord,solveRack} from './words-core.js';
+import {normalizeRack,parseDictionary,isPalindrome,fitsRack,leftoverLetters,tileScore,scoreWord,solveRack,classifySpecialWord} from './words-core.js';
 const rack='X O Y E N T N U I D T E';
 assert.equal(normalizeRack(rack),'XOYENTNUIDTE');
 assert.equal(isPalindrome('TENET'),true);
@@ -43,3 +43,13 @@ assert.deepEqual(solveRack(['AAA','AA','A'],'A',{allowRepeats:true}).map(x=>x.wo
 assert.deepEqual(solveRack(['AAA','AA'],'A').map(x=>x.word),[]);
 assert.equal(tileScore('ABBBC','ABC',true),13);
 assert.equal(scoreWord('ABBBC','ABC',{mode:'tiles',allowRepeats:true,bonus:1}).score,13);
+
+assert.deepEqual(classifySpecialWord('EUGENIA'), {fewConsonants:true,vowelHeavy:true});
+assert.deepEqual(classifySpecialWord('ADIEUS'), {fewConsonants:true,vowelHeavy:true});
+assert.deepEqual(classifySpecialWord('REINITIATE'), {fewConsonants:false,vowelHeavy:true});
+assert.deepEqual(classifySpecialWord('INERTIAE'), {fewConsonants:false,vowelHeavy:true});
+assert.deepEqual(classifySpecialWord('TENET'), {fewConsonants:false,vowelHeavy:false});
+assert.deepEqual(classifySpecialWord('ABCDEF'), {fewConsonants:false,vowelHeavy:false});
+assert.deepEqual(classifySpecialWord('AEIOUY'), {fewConsonants:true,vowelHeavy:true}); // Y is a consonant.
+assert.deepEqual(classifySpecialWord('aeiouy'), {fewConsonants:true,vowelHeavy:true});
+console.log('PASS vowel-rich word classification, length minimum, and Y as consonant');

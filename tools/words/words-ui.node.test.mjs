@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { solveRack } from './words-core.js';
+import { solveRack, classifySpecialWord } from './words-core.js';
 
 const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const app = readFileSync(new URL('./words-app.js', import.meta.url), 'utf8');
@@ -11,6 +11,11 @@ const sw = readFileSync(new URL('./sw.js', import.meta.url), 'utf8');
 
 test('main screen has a single input and two labeled columns', () => {
   assert.match(html, /id="rackInput"/);
+  assert.match(html, /id="specialHeading"/);
+  assert.match(html, /id="fewConsonantsFilter"/);
+  assert.match(html, /id="vowelHeavyFilter"/);
+  assert.match(html, /id="showAllSpecial"/);
+  assert.match(html, /6\+ letters, at least 60% vowels/);
   assert.match(html, /id="resetFilters"/);
   assert.match(html, /Find your <em>best word/);
   assert.match(html, /ENABLE · 172,823 words/);
@@ -31,7 +36,10 @@ test('results automatically update, are grouped by length and scroll to load eve
   assert.match(app, /resetFilters\(\);/);
   assert.match(app, /uiVersion:5/);
   assert.doesNotMatch(app, /values\[id\] = el\(id\)/);
-  assert.match(sw, /rip-word-finder-offline-v2/);
+  assert.match(sw, /rip-word-finder-offline-v3/);
+  assert.match(app, /classifySpecialWord\(item.word\)/);
+  assert.match(app, /function updateSpecialFinds\(groups\)/);
+  assert.match(css, /\.ws-special-grid\{display:grid;grid-template-columns:repeat\(2/);
   assert.match(app, /mode:'length', bonus:1/);
   assert.match(app, /all\.filter\(item => item\.palindrome\)/);
   assert.match(app, /column\.scroller\.addEventListener\('scroll'/);
@@ -69,4 +77,14 @@ test('a large rack finds words unless an advanced filter restricts them', () => 
   assert.equal(all[0].word,'UNDERESTIMATING');
   assert.ok(all.find(w => w.word === 'TENET' && w.palindrome));
   assert.equal(filtered.length,0);
+});
+
+test('special categories classify 6+ letter words and keep longest-first sorting', () => {
+  const words = [
+    'REINITIATE', 'EUGENIA', 'ADIEUS', 'INERTIAE', 'TENET', 'AEIOUY', 'ABCDEF'
+  ];
+  const vowelHeavy = words.filter(word => classifySpecialWord(word).vowelHeavy);
+  const fewConsonants = words.filter(word => classifySpecialWord(word).fewConsonants);
+  assert.deepEqual(vowelHeavy, ['REINITIATE','EUGENIA','ADIEUS','INERTIAE','AEIOUY']);
+  assert.deepEqual(fewConsonants, ['EUGENIA','ADIEUS','AEIOUY']);
 });

@@ -1,4 +1,4 @@
-import { normalizeRack, parseDictionary, solveRack } from './words-core.js';
+import { normalizeRack, parseDictionary, solveRack, classifySpecialWord } from './words-core.js';
 import { loadLocalDictionary } from './dictionary-loader.js';
 
 const el = id => document.getElementById(id);
@@ -21,6 +21,7 @@ let dictionaryLabel = '';
 let loading = true;
 let loadVersion = 0;
 let solveTimer = null;
+let specialMode = 'all';
 
 function savedSettings() {
   try {
@@ -29,6 +30,7 @@ function savedSettings() {
   } catch { return {}; }
 }
 function resetFilters() {
+  specialMode = 'all';
   for (const id of optionIds) {
     const control = el(id);
     if (control.type === 'checkbox') control.checked = defaultFilters[id];
@@ -37,7 +39,7 @@ function resetFilters() {
   el('maxLength').disabled = true;
 }
 function filtersActive() {
-  return optionIds.some(id => {
+  return specialMode !== 'all' || optionIds.some(id => {
     const control = el(id);
     return control.type === 'checkbox'
       ? control.checked !== defaultFilters[id]
@@ -124,9 +126,27 @@ function appendNext(column) {
   column.cursor = end;
   column.end.hidden = column.cursor < column.items.length;
 }
+
+function updateSpecialFinds(groups) {
+  const modes = [
+    ['few', 'fewConsonantsFilter', 'fewConsonantsCount', 'fewConsonantsExamples'],
+    ['heavy', 'vowelHeavyFilter', 'vowelHeavyCount', 'vowelHeavyExamples']
+  ];
+  for (const [mode, buttonId, countId, examplesId] of modes) {
+    const items = groups[mode];
+    el(buttonId).setAttribute('aria-pressed', String(specialMode === mode));
+    el(countId).textContent = items.length.toLocaleString();
+    el(examplesId).textContent = items.length
+      ? items.slice(0, 3).map(item => item.word.toLowerCase()).join(' · ')
+      : 'No matches for these letters';
+  }
+  el('showAllSpecial').hidden = specialMode === 'all';
+}
+
 function renderEmpty(message) {
   updateColumn(columns.pal, [], message);
   updateColumn(columns.all, [], message);
+  updateSpecialFinds({ few:[], heavy:[] });
 }
 function solve() {
   clearTimeout(solveTimer);
@@ -147,9 +167,22 @@ function solve() {
   // The visible UI always sorts by length. Palindromes are separately highlighted.
   const all = solveRack(dictionary, rack, searchOptions());
   const palindrome = all.filter(item => item.palindrome);
-  updateColumn(columns.pal, palindrome, activeFilters ? 'No palindromes match these filters.' : 'No palindromes match those letters.');
-  updateColumn(columns.all, all, activeFilters ? 'No words match these filters. Use Reset filters to show all matches.' : 'No words match those letters.');
-  setStatus((!all.length && activeFilters ? 'No matches with current filters · ' : 'Found ' + all.length.toLocaleString() + ' words, including ' + palindrome.length.toLocaleString() + ' palindromes · ') + dictionaryLabel);
+  const groups = { few:[], heavy:[] };
+  for (const item of all) {
+    const flags = classifySpecialWord(item.word);
+    if (flags.fewConsonants) groups.few.push(item);
+    if (flags.vowelHeavy) groups.heavy.push(item);
+  }
+  updateSpecialFinds(groups);
+  const visible = specialMode === 'all' ? all : groups[specialMode];
+  const visiblePalindromes = specialMode === 'all'
+    ? palindrome : visible.filter(item => item.palindrome);
+  updateColumn(columns.pal, visiblePalindromes, activeFilters ? 'No palindromes match these filters.' : 'No palindromes match those letters.');
+  updateColumn(columns.all, visible, activeFilters ? 'No words match these filters. Use Reset filters to show all matches.' : 'No words match those letters.');
+  const modeLabel = specialMode === 'few' ? ' · 2 or fewer consonants' : specialMode === 'heavy' ? ' · vowel-heavy' : '';
+  setStatus((!visible.length && activeFilters ? 'No matches with current filters · ' :
+    'Found ' + visible.length.toLocaleString() + ' words, including ' +
+    visiblePalindromes.length.toLocaleString() + ' palindromes' + modeLabel + ' · ') + dictionaryLabel);
 }
 function queueSolve() {
   clearTimeout(solveTimer);
@@ -222,6 +255,15 @@ input.addEventListener('keydown', event => {
 });
 el('sampleButton').addEventListener('click', () => { input.value = sample; solve(); input.focus(); });
 el('resetFilters').addEventListener('click', () => { resetFilters(); solve(); input.focus(); });
+el('showAllSpecial').addEventListener('click', () => { specialMode = 'all'; solve(); });
+el('fewConsonantsFilter').addEventListener('click', () => {
+  specialMode = specialMode === 'few' ? 'all' : 'few';
+  solve();
+});
+el('vowelHeavyFilter').addEventListener('click', () => {
+  specialMode = specialMode === 'heavy' ? 'all' : 'heavy';
+  solve();
+});
 el('clearButton').addEventListener('click', () => { input.value = ''; solve(); input.focus(); });
 for (const id of optionIds) {
   const control = el(id);
