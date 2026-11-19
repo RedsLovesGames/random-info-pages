@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
   pages: write
   id-token: write
@@ -217,9 +218,25 @@ jobs:
           grep -Fq 'RANDOM INFO OS' _site/os/index.html
 
       - name: Upload site
+        id: upload
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site
+
+      - name: Wait for Pages artifact metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact_id }}
+        run: |
+          for attempt in {1..12}; do
+            if gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=github-pages" |
+              jq -e --arg id "$ARTIFACT_ID" 'any(.artifacts[]; (.id | tostring) == $id and .expired == false)' > /dev/null; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Pages artifact was uploaded but its metadata did not become available."
+          exit 1
 
       - name: Deploy
         id: deployment
