@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172b24">
+  <meta name="description" content="Join a room, share the same letter rack, and race to clear your word goals.">
+  <title>Word Hitlist | Random Info Pages</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23f0d46a'/%3E%3Ctext x='8' y='46' font-size='38' font-family='sans-serif' font-weight='bold' fill='%23172b24'%3EW%3C/text%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../design-system/rip.css">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="../design-system/rip.js" defer></script>
+  <script type="module" src="./game.mjs"></script>
+</head>
+<body>
+  <main>
+    <header class="title-row">
+      <div>
+        <h1>Word <em>Hitlist</em></h1>
+        <p>Same letters. Three goals. Beat the clock.</p>
+      </div>
+      <a class="rules-link" href="#rules">How to play</a>
+    </header>
+
+    <section id="entry" class="panel entry" aria-labelledby="entry-title">
+      <h2 id="entry-title">Play with friends</h2>
+      <label for="nickname">Your nickname</label>
+      <input id="nickname" maxlength="20" autocomplete="nickname" placeholder="e.g. Red" required>
+
+      <div class="entry-options">
+        <form id="create-form">
+          <h3>Host a game</h3>
+          <div class="settings">
+            <label>Rounds<select id="round-setting"><option>3</option><option selected>5</option><option>7</option></select></label>
+            <label>Round length<select id="time-setting"><option value="45">45 seconds</option><option value="60" selected>60 seconds</option><option value="90">90 seconds</option></select></label>
+          </div>
+          <button class="primary" type="submit">Create room</button>
+        </form>
+        <form id="join-form">
+          <h3>Join a game</h3>
+          <label for="join-code">Room code</label>
+          <input id="join-code" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC234" required>
+          <button class="secondary" type="submit">Join room</button>
+        </form>
+      </div>
+      <p id="entry-status" class="status" role="status"></p>
+    </section>
+
+    <section id="room" hidden aria-label="Game room">
+      <div class="room-strip">
+        <div><span>Room code</span><strong id="room-code"></strong></div>
+        <div class="room-actions">
+          <button id="invite" class="secondary" type="button">Copy invite link</button>
+          <button id="leave" class="quiet" type="button">Leave room</button>
+        </div>
+      </div>
+      <p id="room-status" class="status" role="status"></p>
+      <div class="room-layout">
+        <div class="panel stage">
+          <header class="stage-top">
+            <h2 id="stage-title" tabindex="-1">Lobby</h2>
+            <div id="timer-wrap" class="timer" hidden><span id="timer-label">Time left</span><strong id="timer" aria-labelledby="timer-label">0:00</strong></div>
+          </header>
+          <p id="stage-message"></p>
+
+          <div id="playing" hidden>
+            <div id="rack" class="rack" role="group" aria-label="Letter rack"></div>
+            <div id="goals" class="goals" role="group" aria-label="Round goals"></div>
+            <form id="word-form">
+              <label for="word">Your word</label>
+              <div class="word-controls">
+                <input id="word" maxlength="15" autocapitalize="characters" autocomplete="off" spellcheck="false" enterkeyhint="send">
+                <button type="button" class="quiet" id="clear-word">Clear</button>
+                <button type="submit" class="primary" id="submit-word">Submit</button>
+              </div>
+            </form>
+            <p id="word-status" class="status" aria-live="polite"></p>
+          </div>
+
+          <div id="review" hidden>
+            <div id="answers"></div>
+            <h3>Example solutions</h3>
+            <ul id="examples" class="examples"></ul>
+          </div>
+
+          <button id="host-action" class="primary" type="button" hidden></button>
+        </div>
+        <aside class="panel score-panel">
+          <h2 id="score-title">Players</h2>
+          <ol id="scoreboard" class="scoreboard" aria-labelledby="score-title"></ol>
+        </aside>
+      </div>
+    </section>
+
+    <details id="rules" class="rules">
+      <summary>How to play</summary>
+      <ol>
+        <li>Create a room and share the invite link or the six-character code. A room needs 2 to 12 players.</li>
+        <li>Everybody gets the same letters and three goals each round. Select a goal, then type or tap letters to spell an answer.</li>
+        <li>Each tile can be used once in a word. Use a different word for each goal. Answers use the site’s Towers of Babble dictionary.</li>
+        <li>Each cleared goal earns 100 points. Answers are revealed when time runs out. The highest total score wins. Ties share the win.</li>
+      </ol>
+      <p>Tile values for high-score goals: A, E, I, L, N, O, R, S, T, U = 1 · D, G = 2 · B, C, M, P = 3 · F, H, V, W, Y = 4 · K = 5 · J, X = 8 · Q, Z = 10.</p>
+    </details>
+    <noscript><p>Enable JavaScript to join a room.</p></noscript>
+  </main>
+</body>
+</html>

@@ -13,6 +13,7 @@ const catalog=[
  ['one-million','Visualizing One Million','Data & Research','million quantities scale One Million Actually'],
  ['infrastructure-atlas','U.S. Infrastructure Report Cards','Data & Research','map states ASCE bridges Infrastructure Atlas'],
  ['political-grid','100-Statement Political Survey','Data & Research','political community grid Political Grid'],
+ ['word-hitlist','Word Hitlist Party Game','Games & Guides','multiplayer shared rack lobby letter goals'],
  ['useless-unit-converter','The Useless Unit Converter','Utilities','convert length distance height duration bananas Minecraft days'],
  ['tools','Everyday Web Tools','Utilities','image pdf money text converters Toolbox'],
  ['wheel','Random Choice Wheel','Utilities','spin random picker Wheel'],
