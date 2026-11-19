@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f1ec">
+  <meta name="description" content="Measure your height in bananas, your commute in Minecraft days, and see the math behind both.">
+  <title>The Useless Unit Converter | Random Info Pages</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23344ae5'/%3E%3Cpath d='M13 22h38v20H13zM21 22v8m8-8v5m8-5v8m8-8v5' fill='none' stroke='white' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../design-system/rip.css">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="../design-system/rip.js" defer></script>
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="intro">
+      <h1>The Useless <em>Unit Converter</em></h1>
+      <p>How tall are you in bananas? How long is your commute in Minecraft days?</p>
+    </header>
+    <noscript><p>Enable JavaScript to use the converter. <a href="../">Back to Random Info Pages</a>.</p></noscript>
+
+    <div class="calculator" id="calculator" hidden>
+      <section class="entry" aria-labelledby="entry-heading">
+        <h2 id="entry-heading">What are you measuring?</h2>
+        <div class="modes" role="group" aria-label="Measurement type">
+          <button type="button" data-mode="length" aria-pressed="true">Length</button>
+          <button type="button" data-mode="time" aria-pressed="false">Duration</button>
+        </div>
+        <div class="inputs">
+          <label>Amount<input id="amount" type="number" min="0" step="any" inputmode="decimal" aria-describedby="input-message"></label>
+          <label>Unit<select id="input-unit"></select></label>
+        </div>
+        <p id="input-message" class="input-message" aria-live="polite" hidden></p>
+        <div class="examples">
+          <span>Try an example</span>
+          <div id="presets" class="presets" role="group" aria-label="Example measurements"></div>
+        </div>
+      </section>
+
+      <section class="answer" aria-labelledby="answer-heading">
+        <h2 id="answer-heading">Your result</h2>
+        <div class="reading" aria-live="polite" aria-atomic="true">
+          <strong id="result"></strong>
+          <span id="result-unit"></span>
+        </div>
+        <div class="math" id="math">
+          <p id="definition"></p>
+          <p id="formula"></p>
+        </div>
+        <div class="answer-actions">
+          <button id="copy" type="button">Copy result</button>
+          <span id="copy-status" role="status"></span>
+        </div>
+      </section>
+
+      <section class="options" aria-labelledby="comparisons-heading">
+        <h2 id="comparisons-heading">Measure it in…</h2>
+        <div id="comparisons" class="comparisons" role="group" aria-labelledby="comparisons-heading"></div>
+        <p class="assumption">Sizes and times are fixed for comparison. Your bananas may vary.</p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
