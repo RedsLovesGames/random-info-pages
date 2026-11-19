@@ -235,7 +235,8 @@ jobs:
           grep -Fq 'id="palScroller"' /tmp/word-solver.html
           grep -Fq 'id="allScroller"' /tmp/word-solver.html
           grep -Fq 'words-app.js' /tmp/word-solver.html
-          grep -Fq 'download="word-finder-offline.html"' /tmp/word-solver.html
+          grep -Fq 'id="cursedScroller"' /tmp/word-solver.html
+          grep -Fq 'href="./quests.html"' /tmp/word-solver.html
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wordfinder-enable.txt "$base/tools/words/dictionaries/towers-of-babble.txt"
           test "$(grep -c . /tmp/wordfinder-enable.txt)" -eq 195415
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wordfinder-offline.html "$base/tools/words/offline.html"
