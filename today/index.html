@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f1ec">
+  <meta name="description" content="Look up holidays and historical events for any date, and see how long Slovenia has been independent.">
+  <title>Today | Random Info Pages</title>
+  <link rel="stylesheet" href="../design-system/rip.css">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="../design-system/rip.js"></script>
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <main>
+    <header class="intro">
+      <div>
+        <h1>Today</h1>
+        <p id="date-heading" class="date-heading"></p>
+      </div>
+      <div class="date-controls">
+        <label for="date">Look up a date</label>
+        <div>
+          <input type="date" id="date" max="9999-12-31">
+          <button type="button" id="reset-date">Today</button>
+        </div>
+      </div>
+    </header>
+    <noscript><p>Enable JavaScript to look up dates and view the timer. <a href="../">Back to Random Info Pages</a>.</p></noscript>
+
+    <div class="daily">
+      <section class="holidays" aria-labelledby="holiday-heading">
+        <h2 id="holiday-heading">What holiday is it?</h2>
+        <label class="country" for="country">Country for public holidays
+          <select id="country">
+            <option value="US">United States</option>
+            <option value="SI">Slovenia</option>
+          </select>
+        </label>
+        <div class="holiday-group">
+          <h3>Public holidays</h3>
+          <ul id="public-holidays" class="holiday-list"></ul>
+          <p id="public-status" class="status" role="status"></p>
+        </div>
+        <div class="holiday-group">
+          <h3>Observances worldwide</h3>
+          <ul id="observances" class="holiday-list"></ul>
+          <p id="observances-status" class="status" role="status"></p>
+        </div>
+        <small class="source"><a href="https://date.nager.at/">Nager.Date</a> · <a id="observance-source" href="https://en.wikipedia.org/">Wikipedia</a></small>
+      </section>
+
+      <section class="history" aria-labelledby="history-heading">
+        <h2 id="history-heading">This Day in History</h2>
+        <ol id="events" class="events"></ol>
+        <p id="history-status" class="status" role="status"></p>
+        <small class="source"><a id="history-source" href="https://en.wikipedia.org/">More events on Wikipedia</a> · <a href="https://en.wikipedia.org/wiki/Wikipedia:Copyrights">Text license</a></small>
+      </section>
+    </div>
+
+    <section class="clock" aria-labelledby="clock-heading">
+      <h2 id="clock-heading">How old is Slovenia?</h2>
+      <p id="clock-origin">Counting from midnight in Ljubljana on <a href="https://www.gov.si/en/news/2020-06-25-statehood-day/">Statehood Day, June 25, 1991</a>.</p>
+      <dl class="clock-units" aria-describedby="clock-origin">
+        <div><dt>Years</dt><dd id="years">…</dd></div>
+        <div><dt>Days</dt><dd id="days">…</dd></div>
+        <div><dt>Hours</dt><dd id="hours">…</dd></div>
+        <div><dt>Minutes</dt><dd id="minutes">…</dd></div>
+        <div><dt>Seconds</dt><dd id="seconds">…</dd></div>
+      </dl>
+    </section>
+  </main>
+</body>
+</html>

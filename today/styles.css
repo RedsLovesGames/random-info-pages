@@ -1,0 +1,48 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
+
+:root {
+  color-scheme: light;
+  --paper: #f2f1ec;
+  --white: #fcfbf8;
+  --ink: #17191d;
+  --muted: #52566a;
+  --blue: #3044cf;
+  --line: #cfcec8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.5 "DM Sans", Arial, sans-serif; }
+main { width: min(1160px, 100%); margin: auto; padding: clamp(24px, 6vw, 76px) clamp(16px, 5vw, 64px) 56px; }
+h1, h2, h3, p { margin: 0; }
+a { color: var(--blue); text-underline-offset: .16em; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+.intro { display: flex; justify-content: space-between; align-items: end; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; }
+h1 { font: 400 clamp(76px, 13vw, 148px)/.9 "Instrument Serif", Georgia, serif; letter-spacing: -.045em; }
+.date-heading { margin-top: 12px; font-size: clamp(17px, 2.1vw, 23px); color: var(--muted); }
+label { display: grid; gap: 6px; font-weight: 650; }
+.date-controls { display: grid; gap: 6px; }
+.date-controls > div { display: flex; flex-wrap: wrap; gap: 8px; }
+button, input, select { font: inherit; min-height: 44px; padding: 7px 10px; color: var(--ink); background: var(--white); border: 1px solid #9c9da3; border-radius: 4px; }
+button { color: white; background: var(--blue); border-color: var(--blue); cursor: pointer; }
+button:hover { background: #2435ac; }
+select { width: 100%; }
+.daily { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.45fr); gap: 18px; }
+.daily section { background: var(--white); border: 1px solid var(--line); padding: clamp(17px, 3vw, 29px); min-width: 0; overflow-wrap: anywhere; }
+h2 { font: 400 clamp(31px, 5vw, 51px)/.98 "Instrument Serif", Georgia, serif; }
+.holiday-group, .country { margin-top: 20px; }
+h3 { font-size: 16px; font-weight: 750; }
+.status { color: var(--muted); font-size: 15px; }
+.status:empty { display: none; }
+.source { display: block; margin-top: 18px; font-size: 14px; }
+.holiday-list, .events { padding: 0; margin: 0; list-style: none; }
+.holiday-list li { margin-top: 6px; }
+.events:not(:empty), .history .status { margin-top: 17px; }
+.events li { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.events .year { font-weight: 750; font-variant-numeric: tabular-nums; color: var(--blue); }
+.events a { color: inherit; }
+.clock { margin-top: 18px; padding: clamp(17px, 3vw, 29px); background: #dfe5fd; border: 1px solid #cad2f0; }
+.clock p { margin-top: 8px; color: #303c66; }
+.clock-units { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: clamp(4px, 1vw, 12px); margin: 18px 0 0; }
+.clock-units div { display: flex; flex-direction: column-reverse; align-items: center; background: #f4f6ff; padding: clamp(6px, 2vw, 14px) 2px; }
+.clock-units dt { color: #303c66; font-size: clamp(12px, 2vw, 15px); }
+.clock-units dd { margin: 0; font-size: clamp(18px, 5vw, 46px); font-weight: 750; font-variant-numeric: tabular-nums; line-height: 1.15; }
+@media (max-width: 690px) { .daily { grid-template-columns: 1fr; } }

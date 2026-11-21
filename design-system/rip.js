@@ -15,6 +15,8 @@ const catalog=[
  ['political-grid','100-Statement Political Survey','Data & Research','political community grid Political Grid'],
  ['word-hitlist','Word Hitlist Party Game','Games & Guides','multiplayer shared rack lobby letter goals'],
  ['useless-unit-converter','The Useless Unit Converter','Utilities','convert length distance height duration bananas Minecraft days'],
+ ['today','Today: Holidays, History & Slovenia','Data & Research','what holiday is today this day in history observances how old is Slovenia independence age timer'],
+ ['id-card-maker','Custom ID Card Maker','Utilities','novelty ID card generator photo badge template download PNG'],
  ['tools','Everyday Web Tools','Utilities','image pdf money text converters Toolbox'],
  ['wheel','Random Choice Wheel','Utilities','spin random picker Wheel'],
  ['whenwemeet','Group Availability Planner','Utilities','meeting schedule when we meet WhenWeMeet When We Meet'],

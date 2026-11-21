@@ -1,0 +1,38 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
+
+:root {
+  color-scheme: light;
+  --paper: #f2f1ec;
+  --white: #fcfbf8;
+  --ink: #17191d;
+  --muted: #52566a;
+  --blue: #3044cf;
+  --line: #cfcec8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.5 "DM Sans", Arial, sans-serif; }
+main { width: min(1160px, 100%); margin: auto; padding: clamp(24px, 6vw, 76px) clamp(16px, 5vw, 64px) 56px; }
+h1, h2, p { margin: 0; }
+h1 { font: 400 clamp(48px, 9vw, 110px)/.94 "Instrument Serif", Georgia, serif; letter-spacing: -.035em; }
+h1 em { color: var(--blue); }
+.intro { margin-bottom: 25px; }
+.intro p { margin-top: 12px; color: var(--muted); }
+.editor { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: start; gap: 18px; }
+form, .preview { background: var(--white); border: 1px solid var(--line); padding: clamp(16px, 3vw, 27px); min-width: 0; }
+form { display: grid; gap: 12px; }
+label { display: grid; gap: 4px; min-width: 0; font-weight: 650; }
+.field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+button, input, select { font: inherit; min-height: 44px; border: 1px solid #9c9da3; border-radius: 4px; }
+input, select { width: 100%; min-width: 0; padding: 7px 10px; background: var(--white); color: var(--ink); }
+input[type=file] { font-size: 15px; }
+button { padding: 7px 13px; background: var(--white); color: var(--blue); cursor: pointer; font-weight: 700; }
+button:hover { border-color: var(--blue); }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+h2 { font: 400 clamp(27px, 4vw, 39px)/1 "Instrument Serif", Georgia, serif; margin-bottom: 13px; }
+canvas { display: block; width: 100%; height: auto; background: #dfe5fd; border-radius: 4%; }
+.hint, .status { color: var(--muted); font-size: 14px; }
+.status:empty { display: none; }
+.download { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.download button { color: white; background: var(--blue); border-color: var(--blue); }
+.download button:disabled { opacity: .65; cursor: wait; }
+@media (max-width: 740px) { .editor { grid-template-columns: 1fr; } }

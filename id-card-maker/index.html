@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f1ec">
+  <meta name="description" content="Design a custom novelty ID card with your own text and photo, then download it as a PNG.">
+  <title>Custom ID Card Maker | Random Info Pages</title>
+  <link rel="stylesheet" href="../design-system/rip.css">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="../design-system/rip.js"></script>
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <main>
+    <header class="intro">
+      <h1>Custom ID <em>Card Maker</em></h1>
+      <p>Make a novelty badge with your own photo and text.</p>
+    </header>
+    <noscript><p>Enable JavaScript to make a card. <a href="../">Back to Random Info Pages</a>.</p></noscript>
+
+    <div class="editor">
+      <form id="card-form" aria-label="Card details">
+        <label>Template
+          <select id="template">
+            <option value="club">Club Badge</option>
+            <option value="npc">NPC License</option>
+            <option value="yapper">Certified Yapper</option>
+          </select>
+        </label>
+        <label>Card title<input id="title" type="text" maxlength="42" placeholder="Use the template title"></label>
+        <label>Name<input id="name" type="text" maxlength="48" placeholder="Your name"></label>
+        <label>Role<input id="role" type="text" maxlength="42" placeholder="Optional"></label>
+        <div class="field-row">
+          <label>Field label<input id="field-label" type="text" maxlength="20" placeholder="e.g. Department"></label>
+          <label>Field value<input id="field-value" type="text" maxlength="36" placeholder="Optional"></label>
+        </div>
+        <label>Photo<input id="photo" type="file" accept="image/*"></label>
+        <div class="photo-actions" id="photo-actions" hidden><button type="button" id="remove-photo">Remove photo</button></div>
+        <p class="hint">Photo processing happens in your browser.</p>
+        <p id="photo-status" role="status" class="status"></p>
+      </form>
+
+      <section class="preview" aria-labelledby="preview-heading">
+        <h2 id="preview-heading">Card preview</h2>
+        <canvas id="card" width="1080" height="680" role="img" aria-label="Novelty ID card preview"></canvas>
+        <div class="download">
+          <button type="button" id="save" disabled>Download PNG</button>
+          <p id="save-status" role="status" class="status"></p>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

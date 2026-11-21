@@ -135,7 +135,6 @@ test('VCT and Tideborne are archived, remain available, and are excluded from th
   assert.equal(projects.filter(p=>!p.a).length,projects.length-archived.length);
   assert.match(html,/const activeProjects=projects\.filter\(p=>!p\.a\)/);
   assert.match(html,/const shown=activeProjects\.filter/);
-  assert.match(html,/const p=activeProjects\[Math\.floor\(Math\.random\(\)\*activeProjects\.length\)\]/);
   assert.match(html,/:activeProjects}/);
   assert.match(html,/p\.a\?' · ARCHIVED'/);
   assert.match(html,/href="\.\/archive\/"/);
@@ -146,6 +145,30 @@ test('VCT and Tideborne are archived, remain available, and are excluded from th
   }
   assert.match(archive,/Retained for reference/);
 });
+test('Today and ID Card Maker have their own active project routes', () => {
+  for (const route of ['today', 'id-card-maker']) {
+    assert.ok(projects.some(project => project.p === './' + route + '/' && !project.a));
+    assert.ok(existsSync(new URL('../' + route + '/index.html', import.meta.url)));
+  }
+});
+
+test('Surprise Me navigates only to active pages under the GitHub Pages site root', () => {
+  const randomProject = html.match(/function randomProject\(\)\{[\s\S]*?\n\}/)[0];
+  const siteRoot = 'https://redslovesgames.github.io/random-info-pages/';
+  const active = projects.filter(project => !project.a);
+  const routes = [...active, { p: 'https://example.org/' }, { p: '../' }, { p: './' }];
+  for (const [index, project] of active.entries()) {
+    let destination;
+    runInNewContext(randomProject + '; randomProject();', {
+      activeProjects: routes,
+      Math: { floor: Math.floor, random: () => (index + 0.5) / active.length },
+      URL,
+      window: { location: { href: siteRoot + 'index.html', assign: url => { destination = url; } } },
+    });
+    assert.equal(destination, new URL(project.p, siteRoot).href);
+  }
+});
+
 test('archive notices preserve the original project interfaces', () => {
   const vct=readFileSync(new URL('../vct-scout/index.html',import.meta.url),'utf8');
   const tide=readFileSync(new URL('../tide2/index.html',import.meta.url),'utf8');
