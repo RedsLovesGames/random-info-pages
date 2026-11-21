@@ -4,52 +4,174 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f2f1ec">
-  <meta name="description" content="Design a custom novelty ID card with your own text and photo, then download it as a PNG.">
+  <meta name="description" content="Make a two-sided novelty ID or event badge with 24 templates, photos, logos, QR codes, and PNG or print export.">
   <title>Custom ID Card Maker | Random Info Pages</title>
   <link rel="stylesheet" href="../design-system/rip.css">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=2">
   <script defer src="../design-system/rip.js"></script>
-  <script type="module" src="./app.mjs"></script>
+  <script type="module" src="./app.mjs?v=2"></script>
 </head>
 <body>
-  <main>
+  <main class="studio">
     <header class="intro">
-      <h1>Custom ID <em>Card Maker</em></h1>
-      <p>Make a novelty badge with your own photo and text.</p>
+      <div>
+        <h1>Custom ID <em>Card Maker</em></h1>
+        <p>Design a badge for your club, event, game, or inside joke.</p>
+      </div>
+      <div class="project-actions">
+        <button type="button" id="undo" disabled>Undo</button>
+        <button type="button" id="redo" disabled>Redo</button>
+        <div class="project-menu">
+          <button type="button" id="open-project" aria-expanded="false" aria-controls="project-menu">Project <span aria-hidden="true">▾</span></button>
+          <div id="project-menu" class="menu" hidden>
+            <button type="button" id="save-project">Save editable project</button>
+            <button type="button" id="import-project">Open project file</button>
+            <button type="button" id="reset">Start over</button>
+          </div>
+          <input type="file" id="project-file" accept=".json,application/json" hidden>
+        </div>
+      </div>
     </header>
     <noscript><p>Enable JavaScript to make a card. <a href="../">Back to Random Info Pages</a>.</p></noscript>
-
-    <div class="editor">
-      <form id="card-form" aria-label="Card details">
-        <label>Template
-          <select id="template">
-            <option value="club">Club Badge</option>
-            <option value="npc">NPC License</option>
-            <option value="yapper">Certified Yapper</option>
-          </select>
-        </label>
-        <label>Card title<input id="title" type="text" maxlength="42" placeholder="Use the template title"></label>
-        <label>Name<input id="name" type="text" maxlength="48" placeholder="Your name"></label>
-        <label>Role<input id="role" type="text" maxlength="42" placeholder="Optional"></label>
-        <div class="field-row">
-          <label>Field label<input id="field-label" type="text" maxlength="20" placeholder="e.g. Department"></label>
-          <label>Field value<input id="field-value" type="text" maxlength="36" placeholder="Optional"></label>
-        </div>
-        <label>Photo<input id="photo" type="file" accept="image/*"></label>
-        <div class="photo-actions" id="photo-actions" hidden><button type="button" id="remove-photo">Remove photo</button></div>
-        <p class="hint">Photo processing happens in your browser.</p>
-        <p id="photo-status" role="status" class="status"></p>
-      </form>
-
+    <div class="workbench">
       <section class="preview" aria-labelledby="preview-heading">
-        <h2 id="preview-heading">Card preview</h2>
-        <canvas id="card" width="1080" height="680" role="img" aria-label="Novelty ID card preview"></canvas>
-        <div class="download">
-          <button type="button" id="save" disabled>Download PNG</button>
-          <p id="save-status" role="status" class="status"></p>
+        <header class="preview-header">
+          <h2 id="preview-heading" tabindex="-1">Card preview</h2>
+          <div class="segmented" role="group" aria-label="Preview side">
+            <button type="button" data-side="front" aria-pressed="true">Front</button>
+            <button type="button" data-side="back" aria-pressed="false">Back</button>
+          </div>
+        </header>
+        <div class="canvas-stage" id="stage">
+          <canvas id="card" width="1080" height="680" role="img" aria-label="Novelty ID card preview"></canvas>
+        </div>
+        <div class="preview-meta">
+          <span id="card-format"></span>
+          <span id="project-status" role="status">Draft autosaves on this device</span>
+        </div>
+        <div class="export">
+          <div class="export-options">
+            <label class="sr-only" for="export-mode">Download format</label>
+            <select id="export-mode">
+              <option value="active">Current side · PNG</option>
+              <option value="both">Front + back · PNG</option>
+              <option value="print">Front + back · Print / PDF</option>
+            </select>
+            <label class="sr-only" for="export-scale">PNG resolution</label>
+            <select id="export-scale"><option value="1">1×</option><option value="2">2×</option></select>
+            <button type="button" id="save" class="primary" disabled>Download</button>
+          </div>
+          <p id="save-status" class="status" role="status"></p>
         </div>
       </section>
+
+      <form id="card-form" class="inspector" aria-label="Card editor" novalidate>
+        <div class="editor-tabs" role="tablist" aria-label="Card editor tools">
+          <button type="button" role="tab" id="tab-templates" aria-controls="panel-templates" aria-selected="true">Templates</button>
+          <button type="button" role="tab" id="tab-details" aria-controls="panel-details" aria-selected="false" tabindex="-1">Details</button>
+          <button type="button" role="tab" id="tab-style" aria-controls="panel-style" aria-selected="false" tabindex="-1">Style</button>
+          <button type="button" role="tab" id="tab-images" aria-controls="panel-images" aria-selected="false" tabindex="-1">Images</button>
+        </div>
+        <section class="editor-panel" id="panel-templates" role="tabpanel" aria-labelledby="tab-templates">
+          <div class="panel-heading">
+            <div><h2>Choose a template</h2><p id="template-count"></p></div>
+            <button type="button" id="shuffle">Shuffle style</button>
+          </div>
+          <div class="filter-row" aria-label="Template categories" id="categories"></div>
+          <div id="gallery" class="gallery" role="group" aria-label="Card templates"></div>
+        </section>
+
+        <section class="editor-panel" id="panel-details" role="tabpanel" aria-labelledby="tab-details" hidden>
+          <div class="panel-heading"><div><h2>Card details</h2><p>Use Front and Back above to edit each side.</p></div></div>
+          <div id="front-details" class="form-grid two">
+            <label>Card title<input id="title" type="text" placeholder="Club Badge"></label>
+            <label>Name<input id="name" type="text" placeholder="Your name" autocomplete="off"></label>
+            <label>Role or subtitle<input id="role" type="text" placeholder="e.g. Event volunteer"></label>
+            <label>Organization<input id="organization" type="text" placeholder="e.g. Film Club"></label>
+          </div>
+          <div id="back-details" class="form-grid" hidden>
+            <div class="form-grid two">
+              <label>Back title<input id="back-title" placeholder="Use the front title"></label>
+              <label>Back style<select id="back-design"></select></label>
+            </div>
+            <label>Notes<textarea id="back-note" rows="4" placeholder="Contact details, event info or a message"></textarea></label>
+            <label>Scannable code
+              <select id="back-code">
+                <option value="none">None</option>
+                <option value="qr">QR code (link or text)</option>
+                <option value="code128">Code 128 barcode</option>
+              </select>
+            </label>
+            <div id="code-details" class="form-grid" hidden>
+              <label class="checkbox"><input type="checkbox" id="code-serial"> Encode the card number</label>
+              <label id="code-content">Code content<input id="back-payload" placeholder="Enter a link or text"></label>
+              <p class="status" id="code-status" role="status"></p>
+              <button type="button" id="retry-code" hidden>Retry code generation</button>
+            </div>
+          </div>
+          <div class="form-grid details-section">
+            <label>Card number
+              <span class="inline-control">
+                <input id="serial" placeholder="Optional" autocomplete="off">
+                <button type="button" id="generate-serial">Generate</button>
+              </span>
+            </label>
+            <div class="sub-heading"><h3>Custom fields</h3><button type="button" id="add-field">Add field</button></div>
+            <div id="custom-fields" class="custom-fields"></div>
+          </div>
+        </section>
+
+        <section class="editor-panel" id="panel-style" role="tabpanel" aria-labelledby="tab-style" hidden>
+          <div class="panel-heading"><div><h2>Make it your own</h2></div><button type="button" id="reset-style">Reset style</button></div>
+          <div class="form-grid two">
+            <label>Layout<select id="layout"></select></label>
+            <label>Format<select id="size"></select></label>
+            <label>Typeface<select id="font"></select></label>
+            <label>Emblem<select id="emblem"></select></label>
+            <label>Pattern<select id="pattern"></select></label>
+            <label>Pattern strength<input id="intensity" type="range" min="0" max="100"></label>
+            <label>Corner radius<input id="corners" type="range" min="0" max="48"></label>
+            <label>Photo shape<select id="shape"></select></label>
+          </div>
+          <div class="form-grid details-section">
+            <h3>Color palettes</h3>
+            <div id="palettes" class="palettes" role="group" aria-label="Color palettes"></div>
+            <div class="form-grid three">
+              <label>Background<input id="paper" type="color"></label>
+              <label>Text<input id="ink" type="color"></label>
+              <label>Accent<input id="accent" type="color"></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-panel" id="panel-images" role="tabpanel" aria-labelledby="tab-images" hidden>
+          <div class="panel-heading"><div><h2>Photos &amp; logos</h2><p>Images stay on this device unless you export them.</p></div></div>
+          <div class="form-grid">
+            <div class="image-row">
+              <label>Portrait / main photo<input id="photo" type="file" accept="image/*"></label>
+              <button type="button" data-remove="photo" aria-label="Remove main photo" hidden>Remove</button>
+            </div>
+            <div class="form-grid three" id="photo-controls" hidden>
+              <label>Zoom<input id="photoZoom" type="range" min="1" max="3" step=".05"></label>
+              <label>Horizontal<input id="photoX" type="range" min="0" max="100"></label>
+              <label>Vertical<input id="photoY" type="range" min="0" max="100"></label>
+            </div>
+            <div class="image-row">
+              <label>Logo<input id="logo" type="file" accept="image/*"></label>
+              <button type="button" data-remove="logo" aria-label="Remove logo" hidden>Remove</button>
+            </div>
+            <div class="image-row">
+              <label>Background image<input id="background" type="file" accept="image/*"></label>
+              <button type="button" data-remove="background" aria-label="Remove background image" hidden>Remove</button>
+            </div>
+            <label id="background-controls" hidden>Background opacity<input id="backgroundOpacity" type="range" min="0" max="100"></label>
+            <p class="status" id="photo-status" role="status"></p>
+          </div>
+        </section>
+        <div class="mobile-tools"><button type="button" id="view-preview">View card preview</button></div>
+      </form>
     </div>
   </main>
+  <section id="print-sheet" aria-label="Printable card sides"></section>
 </body>
 </html>

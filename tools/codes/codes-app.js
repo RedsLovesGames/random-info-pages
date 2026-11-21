@@ -2,12 +2,12 @@ import {
   buildCodePayload, generatePassword as makePassword, generatePassphrase,
   secureBytes, tokenFromBytes, generateUuid as makeUuid, barcodeOptions,
 } from './codes-core.js';
+import { loadBwip } from './bwip-loader.js';
 
 const $ = selector => document.querySelector(selector);
 const modes = [...document.querySelectorAll('[data-codes-mode]')];
 const panels = [...document.querySelectorAll('[data-codes-panel]')];
 const canvas = $('#codeCanvas');
-let bwipPromise = null;
 
 function show(value) { $('#codesResult').textContent = String(value); }
 function setMode(mode, { updateUrl = true } = {}) {
@@ -15,19 +15,6 @@ function setMode(mode, { updateUrl = true } = {}) {
   modes.forEach(button => button.classList.toggle('active', button.dataset.codesMode === mode));
   panels.forEach(panel => panel.hidden = panel.dataset.codesPanel !== mode);
   if (updateUrl) history.replaceState(null, '', `?action=${encodeURIComponent(mode)}`);
-}
-
-async function loadBwip() {
-  if (window.bwipjs?.toCanvas) return window.bwipjs;
-  if (!bwipPromise) bwipPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/bwip-js@4.11.4/dist/bwip-js-min.js';
-    script.crossOrigin = 'anonymous';
-    script.onload = () => window.bwipjs?.toCanvas ? resolve(window.bwipjs) : reject(new Error('Barcode renderer did not initialize.'));
-    script.onerror = () => reject(new Error('Could not load the barcode renderer.'));
-    document.head.append(script);
-  }).catch(error => { bwipPromise = null; throw error; });
-  return bwipPromise;
 }
 
 async function renderCode(options) {
