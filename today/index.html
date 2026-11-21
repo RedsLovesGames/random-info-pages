@@ -31,23 +31,24 @@
     <div class="daily">
       <section class="holidays" aria-labelledby="holiday-heading">
         <h2 id="holiday-heading">What holiday is it?</h2>
-        <label class="country" for="country">Country for public holidays
-          <select id="country">
-            <option value="US">United States</option>
-            <option value="SI">Slovenia</option>
-          </select>
-        </label>
         <div class="holiday-group">
-          <h3>Public holidays</h3>
-          <ul id="public-holidays" class="holiday-list"></ul>
-          <p id="public-status" class="status" role="status"></p>
-        </div>
-        <div class="holiday-group">
-          <h3>Observances worldwide</h3>
+          <h3>National Today highlights</h3>
           <ul id="observances" class="holiday-list"></ul>
           <p id="observances-status" class="status" role="status"></p>
+          <a id="observance-source" class="source" href="https://nationaltoday.com/today/">See the full list on National Today</a>
         </div>
-        <small class="source"><a href="https://date.nager.at/">Nager.Date</a> · <a id="observance-source" href="https://en.wikipedia.org/">Wikipedia</a></small>
+        <div class="holiday-group public-holidays">
+          <h3>Public holidays</h3>
+          <label class="country" for="country">Country for public holidays
+            <select id="country">
+              <option value="US">United States</option>
+              <option value="SI">Slovenia</option>
+            </select>
+          </label>
+          <ul id="public-holidays" class="holiday-list"></ul>
+          <p id="public-status" class="status" role="status"></p>
+          <a href="https://date.nager.at/" class="source">Public holiday data from Nager.Date</a>
+        </div>
       </section>
 
       <section class="history" aria-labelledby="history-heading">

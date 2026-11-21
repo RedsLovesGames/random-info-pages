@@ -28,7 +28,9 @@ select { width: 100%; }
 .daily { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.45fr); gap: 18px; }
 .daily section { background: var(--white); border: 1px solid var(--line); padding: clamp(17px, 3vw, 29px); min-width: 0; overflow-wrap: anywhere; }
 h2 { font: 400 clamp(31px, 5vw, 51px)/.98 "Instrument Serif", Georgia, serif; }
-.holiday-group, .country { margin-top: 20px; }
+.holiday-group { margin-top: 20px; }
+.public-holidays { border-top: 1px solid var(--line); padding-top: 16px; }
+.country { margin: 8px 0; font-size: 15px; }
 h3 { font-size: 16px; font-weight: 750; }
 .status { color: var(--muted); font-size: 15px; }
 .status:empty { display: none; }

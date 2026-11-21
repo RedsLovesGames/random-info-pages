@@ -20,8 +20,11 @@ const monthDay = new Intl.DateTimeFormat('en', { month: 'long', day: 'numeric' }
 const historyCache = new Map();
 const holidayCache = new Map();
 const holidayApi = 'https://date.nager.at/api/v3';
+const nationalToday = 'https://nationaltoday.com/';
+const observanceData = new URL('./national-today.json', import.meta.url).href;
 let tracksToday = true;
 let historyRequest = 0;
+let observanceRequest = 0;
 let holidayRequest = 0;
 
 async function fetchJson(url) {
@@ -60,14 +63,11 @@ async function loadHistory(value, wikiDay) {
   const request = ++historyRequest;
   const [, month, day] = value.split('-');
   eventsList.replaceChildren();
-  observanceList.replaceChildren();
   historyStatus.textContent = 'Loading events…';
-  observanceStatus.textContent = 'Loading observances…';
   try {
     const data = await cachedJson(historyCache, 'https://en.wikipedia.org/api/rest_v1/feed/onthisday/all/' + month + '/' + day);
     if (request !== historyRequest) return;
     const events = data.selected?.length ? data.selected : data.events ?? [];
-    const observances = (data.holidays ?? []).filter(item => item.text);
     eventsList.replaceChildren(...events.slice(0, 7).map(event => {
       const year = document.createElement('span');
       year.className = 'year';
@@ -76,15 +76,37 @@ async function loadHistory(value, wikiDay) {
       item.append(sourceLink(event.pages?.[0], event.text, wikiDay));
       return item;
     }));
-    observanceList.replaceChildren(...observances.slice(0, 6).map(item =>
-      entry(sourceLink(item.pages?.[0], item.text, wikiDay + '#Holidays_and_observances')),
-    ));
     historyStatus.textContent = events.length ? '' : 'No events are listed for this date.';
-    observanceStatus.textContent = observances.length ? '' : 'No observances are listed for this date.';
   } catch {
     if (request !== historyRequest) return;
     historyStatus.textContent = 'Events are unavailable here right now. Open the Wikipedia link for this date.';
-    observanceStatus.textContent = 'Observances are unavailable here right now. Open the Wikipedia link for this date.';
+  }
+}
+
+async function loadObservances(value) {
+  const request = ++observanceRequest;
+  observanceList.replaceChildren();
+  observanceStatus.textContent = 'Loading observances…';
+  try {
+    const calendar = await cachedJson(holidayCache, observanceData);
+    if (request !== observanceRequest) return;
+    const items = calendar.dates[value] ?? [];
+    observanceList.replaceChildren(...items.map(([name, path]) => {
+      const link = document.createElement('a');
+      link.href = nationalToday + path;
+      link.textContent = name;
+      return entry(link);
+    }));
+    if (items.length) {
+      observanceStatus.textContent = '';
+    } else if (value < calendar.from || value > calendar.through) {
+      observanceStatus.textContent = 'This date is outside the on-page highlights. Browse National Today for this month and day.';
+    } else {
+      observanceStatus.textContent = 'No highlights for this date.';
+    }
+  } catch {
+    if (request !== observanceRequest) return;
+    observanceStatus.textContent = 'Highlights are unavailable here right now.';
   }
 }
 
@@ -125,10 +147,14 @@ function showDate() {
   const value = dateInput.value;
   const day = new Date(value + 'T12:00:00');
   dateHeading.textContent = fullDate.format(day);
-  const wikiDay = 'https://en.wikipedia.org/wiki/' + encodeURIComponent(monthDay.format(day).replace(' ', '_'));
+  const dateLabel = monthDay.format(day);
+  const wikiDay = 'https://en.wikipedia.org/wiki/' + encodeURIComponent(dateLabel.replace(' ', '_'));
+  const daySlug = dateLabel.toLowerCase().replace(' ', '-');
+  const nationalTodayPath = daySlug === 'february-29' ? 'february-holidays/' : daySlug + '/';
   historySource.href = wikiDay + '#Events';
-  observanceSource.href = wikiDay + '#Holidays_and_observances';
+  observanceSource.href = nationalToday + nationalTodayPath;
   loadHistory(value, wikiDay);
+  loadObservances(value);
   loadPublicHolidays(value);
 }
 
