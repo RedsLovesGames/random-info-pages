@@ -1,4 +1,4 @@
-import { FLOOR, POOL, THEMES, generateDungeon, resolveDungeonTheme } from './generator.mjs';
+import { FLOOR, WALL, POOL, THEMES, generateDungeon, resolveDungeonTheme } from './generator.mjs';
 
 function bounded(value, min, max, fallback) {
   const number = Number(value);
@@ -109,6 +109,54 @@ export function pngExportSpec({ W, H }, target, basename) {
   const density = [48, 70, 100].includes(Number(target)) ? Number(target) : 70;
   const pixels = Math.min(density, Math.floor(6500 / Math.max(W, H)), Math.floor(Math.sqrt(15000000 / (W * H))));
   return { pixels, width: W * pixels, height: H * pixels, name: basename + '-' + W + 'x' + H + '.png' };
+}
+
+export function roomExportRegion(dungeon, id) {
+  const { W, H, grid, roomId } = dungeon;
+  if (!Number.isInteger(id) || id < 0 || id >= dungeon.rooms.length) return undefined;
+  const visible = new Set();
+  let left = W, right = 0, top = H, bottom = 0;
+  for (let cell = 0; cell < grid.length; cell++) {
+    if (roomId[cell] !== id || !grid[cell]) continue;
+    const x = cell % W, y = Math.floor(cell / W);
+    visible.add(cell);
+    left = Math.min(left, x);
+    right = Math.max(right, x);
+    top = Math.min(top, y);
+    bottom = Math.max(bottom, y);
+  }
+  if (!visible.size) return undefined;
+  const padding = 2;
+  left = Math.max(0, left - padding);
+  right = Math.min(W - 1, right + padding);
+  top = Math.max(0, top - padding);
+  bottom = Math.min(H - 1, bottom + padding);
+  const inBounds = (x, y) => x >= left && x <= right && y >= top && y <= bottom;
+  let frontier = [...visible];
+
+  // Follow room exits into short corridor stubs without exposing another room.
+  for (let distance = 0; distance < padding; distance++) {
+    const next = [];
+    for (const tile of frontier) {
+      const x = tile % W, y = Math.floor(tile / W);
+      for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+        const cell = ny * W + nx;
+        if (!inBounds(nx, ny) || visible.has(cell) || roomId[cell] >= 0 || grid[cell] !== FLOOR) continue;
+        visible.add(cell);
+        next.push(cell);
+      }
+    }
+    frontier = next;
+  }
+  // Draw a wall border and adjoining hazards as terrain around the floor.
+  for (const tile of [...visible]) {
+    const x = tile % W, y = Math.floor(tile / W);
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const cell = (y + dy) * W + x + dx;
+      if (inBounds(x + dx, y + dy) && roomId[cell] < 0 && (grid[cell] === WALL || grid[cell] === POOL)) visible.add(cell);
+    }
+  }
+  return { x: left, y: top, W: right - left + 1, H: bottom - top + 1, roomId: id, visible };
 }
 
 export function universalVtt(dungeon, { pixels, image, doors = false, lights = false, entranceLight = false }) {

@@ -75,3 +75,44 @@ test('PNG export encodes grid dimensions and integer pixel spacing for Owlbear',
   assert.ok(big.width * big.height <= 15000000);
   assert.equal(big.name, 'delve-139x151.png');
 });
+
+test('room undo restores edited content without rewinding session changes made afterward', async () => {
+  const { createRoomHistory } = await import('../dungeon-forge/dungeon-room-history.mjs');
+  const project = roomKey();
+  const id = dungeon.boss;
+  const history = createRoomHistory();
+  project.notes[id] = 'Before';
+  nextRoomState(project, id).loot = true;
+  history.edit(project, id, 'treasure', () => {
+    rerollProjectRoom(project, dungeon, id, 'treasure');
+  });
+  history.edit(project, id, 'notes', () => { project.notes[id] = 'First'; }, {coalesce:true, now:0});
+  history.edit(project, id, 'notes', () => { project.notes[id] = 'Final'; }, {coalesce:true, now:250});
+  nextRoomState(project, id).hp['0:0'] = 9;
+  assert.equal(history.undo(project).label, 'notes');
+  assert.equal(project.notes[id], 'Before');
+  assert.equal(history.undo(project).label, 'treasure');
+  assert.equal(project.changes[id], undefined);
+  assert.equal(project.session.rooms[id].loot, true);
+  assert.equal(project.session.rooms[id].hp['0:0'], 9);
+  assert.equal(history.undo(project), undefined);
+});
+
+test('selected-room PNG regions preserve whole squares and omit other rooms', async () => {
+  const { roomExportRegion, pngExportSpec } = await import('../dungeon-forge/battlemap-core.mjs');
+  const id = dungeon.boss;
+  const crop = roomExportRegion(dungeon, id);
+  assert.ok(crop.W < dungeon.W && crop.H < dungeon.H);
+  assert.equal(crop.roomId, id);
+  assert.equal(crop.visible.has(dungeon.rooms[id].cy * dungeon.W + dungeon.rooms[id].cx), true);
+  for (let cell = 0; cell < dungeon.grid.length; cell++) {
+    if (dungeon.roomId[cell] === id && dungeon.grid[cell]) assert.ok(crop.visible.has(cell));
+    if (dungeon.roomId[cell] >= 0 && dungeon.roomId[cell] !== id) assert.equal(crop.visible.has(cell), false);
+  }
+  const png = pngExportSpec(crop, 100, 'boss');
+  assert.equal(png.pixels, 100);
+  assert.equal(png.width, crop.W * 100);
+  assert.equal(png.height, crop.H * 100);
+  assert.equal(png.name, 'boss-' + crop.W + 'x' + crop.H + '.png');
+  assert.equal(roomExportRegion(dungeon, -1), undefined);
+});

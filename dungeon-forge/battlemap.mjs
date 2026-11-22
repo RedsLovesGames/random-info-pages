@@ -1,9 +1,10 @@
-import { makeBattlemap, pixelsPerSquare, pngExportSpec, universalVtt } from './battlemap-core.mjs';
+import { makeBattlemap, pixelsPerSquare, pngExportSpec, roomExportRegion, universalVtt } from './battlemap-core.mjs';
 import { drawBattlemap } from './battlemap-render.mjs';
 import { encounterBudget, formatRoom, normalizeParty } from './adventure.mjs';
 import { srdAttribution } from './adventure-monsters.mjs';
 import { createProject, decodeProject, makeProjectAdventure, moveMonster, nextRoomState, projectRoomAt,
   rerollProjectAll, rerollProjectRoom, rerollProjectSingle, toggleCover, toggleProjectLock } from './dungeon-project.mjs';
+import { createRoomHistory } from './dungeon-room-history.mjs';
 import { sessionPlans } from './dungeon-routes.mjs';
 import { labeledList, roomPanel, textElement } from './dungeon-room-panel.mjs';
 
@@ -16,6 +17,8 @@ const status = byId('battlemapStatus');
 const editorStatus = byId('battlemapEditorStatus');
 const roomList = byId('battlemapRooms');
 const roomSelect = byId('battlemapRoomSelect');
+const undo = byId('battlemapUndoRoom');
+const roomPngSize = byId('battlemapRoomPngSize');
 const overview = byId('battlemapAdventure');
 const form = byId('battlemapParty');
 const budget = byId('battlemapBudget');
@@ -33,6 +36,7 @@ const roomCount = byId('rooms');
 const zoom = byId('battlemapZoom');
 const exports = [...dialog.querySelectorAll('[data-battlemap-export]')];
 const partyKey = 'rip-dungeon-party-v1';
+const projectHistories = new Map();
 
 let dungeon;
 let adventure;
@@ -43,6 +47,8 @@ let placement;
 let editorOpen = false;
 let running = false;
 let exporting = false;
+let history;
+let currentRegion;
 
 function readRecord(key) {
   try {
@@ -132,10 +138,35 @@ function renderOverview() {
   }
 }
 
+function updateUndo() {
+  undo.disabled = running || !history?.length;
+}
+
+function recordRoomEdit(id, label, action, options) {
+  const result = history.edit(project, id, label, action, options);
+  updateUndo();
+  return result;
+}
+
+function undoRoomEdit() {
+  if (undo.disabled) return;
+  const edit = history.undo(project);
+  updateUndo();
+  if (!edit) return;
+  selected = edit.roomId;
+  editorOpen = true;
+  editorStatus.textContent = 'Undid ' + edit.label + '.';
+  saveProject();
+  refreshAdventure();
+  if (undo.disabled) roomSelect.focus({ preventScroll: true });
+}
+
 function placeAt(x, y) {
   if (!placement) return;
-  const accepted = placement.cover ? toggleCover(project, dungeon, selected, x, y)
-    : moveMonster(project, dungeon, selected, placement.group, placement.index, x, y);
+  const accepted = recordRoomEdit(selected, placement.cover ? 'cover placement' : 'monster move', () =>
+    placement.cover ? toggleCover(project, dungeon, selected, x, y)
+      : moveMonster(project, dungeon, selected, placement.group, placement.index, x, y));
+
   if (!accepted) {
     editorStatus.textContent = 'Choose a clear square in this room. Large monsters also need their full footprint.';
     return;
@@ -156,8 +187,10 @@ function renderSelected() {
     editorOpen,
     keepEditorOpen: value => { editorOpen = value; },
     text(field, value) {
-      const entry = project.text[id] ??= {};
-      entry[field] = value.trim();
+      recordRoomEdit(id, field === 'name' ? 'room title edit' : 'read-aloud edit', () => {
+        const entry = project.text[id] ??= {};
+        entry[field] = value.trim();
+      });
       saveProject();
       const updated = makeProjectAdventure(dungeon, project).rooms.find(item => item.id === id);
       room[field] = updated[field];
@@ -167,16 +200,22 @@ function renderSelected() {
       }
     },
     note(value) {
-      project.notes[id] = value;
+      const saveNote = () => { project.notes[id] = value; };
+      if (running) saveNote();
+      else recordRoomEdit(id, 'GM note edit', saveNote, { coalesce: true });
       saveProject();
     },
     furnishing(value) {
-      const previous = project.style[id];
-      project.style[id] = value;
-      const changed = makeProjectAdventure(dungeon, project).rooms.find(item => item.id === id);
-      if (changed.placementConflict) {
+      const accepted = recordRoomEdit(id, 'furnishing change', () => {
+        const previous = project.style[id];
+        project.style[id] = value;
+        const changed = makeProjectAdventure(dungeon, project).rooms.find(item => item.id === id);
+        if (!changed.placementConflict) return true;
         if (previous === undefined) delete project.style[id];
         else project.style[id] = previous;
+        return false;
+      });
+      if (!accepted) {
         editorStatus.textContent = 'These furnishings overlap a saved monster. Move it to a clear square first.';
         renderSelected();
         return;
@@ -185,7 +224,8 @@ function renderSelected() {
       afterEdit();
     },
     roll(field, remove) {
-      if (rerollProjectRoom(project, dungeon, id, field, remove)) {
+      if (recordRoomEdit(id, field + (remove ? ' removal' : ' reroll'), () =>
+        rerollProjectRoom(project, dungeon, id, field, remove))) {
         editorStatus.textContent = remove ? 'Removed ' + field + '.' : 'Updated ' + field + '.';
         afterEdit();
       } else {
@@ -193,12 +233,12 @@ function renderSelected() {
       }
     },
     rerollRoom() {
-      rerollProjectSingle(project, id);
+      recordRoomEdit(id, 'room reroll', () => rerollProjectSingle(project, id));
       editorStatus.textContent = 'Room rerolled. Locked contents and notes were kept.';
       afterEdit();
     },
     lock(field) {
-      toggleProjectLock(project, dungeon, id, field);
+      recordRoomEdit(id, field + ' lock change', () => toggleProjectLock(project, dungeon, id, field));
       editorStatus.textContent = project.changes[id][field].locked ? 'Locked ' + field + '.' : 'Unlocked ' + field + '.';
       afterEdit();
     },
@@ -210,8 +250,10 @@ function renderSelected() {
       return 'Door ' + (index + 1) + ' · ' + side;
     },
     door(index, value) {
-      project.doors[index] = value;
-      delete project.session.doors[index];
+      recordRoomEdit(id, 'door change', () => {
+        project.doors[index] = value;
+        delete project.session.doors[index];
+      }, { door: index });
       afterEdit();
     },
     beginPlacement(settings) {
@@ -254,6 +296,11 @@ function selectRoom(id) {
     nextRoomState(project, id).visited = true;
     saveProject();
   }
+  currentRegion = roomExportRegion(dungeon, selected);
+  if (currentRegion) {
+    const spec = pngExportSpec(currentRegion, 100, '');
+    roomPngSize.textContent = currentRegion.W + ' × ' + currentRegion.H + ' grid · ' + spec.pixels + ' px/square';
+  } else roomPngSize.textContent = '';
   renderSelected();
   refreshPreview();
 }
@@ -278,6 +325,8 @@ function setRunning(value) {
   byId('battlemapKeyHeading').textContent = value ? 'Run session' : 'Room editor';
   form.hidden = value;
   reroll.hidden = value;
+  undo.hidden = value;
+  updateUndo();
   editorStatus.textContent = value ? 'Pick a room or follow an exit. Session progress is saved as you play.'
     : 'Click a room on the map or pick it from the list.';
   if (project && value) selected = project.session.roomId ?? selected;
@@ -313,6 +362,8 @@ function loadPlan(imported) {
   dungeon = plan;
   project = next;
   planKey = key;
+  if (imported || !projectHistories.has(key)) projectHistories.set(key, createRoomHistory());
+  history = projectHistories.get(key);
   selected = project.session.roomId ?? dungeon.entrance;
   editorOpen = false;
   title.textContent = dungeon.name;
@@ -328,7 +379,9 @@ function loadPlan(imported) {
 function loadActiveLayout() {
   try { loadPlan(); }
   catch (error) {
-    dungeon = adventure = project = undefined;
+    dungeon = adventure = project = history = currentRegion = undefined;
+    updateUndo();
+    roomPngSize.textContent = '';
     title.textContent = 'Battlemap';
     stats.textContent = '';
     roomList.replaceChildren();
@@ -388,15 +441,23 @@ async function downloadMap(format) {
     return;
   }
 
+  const isRoom = format.startsWith('room-');
+  const region = isRoom ? currentRegion : undefined;
+  if (isRoom && !region) return;
+  const isGm = format === 'gm' || format === 'room-gm';
+  const roomNumber = isRoom ? adventure.rooms.find(room => room.id === region.roomId).number : undefined;
+  const imageName = basename + (isRoom ? '-room-' + String(roomNumber).padStart(2, '0') : '') +
+    (isGm ? '-gm' : '-player');
+  const exportStatus = isRoom ? editorStatus : status;
   exporting = true;
-  status.textContent = 'Preparing the export…';
+  exportStatus.textContent = 'Preparing the export…';
   const output = document.createElement('canvas');
   try {
-    const png = pngExportSpec(plan, quality.value, basename + (format === 'gm' ? '-gm' : '-player'));
+    const png = pngExportSpec(region ?? plan, isRoom ? 100 : quality.value, imageName);
     const pixels = format === 'vtt' ? pixelsPerSquare(plan) : png.pixels;
     drawBattlemap(output, plan, pixels, {
-      grid: format === 'vtt' ? false : grid.checked, numbers: format === 'gm', doors: format !== 'vtt' && doors.checked,
-      adventure: format === 'gm' ? adventure : undefined, furnishings: adventure.furnishings, doorStates: adventure.kinds
+      grid: format === 'vtt' ? false : grid.checked, numbers: isGm, doors: format !== 'vtt' && doors.checked,
+      adventure: isGm ? adventure : undefined, furnishings: adventure.furnishings, doorStates: adventure.kinds, region
     });
     if (format === 'vtt') {
       const image = output.toDataURL('image/png').split(',')[1];
@@ -408,9 +469,9 @@ async function downloadMap(format) {
       if (!blob) throw new Error('This browser could not encode the map image. Try compact PNG quality.');
       download(png.name, blob);
     }
-    status.textContent = 'Download ready.';
+    exportStatus.textContent = 'Download ready.';
   } catch (error) {
-    status.textContent = error.message;
+    exportStatus.textContent = error.message;
   } finally {
     output.width = output.height = 1;
     exporting = false;
@@ -462,6 +523,8 @@ projectFile.addEventListener('change', async () => {
 });
 function applyPartySettings(party, minutes) {
   if (JSON.stringify(project.party) !== JSON.stringify(party) || project.minutes !== minutes) {
+    history.clear();
+    updateUndo();
     for (const [id, state] of Object.entries(project.session.rooms)) {
       if (!project.changes[id]?.encounter?.locked) state.hp = {};
     }
@@ -483,10 +546,13 @@ form.addEventListener('submit', event => {
 });
 reroll.addEventListener('click', () => {
   rerollProjectAll(project);
+  history.clear();
+  updateUndo();
   saveProject();
   editorStatus.textContent = 'Adventure rerolled. Locked contents and GM notes were kept.';
   refreshAdventure();
 });
+undo.addEventListener('click', undoRoomEdit);
 prepare.addEventListener('click', () => setRunning(false));
 run.addEventListener('click', () => setRunning(true));
 roomSelect.addEventListener('change', () => selectRoom(Number(roomSelect.value)));
@@ -514,4 +580,11 @@ dialog.addEventListener('click', event => {
   if (button) downloadMap(button.dataset.battlemapExport);
 });
 // The underlying exhibit listens for single-letter shortcuts on window.
-dialog.addEventListener('keydown', event => event.stopPropagation());
+dialog.addEventListener('keydown', event => {
+  if (!undo.disabled && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey &&
+      event.key.toLowerCase() === 'z' && !event.target.closest('input, textarea, select, [contenteditable]')) {
+    event.preventDefault();
+    undoRoomEdit();
+  }
+  event.stopPropagation();
+});

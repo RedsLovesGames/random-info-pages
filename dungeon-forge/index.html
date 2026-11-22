@@ -184,6 +184,12 @@
             <h3 id="battlemapKeyHeading">Room editor</h3>
             <label class="battlemap-field">Room <select id="battlemapRoomSelect" aria-label="Room"></select></label>
             <p id="battlemapEditorStatus" role="status">Click a room on the map or pick it from the list.</p>
+            <div class="battlemap-file-options">
+              <button type="button" id="battlemapUndoRoom" aria-keyshortcuts="Control+Z Meta+Z" disabled>Undo room edit</button>
+              <button type="button" data-battlemap-export="room-player">Room PNG</button>
+              <button type="button" data-battlemap-export="room-gm">GM room PNG</button>
+            </div>
+            <p class="battlemap-fog-note" id="battlemapRoomPngSize"></p>
             <div id="battlemapRooms"></div>
             <details id="battlemapBrief" class="battlemap-help">
               <summary>Adventure overview</summary>

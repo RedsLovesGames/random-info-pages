@@ -21,6 +21,36 @@ function drawSegments(context, pixels, segments) {
   context.stroke();
 }
 
+function visibleSegments(dungeon, region, segments) {
+  if (!region) return segments;
+  const result = [];
+  const shown = (x, y) => {
+    if (x < region.x || x >= region.x + region.W || y < region.y || y >= region.y + region.H) return false;
+    const tile = y * dungeon.W + x;
+    return region.visible.has(tile) && dungeon.grid[tile] !== WALL;
+  };
+  for (const [a, b] of segments) {
+    const horizontal = a.y === b.y;
+    const first = horizontal ? Math.min(a.x, b.x) : Math.min(a.y, b.y);
+    const last = horizontal ? Math.max(a.x, b.x) : Math.max(a.y, b.y);
+    const fixed = horizontal ? a.y : a.x;
+    const point = value => horizontal ? { x: value, y: fixed } : { x: fixed, y: value };
+    let start;
+    for (let at = first; at <= last; at++) {
+      const visible = at < last && (horizontal
+        ? shown(at, fixed) || shown(at, fixed - 1)
+        : shown(fixed, at) || shown(fixed - 1, at));
+      if (visible) {
+        start ??= at;
+      } else if (start !== undefined) {
+        result.push([point(start), point(at)]);
+        start = undefined;
+      }
+    }
+  }
+  return result;
+}
+
 function drawProp(context, prop, palette, pixels) {
   const px = (prop.x + 0.5) * pixels;
   const py = (prop.y + 0.5) * pixels;
@@ -122,21 +152,24 @@ function markMonsters(context, adventure, pixels) {
   }
 }
 
-export function drawBattlemap(canvas, dungeon, pixels, { grid = false, numbers = false, doors = false, adventure, furnishings = [], doorStates = {}, selected } = {}) {
-  canvas.width = dungeon.W * pixels;
-  canvas.height = dungeon.H * pixels;
-  const context = canvas.getContext('2d', { alpha: false });
+export function drawBattlemap(canvas, dungeon, pixels, { grid = false, numbers = false, doors = false,
+  adventure, furnishings = [], doorStates = {}, selected, region } = {}) {
+  const area = region ?? { x: 0, y: 0, W: dungeon.W, H: dungeon.H };
+  canvas.width = area.W * pixels;
+  canvas.height = area.H * pixels;
+  const context = canvas.getContext('2d', { alpha: false, willReadFrequently: Boolean(region) });
   if (!context) throw new Error('A 2D canvas is unavailable on this device.');
 
   const palette = palettes[dungeon.params.themeKey];
   const textures = textureAtlas(palette, pixels, canvas.ownerDocument);
   context.fillStyle = palette.void;
   context.fillRect(0, 0, canvas.width, canvas.height);
-  for (let y = 0; y < dungeon.H; y++) {
-    for (let x = 0; x < dungeon.W; x++) {
+  context.translate(-area.x * pixels, -area.y * pixels);
+  for (let y = area.y; y < area.y + area.H; y++) {
+    for (let x = area.x; x < area.x + area.W; x++) {
       const index = y * dungeon.W + x;
       const tile = dungeon.grid[index];
-      if (!tile) continue;
+      if (!tile || (region && !region.visible.has(index))) continue;
       const material = tile === WALL ? 'wall' : tile === POOL ? 'pool' : dungeon.lakeMask[index] ? 'ice' : 'floor';
       const variant = (Math.imul(index ^ dungeon.seed, 1597334677) >>> 20) & 7;
       context.drawImage(textures[material][variant], x * pixels, y * pixels);
@@ -148,29 +181,34 @@ export function drawBattlemap(canvas, dungeon, pixels, { grid = false, numbers =
     }
   }
 
+  const walls = visibleSegments(dungeon, region, dungeon.walls);
   context.strokeStyle = '#161d2475';
   context.lineWidth = Math.max(1.4, pixels * 0.20);
-  drawSegments(context, pixels, dungeon.walls);
+  drawSegments(context, pixels, walls);
   context.strokeStyle = palette.edge;
   context.lineWidth = Math.max(1, pixels * 0.085);
-  drawSegments(context, pixels, dungeon.walls);
+  drawSegments(context, pixels, walls);
 
   // These props describe the terrain. Encounter, puzzle, and loot markers are GM-only.
   for (const prop of dungeon.props) {
-    if (visibleProps.has(prop.kind) && dungeon.grid[prop.y * dungeon.W + prop.x] === FLOOR) {
+    const tile = prop.y * dungeon.W + prop.x;
+    if ((!region || region.visible.has(tile)) && visibleProps.has(prop.kind) && dungeon.grid[tile] === FLOOR) {
       drawProp(context, prop, palette, pixels);
     }
   }
 
-  for (const item of furnishings) drawFurniture(context, item, pixels);
+  for (const item of furnishings) {
+    if (!region || item.roomId === region.roomId) drawFurniture(context, item, pixels);
+  }
   if (doors) {
     const normal = [], secret = [], locked = [];
     for (const [index, portal] of dungeon.doors.entries()) {
       const kind = doorStates[index];
       if (kind === 'open') continue;
-      if (kind === 'secret') secret.push(portal.bounds);
-      else if (kind === 'locked') locked.push(portal.bounds);
-      else normal.push(portal.bounds);
+      const bounds = visibleSegments(dungeon, region, [portal.bounds]);
+      if (kind === 'secret') secret.push(...bounds);
+      else if (kind === 'locked') locked.push(...bounds);
+      else normal.push(...bounds);
     }
     context.strokeStyle = '#473426';
     context.lineWidth = Math.max(2, pixels * 0.17);
@@ -188,11 +226,15 @@ export function drawBattlemap(canvas, dungeon, pixels, { grid = false, numbers =
   highlightRoom(context, dungeon, pixels, selected);
 
   if (!numbers) return;
-  markMonsters(context, adventure, pixels);
+  const monsterRooms = region && adventure
+    ? { rooms: adventure.rooms.filter(room => room.id === region.roomId) }
+    : adventure;
+  markMonsters(context, monsterRooms, pixels);
   context.font = '700 ' + Math.round(pixels * 0.62) + 'px system-ui, sans-serif';
   context.textBaseline = 'middle';
   context.textAlign = 'center';
   for (const room of roomKey(dungeon)) {
+    if (region && room.id !== region.roomId) continue;
     const x = (room.x + 0.5) * pixels;
     const y = (room.y + 0.5) * pixels;
     context.fillStyle = room.type === 'entrance' ? '#235a4a' : '#25272e';
