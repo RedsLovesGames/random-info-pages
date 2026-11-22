@@ -84,7 +84,7 @@
   .agenda-time { font-size:.64rem; }
 }
 
-@media (prefers-color-scheme:dark) {
+@media (prefers-color-scheme: dark) and (scripting: none) {
   .product-tabs { background:rgba(24,28,38,.72); }
   .schedule-day-column { background:linear-gradient(180deg,rgba(255,255,255,.015),transparent); }
   .all-free-band { background:rgba(52,190,132,.10); }

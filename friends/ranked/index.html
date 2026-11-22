@@ -341,8 +341,13 @@ body.tv-mode #app{width:100%;min-height:100vh}
 }
 @media(max-width:340px){.answer-grid{grid-template-columns:1fr}.answer-grid .answer:nth-child(7):last-child{grid-column:auto}}
 .fame-public-link{margin:20px 0 26px}.public-result-overview{margin-top:22px}.public-result-overview h2{margin:12px 0;font-size:clamp(1.5rem,3vw,2.4rem)}.public-results-page .history-card{gap:18px}@media(max-width:600px){.public-results-page .history-card{flex-wrap:wrap}.fame-public-link .btn{width:100%}}
+
+body {background:#19172a}
+.ambient-orb {display:none}
+.panel {background:#28233c;border-radius:12px;box-shadow:none}
+.btn {border-radius:6px}
 </style>
-</head>
+<script src="../../design-system/appearance.js" defer></script></head>
 <body>
 <div class="noise" aria-hidden="true"></div><div class="ambient-orb orb-one" aria-hidden="true"></div><div class="ambient-orb orb-two" aria-hidden="true"></div>
 <header class="masthead"><a class="brand" href="../" aria-label="Friend Group Hub">R<span>★</span>RIOT</a><div class="header-actions"><span class="status-dot" id="connectionStatus">OFFLINE</span><button type="button" class="icon-button" id="soundButton" title="Toggle sound effects" aria-label="Toggle sound effects">♪</button><button type="button" class="icon-button music-toggle" id="musicButton" title="Spooky music settings" aria-label="Spooky music settings">♫</button></div></header>

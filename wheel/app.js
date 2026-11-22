@@ -13,7 +13,7 @@ function active(){return getActiveWheel(state)}
 function renderStatus(text=''){const el=$('#status');if(el)el.textContent=text}
 function persist(message='Saved locally'){if(!shared)store.saveAutosave(state);if(message)renderStatus(message)}
 function mutate(fn,message='Saved locally'){fn();state=sanitizeState(state);shared=false;persist(message);renderAll()}
-function applyTheme(){const t=state.settings.theme;document.body.classList.toggle('light',t==='light'||(t==='system'&&matchMedia('(prefers-color-scheme: light)').matches))}
+function applyTheme(){const mode=window.RipAppearance?.mode;const t=state.settings.theme;document.body.classList.toggle('light',mode ? mode==='light' : t==='light'||(t==='system'&&matchMedia('(prefers-color-scheme: light)').matches))}
 function applyAssets(){const stage=$('#wheelStage'),center=$('#centerImageOverlay');if(state.settings.background){stage.style.backgroundImage=`linear-gradient(rgba(18,22,27,.15),rgba(18,22,27,.15)),url("${state.settings.background.replace(/"/g,'\\"')}")`;stage.classList.add('has-custom-bg')}else{stage.style.backgroundImage='';stage.classList.remove('has-custom-bg')}if(state.settings.centerImage){center.src=state.settings.centerImage;center.classList.remove('hidden')}else{center.removeAttribute('src');center.classList.add('hidden')}}
 function renderWheel(){drawWheel(ctx,canvas,active(),rotation,{palette:state.settings.palette,onImageLoad:()=>requestAnimationFrame(renderWheel)})}
 function renderCounts(){$('#entryCount').textContent=eligibleEntries(active()).length;$('#resultCount').textContent=active().history.length}
@@ -23,7 +23,7 @@ function advancedRow(entry){const row=document.createElement('div');row.classNam
 function renderAdvanced(){const root=$('#advancedRows');root.classList.toggle('hidden',!advanced);root.innerHTML='';if(advanced)for(const entry of active().entries)root.append(advancedRow(entry))}
 function renderResults(){const root=$('#resultsList');root.innerHTML='';const history=[...active().history].reverse();$('#emptyResults').classList.toggle('hidden',history.length>0);for(const result of history){const row=document.createElement('div');row.className='result-row';const name=document.createElement('strong');name.textContent=result.label;const time=document.createElement('span');time.textContent=new Date(result.at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});row.append(name,time);root.append(row)}}
 function renderSidebar(){renderCounts();renderEntryText();renderAdvanced();renderResults();$('#entriesPanel').classList.toggle('hidden',activeSide!=='entries');$('#resultsPanel').classList.toggle('hidden',activeSide!=='results');$('#entriesTab').classList.toggle('active',activeSide==='entries');$('#resultsTab').classList.toggle('active',activeSide==='results');$('#entriesTab').setAttribute('aria-selected',String(activeSide==='entries'));$('#resultsTab').setAttribute('aria-selected',String(activeSide==='results'))}
-function syncSettings(){$('#durationInput').value=state.settings.spinDurationMs;$('#durationValue').textContent=`${(state.settings.spinDurationMs/1000).toFixed(1)}s`;$('#paletteSelect').value=state.settings.palette||'auto';$('#themeSelect').value=state.settings.theme;$('#soundSelect').value=String(state.settings.sound);$('#confettiSelect').value=String(state.settings.confetti);$('#extraTurnsInput').value=state.settings.extraTurns}
+function syncSettings(){$('#durationInput').value=state.settings.spinDurationMs;$('#durationValue').textContent=`${(state.settings.spinDurationMs/1000).toFixed(1)}s`;$('#paletteSelect').value=state.settings.palette||'auto';$('#themeSelect').value=window.RipAppearance?.preference||state.settings.theme;$('#soundSelect').value=String(state.settings.sound);$('#confettiSelect').value=String(state.settings.confetti);$('#extraTurnsInput').value=state.settings.extraTurns}
 function renderAll(){applyTheme();applyAssets();renderWheelTabs();renderSidebar();syncSettings();renderWheel()}
 
 function ensureAudio(){if(!state.settings.sound)return null;try{audioContext ||= new AudioContext();return audioContext}catch{return null}}
@@ -59,7 +59,10 @@ $('#addImageBtn').onclick=()=>$('#imageInput').click();
 $('#imageInput').onchange=async e=>{for(const file of [...e.target.files]){try{const image=await readImage(file,1300000),label=file.name.replace(/\.[^.]+$/,'');active().entries.push({...createEntry(label),image})}catch{renderStatus('Some images were skipped (max 1.3 MB each)')}}state=sanitizeState(state);shared=false;persist('');renderAll();e.target.value=''};
 $('#durationInput').oninput=e=>{state.settings.spinDurationMs=Number(e.target.value);$('#durationValue').textContent=`${(state.settings.spinDurationMs/1000).toFixed(1)}s`;persist('')};
 $('#paletteSelect').onchange=e=>mutate(()=>state.settings.palette=e.target.value,'');
-$('#themeSelect').onchange=e=>mutate(()=>state.settings.theme=e.target.value,'');
+$('#themeSelect').onchange=e=>{
+  if(window.RipAppearance)window.RipAppearance.setPreference(e.target.value);
+  else mutate(()=>state.settings.theme=e.target.value,'');
+};
 $('#soundSelect').onchange=e=>mutate(()=>state.settings.sound=e.target.value==='true','');
 $('#confettiSelect').onchange=e=>mutate(()=>state.settings.confetti=e.target.value==='true','');
 $('#extraTurnsInput').oninput=e=>{state.settings.extraTurns=Number(e.target.value);persist('')};
@@ -79,5 +82,6 @@ $('#removeMatchesBtn').onclick=()=>{if(!lastWinner)return;const label=lastWinner
 
 document.addEventListener('click',e=>{if(!e.target.closest('.more-wrap')){$('#moreMenu').classList.add('hidden');$('#moreBtn').setAttribute('aria-expanded','false')}});
 document.addEventListener('keydown',e=>{const tag=document.activeElement?.tagName;if((e.key===' '||e.key==='Enter')&&!['INPUT','TEXTAREA','SELECT','BUTTON'].includes(tag)){e.preventDefault();spin()}if(e.key==='Escape'){close('#winnerModal');close('#settingsSheet');close('#saveSheet');$('#moreMenu').classList.add('hidden')}});
+window.addEventListener('rip-appearancechange',()=>{applyTheme();syncSettings();renderWheel()});
 window.addEventListener('resize',renderWheel);matchMedia('(prefers-color-scheme: light)').addEventListener?.('change',applyTheme);
 renderAll();if(shared)renderStatus('Shared wheel loaded. Changes will save locally.');

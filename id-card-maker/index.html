@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="./styles.css?v=2">
   <script defer src="../design-system/rip.js"></script>
   <script type="module" src="./app.mjs?v=2"></script>
-</head>
+<script src="../design-system/appearance.js" defer></script></head>
 <body>
   <main class="studio">
     <header class="intro">
@@ -41,6 +41,7 @@
             <button type="button" data-side="front" aria-pressed="true">Front</button>
             <button type="button" data-side="back" aria-pressed="false">Back</button>
           </div>
+            <button type="button" id="save" class="primary" disabled>Download</button>
         </header>
         <div class="canvas-stage" id="stage">
           <canvas id="card" width="1080" height="680" role="img" aria-label="Novelty ID card preview"></canvas>
@@ -59,7 +60,6 @@
             </select>
             <label class="sr-only" for="export-scale">PNG resolution</label>
             <select id="export-scale"><option value="1">1×</option><option value="2">2×</option></select>
-            <button type="button" id="save" class="primary" disabled>Download</button>
           </div>
           <p id="save-status" class="status" role="status"></p>
         </div>

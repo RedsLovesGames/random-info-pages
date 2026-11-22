@@ -1,0 +1,80 @@
+html[data-rip-appearance="dark"] {
+  --rip-theme-bg: #202329;
+  --rip-theme-ink: #f1efe9;
+  --rip-theme-line: #686f78;
+}
+html[data-rip-appearance="light"] {
+  --rip-theme-bg: #f7f5ef;
+  --rip-theme-ink: #212529;
+  --rip-theme-line: #9b9d9d;
+}
+.rip-appearance {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--rip-theme-ink);
+  font: 600 12px/1.2 system-ui, sans-serif;
+  white-space: nowrap;
+}
+.rip-appearance select {
+  width: auto;
+  min-height: 36px;
+  margin: 0;
+  padding: 4px 6px;
+  appearance: auto;
+  background: var(--rip-theme-bg);
+  color: var(--rip-theme-ink);
+  border: 1px solid var(--rip-theme-line);
+  border-radius: 4px;
+  font: inherit;
+}
+.rip-appearance select:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.rip-appearance-floating {
+  position: fixed;
+  z-index: 9999;
+  inset: auto 12px 12px auto;
+  padding: 4px 4px 4px 8px;
+  background: var(--rip-theme-bg);
+  border: 1px solid var(--rip-theme-line);
+  border-radius: 4px;
+}
+@media (max-width: 680px) {
+  .rip-appearance:not(.rip-appearance-floating) > span { display: none; }
+}
+@media print { .rip-appearance { display: none; } }
+html[data-rip-appearance="dark"] #rip-site-layer {
+  --rip-paper: #202329;
+  --rip-ink: #f1efe9;
+  --rip-muted: #b0b8c4;
+  --rip-blue: #a5b5ff;
+  --rip-line: #515967;
+  --rip-hover: #30384c;
+}
+html[data-rip-appearance="light"] #rip-site-layer {
+  --rip-paper: #f2f1ec;
+  --rip-ink: #17191d;
+  --rip-muted: #575f6a;
+  --rip-blue: #344ae5;
+  --rip-line: #c5c4be;
+  --rip-hover: #e3e7fb;
+}
+html[data-rip-appearance] #rip-site-layer :is(.rip-search,.rip-site-rail) {
+  background: var(--rip-paper);
+  border-color: var(--rip-line);
+}
+html[data-rip-appearance] #rip-site-layer .rip-icon { background: #344ae5; color: #fff; }
+html[data-rip-appearance] #rip-site-layer .rip-divider { background: var(--rip-line); }
+html[data-rip-appearance] #rip-site-layer .rip-browse { border-color: var(--rip-line); }
+html[data-rip-appearance] #rip-site-layer :is(.rip-browse,.rip-result):is(:hover,:focus-visible) {
+  background: var(--rip-hover);
+}
+html[data-rip-appearance] #rip-site-layer .rip-search-input::placeholder { color: var(--rip-muted); }
+@media (max-width: 420px) {
+  #rip-site-layer .rip-here { max-width: 24vw; }
+  #rip-site-layer .rip-actions { gap: 4px; }
+  #rip-site-layer .rip-identity { gap: 6px; }
+}
+html[data-rip-appearance] [data-rip-theme-slot] [data-theme-toggle] { display: none !important; }

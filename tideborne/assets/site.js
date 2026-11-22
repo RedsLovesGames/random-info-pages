@@ -46,7 +46,7 @@
     document.head.append(link);
   }
   function initialTheme(){
-    const saved=localStorage.getItem('tideborne-theme');
+    const saved=window.RipAppearance?.mode || localStorage.getItem('tideborne-theme');
     document.documentElement.dataset.theme=saved==='light'?'light':'dark';
   }
   function brandHtml(){
@@ -69,13 +69,21 @@
   function bindTheme(){
     const button=document.querySelector('[data-theme-toggle]');
     if(!button)return;
+    if(window.RipAppearance){
+      button.hidden = true;
+      return;
+    }
     const sync=()=>button.setAttribute('aria-label',document.documentElement.dataset.theme==='dark'?'Use light theme':'Use dark theme');
     button.addEventListener('click',()=>{
       const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
-      document.documentElement.dataset.theme=next;
-      localStorage.setItem('tideborne-theme',next);
+      if(window.RipAppearance)window.RipAppearance.setPreference(next);
+      else {
+        document.documentElement.dataset.theme=next;
+        localStorage.setItem('tideborne-theme',next);
+      }
       sync();
     });
+    window.addEventListener('rip-appearancechange',sync);
     sync();
   }
   function commandPalette(){

@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="../design-system/rip.css" />
     <link rel="stylesheet" href="../design-system/interactive-labs.css" />
     <script defer src="../design-system/rip.js"></script>
-  </head>
+  <script src="../design-system/appearance.js" defer></script></head>
   <body class="melon-lab">
     <main class="page">
       <header class="intro">
@@ -37,10 +37,13 @@
             aria-label="Interactive 3D watermelon jelly. Drag the slice to stretch. Drag empty space to rotate the view. Arrow keys nudge, Space pauses, R resets."
           ></canvas>
           <div class="grip" id="grip" hidden></div>
-          <div class="error" id="error" role="alert" hidden>
+          <div class="error" id="error" hidden>
+            <canvas id="melon-still" width="360" height="220" role="img" aria-label="Illustration of a red watermelon slice"></canvas>
+            <div role="alert">
             <h2 id="error-title">WebGPU is unavailable</h2>
             <p id="error-detail"></p>
-            <button id="retry">Try again</button>
+            <button id="retry">Try 3D again</button>
+            </div>
           </div>
         </div>
         <aside class="panel" aria-label="Specimen controls">
@@ -1408,10 +1411,33 @@ struct Ground { @location(0) color:vec4f, @builtin(frag_depth) depth:f32 };
         failed = true;
         running = false;
         clearPointers();
-        $('error-detail').textContent = message;
+        $('error-detail').textContent = 'The 3D experiment needs WebGPU. Try a supported browser with hardware acceleration enabled.';
+        $('error-detail').title = message;
         $('error').hidden = false;
+        const still = $('melon-still').getContext('2d');
+        if (still) {
+          still.translate(180, 70);
+          still.rotate(-.12);
+          function slice(radius, color) {
+            still.fillStyle = color;
+            still.beginPath();
+            still.arc(0, 0, radius, 0, Math.PI);
+            still.closePath();
+            still.fill();
+          }
+          slice(143, '#426448');
+          slice(131, '#f2e6bb');
+          slice(122, '#df4b63');
+          still.fillStyle = '#362a32';
+          for (const [x, y, angle] of [[-80,28,-.6],[-48,44,-.4],[-11,24,0],[32,46,.15],[74,28,.55],[-35,86,-.3],[14,81,.14],[55,67,.35]]) {
+            still.beginPath();
+            still.ellipse(x,y,3,7,angle,0,Math.PI*2);
+            still.fill();
+          }
+        }
         $('status').dataset.live = 'false';
-        $('status-text').textContent = 'WEBGPU · UNAVAILABLE';
+        $('status-text').textContent = '3D preview unavailable';
+        document.querySelector('.melon-lab').classList.add('melon-render-unavailable');
         document
           .querySelectorAll('.panel button,.panel input')
           .forEach((el) => (el.disabled = true));

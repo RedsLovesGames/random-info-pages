@@ -27,8 +27,8 @@ body { margin: 0; background: var(--studio-paper); color: var(--ink); font: 16px
 .studio button.primary { background: var(--blue); color: white; border-color: var(--blue); padding-inline: 15px; }
 .studio button.primary:hover:not(:disabled) { background: var(--blue-dark); color: white; }
 .studio button:disabled { opacity: .48; cursor: default; }
-.intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 21px; margin-bottom: 26px; }
-.intro h1 { font: 400 clamp(50px, 7vw, 102px)/.92 "Instrument Serif", Georgia, serif; letter-spacing: -.033em; }
+.intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.intro h1 { font: 400 clamp(36px, 5vw, 72px)/.92 "Instrument Serif", Georgia, serif; letter-spacing: -.033em; }
 .intro em { color: var(--blue); }
 .intro p { margin-top: 12px; color: var(--muted); }
 .project-actions { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -126,3 +126,7 @@ body { margin: 0; background: var(--studio-paper); color: var(--ink); font: 16px
   #print-sheet canvas { display: block; }
   #print-sheet figcaption { margin-bottom: 2mm; color: black; font-size: 10pt; }
 }
+
+.preview-header { flex-wrap: wrap; }
+.preview-header h2 { margin-right: auto; }
+.preview-header .primary { min-height: 40px; }

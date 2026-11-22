@@ -33,19 +33,21 @@
     <link rel="stylesheet" href="../design-system/rip.css" />
     <link rel="stylesheet" href="../design-system/interactive-labs.css" />
     <script defer src="../design-system/rip.js"></script>
-  </head>
+  <script src="../design-system/appearance.js" defer data-native-appearance="light"></script></head>
   <body class="dungeon-lab">
+    <figure class="dungeon-preview" id="dungeon-preview" aria-label="Example dungeon">
+      <img src="./og.jpg" alt="Example view of a dungeon with glowing rooms and connecting corridors">
+      <figcaption id="dungeon-preview-status" role="status">Preparing the 3D dungeon…</figcaption>
+    </figure>
     <!-- control + telemetry panel -->
     <div id="panel" role="region" aria-label="Dungeon controls">
       <button id="collapse" aria-label="Collapse panel" title="Collapse">–</button>
       <div class="head">
-        <h1 id="dname">—</h1>
-        <div id="dsub">forging…</div>
+        <h1 id="dname">Generate a dungeon</h1>
+        <div id="dsub">Choose a seed to build a repeatable map.</div>
       </div>
 
-      <ul class="pipe" id="pipe" aria-label="Generation pipeline">
-        <li>SCATTER</li><li>SEPARATE</li><li>DELAUNAY</li><li>MST+LOOPS</li><li>CARVE</li><li>THEME</li>
-      </ul>
+
 
       <div class="sec">
         <div class="row">
@@ -71,6 +73,7 @@
         </div>
       </div>
 
+      <details class="dungeon-options"><summary>Advanced options</summary>
       <div class="sec">
         <span class="lab"><span>OBJECTS</span></span>
         <div class="chips" id="objchips">
@@ -107,6 +110,9 @@
         <span class="lg"><span class="dot" style="background:var(--blood)"></span>Boss</span>
       </div>
 
+      <ul class="pipe" id="pipe" aria-label="Generation pipeline">
+        <li>SCATTER</li><li>SEPARATE</li><li>DELAUNAY</li><li>MST+LOOPS</li><li>CARVE</li><li>THEME</li>
+      </ul>
       <div class="sec stats">
         <div class="st"><i>ROOMS</i><b id="sRooms">—</b></div>
         <div class="st"><i>LINKS·LOOPS</i><b id="sEdges">—</b></div>
@@ -118,9 +124,11 @@
         <div class="st"><i>TRIANGLES</i><b id="sTris">—</b></div>
         <div class="st"><i>FPS</i><b id="sFps">—</b></div>
       </div>
+      </details>
     </div>
 
-    <div id="hints"><b>drag</b> pan · <b>wheel</b> zoom · <b>shift-drag</b> orbit · <b>R</b> reforge · <b>T</b> theme · <b>G</b> graph · <b>H</b> heat · <b>P</b> post · <b>space</b> skip</div>
+    <div id="hints" hidden><b>drag</b> pan · <b>wheel</b> zoom · <b>shift-drag</b> orbit · <b>R</b> reforge · <b>T</b> theme · <b>G</b> graph · <b>H</b> heat · <b>P</b> post · <b>space</b> skip</div>
 
+    <script src="./preview.js" defer></script>
   </body>
 </html>

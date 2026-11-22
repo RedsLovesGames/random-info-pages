@@ -1,5 +1,5 @@
 /* Keep Word Finder usable offline after one successful online visit. */
-const VERSION = 'rip-word-finder-offline-v6';
+const VERSION = 'rip-word-finder-offline-v7';
 const PREFIX = 'rip-word-finder-offline-';
 const ROOT = new URL('./', self.location.href);
 const ASSETS = [
@@ -14,7 +14,9 @@ const ASSETS = [
   '../shared/toolbox.css',
   '../../design-system/rip.css',
   '../../design-system/project-polish.css',
-  '../../design-system/rip.js'
+  '../../design-system/rip.js',
+  '../../design-system/appearance.js',
+  '../../design-system/appearance.css'
 ].map(path => new URL(path, ROOT).href);
 
 self.addEventListener('install', event => {

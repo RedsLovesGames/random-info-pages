@@ -10,6 +10,8 @@ export async function buildStandalone(destination = join(wordsDir, 'offline.html
   const dictionary = await readFile(join(wordsDir, 'dictionaries/towers-of-babble.txt'), 'utf8');
   const core = await readFile(join(wordsDir, 'words-core.js'), 'utf8');
   const app = await readFile(join(wordsDir, 'words-app.js'), 'utf8');
+  const appearance = await readFile(join(rootDir, 'design-system/appearance.js'), 'utf8');
+  const appearanceCss = await readFile(join(rootDir, 'design-system/appearance.css'), 'utf8');
   const css = (await Promise.all([
     join(rootDir, 'tools/shared/toolbox.css'),
     join(wordsDir, 'words.css'),
@@ -27,6 +29,7 @@ export async function buildStandalone(destination = join(wordsDir, 'offline.html
   }
   html = html.replace(/<link rel="stylesheet"[^>]*>\s*/g, '');
   html = html.replace(/<script src="\.\.\/\.\.\/design-system\/rip\.js" defer><\/script>\s*/g, '');
+  html = html.replace(/<script src="\.\.\/\.\.\/design-system\/appearance\.js" defer><\/script>\s*/g, '');
   html = html.replace(/<script type="module" src="\.\/words-app\.js"><\/script>\s*/g, '');
   html = html.replace(/<header class="tb-top">[\s\S]*?<\/header>/,
     '<header class="tb-top"><nav class="tb-shell tb-nav"><span class="tb-brand"><span class="ws-logo">w.</span> Offline Word Finder</span></nav></header>');
@@ -36,7 +39,8 @@ export async function buildStandalone(destination = join(wordsDir, 'offline.html
     '<footer class="ws-footer">Includes the 195,415-word Towers of Babble playable dictionary. Saved as a standalone offline HTML document.</footer>');
   html = html.replace(/<button id="reloadDictionary"[\s\S]*?<\/button>/,
     '<button id="reloadDictionary" class="ws-inline-button" type="button">Restore included dictionary</button>');
-  html = html.replace('</head>', '<style>\n' + css + '\n</style>\n</head>');
+  html = html.replace('</head>', () => '<style>\n' + css + '\n</style>\n' +
+    '<style data-rip-appearance-css>\n' + appearanceCss + '\n</style>\n<script>\n' + appearance + '\n</script>\n</head>');
 
   const jsCore = core.replace(/^export /gm, '');
   const jsApp = app.replace(/^import [^\n]*\n/gm, '').replace(

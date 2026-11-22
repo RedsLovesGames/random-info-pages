@@ -48,7 +48,7 @@ jobs:
 
       - name: Verify archive home
         run: |
-          node --test tests/home-index.test.mjs
+          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs
           node --test tests/midterm-2026.test.mjs
           node --test friends/ranked/rank-riot.test.cjs
           node --test friends/ranked/rank-riot-supabase.test.cjs
@@ -182,6 +182,7 @@ jobs:
           test -f _site/chirality/ketcher-ui/index.html
           mkdir -p _site/computer
           cp -a computer-src/public/. _site/computer/
+          node scripts/wire-built-appearance.mjs _site
           touch _site/.nojekyll
 
       - name: Download Kahoot Halloween lobby music into Rank Riot site

@@ -38,12 +38,28 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 @media(max-width:1150px){.workspace{grid-template-columns:48px 250px minmax(470px,1fr)}.inspector{position:absolute;right:0;top:48px;bottom:30px;width:318px;z-index:30;box-shadow:-25px 0 70px rgba(0,0,0,.35)}.inspector.mobile-hidden{display:none}.topbar{grid-template-columns:220px 1fr 220px}.chat-dock{right:14px}}
 @media(max-width:820px){html,body{overflow:auto}.app{min-height:100vh;height:auto;grid-template-rows:48px auto 30px}.topbar{grid-template-columns:1fr auto}.top-center{display:none}.workspace{display:block}.rail{display:none}.sidebar{border:0;border-bottom:1px solid var(--line)}.main{min-height:760px}.inspector{display:none}.sidebar .scroll{max-height:340px}.ref-grid{grid-template-columns:repeat(4,1fr)}.bottom-deck{grid-template-columns:1fr}.queue{display:none}.chat-dock{position:fixed;left:10px;right:10px;width:auto;bottom:38px}.statusbar{position:sticky;bottom:0}}
 svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+body[data-rip-page="wanuiv2"] .primary-btn {
+  background: #81cfdd;
+  color: #101920;
+  border-radius: 4px;
+  box-shadow: none;
+}
+body[data-rip-page="wanuiv2"] .demo-banner {font-size: 13px;letter-spacing: 0;font-family: system-ui,sans-serif}
+body[data-rip-page="wanuiv2"] .qa-card {box-shadow: none}
+.stage-sample {display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.show-sample .stage-sample {display:block}
+.show-sample .stage-center {display:none}
+.show-sample .stage-vignette {box-shadow:inset 0 -80px 78px rgba(0,0,0,.6)}
+.show-sample .stage-bottom {color:#fff}
+body[data-rip-page="wanuiv2"] .reference-thumb,
+body[data-rip-page="wanuiv2"] .shot-card {box-shadow: none}
 </style>
 
 <link rel="stylesheet" href="../design-system/rip.css">
 <link rel="stylesheet" href="../design-system/project-polish.css">
 <script src="../design-system/rip.js" defer></script>
-<link rel="stylesheet" href="./director-guide.css"><script src="./director-guide.js" defer></script></head>
+<link rel="stylesheet" href="./director-guide.css"><script src="./director-guide.js" defer></script><script src="../design-system/appearance.js" defer></script></head>
 <body data-rip-page="wanuiv2">
 <div class="app" id="app">
   <header class="topbar">
@@ -95,8 +111,10 @@ svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.7;fill:none;stroke
         <div class="view-control"><button class="active" title="Stage"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/></svg></button><button title="Grid"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></button></div>
       </div>
       <div class="stage-wrap">
-        <div class="stage" id="stage">
-          <div class="stage-bg"></div><div class="stage-vignette"></div><div class="safe-frame"></div>
+        <div class="stage show-sample" id="stage">
+          <div class="stage-bg"></div>
+          <img class="stage-sample" src="./scene-preview.webp" width="960" height="540" alt="Sample scene: a courier crossing a flooded station at dawn">
+          <div class="stage-vignette"></div><div class="safe-frame"></div>
           <div class="stage-top"><span class="stage-pill"><span class="status-dot"></span> SHOT 001 · READY</span><div class="stage-tools"><button title="Compare"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg></button><button title="Safe frame"><svg viewBox="0 0 24 24"><path d="M5 9V5h4M15 5h4v4M19 15v4h-4M9 19H5v-4"/></svg></button><button title="Fullscreen" id="fullscreenBtn"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg></button></div></div>
           <div class="stage-center"><div><div class="core"><svg viewBox="0 0 24 24" style="width:25px;height:25px"><path d="m8 5 11 7-11 7z"/></svg></div><p>PREVIEW MONITOR · 16:9</p></div></div>
           <div class="stage-bottom"><div class="shot-id"><div class="num">01</div><div><b>Establishing / Approach</b><span>6.0s · 24fps · 1280×720</span></div></div><div class="timeline-indicator"><i class="on"></i><i></i><i></i></div></div>
@@ -132,7 +150,7 @@ svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.7;fill:none;stroke
         </div>
         <div class="inspect-section">
           <div class="inspect-title"><b>Latest QA</b><span id="qaState">PASS</span></div>
-          <div class="qa-card"><div class="qa-head"><b>Usability score</b><span class="qa-score" id="qaScore">0.91</span></div><div class="qa-grid"><div class="metric"><span>Identity</span><b id="qaIdentity">0.95</b></div><div class="metric"><span>Environment</span><b id="qaEnvironment">0.92</b></div><div class="metric"><span>Motion</span><b id="qaMotion">0.87</b></div><div class="metric"><span>Stability</span><b id="qaStability">0.90</b></div></div></div>
+          <div class="qa-card"><div class="qa-head"><b id="qa-score-label">Sample usability score</b><span class="qa-score" id="qaScore">0.91</span></div><div class="qa-grid"><div class="metric"><span>Identity</span><b id="qaIdentity">0.95</b></div><div class="metric"><span>Environment</span><b id="qaEnvironment">0.92</b></div><div class="metric"><span>Motion</span><b id="qaMotion">0.87</b></div><div class="metric"><span>Stability</span><b id="qaStability">0.90</b></div></div></div>
         </div>
         <div class="inspect-section"><button class="primary-btn" id="goButton" style="width:100%;height:38px"><svg viewBox="0 0 24 24"><path d="m8 5 11 7-11 7z"/></svg> EXECUTE SHOT 01</button><div style="text-align:center;margin-top:7px;font:8px var(--mono);color:var(--dim)">uses selected reference · runs QA after render</div></div>
       </div>
@@ -141,7 +159,7 @@ svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.7;fill:none;stroke
 
   <footer class="statusbar"><span class="status-seg"><i id="directorDot"></i> DIRECTOR</span><span class="status-seg"><i id="ollamaDot"></i> OLLAMA</span><span class="status-seg"><i id="nemotronDot"></i> NEMOTRON 33B</span><span class="status-seg"><i id="wanDot" style="background:var(--amber)"></i> WAN</span><span class="right"><span id="modeText">CONNECTING</span><span>GPU · R9700</span><span>CTRL K · COMMAND</span></span></footer>
 
-  <div class="chat-dock" id="chatDock">
+  <div class="chat-dock closed" id="chatDock">
     <div class="chat-head"><div class="chat-title"><span class="orb"></span><div><b>NEMOTRON DIRECTOR</b> <span>● READY</span></div></div><button class="icon-btn" id="chatClose"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div class="chat-body" id="chat"><div class="msg"><div class="msg-avatar">N</div><div class="bubble">I have scene context and the selected continuity reference. Shot 01 is framed as a low establishing track. I can tighten the prompt, split this into coverage, or check continuity risk before generation.<div class="actions"><button class="tiny-btn quick-chat">TIGHTEN PROMPT</button><button class="tiny-btn quick-chat">CHECK RISK</button></div></div></div></div>
     <div class="chat-compose"><div class="compose-box"><textarea id="message" placeholder="Ask the director, or type / for commands..."></textarea><div class="compose-actions"><div class="compose-tools"><button>＋</button><button>⌁</button></div><button class="soft-btn" id="sendButton">Send ↵</button></div></div></div>
@@ -155,7 +173,7 @@ svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.7;fill:none;stroke
     <div class="cmd" data-action="focus"><span class="cmd-icon">□</span><span><b>Focus preview</b><small>Fullscreen the stage monitor</small></span><span class="key">F</span></div>
   </div></div></div>
   <div class="toast-stack" id="toasts"></div>
-  <div class="demo-banner hidden" id="demoBanner">● PREVIEW MODE · backend calls are simulated on GitHub Pages</div>
+  <div class="demo-banner hidden" id="demoBanner">Preview demo · Shots, renders, and scores are simulated</div>
 </div>
 <dialog class="director-help" id="directorHelpDialog" aria-labelledby="directorHelpTitle">
  <div class="director-help-head"><div><span class="director-help-index">EMPEROR DIRECTOR / OPERATOR GUIDE</span><h2 id="directorHelpTitle">Direct the shot,<br><em>not the interface.</em></h2></div><button id="directorHelpClose" type="button" aria-label="Close workflow guide">Close ×</button></div>
@@ -169,13 +187,13 @@ svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.7;fill:none;stroke
 </dialog>
 <script>
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-let references = [], history = [], selectedReference = null, liveApi = false, chatOpen = true;
+let references = [], history = [], selectedReference = null, liveApi = false, chatOpen = false;
 const demoRefs = [
   ['courier_identity.png','#26384c','#8b4d46'],['transit_hall.png','#223b46','#5b6e87'],['coat_detail.png','#23252f','#70494f'],['dawn_light.png','#1e3143','#9b6a4b']
 ].map(([name,a,b],i)=>({name,url:`data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="360" height="240"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient><radialGradient id="r"><stop stop-color="#9de4ff" stop-opacity=".28"/><stop offset="1" stop-opacity="0"/></radialGradient></defs><rect width="360" height="240" fill="url(#g)"/><rect width="360" height="240" fill="url(#r)"/><path d="M0 ${170-i*8} Q90 ${130+i*5} 180 ${165-i*4} T360 150 V240H0Z" fill="#080a10" opacity=".48"/><circle cx="${95+i*50}" cy="95" r="${26+i*6}" fill="#0e1219" opacity=".46"/><path d="M20 25h100M20 38h64" stroke="#fff" opacity=".1"/></svg>`)}`}));
 function toast(title,text=''){const t=document.createElement('div');t.className='toast';t.innerHTML=`<i></i><div><b>${title}</b><span>${text}</span></div>`;$('#toasts').append(t);setTimeout(()=>t.remove(),3200)}
 function setStatus(el,on=true,busy=false){el.classList.toggle('off',!on);el.classList.toggle('busy',busy)}
-async function detectApi(){try{const c=new AbortController();setTimeout(()=>c.abort(),1200);const r=await fetch('/api/status',{signal:c.signal});if(!r.ok)throw 0;const s=await r.json();liveApi=true;$('#modeText').textContent='LIVE API';setStatus($('#ollamaDot'),!!s.ollama);setStatus($('#nemotronDot'),!!s.ollama);await loadReferences();toast('Connected','Emperor backend detected. Live controls enabled.')}catch(e){liveApi=false;$('#modeText').textContent='PREVIEW MODE';$('#demoBanner').classList.remove('hidden');references=[...demoRefs];selectedReference=references[0].name;renderReferences();setStatus($('#ollamaDot'),false);setStatus($('#nemotronDot'),false)}}
+async function detectApi(){try{const c=new AbortController();setTimeout(()=>c.abort(),1200);const r=await fetch('/api/status',{signal:c.signal});if(!r.ok)throw 0;const s=await r.json();liveApi=true;$('#stage').classList.remove('show-sample');$('#qa-score-label').textContent='Usability score';$('#modeText').textContent='LIVE API';setStatus($('#ollamaDot'),!!s.ollama);setStatus($('#nemotronDot'),!!s.ollama);await loadReferences();toast('Connected','Emperor backend detected. Live controls enabled.')}catch(e){liveApi=false;$('#modeText').textContent='PREVIEW MODE';$('#demoBanner').classList.remove('hidden');references=[...demoRefs];selectedReference=references[0].name;renderReferences();setStatus($('#ollamaDot'),false);setStatus($('#nemotronDot'),false)}}
 async function loadReferences(){if(!liveApi)return;try{const r=await fetch('/api/references');references=await r.json();if(!selectedReference&&references.length)selectedReference=references[0].name;if(!references.length){references=[...demoRefs];selectedReference=references[0].name}renderReferences()}catch(e){toast('Reference load failed',String(e))}}
 function renderReferences(){const box=$('#references');box.innerHTML='';references.slice(0,8).forEach(ref=>{const card=document.createElement('div');card.className='ref-card'+(ref.name===selectedReference?' selected':'');card.innerHTML=`<img src="${ref.url}" alt=""><span class="ref-name">${ref.name}</span><span class="ref-check">✓</span>`;card.onclick=()=>{selectedReference=ref.name;renderReferences();syncRefSelect()};box.append(card)});const add=document.createElement('div');add.className='ref-card ref-add';add.textContent='＋ ADD';add.onclick=()=>$('#fileInput').click();box.append(add);syncRefSelect()}
 function syncRefSelect(){const s=$('#refSelect');s.innerHTML='';references.forEach(r=>{const o=document.createElement('option');o.value=r.name;o.textContent=r.name;o.selected=r.name===selectedReference;s.append(o)})}

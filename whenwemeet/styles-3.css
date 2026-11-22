@@ -54,7 +54,7 @@
   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition-duration: .001ms !important; }
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) and (scripting: none) {
   :root {
     --bg: #0f1219;
     --surface: rgba(24,28,38,.90);
