@@ -19,14 +19,14 @@
 .hero{padding-top:45px;padding-bottom:73px}.hero-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:clamp(28px,5vw,100px);align-items:stretch}.hero-copy{min-width:0;display:flex;flex-direction:column;align-items:flex-start}.hero-heading{font-weight:800;letter-spacing:-.10em;line-height:.86;font-size:clamp(70px,10.4vw,184px);margin:8px 0 42px;max-width:100%;text-transform:uppercase}.hero-heading .line{display:block;white-space:nowrap}.hero-heading .lower{font-family:var(--serif);font-style:italic;text-transform:none;font-weight:400;letter-spacing:-.075em;font-size:1.07em;color:var(--blue);margin-left:.1em}.hero-heading .dot{color:var(--coral);font-family:var(--sans);font-style:normal;font-size:.65em}.hero-text{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:24px;width:100%;padding-bottom:18px}.hero-desc{max-width:410px;font-size:clamp(17px,1.5vw,22px);line-height:1.38;letter-spacing:-.035em;margin:0}.hero-aside{position:relative;min-height:580px;background:#dfe6fb;overflow:hidden;isolation:isolate}.hero-aside:before{content:"";position:absolute;inset:13px;border:1px solid rgba(30,49,130,.18);z-index:2;pointer-events:none}.hero-aside canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .section{padding-top:88px;padding-bottom:105px}.section-top{display:flex;justify-content:space-between;align-items:start;gap:24px;margin-bottom:37px}.section-id{color:var(--blue)}.section-head{margin:20px 0 0;font-size:clamp(40px,5.5vw,91px);line-height:.97;letter-spacing:-.075em;font-weight:600}.section-head em{font-family:var(--serif);font-weight:400;letter-spacing:-.045em}.side-note{max-width:280px;margin:38px 0 0;font-size:14px;line-height:1.5;color:var(--muted)}.underlined{display:inline-flex;align-items:center;gap:23px;border-bottom:1px solid currentColor;padding-bottom:8px;font-size:13px;font-weight:700;transition:gap .2s,color .2s}.underlined:hover{gap:35px;color:var(--blue)}
 .featured-grid{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(0,.72fr);gap:30px}.feature-primary{display:flex;flex-direction:column;min-width:0}.preview{position:relative;overflow:hidden;background:#cbd5ee}.preview iframe{width:160%;height:160%;border:0;pointer-events:none;display:block;position:absolute;inset:0;transform:scale(.625);transform-origin:0 0;background:#121824}.preview:after{content:"";position:absolute;inset:0;border:1px solid rgba(0,0,0,.1);pointer-events:none}.preview-large{aspect-ratio:1.36}.preview-small{width:40%;min-height:190px;flex-shrink:0}.feature-meta{display:flex;justify-content:space-between;gap:20px;margin:18px 0 10px}.feature-title{font-size:clamp(28px,3.5vw,56px);letter-spacing:-.075em;line-height:1.05;margin:0 0 10px;font-weight:600}.feature-desc{font-size:14px;line-height:1.5;color:var(--muted);max-width:490px;margin:0}.feature-info{display:flex;justify-content:space-between;gap:22px;align-items:end}.feature-arrow{font-size:29px;transition:transform .25s;line-height:1}.feature-primary:hover .feature-arrow,.feature-secondary:hover .feature-arrow{transform:translate(5px,-5px)}.feature-side{display:flex;flex-direction:column;gap:25px}.feature-secondary{display:flex;gap:24px;align-items:stretch;border-bottom:1px solid var(--line);padding-bottom:25px;min-width:0;flex:1}.feature-secondary:last-child{border-bottom:0;padding-bottom:0}.secondary-info{display:flex;flex-direction:column;min-width:0;flex:1}.secondary-info .feature-title{font-size:clamp(23px,2.7vw,39px);margin:20px 0 9px}.secondary-info .feature-desc{font-size:13px}.secondary-info .feature-arrow{margin-top:auto;align-self:flex-end}
-.index-section{background:var(--white);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.index-utilities{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin:0 0 32px}.filters{display:flex;gap:8px;flex-wrap:wrap}.filter{border:1px solid var(--line);background:transparent;border-radius:100px;padding:9px 14px;font-size:12px;font-weight:600;transition:background .2s,color .2s,border-color .2s}.filter:hover{border-color:var(--ink)}.filter[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}.project-count{font:11px var(--mono);color:var(--muted);white-space:nowrap}.project-list{border-top:1px solid var(--ink)}.project-row{display:grid;grid-template-columns:65px minmax(230px,1.3fr) minmax(100px,.5fr) minmax(190px,1fr) 32px;gap:24px;align-items:center;min-height:95px;padding:17px 6px;border-bottom:1px solid var(--line);transition:background .2s,padding .2s}.project-row:hover,.project-row:focus-visible{background:#e9ecfa;padding-left:20px;padding-right:15px}.project-row:hover .project-name{color:var(--blue)}.project-name{font-size:clamp(22px,2.6vw,38px);font-weight:600;line-height:1.1;letter-spacing:-.055em;transition:color .2s}.project-category{font:11px var(--mono);text-transform:uppercase}.project-description{font-size:12px;line-height:1.4;color:var(--muted)}.nothing{padding:45px 5px;color:var(--muted);font-size:16px}.index-end{display:flex;justify-content:space-between;gap:20px;margin-top:25px;font:11px var(--mono);text-transform:uppercase;color:var(--muted)}
+.index-section{background:var(--white);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.index-utilities{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:12px;margin:0 0 20px}.filters{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}.filter{border:1px solid var(--line);background:transparent;border-radius:4px;min-height:44px;padding:8px 12px;font-size:13px;line-height:1.25;font-weight:600;transition:background .2s,color .2s,border-color .2s}.filter:hover{border-color:var(--ink)}.filter[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}.project-count{align-self:center;font:11px var(--mono);color:var(--muted);white-space:nowrap}.project-list{border-top:1px solid var(--ink)}.project-row{display:grid;grid-template-columns:65px minmax(230px,1.3fr) minmax(100px,.5fr) minmax(190px,1fr) 32px;gap:24px;align-items:center;min-height:95px;padding:17px 6px;border-bottom:1px solid var(--line);transition:background .2s,padding .2s}.project-row:hover,.project-row:focus-visible{background:#e9ecfa;padding-left:20px;padding-right:15px}.project-row:hover .project-name{color:var(--blue)}.project-name{font-size:clamp(22px,2.6vw,38px);font-weight:600;line-height:1.1;letter-spacing:-.055em;transition:color .2s}.project-description{font-size:12px;line-height:1.4;color:var(--muted)}.nothing{padding:45px 5px;color:var(--muted);font-size:16px}.index-end{display:flex;justify-content:space-between;gap:20px;margin-top:25px;font:11px var(--mono);text-transform:uppercase;color:var(--muted)}
 .about{padding:100px 0 110px;background:var(--blue);color:#f8f7f2;position:relative;overflow:hidden}.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;position:relative;z-index:1}.about-title{font-size:clamp(58px,8vw,144px);line-height:.84;letter-spacing:-.085em;font-weight:700;margin:40px 0 0;max-width:9ch}.about-title em{font-weight:400;font-family:var(--serif)}.about-copy{padding-top:110px;max-width:490px}.about-copy p{font-size:clamp(19px,2.1vw,30px);line-height:1.28;letter-spacing:-.045em;margin:0 0 28px}.about-links{display:flex;gap:27px;flex-wrap:wrap;margin-top:60px}.about-links a{font-size:13px;font-weight:600;border-bottom:1px solid rgba(255,255,255,.7);padding-bottom:9px}.about-links a:hover{color:#b5c8ff}.about-circle{position:absolute;width:420px;height:420px;border:1px solid rgba(255,255,255,.2);border-radius:50%;right:-170px;top:-190px;pointer-events:none}.about-circle:after{content:"";position:absolute;width:280px;height:280px;left:70px;top:70px;border:1px solid rgba(255,255,255,.2);border-radius:50%}
 .footer{padding-top:27px;padding-bottom:45px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footer-links{display:flex;gap:22px}.footer a{color:inherit}.footer a:hover{color:var(--blue)}
 .search-dialog{width:min(760px,calc(100vw - 24px));max-height:min(85vh,780px);border:1px solid var(--line);padding:0;background:var(--white);color:var(--ink);box-shadow:0 35px 140px rgba(0,0,0,.26)}.search-dialog::backdrop{background:rgba(18,22,31,.48);backdrop-filter:blur(6px)}.dialog-inner{padding:20px}.dialog-head{display:flex;gap:15px;align-items:center}.dialog-input{height:56px;width:100%;border:0;background:transparent;outline:0!important;border-bottom:1px solid var(--ink);font-size:clamp(20px,3vw,28px);letter-spacing:-.04em}.dialog-close{border:1px solid var(--line);background:transparent;padding:10px}.dialog-sub{padding:18px 0 12px;color:var(--muted)}.dialog-results{overflow:auto;max-height:min(55vh,480px)}.dialog-result{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;border-top:1px solid var(--line);padding:16px 4px}.dialog-result:hover,.dialog-result[data-active="true"]{background:#e9ecfa;padding-left:13px}.dialog-result b{font-size:19px;letter-spacing:-.04em}.dialog-result span{font:11px var(--mono);text-transform:uppercase;color:var(--muted)}
 .reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s cubic-bezier(.2,.8,.2,1)}.reveal.visible{opacity:1;transform:none}
 .archive-teaser{display:grid;grid-template-columns:.55fr 1.4fr auto;align-items:start;gap:30px;padding-top:60px;padding-bottom:75px;border-bottom:1px solid var(--line)}.archive-teaser h2{font-size:clamp(39px,4.4vw,72px);letter-spacing:-.075em;line-height:.95;font-weight:600;margin:0 0 10px}.archive-teaser h2 em{font-family:var(--serif);font-weight:400}.archive-teaser p{max-width:500px;margin:0;font-size:14px;line-height:1.55;color:var(--muted)}.archive-teaser .underlined{white-space:nowrap;align-self:center}@media(max-width:800px){.archive-teaser{grid-template-columns:1fr;gap:16px}.archive-teaser .underlined{justify-self:start}}@media(max-width:1180px){.top-inner{grid-template-columns:auto 1fr}.main-nav{justify-self:center}.nav-tools{justify-self:end}.brand-name{display:none}.search-toggle{min-width:120px}.hero-heading{font-size:clamp(64px,9.9vw,125px)}.hero-aside{min-height:475px}.featured-grid{grid-template-columns:minmax(0,1fr) minmax(0,.8fr)}.feature-secondary{gap:15px}.preview-small{width:40%;min-height:170px}.secondary-info .feature-title{font-size:26px}}
 @media(max-width:800px){.top-inner{height:65px;grid-template-columns:auto 1fr}.main-nav{display:none}.nav-tools{gap:8px}.search-toggle{min-width:38px;width:38px;padding:0;justify-content:center}.search-toggle .search-label,.search-toggle kbd{display:none}.random{padding:0 12px}.hero{padding-top:30px;padding-bottom:60px}.hero-grid{grid-template-columns:1fr;gap:28px}.hero-heading{font-size:clamp(74px,16.5vw,150px);margin:12px 0 24px}.hero-desc{max-width:620px}.hero-aside{min-height:370px;max-height:540px;aspect-ratio:1.28}.featured-grid{grid-template-columns:1fr}.preview-large{aspect-ratio:1.5}.feature-side{display:grid;grid-template-columns:1fr 1fr;gap:18px}.feature-secondary{display:flex;flex-direction:column;border-bottom:0;gap:12px}.preview-small{width:100%;min-height:0;aspect-ratio:1.6}.secondary-info .feature-title{margin:8px 0}.secondary-info .feature-arrow{margin-top:20px}.project-row{grid-template-columns:40px minmax(0,1fr) minmax(70px,.4fr) 25px;gap:12px}.project-description{display:none}.project-name{font-size:clamp(22px,3.5vw,30px)}.section{padding-top:70px;padding-bottom:70px}.about-grid{grid-template-columns:1fr;gap:15px}.about-copy{padding-top:0}.about-title{margin-top:35px}}
-@media(max-width:520px){.eyebrow span:last-child{display:none}.hero-heading{font-size:clamp(58px,18vw,100px)}.hero-text{grid-template-columns:1fr auto}.hero-aside{min-height:310px}.section-top{display:block}.section-head{font-size:clamp(45px,13vw,76px)}.side-note{margin:20px 0 0}.feature-side{grid-template-columns:1fr}.feature-secondary{display:grid;grid-template-columns:45% 1fr;gap:16px;border-bottom:1px solid var(--line);padding-bottom:16px}.feature-secondary:last-child{border-bottom:0}.preview-small{width:100%;aspect-ratio:1}.secondary-info .feature-title{font-size:clamp(20px,6vw,29px);margin:8px 0}.secondary-info .feature-desc{display:none}.secondary-info .feature-arrow{margin-top:auto}.index-utilities{align-items:start}.filters{gap:6px}.filter{padding:8px 11px;font-size:11px}.project-row{min-height:76px;grid-template-columns:29px minmax(0,1fr) 19px;gap:10px}.project-name{font-size:23px}.project-category{display:none}.about{padding:75px 0 90px}.about-title{font-size:clamp(66px,17vw,100px)}.about-links{gap:20px}.footer{font-size:10px}.footer-links{flex-wrap:wrap}.random{font-size:11px}}
+@media(max-width:520px){.eyebrow span:last-child{display:none}.hero-heading{font-size:clamp(58px,18vw,100px)}.hero-text{grid-template-columns:1fr auto}.hero-aside{min-height:310px}.section-top{display:block}.section-head{font-size:clamp(45px,13vw,76px)}.side-note{margin:20px 0 0}.feature-side{grid-template-columns:1fr}.feature-secondary{display:grid;grid-template-columns:45% 1fr;gap:16px;border-bottom:1px solid var(--line);padding-bottom:16px}.feature-secondary:last-child{border-bottom:0}.preview-small{width:100%;aspect-ratio:1}.secondary-info .feature-title{font-size:clamp(20px,6vw,29px);margin:8px 0}.secondary-info .feature-desc{display:none}.secondary-info .feature-arrow{margin-top:auto}.index-utilities{align-items:start}.filters{gap:6px}.filter{padding:8px 11px;font-size:11px}.project-row{min-height:76px;grid-template-columns:29px minmax(0,1fr) 19px;gap:10px}.project-name{font-size:23px}.about{padding:75px 0 90px}.about-title{font-size:clamp(66px,17vw,100px)}.about-links{gap:20px}.footer{font-size:10px}.footer-links{flex-wrap:wrap}.random{font-size:11px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
 .hero{padding-block:clamp(28px,4vw,56px)}
 .hero-grid{align-items:center;gap:clamp(20px,5vw,72px)}
@@ -39,17 +39,25 @@
 .section{padding-block:clamp(32px,5vw,64px)}
 .section-top{margin-bottom:20px}
 .section-head{margin:0;font-size:clamp(36px,5vw,64px)}
-.index-utilities{margin-bottom:20px}
-.project-row{grid-template-columns:minmax(0,1fr) minmax(112px,20%);gap:12px;min-height:76px;padding:12px 8px}
+.project-row{grid-template-columns:minmax(0,1fr);min-height:76px;padding:12px 8px}
 .project-row:hover,.project-row:focus-visible{padding:12px 8px}
 .project-summary{display:grid;gap:4px;min-width:0}
 .project-name{font-size:clamp(20px,2.2vw,29px)}
 .project-description{font-size:14px}
-.project-category{font:600 13px var(--sans);text-transform:none;justify-self:end;text-align:right}
+
 .search-toggle{min-width:auto}
 .feature-arrow::after{content:"";width:8px;height:8px;display:block;margin:5px;border-top:2px solid currentColor;border-right:2px solid currentColor;transform:rotate(45deg)}
 @media(max-width:800px){.search-toggle{width:auto;min-width:40px;padding:0 8px}.top-inner{gap:8px}}
-@media(max-width:520px){.nav-tools{gap:4px}.hero-aside{min-height:184px}.hero-heading{font-size:clamp(54px,13.5vw,76px)}.hero-text{margin-top:16px}.project-row{grid-template-columns:minmax(0,1fr)}.project-category{justify-self:start;text-align:left;color:var(--muted)}}
+@media(max-width:520px){.nav-tools{gap:4px}.hero-aside{min-height:184px}.hero-heading{font-size:clamp(54px,13.5vw,76px)}.hero-text{margin-top:16px}.project-row{grid-template-columns:minmax(0,1fr)}}
+.project-group + .project-group{margin-top:20px}
+.project-group h3{margin:0;padding:12px 8px 8px;line-height:1.25;font-size:17px;border-bottom:1px solid var(--line)}
+@media(max-width:640px){
+ .index-utilities{grid-template-columns:minmax(0,1fr);gap:8px}
+ .filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .filter{min-width:0;padding:6px 4px;overflow-wrap:break-word}
+ .project-count{justify-self:end}
+ .project-row{min-height:64px}
+}
 </style>
 <script src="./design-system/appearance.js" defer></script></head>
 <body>
@@ -70,8 +78,8 @@
 </section>
 <section class="section index-section" id="index" aria-labelledby="indexHeading"><div class="wrap">
 <div class="section-top"><h2 class="section-head" id="indexHeading">Project index</h2></div>
-<div class="index-utilities"><div class="filters" id="filters" role="group" aria-label="Filter projects by category"><button type="button" class="filter" data-filter="All" aria-pressed="true">All</button><button type="button" class="filter" data-filter="Tools" aria-pressed="false">Utilities</button><button type="button" class="filter" data-filter="School" aria-pressed="false">School & Planning</button><button type="button" class="filter" data-filter="Friends" aria-pressed="false">Friends & Social</button><button type="button" class="filter" data-filter="Games" aria-pressed="false">Games & Guides</button><button type="button" class="filter" data-filter="Data" aria-pressed="false">Data & Research</button><button type="button" class="filter" data-filter="Experiments" aria-pressed="false">Interactive Labs</button></div><span class="project-count" id="indexCount" aria-live="polite"></span></div>
-<div class="project-list" id="projectList"></div>
+<div class="index-utilities"><div class="filters" id="filters" role="tablist" aria-label="Project categories"></div><span class="project-count" id="indexCount" aria-live="polite"></span></div>
+<div class="project-list" id="projectList" role="tabpanel" aria-labelledby="project-tab-all"></div>
 <div class="index-end"><a href="./archive/">3 archived projects</a><a class="underlined" href="#top" id="backTop">Back to top</a></div>
 </div></section>
 <section class="section wrap" id="featured" aria-labelledby="featuredHeading">
@@ -88,7 +96,7 @@
 <footer class="wrap footer mono"><span>© 2026 Random Info Pages</span><div class="footer-links"><a href="#featured">Selected</a><a href="#index">Index</a><a href="./archive/">Archive</a><a href="./classic.html">Classic site</a><a href="https://github.com/RedsLovesGames/random-info-pages">GitHub</a></div></footer>
 <dialog class="search-dialog" id="searchDialog" aria-labelledby="dialogLabel"><div class="dialog-inner"><div class="dialog-head"><input type="search" id="dialogInput" class="dialog-input" aria-label="Search projects" placeholder="Find something interesting…" autocomplete="off"><button class="dialog-close mono" id="closeSearch" type="button" aria-label="Close search">ESC</button></div><div class="dialog-sub mono" id="dialogLabel">Search by project, subject, or category · ↑ ↓ Enter</div><div class="dialog-results" id="dialogResults"></div></div></dialog>
 <script>
-const projects=[{n:'StereoLab',d:'Chirality & Stereochemistry Solver',p:'./chirality/',c:'School',k:'chirality stereochemistry chiral achiral meso r s stereocenter molecular drawing chemistry fischer newman projection enantiomer diastereomer constitutional isomer optical rotation enantiomeric excess ee molfile smiles'}, {n:'2026 Power Shift',d:'Democratic Midterm Gains Map',p:'./midterm-2026/',c:'Data',k:'2026 election midterms democratic gains flipped seats governors senate house district state legislatures trifectas map results'},{n:'Device Worlds',d:'One URL, Four Operating Systems',p:'./device-worlds/',c:'Experiments',k:'device operating system windows linux apple macos ios android interactive desktop terminal ambient phone experiment responsive automatic detection'}, {n:'Shard Market',d:'Live Shard Fusion Profit Finder',p:'./shard-fusions/',c:'Games',k:'hypixel skyblock shard fusion crafting bazaar coin flips farming trading liquidity profit coins per hour recipes sells demand'},{n:'Belief Atlas',d:'Public Figure Beliefs & Claims',p:'./belief-atlas/',c:'Data',k:'conspiracy matrix public figures sourced statements evidence research beliefs claims comparison positions topics'},{n:'A Day in Messages',d:'September 11: Message Timeline',p:'./9-11-timeline/',c:'Data',k:'September 11 2001 9/11 terrorist attacks pager messages timeline wikileaks archive historical chronology chart interception'}, {n:'Draftroom',d:'Novel Writing & Revision',p:'./fiction-workspace/',c:'Tools',k:'fiction writing novel author chapter checklist rubric scene plot pacing characters notes revision drafting workbook local saves'},{n:'Algorithm Arena',d:'Algorithm Visualizer',p:'./algorithm-arena/',c:'Experiments',k:'sorting algorithms bubble insertion selection merge quick heap pathfinding graph BFS DFS Dijkstra A star sonification audio'},{n:'Cryptography Museum',d:'Interactive Cryptography Museum',p:'./cryptography-museum/',c:'Experiments',k:'caesar enigma vigenere cipher cryptography RSA AES SHA256 historical secret writing'},{n:'Melon Jelly',d:'Melon Jelly Soft-Body Study',p:'./melon-jelly/',c:'Experiments',k:'watermelon jelly soft body physics tactile stretch wobble WebGPU specimen'},{n:'Dungeon Forge',d:'Dungeon Forge Generator',p:'./dungeon-forge/',c:'Experiments',k:'procedural dungeon generator seed room corridors roguelike 3D map graph WebGL'},{n:'Music Microscope',d:'Music & Audio Analyzer',p:'./music-microscope/',c:'Experiments',k:'audio analysis waveform spectrogram FFT frequency spectrum pitch BPM filters local sound'},{n:'One Million, Actually',d:'Visualizing One Million',p:'./one-million/',c:'Data',k:'data visualization scale million proportion comparison population probability zoom quantity'},{n:'Infrastructure Atlas',d:'U.S. Infrastructure Report Cards',p:'./infrastructure-atlas/',c:'Data',k:'infrastructure report card ASCE states map geography choropleth grades peer relative A to F roads bridges drinking water sector rankings comparisons'},{n:'Political Grid',d:'100-Statement Political Survey',p:'./political-grid/',c:'Data',k:'100 statements survey voting x marks stats statistics ideology politics groups questionnaire'},{n:'Word Finder',d:'Anagrams & Palindrome Bonuses',p:'./tools/words/',c:'Tools',k:'word finder solver scrabble letters palindrome anagram longest word game tile rack'}, {n:'Word Hitlist',d:'Word Hitlist Party Game',p:'./word-hitlist/',c:'Games',k:'word game multiplayer party lobby room anagram letters palindromes goals friends'}, {n:'The Useless Unit Converter',d:'The Useless Unit Converter',p:'./useless-unit-converter/',c:'Tools',k:'convert length distance height duration time measurements bananas minecraft days unit calculator'}, {n:'Today',d:'Today: Holidays, History & Slovenia',p:'./today/',c:'Data',k:'what holiday is today this day in history historical events observances calendar how old is slovenia independence statehood day age timer'}, {n:'ID Card Maker',d:'Custom ID Card Maker',p:'./id-card-maker/',c:'Tools',k:'custom novelty id card generator photo badge template download png printable'}, {n:'Toolbox',d:'Everyday Web Tools',p:'./tools/',c:'Tools',k:'time zones images converter crop gif background remover inflation currency text list markdown utilities'},{n:'Wheel',d:'Random Choice Wheel',p:'./wheel/',c:'Tools',k:'wheel names random picker weighted spin roulette saves sharing'},{n:'When We Meet',d:'Group Availability Planner',p:'./whenwemeet/',c:'Tools',k:'schedule availability group when2meet planning'},{n:'School Schedule',d:'Class & Assignment Planner',p:'./school-schedule/',c:'School',k:'classes deadlines labs semester planner checklist'},{n:'Friend Group Hub',d:'Friend Quotes & Games',p:'./friends/',c:'Friends',k:'quotes guess who said it stats weekly patch notes discord'},{n:'Stock Fights',d:'Stock Image Fight Simulator',p:'./stock-fights/',c:'Games',k:'Spenn SpennTF2 stock image fighting game guys characters teams physics arena simulations match 1v1 henchmen battle'}, {n:'Tideborne',d:'Tideborne Fishing Guide',p:'./tideborne/',c:'Games',k:'minecraft fish gear specimens records guide',a:true},{n:'Fishing System 2.0',d:'Fishing Mechanics & Calculators',p:'./tide2/',c:'Games',k:'fishscore luck momentum perfect catch calculator',a:true},{n:'VCT Scout Board',d:'Valorant Team Scout & Strategy',p:'./vct-scout/',c:'Games',k:'valorant esports agents maps comps scout',a:true},{n:'Old Ass Politic',d:'U.S. Congress Age Explorer',p:'./oldasspolitic/',c:'Data',k:'congress house senate age politics roster'},{n:'10Groups Heatmap',d:'10Groups Comparison Heatmap',p:'./heatmap/',c:'Data',k:'visualization overlap people coordinates heatmap'},{n:'Emperor Director',d:'AI Video Scene Director',p:'./wanuiv2/',c:'Experiments',k:'wan ai generation production interface prototype'},{n:'Nerdcore Prompts',d:'Nerdcore Song Prompt Builder',p:'./nerdcore-prompts/',c:'Experiments',k:'music lyrics prompts creative'}];
+const projects=[{n:'StereoLab',d:'Chirality & Stereochemistry Solver',p:'./chirality/',g:'science-code',c:'School',k:'chirality stereochemistry chiral achiral meso r s stereocenter molecular drawing chemistry fischer newman projection enantiomer diastereomer constitutional isomer optical rotation enantiomeric excess ee molfile smiles'}, {n:'2026 Power Shift',d:'Democratic Midterm Gains Map',p:'./midterm-2026/',g:'civics',c:'Data',k:'2026 election midterms democratic gains flipped seats governors senate house district state legislatures trifectas map results'},{n:'Device Worlds',d:'One URL, Four Operating Systems',p:'./device-worlds/',g:'simulations',c:'Experiments',k:'device operating system windows linux apple macos ios android interactive desktop terminal ambient phone experiment responsive automatic detection'}, {n:'Shard Market',d:'Live Shard Fusion Profit Finder',p:'./shard-fusions/',g:'games-friends',c:'Games',k:'hypixel skyblock shard fusion crafting bazaar coin flips farming trading liquidity profit coins per hour recipes sells demand'},{n:'Belief Atlas',d:'Public Figure Beliefs & Claims',p:'./belief-atlas/',g:'civics',c:'Data',k:'conspiracy matrix public figures sourced statements evidence research beliefs claims comparison positions topics'},{n:'A Day in Messages',d:'September 11: Message Timeline',p:'./9-11-timeline/',g:'history',c:'Data',k:'September 11 2001 9/11 terrorist attacks pager messages timeline wikileaks archive historical chronology chart interception'}, {n:'Draftroom',d:'Novel Writing & Revision',p:'./fiction-workspace/',g:'creative',c:'Tools',k:'fiction writing novel author chapter checklist rubric scene plot pacing characters notes revision drafting workbook local saves'},{n:'Algorithm Arena',d:'Algorithm Visualizer',p:'./algorithm-arena/',g:'science-code',c:'Experiments',k:'sorting algorithms bubble insertion selection merge quick heap pathfinding graph BFS DFS Dijkstra A star sonification audio'},{n:'Cryptography Museum',d:'Interactive Cryptography Museum',p:'./cryptography-museum/',g:'science-code',c:'Experiments',k:'caesar enigma vigenere cipher cryptography RSA AES SHA256 historical secret writing'},{n:'Melon Jelly',d:'Melon Jelly Soft-Body Study',p:'./melon-jelly/',g:'simulations',c:'Experiments',k:'watermelon jelly soft body physics tactile stretch wobble WebGPU specimen'},{n:'Dungeon Forge',d:'Dungeon Forge Generator',p:'./dungeon-forge/',g:'simulations',c:'Experiments',k:'procedural dungeon generator seed room corridors roguelike 3D map graph WebGL'},{n:'Music Microscope',d:'Music & Audio Analyzer',p:'./music-microscope/',g:'audio-video',c:'Experiments',k:'audio analysis waveform spectrogram FFT frequency spectrum pitch BPM filters local sound'},{n:'One Million, Actually',d:'Visualizing One Million',p:'./one-million/',g:'maps-data',c:'Data',k:'data visualization scale million proportion comparison population probability zoom quantity'},{n:'Infrastructure Atlas',d:'U.S. Infrastructure Report Cards',p:'./infrastructure-atlas/',g:'maps-data',c:'Data',k:'infrastructure report card ASCE states map geography choropleth grades peer relative A to F roads bridges drinking water sector rankings comparisons'},{n:'Political Grid',d:'100-Statement Political Survey',p:'./political-grid/',g:'civics',c:'Data',k:'100 statements survey voting x marks stats statistics ideology politics groups questionnaire'},{n:'Word Finder',d:'Anagrams & Palindrome Bonuses',p:'./tools/words/',g:'word-games',c:'Tools',k:'word finder solver scrabble letters palindrome anagram longest word game tile rack'}, {n:'Word Hitlist',d:'Word Hitlist Party Game',p:'./word-hitlist/',g:'word-games',c:'Games',k:'word game multiplayer party lobby room anagram letters palindromes goals friends'}, {n:'The Useless Unit Converter',d:'The Useless Unit Converter',p:'./useless-unit-converter/',g:'everyday',c:'Tools',k:'convert length distance height duration time measurements bananas minecraft days unit calculator'}, {n:'Today',d:'Today: Holidays, History & Slovenia',p:'./today/',g:'history',c:'Data',k:'what holiday is today this day in history historical events observances calendar how old is slovenia independence statehood day age timer'}, {n:'ID Card Maker',d:'Custom ID Card Maker',p:'./id-card-maker/',g:'creative',c:'Tools',k:'custom novelty id card generator photo badge template download png printable'}, {n:'Toolbox',d:'Everyday Web Tools',p:'./tools/',g:'everyday',c:'Tools',k:'time zones images converter crop gif background remover inflation currency text list markdown utilities'},{n:'Wheel',d:'Random Choice Wheel',p:'./wheel/',g:'everyday',c:'Tools',k:'wheel names random picker weighted spin roulette saves sharing'},{n:'When We Meet',d:'Group Availability Planner',p:'./whenwemeet/',g:'planning',c:'Tools',k:'schedule availability group when2meet planning'},{n:'School Schedule',d:'Class & Assignment Planner',p:'./school-schedule/',g:'planning',c:'School',k:'classes deadlines labs semester planner checklist'},{n:'Friend Group Hub',d:'Friend Quotes & Games',p:'./friends/',g:'games-friends',c:'Friends',k:'quotes guess who said it stats weekly patch notes discord'},{n:'Stock Fights',d:'Stock Image Fight Simulator',p:'./stock-fights/',g:'games-friends',c:'Games',k:'Spenn SpennTF2 stock image fighting game guys characters teams physics arena simulations match 1v1 henchmen battle'}, {n:'Tideborne',d:'Tideborne Fishing Guide',p:'./tideborne/',c:'Games',k:'minecraft fish gear specimens records guide',a:true},{n:'Fishing System 2.0',d:'Fishing Mechanics & Calculators',p:'./tide2/',c:'Games',k:'fishscore luck momentum perfect catch calculator',a:true},{n:'VCT Scout Board',d:'Valorant Team Scout & Strategy',p:'./vct-scout/',c:'Games',k:'valorant esports agents maps comps scout',a:true},{n:'Old Ass Politic',d:'U.S. Congress Age Explorer',p:'./oldasspolitic/',g:'civics',c:'Data',k:'congress house senate age politics roster'},{n:'10Groups Heatmap',d:'10Groups Comparison Heatmap',p:'./heatmap/',g:'maps-data',c:'Data',k:'visualization overlap people coordinates heatmap'},{n:'Emperor Director',d:'AI Video Scene Director',p:'./wanuiv2/',g:'audio-video',c:'Experiments',k:'wan ai generation production interface prototype'},{n:'Nerdcore Prompts',d:'Nerdcore Song Prompt Builder',p:'./nerdcore-prompts/',g:'creative',c:'Experiments',k:'music lyrics prompts creative'}];
 const descriptions={
 '2026 Power Shift':'Explore Democratic gains across state and federal races on an interactive map.',
 'Word Finder':'Enter your letters to find words, anagrams, and palindromes.',
@@ -132,30 +140,105 @@ const indexCount=document.getElementById('indexCount');
 const dialog=document.getElementById('searchDialog');
 const dialogInput=document.getElementById('dialogInput');
 const dialogResults=document.getElementById('dialogResults');
-let currentFilter='All', activeResult=0;
+let activeResult=0;
 const two=n=>String(n).padStart(2,'0');
 const categoryNames={Tools:'Utilities',School:'School & Planning',Friends:'Friends & Social',Games:'Games & Guides',Data:'Data & Research',Experiments:'Interactive Labs'};
 const categoryText=c=>categoryNames[c]||c;
-const matching=q=>{const s=q.trim().toLowerCase();return s?projects.filter(p=>(p.n+' '+p.d+' '+p.c+' '+categoryText(p.c)+' '+p.k+' '+(descriptions[p.n]||'')).toLowerCase().includes(s)):activeProjects};
+const indexTopics=[
+ ['everyday','Everyday tools'],
+ ['planning','Planning'],
+ ['word-games','Word games'],
+ ['creative','Creative'],
+ ['audio-video','Audio & video'],
+ ['science-code','Science & code'],
+ ['simulations','Simulations'],
+ ['games-friends','Games & friends'],
+ ['maps-data','Maps & data'],
+ ['history','History'],
+ ['civics','Civics']
+];
+const topicNames=new Map(indexTopics);
+const initialTopic=new URLSearchParams(window.location.search).get('category');
+let currentFilter=topicNames.has(initialTopic)?initialTopic:'all';
+const filters=document.getElementById('filters');
+const filterButtons=[['all','All'],...indexTopics].map(([topic,label])=>{
+ const button=document.createElement('button');
+ button.type='button';
+ button.className='filter';
+ button.id='project-tab-'+topic;
+ button.dataset.filter=topic;
+ button.setAttribute('role','tab');
+ button.setAttribute('aria-controls','projectList');
+ button.textContent=label;
+ return button;
+});
+filters.replaceChildren(...filterButtons);
+const topicsByProject=p=>topicNames.get(p.g)||categoryText(p.c);
+const matching=q=>{
+ const query=q.trim().toLowerCase();
+ return query ? projects.filter(p=>[p.n,p.d,p.c,categoryText(p.c),topicsByProject(p),p.k,descriptions[p.n]].join(' ').toLowerCase().includes(query)) : activeProjects;
+};
 function makeRow(p){
-  const a=document.createElement('a');a.className='project-row';a.href=p.p;
-  const name=document.createElement('strong');name.className='project-name';name.textContent=p.d||p.n;
-  const category=document.createElement('span');category.className='project-category';category.textContent=categoryText(p.c);
-  const desc=document.createElement('span');desc.className='project-description';desc.textContent=descriptions[p.n]||'';
-  const summary=document.createElement('span');summary.className='project-summary';summary.append(name,desc);
-  a.append(summary,category);return a
+ const link=document.createElement('a');
+ link.className='project-row';
+ link.href=p.p;
+ const name=document.createElement('strong');name.className='project-name';name.textContent=p.d||p.n;
+ const desc=document.createElement('span');desc.className='project-description';desc.textContent=descriptions[p.n]||'';
+ const summary=document.createElement('span');summary.className='project-summary';summary.append(name,desc);
+ link.append(summary);
+ return link;
 }
 function renderIndex(){
- const shown=activeProjects.filter(p=>currentFilter==='All'||p.c===currentFilter);
- projectList.replaceChildren(...shown.map(makeRow));
- if(!shown.length){const empty=document.createElement('p');empty.className='nothing';empty.textContent='Nothing in this category yet.';projectList.append(empty)}
+ const shown=currentFilter==='all'?activeProjects:activeProjects.filter(p=>p.g===currentFilter);
+ if(currentFilter==='all'){
+  const groups=indexTopics.map(([topic,label])=>{
+   const section=document.createElement('section');
+   section.className='project-group';
+   const title=document.createElement('h3');title.textContent=label;
+   section.append(title,...shown.filter(p=>p.g===topic).map(makeRow));
+   return section;
+  });
+  projectList.replaceChildren(...groups);
+ }else{
+  projectList.replaceChildren(...shown.map(makeRow));
+ }
  indexCount.textContent=shown.length+' '+(shown.length===1?'project':'projects');
 }
-document.getElementById('filters').addEventListener('click',e=>{
- const b=e.target.closest('button[data-filter]');if(!b)return;
- currentFilter=b.dataset.filter;
- document.querySelectorAll('button[data-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button===b)));
+function selectTopic(topic,updateUrl){
+ currentFilter=topic;
+ for(const button of filterButtons){
+  const selected=button.dataset.filter===topic;
+  button.setAttribute('aria-selected',String(selected));
+  button.tabIndex=selected?0:-1;
+  if(selected)projectList.setAttribute('aria-labelledby',button.id);
+ }
  renderIndex();
+ if(updateUrl){
+  const url=new URL(window.location.href);
+  if(topic==='all')url.searchParams.delete('category');
+  else url.searchParams.set('category',topic);
+  url.hash='index';
+  window.history.replaceState(window.history.state,'',url);
+ }
+}
+filters.addEventListener('click',e=>{
+ const button=e.target.closest('[role="tab"]');
+ if(button)selectTopic(button.dataset.filter,true);
+});
+filters.addEventListener('keydown',e=>{
+ const position=filterButtons.indexOf(e.target);
+ if(position===-1)return;
+ const last=filterButtons.length-1;
+ let next;
+ if(e.key==='Home')next=0;
+ else if(e.key==='End')next=last;
+ else if(e.key==='ArrowRight')next=position===last?0:position+1;
+ else if(e.key==='ArrowLeft')next=position===0?last:position-1;
+ else return;
+ e.preventDefault();
+ const button=filterButtons[next];
+ selectTopic(button.dataset.filter,true);
+ button.focus();
 });
 function randomProject(){
  const siteRoot=new URL('./',window.location.href);
@@ -172,7 +255,7 @@ function renderSearch(){
  if(!items.length){const empty=document.createElement('div');empty.className='nothing';empty.textContent='No matches. Try a different word.';dialogResults.append(empty);return}
  items.forEach((p,i)=>{
   const a=document.createElement('a');a.href=p.p;a.className='dialog-result';a.dataset.active=String(i===activeResult);
-  const title=document.createElement('b');title.textContent=p.d||p.n;const cat=document.createElement('span');cat.textContent=categoryText(p.c)+(p.a?' · ARCHIVED':'')+' ↗';a.append(title,cat);
+  const title=document.createElement('b');title.textContent=p.d||p.n;const cat=document.createElement('span');cat.textContent=topicsByProject(p)+(p.a?' · Archived':'');a.append(title,cat);
   a.addEventListener('pointerenter',()=>{activeResult=i;updateActive()});dialogResults.append(a);
  });
 }
@@ -194,7 +277,7 @@ document.addEventListener('keydown',e=>{
  if((e.key==='/'&&!editable)||(e.key.toLowerCase()==='k'&&(e.ctrlKey||e.metaKey))){e.preventDefault();openSearch()}
 });
 document.getElementById('backTop').addEventListener('click',e=>{e.preventDefault();window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})});
-renderIndex();
+selectTopic(currentFilter,false);
 if('IntersectionObserver' in window){
  const reveal=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){e.target.classList.add('visible');reveal.unobserve(e.target)}},{threshold:.08});
  document.querySelectorAll('.reveal').forEach(el=>reveal.observe(el));

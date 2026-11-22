@@ -61,14 +61,25 @@ test('Device Worlds is discoverable in the new index', () => {
   assert.ok(existsSync(new URL('../device-worlds/index.html', import.meta.url)));
 });
 
-test('category controls and project metadata remain in sync', () => {
-  const categories = new Set(projects.map(p => p.c));
-  assert.deepEqual([...categories].sort(), ['Data','Experiments','Friends','Games','School','Tools']);
-  for (const category of categories) {
-    assert.match(html, new RegExp('data-filter="' + category + '"'));
-  }
-  assert.match(html, /indexCount\.textContent=shown\.length/);
-  assert.match(html, /currentFilter==='All'\|\|p\.c===currentFilter/);
+test('every active project has one known topic and each topic has projects', () => {
+  const topicList = html.match(/const indexTopics=(\[[\s\S]*?\]);/);
+  assert.ok(topicList, 'index has its own topic list');
+  const topics = new Map(runInNewContext(topicList[1]));
+  assert.equal(topics.size,11);
+  const active = projects.filter(project => !project.a);
+  assert.deepEqual([...new Set(active.map(project => project.g))].sort(), [...topics.keys()].sort());
+  assert.equal(active.find(project => project.n === 'Word Hitlist').g, 'word-games');
+  assert.equal(active.find(project => project.n === 'Music Microscope').g, 'audio-video');
+  assert.equal(active.find(project => project.n === 'Dungeon Forge').g, 'simulations');
+  assert.equal(active.find(project => project.n === 'When We Meet').g, 'planning');
+});
+
+test('category tabs keep a single selected tab and a mobile grid', () => {
+  assert.match(html, /id="filters" role="tablist"/);
+  assert.match(html, /id="projectList"[^>]*role="tabpanel"/);
+  assert.match(html, /button\.setAttribute\('aria-selected',String\(selected\)\)/);
+  assert.match(html, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(html, /section\.className='project-group'/);
 });
 
 test('search, random navigation, previews, and keyboard access are wired', () => {
@@ -121,10 +132,6 @@ test('human-facing project labels are clear, unique, and backwards searchable', 
   }
   assert.match(html, /name\.textContent=p\.d\|\|p\.n/);
   assert.match(html, /title\.textContent=p\.d\|\|p\.n/);
-  for (const label of ['Utilities','School & Planning','Friends & Social',
-      'Games & Guides','Data & Research','Interactive Labs']) {
-    assert.ok(html.includes('>'+label+'</button>'), label + ' is exposed in category filters');
-  }
 });
 
 
@@ -133,9 +140,9 @@ test('VCT and Tideborne are archived, remain available, and are excluded from th
   assert.deepEqual(Array.from(archived,p=>p.p).sort(),['./tide2/','./tideborne/','./vct-scout/'].sort());
   assert.equal(projects.filter(p=>!p.a).length,projects.length-archived.length);
   assert.match(html,/const activeProjects=projects\.filter\(p=>!p\.a\)/);
-  assert.match(html,/const shown=activeProjects\.filter/);
-  assert.match(html,/:activeProjects}/);
-  assert.match(html,/p\.a\?' · ARCHIVED'/);
+  assert.match(html,/const shown=currentFilter==='all'\?activeProjects:activeProjects\.filter/);
+  assert.match(html,/: activeProjects;/);
+  assert.match(html,/p\.a\?' · Archived'/);
   assert.match(html,/href="\.\/archive\/"/);
   const archive=readFileSync(new URL('../archive/index.html',import.meta.url),'utf8');
   for(const slug of ['vct-scout','tideborne','tide2']){
