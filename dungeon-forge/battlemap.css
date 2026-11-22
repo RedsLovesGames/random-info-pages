@@ -1,0 +1,166 @@
+.dungeon-lab #panel .battlemap-open {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 6px;
+}
+
+#battlemap {
+  position: fixed;
+  inset: 0;
+  width: min(1160px, calc(100% - 36px));
+  max-width: none;
+  max-height: min(92dvh, 900px);
+  margin: auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--lab-line);
+  background: var(--lab-white);
+  color: var(--lab-ink);
+  font: 400 14px/1.45 var(--lab-sans);
+  color-scheme: inherit;
+}
+
+#battlemap::backdrop { background: #11141cd9; }
+
+#battlemap .battlemap-head,
+#battlemap .battlemap-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--lab-line);
+}
+
+#battlemap .battlemap-toolbar {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  padding-block: 6px;
+}
+
+#battlemap h2 {
+  font: 400 clamp(25px, 4vw, 40px)/1.06 var(--lab-serif);
+  letter-spacing: -0.015em;
+}
+
+#battlemap h3 { font: 700 15px/1.25 var(--lab-sans); }
+#battlemapStats, #battlemapStatus, .battlemap-keys > p { color: var(--lab-muted); }
+#battlemapStats { margin-top: 4px; }
+
+#battlemap button {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid var(--lab-line);
+  border-radius: 4px;
+  background: var(--lab-white);
+  color: var(--lab-ink);
+  font: 700 13px/1.2 var(--lab-sans);
+  cursor: pointer;
+}
+
+#battlemap button:hover { background: var(--lab-tint); }
+#battlemap button:disabled { opacity: .55; cursor: default; }
+#battlemapClose { flex: none; }
+
+#battlemap :is(button, a, summary, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--lab-blue);
+  outline-offset: 2px;
+}
+
+#battlemap :is(.battlemap-toolbar, .battlemap-choices) label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+#battlemap input { width: 16px; height: 16px; accent-color: var(--lab-blue); }
+
+#battlemap .battlemap-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 330px);
+  align-items: start;
+}
+
+#battlemap .battlemap-image {
+  --battlemap-frame-height: 68dvh;
+  position: sticky;
+  top: 12px;
+  min-width: 0;
+  overflow: auto;
+  max-height: calc(var(--battlemap-frame-height) + 2px);
+  margin: 14px;
+  background: #292e35;
+  border: 1px solid var(--lab-line);
+}
+
+#battlemapCanvas {
+  width: min(100%, calc(var(--battlemap-frame-height) * var(--battlemap-aspect, 1)));
+  height: auto;
+  margin-inline: auto;
+}
+#battlemapCanvas[hidden] { display: none; }
+#battlemapCanvas[data-detail="true"] { width: var(--battlemap-detail-width); margin-inline: 0; }
+
+#battlemap .battlemap-sidebar { border-left: 1px solid var(--lab-line); }
+#battlemap .battlemap-sidebar section { padding: 16px; }
+#battlemap .battlemap-sidebar section + section { border-top: 1px solid var(--lab-line); }
+
+#battlemap .battlemap-choices, #battlemap .battlemap-file-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+#battlemap .battlemap-download {
+  width: 100%;
+  margin-bottom: 8px;
+  border-color: var(--lab-blue);
+  background: var(--lab-blue);
+  color: #fff;
+}
+#battlemap .battlemap-download:hover { background: var(--lab-blue-hover); }
+
+#battlemapStatus { min-height: 20px; margin-block: 8px 6px; }
+
+#battlemap .battlemap-help { padding-top: 6px; border-top: 1px solid var(--lab-line); }
+#battlemap .battlemap-help ol { padding-left: 20px; }
+#battlemap .battlemap-help li, #battlemap .battlemap-help p { margin-block: 6px; }
+#battlemap a { color: var(--lab-blue); text-underline-offset: 2px; }
+
+#battlemapRooms { margin-top: 6px; }
+#battlemapRooms details + details { border-top: 1px solid var(--lab-line); }
+
+#battlemap summary {
+  display: list-item;
+  padding-block: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#battlemap .battlemap-note { display: block; margin-block: 0 10px; color: var(--lab-muted); }
+#battlemap textarea {
+  display: block;
+  width: 100%;
+  min-height: 75px;
+  margin-top: 4px;
+  padding: 8px;
+  resize: vertical;
+  border: 1px solid var(--lab-line);
+  border-radius: 3px;
+  background: var(--lab-paper);
+  color: var(--lab-ink);
+  font: inherit;
+}
+
+@media (max-width: 750px) {
+  #battlemap {
+    width: calc(100% - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+  #battlemap .battlemap-head, #battlemap .battlemap-toolbar { padding-inline: 12px; }
+  #battlemap .battlemap-workspace { grid-template-columns: minmax(0, 1fr); }
+  #battlemap .battlemap-image { --battlemap-frame-height: 48dvh; position: static; margin: 12px; }
+  #battlemap .battlemap-sidebar { border-left: 0; border-top: 1px solid var(--lab-line); }
+}

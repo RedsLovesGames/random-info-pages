@@ -32,6 +32,7 @@
     <link rel="stylesheet" crossorigin href="./assets/index-TfGYMYMP.css">
     <link rel="stylesheet" href="../design-system/rip.css" />
     <link rel="stylesheet" href="../design-system/interactive-labs.css" />
+    <link rel="stylesheet" href="./battlemap.css" />
     <script defer src="../design-system/rip.js"></script>
   <script src="../design-system/appearance.js" defer data-native-appearance="light"></script></head>
   <body class="dungeon-lab">
@@ -59,6 +60,7 @@
           </label>
         </div>
         <button class="btn primary" id="forge" style="width:100%;margin-top:10px">FORGE&nbsp;DUNGEON</button>
+        <button class="btn battlemap-open" type="button" id="openBattlemap">Battlemap &amp; exports</button>
       </div>
 
       <div class="sec">
@@ -87,7 +89,7 @@
 
       <div class="sec">
         <label class="sl"><span class="lab"><span>ROOMS</span><b id="vRooms">42</b></span>
-          <input type="range" id="rooms" min="12" max="80" value="42" aria-label="Room count"></label>
+          <input type="range" id="rooms" min="6" max="80" value="42" aria-label="Room count"></label>
         <label class="sl"><span class="lab"><span>LOOPINESS</span><b id="vLoops">15%</b></span>
           <input type="range" id="loops" min="0" max="40" value="15" aria-label="Loop chance"></label>
         <label class="sl"><span class="lab"><span>DECOR&nbsp;DENSITY</span><b id="vDecor">60%</b></span>
@@ -129,6 +131,57 @@
 
     <div id="hints" hidden><b>drag</b> pan · <b>wheel</b> zoom · <b>shift-drag</b> orbit · <b>R</b> reforge · <b>T</b> theme · <b>G</b> graph · <b>H</b> heat · <b>P</b> post · <b>space</b> skip</div>
 
+    <dialog id="battlemap" aria-labelledby="battlemapTitle">
+      <div class="battlemap-head">
+        <div>
+          <h2 id="battlemapTitle">Battlemap</h2>
+          <p id="battlemapStats"></p>
+        </div>
+        <button type="button" id="battlemapClose" autofocus>Back to 3D</button>
+      </div>
+      <div class="battlemap-toolbar">
+        <button type="button" id="battlemapQuick">8-room delve</button>
+        <button type="button" id="battlemapZoom" aria-pressed="false">Zoom map</button>
+        <label><input type="checkbox" id="battlemapGrid" checked> Grid lines</label>
+        <label><input type="checkbox" id="battlemapNumbers" checked> GM room numbers</label>
+      </div>
+      <div class="battlemap-workspace">
+        <figure class="battlemap-image" tabindex="0" aria-label="Scrollable map preview">
+          <canvas id="battlemapCanvas" role="img" aria-label="Top-down dungeon battlemap" hidden></canvas>
+        </figure>
+        <div class="battlemap-sidebar">
+          <section class="battlemap-exports" aria-labelledby="battlemapExportHeading">
+            <h3 id="battlemapExportHeading">Export</h3>
+            <div class="battlemap-choices">
+              <label><input type="checkbox" id="battlemapDoors" checked> Closed doors</label>
+              <label><input type="checkbox" id="battlemapLights"> Torch lights in Owlbear</label>
+            </div>
+            <button type="button" class="battlemap-download" data-battlemap-export="vtt">Download for Owlbear (.dd2vtt)</button>
+            <div class="battlemap-file-options">
+              <button type="button" data-battlemap-export="player">Player PNG</button>
+              <button type="button" data-battlemap-export="gm">Numbered GM PNG</button>
+              <button type="button" data-battlemap-export="key">GM room key</button>
+            </div>
+            <p id="battlemapStatus" role="status"></p>
+            <details class="battlemap-help">
+              <summary>Import into Owlbear Rodeo</summary>
+              <ol>
+                <li>Install <a href="https://extensions.owlbear.rodeo/dynamic-fog" target="_blank" rel="noopener noreferrer">Dynamic Fog</a> and <a href="https://github.com/Eppinguin/scene-importer#installing" target="_blank" rel="noopener noreferrer">Scene Importer</a>, then enable them in your room.</li>
+                <li>Open Scene Importer, select the downloaded file and choose <b>Create New Scene</b>.</li>
+                <li>Open the scene, assign vision to a player token and check a closed door before the session.</li>
+              </ol>
+              <p>You can also add the grid-aligned player PNG as a regular map and use manual fog.</p>
+            </details>
+          </section>
+          <section class="battlemap-keys" aria-labelledby="battlemapKeyHeading">
+            <h3 id="battlemapKeyHeading">GM room key</h3>
+            <p>Notes stay in this browser and are included only in the GM room-key download.</p>
+            <div id="battlemapRooms"></div>
+          </section>
+        </div>
+      </div>
+    </dialog>
     <script src="./preview.js" defer></script>
+    <script type="module" src="./battlemap.mjs"></script>
   </body>
 </html>
