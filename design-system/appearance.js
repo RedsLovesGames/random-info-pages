@@ -59,8 +59,13 @@
     const min = Math.min(red, green, blue);
     const max = Math.max(red, green, blue);
     const lightness = (min + max) / 2;
-    const next = 249 - lightness * 0.91;
     const originalSpan = max - min;
+    let next = 249 - lightness * 0.91;
+    // Saturated accents in the middle of the range need extra separation
+    // from their new background, especially blues on dark surfaces.
+    if (originalSpan >= 75 && lightness >= 55 && lightness <= 195) {
+      next = nativeMode === 'light' ? Math.max(next, 191) : Math.min(next, 96);
+    }
     const maximumSpan = 2 * Math.min(next, 255 - next);
     const chroma = originalSpan ? Math.min(1, maximumSpan / originalSpan) : 1;
     const inverted = [red, green, blue].map(

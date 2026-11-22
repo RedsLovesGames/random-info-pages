@@ -78,3 +78,5 @@ html[data-rip-appearance] #rip-site-layer .rip-search-input::placeholder { color
   #rip-site-layer .rip-identity { gap: 6px; }
 }
 html[data-rip-appearance] [data-rip-theme-slot] [data-theme-toggle] { display: none !important; }
+html[data-rip-appearance] .top .brand-mark { background: #344ae5; color: #fff; }
+html[data-rip-appearance="dark"] .top .search-toggle { color: #bdc5d1; }
