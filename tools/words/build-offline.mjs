@@ -40,7 +40,7 @@ export async function buildStandalone(destination = join(wordsDir, 'offline.html
   html = html.replace(/<button id="reloadDictionary"[\s\S]*?<\/button>/,
     '<button id="reloadDictionary" class="ws-inline-button" type="button">Restore included dictionary</button>');
   html = html.replace('</head>', () => '<style>\n' + css + '\n</style>\n' +
-    '<style data-rip-appearance-css>\n' + appearanceCss + '\n</style>\n<script>\n' + appearance + '\n</script>\n</head>');
+    '<style data-rip-appearance-css>\n' + appearanceCss + '\n</style>\n<script data-appearance-page="word-finder-offline">\n' + appearance + '\n</script>\n</head>');
 
   const jsCore = core.replace(/^export /gm, '');
   const jsApp = app.replace(/^import [^\n]*\n/gm, '').replace(
