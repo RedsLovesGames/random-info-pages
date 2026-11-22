@@ -1,14 +1,14 @@
 import { FLOOR, POOL, WALL } from './generator.mjs';
 import { roomKey } from './battlemap-core.mjs';
+import { textureAtlas } from './battlemap-textures.mjs';
 
-// Open stone is deliberately brighter than the surrounding void, even in the
-// ember and miasma palettes. Site appearance does not recolor an export.
+// Open stone stays brighter than the void. Interface themes leave map art alone.
 const palettes = {
-  ancient: { void: '#262930', wall: '#4c5059', floor: ['#a4a7ac', '#999da3', '#abadb0'], edge: '#393b3e', pool: '#356f80' },
-  molten: { void: '#272320', wall: '#57504a', floor: ['#b6a38c', '#a99681', '#baa793'], edge: '#49372d', pool: '#b64b16' },
-  frost: { void: '#252f3c', wall: '#495b70', floor: ['#aabdc8', '#b2c1ce', '#a3b8c5'], edge: '#354754', pool: '#397aa2' },
-  grim: { void: '#262a25', wall: '#484d43', floor: ['#a5a68c', '#9b9d82', '#adad93'], edge: '#353931', pool: '#527737' },
-  verdant: { void: '#242e2a', wall: '#46574c', floor: ['#a5ad92', '#9ba58a', '#aeb29a'], edge: '#344035', pool: '#356f63' }
+  ancient: { void:'#22242b', wall:'#484c56', cap:'#6c6e76', floor:['#99938b','#a8a398','#918e89'], edge:'#3c3937', vein:'#56505550', pool:'#397b87', poolLow:'#1b4553', ripple:'#9adde54f' },
+  molten: { void:'#28211f', wall:'#513d33', cap:'#8d6950', floor:['#b49373','#a6876f','#af997c'], edge:'#503629', vein:'#6c362c60', pool:'#e37439', poolLow:'#7e251a', ripple:'#ffdd7292' },
+  frost: { void:'#202a34', wall:'#42546a', cap:'#657b8d', floor:['#9eadb3','#a4b7bc','#a9bbc5'], edge:'#344550', vein:'#e4f7ff62', pool:'#497ea4', poolLow:'#284c6b', ripple:'#b5efff78' },
+  grim: { void:'#242721', wall:'#404239', cap:'#636653', floor:['#93927a','#a4a087','#aaa58d'], edge:'#3a392d', vein:'#65714670', pool:'#6e8544', poolLow:'#364529', ripple:'#a5a85e60' },
+  verdant: { void:'#202923', wall:'#425044', cap:'#60735a', floor:['#9b9e82','#a1a488','#a9a88e'], edge:'#354032', vein:'#4f705051', pool:'#448e76', poolLow:'#234e4c', ripple:'#83d3a376' }
 };
 const visibleProps = new Set(['pillar', 'sarco', 'debris']);
 
@@ -21,13 +21,68 @@ function drawSegments(context, pixels, segments) {
   context.stroke();
 }
 
-export function drawBattlemap(canvas, dungeon, pixels, { grid = false, numbers = false, doors = false } = {}) {
+function drawProp(context, prop, palette, pixels) {
+  const px = (prop.x + 0.5) * pixels;
+  const py = (prop.y + 0.5) * pixels;
+  context.save();
+  context.translate(px, py);
+  context.fillStyle = '#11192363';
+  context.beginPath();
+  context.ellipse(pixels * 0.08, pixels * 0.13, pixels * 0.36, pixels * 0.25, 0, 0, Math.PI * 2);
+  context.fill();
+  context.strokeStyle = palette.edge;
+  context.fillStyle = palette.wall;
+  context.lineWidth = Math.max(0.7, pixels * 0.035);
+  if (prop.kind === 'pillar') {
+    context.beginPath();
+    context.arc(0, 0, pixels * 0.28, 0, Math.PI * 2);
+    context.fill();
+    context.stroke();
+    context.strokeStyle = palette.cap;
+    context.beginPath();
+    context.arc(0, 0, pixels * 0.21, Math.PI, Math.PI * 1.7);
+    context.stroke();
+  } else if (prop.kind === 'sarco') {
+    context.rotate(prop.rot);
+    context.fillRect(-pixels * 0.17, -pixels * 0.34, pixels * 0.34, pixels * 0.68);
+    context.strokeRect(-pixels * 0.17, -pixels * 0.34, pixels * 0.34, pixels * 0.68);
+    context.fillStyle = palette.cap;
+    context.fillRect(-pixels * 0.10, -pixels * 0.24, pixels * 0.2, pixels * 0.45);
+  } else {
+    context.rotate(prop.rot);
+    context.beginPath();
+    context.moveTo(-pixels * 0.17, pixels * 0.07);
+    context.lineTo(-pixels * 0.09, -pixels * 0.15);
+    context.lineTo(pixels * 0.05, -pixels * 0.18);
+    context.lineTo(pixels * 0.20, pixels * 0.03);
+    context.lineTo(pixels * 0.10, pixels * 0.15);
+    context.closePath();
+    context.fill();
+    context.stroke();
+  }
+  context.restore();
+}
+
+function markMonsters(context, adventure, pixels) {
+  if (!adventure) return;
+  context.strokeStyle = '#af382a';
+  context.lineWidth = Math.max(1.3, pixels * 0.08);
+  for (const room of adventure.rooms) for (const monster of room.encounter?.monsters ?? []) {
+    for (const { x, y } of monster.positions) {
+      context.strokeRect((x + 0.08) * pixels, (y + 0.08) * pixels,
+        (monster.space - 0.16) * pixels, (monster.space - 0.16) * pixels);
+    }
+  }
+}
+
+export function drawBattlemap(canvas, dungeon, pixels, { grid = false, numbers = false, doors = false, adventure } = {}) {
   canvas.width = dungeon.W * pixels;
   canvas.height = dungeon.H * pixels;
   const context = canvas.getContext('2d', { alpha: false });
   if (!context) throw new Error('A 2D canvas is unavailable on this device.');
 
   const palette = palettes[dungeon.params.themeKey];
+  const textures = textureAtlas(palette, pixels, canvas.ownerDocument);
   context.fillStyle = palette.void;
   context.fillRect(0, 0, canvas.width, canvas.height);
   for (let y = 0; y < dungeon.H; y++) {
@@ -35,50 +90,43 @@ export function drawBattlemap(canvas, dungeon, pixels, { grid = false, numbers =
       const index = y * dungeon.W + x;
       const tile = dungeon.grid[index];
       if (!tile) continue;
-      const px = x * pixels;
-      const py = y * pixels;
-      const texture = ((Math.imul(index, 1274126177) >>> 24) + x) % 3;
-      if (tile === WALL) {
-        context.fillStyle = palette.wall;
-      } else if (tile === POOL || dungeon.lakeMask[index]) {
-        context.fillStyle = dungeon.lakeMask[index] ? '#79a6ba' : palette.pool;
-      } else {
-        context.fillStyle = palette.floor[texture];
-      }
-      context.fillRect(px, py, pixels, pixels);
+      const material = tile === WALL ? 'wall' : tile === POOL ? 'pool' : dungeon.lakeMask[index] ? 'ice' : 'floor';
+      const variant = (Math.imul(index ^ dungeon.seed, 1597334677) >>> 20) & 7;
+      context.drawImage(textures[material][variant], x * pixels, y * pixels);
       if (grid && tile !== WALL) {
-        context.strokeStyle = '#17202744';
-        context.lineWidth = Math.max(0.6, pixels * 0.024);
-        context.strokeRect(px, py, pixels, pixels);
+        context.strokeStyle = '#18232a68';
+        context.lineWidth = Math.max(0.6, pixels * 0.026);
+        context.strokeRect(x * pixels, y * pixels, pixels, pixels);
       }
     }
   }
 
-  // Show only physical obstacles on the player map. The 3D exhibit's enemy
-  // markers and loot props never enter the player image or the UVTT payload.
+  context.strokeStyle = '#161d2475';
+  context.lineWidth = Math.max(1.4, pixels * 0.20);
+  drawSegments(context, pixels, dungeon.walls);
+  context.strokeStyle = palette.edge;
+  context.lineWidth = Math.max(1, pixels * 0.085);
+  drawSegments(context, pixels, dungeon.walls);
+
+  // These props describe the terrain. Encounter, puzzle, and loot markers are GM-only.
   for (const prop of dungeon.props) {
-    if (!visibleProps.has(prop.kind)) continue;
-    if (dungeon.grid[prop.y * dungeon.W + prop.x] !== FLOOR) continue;
-    const scale = prop.kind === 'debris' ? 0.29 : 0.58;
-    const x = (prop.x + (1 - scale) / 2) * pixels;
-    const y = (prop.y + (1 - scale) / 2) * pixels;
-    context.fillStyle = palette.wall;
-    context.strokeStyle = palette.edge;
-    context.lineWidth = Math.max(0.8, pixels * 0.036);
-    context.fillRect(x, y, scale * pixels, scale * pixels);
-    context.strokeRect(x, y, scale * pixels, scale * pixels);
+    if (visibleProps.has(prop.kind) && dungeon.grid[prop.y * dungeon.W + prop.x] === FLOOR) {
+      drawProp(context, prop, palette, pixels);
+    }
   }
 
-  context.strokeStyle = palette.edge;
-  context.lineWidth = Math.max(1, pixels * 0.078);
-  drawSegments(context, pixels, dungeon.walls);
   if (doors) {
-    context.strokeStyle = '#704324';
-    context.lineWidth = Math.max(1.7, pixels * 0.12);
-    drawSegments(context, pixels, dungeon.doors.map(portal => portal.bounds));
+    const segments = dungeon.doors.map(portal => portal.bounds);
+    context.strokeStyle = '#473426';
+    context.lineWidth = Math.max(2, pixels * 0.17);
+    drawSegments(context, pixels, segments);
+    context.strokeStyle = '#b18457';
+    context.lineWidth = Math.max(0.8, pixels * 0.065);
+    drawSegments(context, pixels, segments);
   }
 
   if (!numbers) return;
+  markMonsters(context, adventure, pixels);
   context.font = '700 ' + Math.round(pixels * 0.62) + 'px system-ui, sans-serif';
   context.textBaseline = 'middle';
   context.textAlign = 'center';

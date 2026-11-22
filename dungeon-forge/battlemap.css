@@ -164,3 +164,62 @@
   #battlemap .battlemap-image { --battlemap-frame-height: 48dvh; position: static; margin: 12px; }
   #battlemap .battlemap-sidebar { border-left: 0; border-top: 1px solid var(--lab-line); }
 }
+
+#battlemap .battlemap-party {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 14px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--lab-line);
+  background: var(--lab-paper);
+}
+#battlemap .battlemap-party label {
+  display: grid;
+  gap: 4px;
+  font-weight: 700;
+}
+#battlemap .battlemap-party :is(input, select) {
+  width: auto;
+  min-width: 66px;
+  height: 44px;
+  padding: 6px 8px;
+  border: 1px solid var(--lab-line);
+  border-radius: 4px;
+  background: var(--lab-white);
+  color: var(--lab-ink);
+  font: inherit;
+}
+#battlemap #battlemapBudget {
+  align-self: center;
+  margin-inline-start: auto;
+  color: var(--lab-muted);
+}
+#battlemap .battlemap-fog-note {
+  margin: 0 0 10px;
+  color: var(--lab-muted);
+  font-size: 13px;
+}
+#battlemap .battlemap-help p { overflow-wrap: anywhere; }
+#battlemap #battlemapAdventure { margin-block: 10px; }
+#battlemap h4 { font-weight: 800; font-size: 14px; }
+#battlemap dl { display: grid; gap: 3px; margin-top: 6px; }
+#battlemap dt { font-weight: 750; }
+#battlemap dd { margin: 0 0 6px; }
+#battlemap .battlemap-room-counts { margin-top: 6px; color: var(--lab-muted); }
+#battlemap #battlemapReroll { margin-bottom: 8px; }
+#battlemap .battlemap-room-role { margin-left: 6px; color: var(--lab-muted); font-size: 12px; font-weight: 500; }
+#battlemap .battlemap-room-content { display: grid; gap: 8px; padding-block-end: 12px; }
+#battlemap blockquote {
+  padding: 8px 10px;
+  border-left: 3px solid var(--lab-blue);
+  background: var(--lab-paper);
+}
+#battlemap .battlemap-encounter ul { padding-inline-start: 16px; }
+#battlemap .battlemap-encounter li { margin-block: 7px; }
+#battlemap .battlemap-encounter li p { color: var(--lab-muted); }
+
+@media (max-width: 750px) {
+  #battlemap .battlemap-party { padding-inline: 12px; }
+  #battlemap #battlemapBudget { width: 100%; margin-inline: 0; }
+}

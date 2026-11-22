@@ -80,7 +80,7 @@ function torchLights(dungeon) {
     const id = dungeon.roomId[y * dungeon.W + x];
     if (id < 0 || chosen.has(id)) continue;
     chosen.add(id);
-    lights.push({ position: { x: x + 0.5, y: y + 0.5 }, range: 4, intensity: 1, color });
+    lights.push({ position: { x: x + 0.5, y: y + 0.5 }, range: 4, intensity: 1, color, vision: false });
     if (lights.length === 24) break;
   }
   return lights;
@@ -105,7 +105,10 @@ export function pixelsPerSquare({ W, H }) {
   return Math.min(48, Math.floor(3600 / Math.max(W, H)), Math.floor(Math.sqrt(10000000 / (W * H))));
 }
 
-export function universalVtt(dungeon, { pixels, image, doors = false, lights = false }) {
+export function universalVtt(dungeon, { pixels, image, doors = false, lights = false, entranceLight = false }) {
+  const entrance = dungeon.rooms[dungeon.entrance];
+  const starter = { position: { x: entrance.cx + 0.5, y: entrance.cy + 0.5 }, range: 2,
+    intensity: 1, color: '#fff0ce', vision: true };
   return {
     format: 0.3,
     resolution: { map_origin: { x: 0, y: 0 }, map_size: { x: dungeon.W, y: dungeon.H }, pixels_per_grid: pixels },
@@ -113,7 +116,7 @@ export function universalVtt(dungeon, { pixels, image, doors = false, lights = f
     line_of_sight: dungeon.walls,
     objects_line_of_sight: [],
     portals: doors ? dungeon.doors : [],
-    lights: lights ? dungeon.sceneLights : [],
+    lights: [...(entranceLight ? [starter] : []), ...(lights ? dungeon.sceneLights : [])],
     environment: { baked_lighting: false, ambient_light: '#000000' },
     image
   };

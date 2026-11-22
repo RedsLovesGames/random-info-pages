@@ -145,6 +145,19 @@
         <label><input type="checkbox" id="battlemapGrid" checked> Grid lines</label>
         <label><input type="checkbox" id="battlemapNumbers" checked> GM room numbers</label>
       </div>
+      <form id="battlemapParty" class="battlemap-party" aria-label="Party setup">
+        <label>Party members <input name="size" type="number" min="1" max="8" value="4" required></label>
+        <label>Party level <input name="level" type="number" min="1" max="20" value="3" required></label>
+        <label>Difficulty cap
+          <select name="difficulty">
+            <option value="low">Low</option>
+            <option value="moderate" selected>Moderate</option>
+            <option value="high">High</option>
+          </select>
+        </label>
+        <button type="submit">Generate adventure</button>
+        <p id="battlemapBudget" role="status"></p>
+      </form>
       <div class="battlemap-workspace">
         <figure class="battlemap-image" tabindex="0" aria-label="Scrollable map preview">
           <canvas id="battlemapCanvas" role="img" aria-label="Top-down dungeon battlemap" hidden></canvas>
@@ -154,9 +167,11 @@
             <h3 id="battlemapExportHeading">Export</h3>
             <div class="battlemap-choices">
               <label><input type="checkbox" id="battlemapDoors" checked> Closed doors</label>
-              <label><input type="checkbox" id="battlemapLights"> Torch lights in Owlbear</label>
+              <label><input type="checkbox" id="battlemapLights" checked> Room torches</label>
+              <label><input type="checkbox" id="battlemapEntranceLight"> Reveal entrance</label>
             </div>
             <button type="button" class="battlemap-download" data-battlemap-export="vtt">Download for Owlbear (.dd2vtt)</button>
+            <p class="battlemap-fog-note">Scene Importer fills fog and adds walls when it creates a new scene.</p>
             <div class="battlemap-file-options">
               <button type="button" data-battlemap-export="player">Player PNG</button>
               <button type="button" data-battlemap-export="gm">Numbered GM PNG</button>
@@ -167,16 +182,24 @@
               <summary>Import into Owlbear Rodeo</summary>
               <ol>
                 <li>Install <a href="https://extensions.owlbear.rodeo/dynamic-fog" target="_blank" rel="noopener noreferrer">Dynamic Fog</a> and <a href="https://github.com/Eppinguin/scene-importer#installing" target="_blank" rel="noopener noreferrer">Scene Importer</a>, then enable them in your room.</li>
-                <li>Open Scene Importer, select the downloaded file and choose <b>Create New Scene</b>.</li>
-                <li>Open the scene, assign vision to a player token and check a closed door before the session.</li>
+                <li>Open Scene Importer, select the downloaded file, keep wall import enabled and choose <b>Create New Scene</b>.</li>
+                <li>Enable fog preview and add a primary light to a player token so vision follows it. Room torches are secondary lights when the importer is set to Auto.</li>
               </ol>
+              <p><b>Reveal entrance</b> adds a stationary 10-foot primary light. You can remove it after assigning token vision.</p>
               <p>You can also add the grid-aligned player PNG as a regular map and use manual fog.</p>
             </details>
           </section>
           <section class="battlemap-keys" aria-labelledby="battlemapKeyHeading">
             <h3 id="battlemapKeyHeading">GM room key</h3>
-            <p>Notes stay in this browser and are included only in the GM room-key download.</p>
+            <div id="battlemapAdventure"></div>
+            <button type="button" id="battlemapReroll">Reroll adventure contents</button>
+            <p class="battlemap-fog-note">Red outlines show monster starting spaces on the GM map. Notes stay in this browser and go only into the GM room key.</p>
             <div id="battlemapRooms"></div>
+            <details class="battlemap-help">
+              <summary>Rules and monster sources</summary>
+              <p>Encounter XP uses the <a href="https://www.dndbeyond.com/sources/dnd/br-2024/dms-toolbox" target="_blank" rel="noopener noreferrer">2024 Basic Rules</a>. The difficulty cap applies to each fight. Traps, rewards, and puzzles are Dungeon Forge suggestions.</p>
+              <p>This work includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”) by Wizards of the Coast LLC, available at <a href="https://www.dndbeyond.com/srd" target="_blank" rel="noopener noreferrer">dndbeyond.com/srd</a>. The SRD 5.2.1 is licensed under the Creative Commons Attribution 4.0 International License, available at <a href="https://creativecommons.org/licenses/by/4.0/legalcode" target="_blank" rel="noopener noreferrer">creativecommons.org/licenses/by/4.0/legalcode</a>.</p>
+            </details>
           </section>
         </div>
       </div>

@@ -744,7 +744,7 @@ function tryGenerate(seed, params){
     stats:{ rooms:N, edges:edges.length, loops, critLen, floorTiles:floorTotal, reach, genMs:0, attempts:1 }
   };
 }
-export { FLOOR, WALL, POOL, THEMES };
+export { FLOOR, WALL, POOL, THEMES, makeRng };
 
 export function resolveDungeonTheme(seed, theme) {
   return theme === 'auto'
