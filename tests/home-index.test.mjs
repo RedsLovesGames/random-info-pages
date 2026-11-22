@@ -16,7 +16,7 @@ const requiredRoutes = [
   'political-grid', 'infrastructure-atlas', 'wanuiv2',
   'nerdcore-prompts', 'music-microscope', 'one-million',
   'algorithm-arena', 'cryptography-museum', '9-11-timeline',
-  'belief-atlas'
+  'belief-atlas', 'melon-jelly', 'dungeon-forge'
 ];
 
 test('new homepage has the intended editorial interface', () => {

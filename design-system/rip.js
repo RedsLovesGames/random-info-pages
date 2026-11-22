@@ -9,6 +9,8 @@ const catalog=[
  ['fiction-workspace','Novel Writing & Revision','Utilities','draftroom fiction chapters Draftroom'],
  ['algorithm-arena','Algorithm Visualizer','Interactive Labs','sort graphs pathfinding Algorithm Arena'],
  ['cryptography-museum','Interactive Cryptography Museum','Interactive Labs','ciphers encoding encryption Cryptography Museum'],
+ ['melon-jelly','Melon Jelly Soft-Body Study','Interactive Labs','watermelon jelly soft body physics tactile stretch wobble WebGPU specimen'],
+ ['dungeon-forge','Dungeon Forge Generator','Interactive Labs','procedural dungeon generator seed room corridors roguelike 3D map graph WebGL'],
  ['music-microscope','Music & Audio Analyzer','Interactive Labs','waveforms frequencies spectrogram Music Microscope'],
  ['one-million','Visualizing One Million','Data & Research','million quantities scale One Million Actually'],
  ['infrastructure-atlas','U.S. Infrastructure Report Cards','Data & Research','map states ASCE bridges Infrastructure Atlas'],
