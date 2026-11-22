@@ -3,10 +3,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#07080d" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f2f1ec" />
     <meta name="description" content="A deterministic procedural dungeon generator you can watch build itself, room by room. Scatter → separate → Delaunay → MST + loops → carve → theme, rendered live with Three.js." />
-    <title>Dungeon Forge — Procedural Dungeon Generator</title>
+    <title>Dungeon Forge | Random Info Pages</title>
 
     <meta name="author" content="Majid Manzarpour" />
     <link rel="author" href="https://x.com/majidmanzarpour" />
@@ -30,17 +30,15 @@
 
     <script type="module" crossorigin src="./assets/index-B7qSdGiU.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-TfGYMYMP.css">
-    <style>
-      .brand a { color: var(--ink); letter-spacing: .03em; text-decoration: none; }
-      .brand a:hover, .brand a:focus-visible { text-decoration: underline; }
-    </style>
+    <link rel="stylesheet" href="../design-system/rip.css" />
+    <link rel="stylesheet" href="../design-system/interactive-labs.css" />
+    <script defer src="../design-system/rip.js"></script>
   </head>
-  <body>
+  <body class="dungeon-lab">
     <!-- control + telemetry panel -->
-    <div id="panel">
+    <div id="panel" role="region" aria-label="Dungeon controls">
       <button id="collapse" aria-label="Collapse panel" title="Collapse">–</button>
       <div class="head">
-        <div class="brand"><span>DUNGEON&nbsp;FORGE</span><a href="../">← Random Info Pages</a></div>
         <h1 id="dname">—</h1>
         <div id="dsub">forging…</div>
       </div>
@@ -74,7 +72,7 @@
       </div>
 
       <div class="sec">
-        <span class="lab"><span>OBJECTS</span><span style="color:#4a4f61">tap to toggle</span></span>
+        <span class="lab"><span>OBJECTS</span></span>
         <div class="chips" id="objchips">
           <button class="chip on" data-o="props" aria-pressed="true">PROPS</button>
           <button class="chip on" data-o="torches" aria-pressed="true">TORCHES</button>

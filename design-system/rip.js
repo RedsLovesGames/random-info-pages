@@ -61,6 +61,11 @@ function render(){
 browse.addEventListener('click',()=>{render();dlg.showModal();input.focus()});
 close.addEventListener('click',()=>dlg.close());
 dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+dlg.addEventListener('keydown', e => {
+ if(e.key !== 'Escape')return;
+ e.preventDefault();
+ dlg.close();
+});
 input.addEventListener('input',render);
 input.addEventListener('keydown',e=>{if(e.key==='Enter'){const first=results.querySelector('a');if(first){e.preventDefault();location.href=first.href}}});
 render();
