@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f2f1ec">
+  <meta name="description" content="Build a loop or turn an audio recording or MIDI file into an interactive marble machine.">
+  <title>Marble Sequencer | Random Info Pages</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%232c40c6'/%3E%3Cpath d='M12 44h40M12 52h40' stroke='%23f6cc83' stroke-width='3'/%3E%3Ccircle cx='32' cy='26' r='13' fill='%23fbf0dc'/%3E%3Cpath d='M24 26a8 8 0 0 1 8-8' fill='none' stroke='white' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../design-system/rip.css">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="../design-system/rip.js"></script>
+  <script defer src="../design-system/appearance.js" data-native-appearance="light"></script>
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <main class="marble-page">
+    <header class="hero">
+      <h1>Marble <em>Sequencer.</em></h1>
+      <p>Build a beat or drop in a song and watch the machine play it.</p>
+    </header>
+
+    <div class="studio">
+      <section class="machine" aria-label="Marble machine">
+        <header class="track">
+          <div class="track-name">
+            <span id="source-kind">Step sequencer</span>
+            <h2 id="track-title">Demo loop</h2>
+          </div>
+          <span id="hit-count" class="small-label"></span>
+        </header>
+        <div class="stage">
+          <canvas id="marble-canvas" aria-hidden="true"></canvas>
+        </div>
+        <div class="transport">
+          <div class="position">
+            <output id="time-now" for="position">0:00</output>
+            <input type="range" id="position" aria-label="Playback position" min="0" max="1" step=".01" value="0">
+            <span id="time-total">0:00</span>
+          </div>
+          <div class="playback">
+            <button id="play" class="primary" type="button">Play</button>
+            <button id="rewind" type="button">Restart</button>
+            <label class="loop"><input id="loop" type="checkbox" checked> Loop</label>
+            <label class="rate">Speed
+              <select id="speed" aria-label="Playback speed">
+                <option value=".5">0.5×</option><option value=".75">0.75×</option>
+                <option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <aside class="source-panel" aria-labelledby="source-title">
+        <div>
+          <h2 id="source-title">Load a track</h2>
+          <p>MIDI drops a marble for every note. Audio keeps the original recording and drops marbles on detected hits.</p>
+        </div>
+        <div id="drop-zone" class="drop-zone">
+          <button id="open-file" class="primary" type="button">Open audio or MIDI</button>
+          <input id="file-input" type="file" hidden>
+          <span>or drop a file here</span>
+        </div>
+        <p id="file-status" class="file-status" role="status" aria-live="polite" hidden></p>
+        <div class="source-controls">
+          <label for="volume">Volume</label>
+          <input id="volume" type="range" aria-label="Volume" min="0" max="100" value="78">
+        </div>
+        <button id="use-loop" type="button" hidden>Return to your loop</button>
+        <details class="formats">
+          <summary>Supported files</summary>
+          <p>MP3, WAV, M4A, AAC, FLAC, Ogg, Opus, AIFF, WMA, and other decodable audio. Standard MIDI (.mid, .midi), RMID, and KAR files play through an in-browser synth.</p>
+          <p>Your files stay on your device. Uncommon audio formats may download an extended decoder.</p>
+        </details>
+      </aside>
+    </div>
+
+    <section id="builder" class="builder" aria-labelledby="builder-title">
+      <header class="builder-head">
+        <div>
+          <h2 id="builder-title">Build a loop</h2>
+          <p>Tap a step to add a drop gate. Tap an instrument name to try a single drop.</p>
+        </div>
+        <div class="builder-tools">
+          <label class="bpm">BPM <input type="number" id="bpm" min="40" max="240" step="1" value="104" inputmode="numeric"></label>
+          <button id="demo" type="button">Demo</button>
+          <button id="clear" type="button">Clear</button>
+          <button id="share" type="button">Share loop</button>
+        </div>
+      </header>
+      <div class="sequencer" id="sequencer"></div>
+      <details class="machine-settings">
+        <summary>Customize ramps and bars</summary>
+        <div class="machine-options">
+          <label>Lane <select id="lane-choice"></select></label>
+          <label>Ramp <select id="ramp-choice">
+            <option value="0">Curved</option><option value="1">Zigzag</option><option value="2">Straight</option>
+          </select></label>
+          <label id="pitch-control">Bar pitch <select id="pitch-choice"></select></label>
+        </div>
+      </details>
+      <div class="share-result" id="share-result" hidden>
+        <label for="share-link">Loop link</label>
+        <input type="url" id="share-link" readonly>
+        <p id="share-status" role="status"></p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

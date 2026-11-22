@@ -60,6 +60,7 @@
     'heatmap/compare': ['meter', 'rose', 'M3 5h7v14H3zM14 5h7v14h-7zM5 15h3m8-6h3m-3 4h3'],
     'id-card-maker': ['stack', 'rose', 'M2 6h20v12H2zM5 15c0-4 6-4 6 0M8 9a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m6 1h5m-5 4h4'],
     'infrastructure-atlas': ['horizon', 'ice', 'M2 18h20M5 18V8m14 10V8M2 9c6 6 14 6 20 0M8 13v5m4-4v4m4-5v5'],
+    'marble-sequencer': ['meter', 'amber', 'M4 6h16m-14 4c0 4 4 4 4 8m4-8c0 4 4 4 4 8M6 10h.01M14 10h.01M3 20h18'],
     'melon-jelly': ['horizon', 'green', 'M3 9h18a9 9 0 0 1-18 0zm2 3h14m-8 2 1 1m3-1-1 1'],
     'midterm-2026': ['stack', 'blue', 'M6 10h12l3 4v6H3v-6zM3 14h18M8 5l6-2 3 6M9 9l6-2m-6 10h6'],
     'music-microscope': ['meter', 'teal', 'M2 12h3l2-5 3 11 3-14 3 15 2-7h4'],
