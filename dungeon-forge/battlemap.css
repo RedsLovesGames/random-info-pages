@@ -223,3 +223,70 @@
   #battlemap .battlemap-party { padding-inline: 12px; }
   #battlemap #battlemapBudget { width: 100%; margin-inline: 0; }
 }
+
+#battlemap [hidden] { display: none !important; }
+#battlemap .battlemap-modes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--lab-line);
+}
+#battlemap :is(.battlemap-modes, .battlemap-edit-field) button[aria-pressed="true"] {
+  color: var(--lab-blue);
+  background: var(--lab-tint);
+  border-color: var(--lab-blue);
+}
+#battlemapCanvas { cursor: crosshair; }
+#battlemap .battlemap-field {
+  display: grid;
+  gap: 4px;
+  margin-block: 4px 6px;
+  font-weight: 700;
+}
+#battlemap .battlemap-field :is(input, select, textarea) {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  height: auto;
+  margin-top: 0;
+  padding: 8px;
+  border: 1px solid var(--lab-line);
+  border-radius: 4px;
+  color: var(--lab-ink);
+  background: var(--lab-white);
+  font: inherit;
+}
+#battlemap .battlemap-field textarea { min-height: 72px; font-weight: 400; }
+#battlemap .battlemap-toggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  gap: 8px;
+}
+#battlemap .battlemap-edit-field, #battlemap .battlemap-room-links, #battlemap .battlemap-hp {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-block: 5px;
+}
+#battlemap .battlemap-edit-field b { flex-basis: 100%; }
+#battlemap .battlemap-room-actions { padding-block: 6px; border-block: 1px solid var(--lab-line); }
+#battlemap .battlemap-monster { padding-block: 6px; border-top: 1px solid var(--lab-line); }
+#battlemap .battlemap-monster button { margin: 4px 4px 0 0; }
+#battlemap .battlemap-hp { align-items: flex-end; }
+#battlemap .battlemap-hp .battlemap-field { flex: 1; margin: 0; }
+#battlemap .battlemap-hp button { margin: 0; }
+#battlemap .battlemap-position {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  padding: 8px;
+  border: 1px solid var(--lab-line);
+}
+#battlemap .battlemap-position p { grid-column: 1 / -1; }
+#battlemapEditorStatus { min-height: 20px; color: var(--lab-muted); margin-block: 8px; }
+@media (max-width: 750px) {
+  #battlemap .battlemap-modes { padding-inline: 12px; }
+}

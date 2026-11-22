@@ -105,6 +105,12 @@ export function pixelsPerSquare({ W, H }) {
   return Math.min(48, Math.floor(3600 / Math.max(W, H)), Math.floor(Math.sqrt(10000000 / (W * H))));
 }
 
+export function pngExportSpec({ W, H }, target, basename) {
+  const density = [48, 70, 100].includes(Number(target)) ? Number(target) : 70;
+  const pixels = Math.min(density, Math.floor(6500 / Math.max(W, H)), Math.floor(Math.sqrt(15000000 / (W * H))));
+  return { pixels, width: W * pixels, height: H * pixels, name: basename + '-' + W + 'x' + H + '.png' };
+}
+
 export function universalVtt(dungeon, { pixels, image, doors = false, lights = false, entranceLight = false }) {
   const entrance = dungeon.rooms[dungeon.entrance];
   const starter = { position: { x: entrance.cx + 0.5, y: entrance.cy + 0.5 }, range: 2,

@@ -1,25 +1,34 @@
-import { makeBattlemap, pixelsPerSquare, universalVtt } from './battlemap-core.mjs';
+import { makeBattlemap, pixelsPerSquare, pngExportSpec, universalVtt } from './battlemap-core.mjs';
 import { drawBattlemap } from './battlemap-render.mjs';
-import { buildAdventure, encounterBudget, formatRoom, normalizeParty, roomFeatures } from './adventure.mjs';
-import { srdAttribution, srdPdf } from './adventure-monsters.mjs';
+import { encounterBudget, formatRoom, normalizeParty } from './adventure.mjs';
+import { srdAttribution } from './adventure-monsters.mjs';
+import { createProject, decodeProject, makeProjectAdventure, moveMonster, nextRoomState, projectRoomAt,
+  rerollProjectAll, rerollProjectRoom, rerollProjectSingle, toggleCover, toggleProjectLock } from './dungeon-project.mjs';
+import { sessionPlans } from './dungeon-routes.mjs';
+import { labeledList, roomPanel, textElement } from './dungeon-room-panel.mjs';
 
 const byId = id => document.getElementById(id);
-const openMap = byId('openBattlemap');
 const dialog = byId('battlemap');
 const map = byId('battlemapCanvas');
 const title = byId('battlemapTitle');
 const stats = byId('battlemapStats');
 const status = byId('battlemapStatus');
-const notesList = byId('battlemapRooms');
+const editorStatus = byId('battlemapEditorStatus');
+const roomList = byId('battlemapRooms');
+const roomSelect = byId('battlemapRoomSelect');
 const overview = byId('battlemapAdventure');
 const form = byId('battlemapParty');
 const budget = byId('battlemapBudget');
 const reroll = byId('battlemapReroll');
+const prepare = byId('battlemapPrepare');
+const run = byId('battlemapRun');
 const grid = byId('battlemapGrid');
 const numbers = byId('battlemapNumbers');
 const doors = byId('battlemapDoors');
 const lights = byId('battlemapLights');
 const entranceLight = byId('battlemapEntranceLight');
+const quality = byId('battlemapPngQuality');
+const projectFile = byId('battlemapProjectFile');
 const roomCount = byId('rooms');
 const zoom = byId('battlemapZoom');
 const exports = [...dialog.querySelectorAll('[data-battlemap-export]')];
@@ -27,13 +36,13 @@ const partyKey = 'rip-dungeon-party-v1';
 
 let dungeon;
 let adventure;
-let party = normalizeParty(readRecord(partyKey));
+let project;
 let planKey;
-let notes = {};
-let revision = { all: 0, rooms: {} };
+let selected;
+let placement;
+let editorOpen = false;
+let running = false;
 let exporting = false;
-
-for (const [key, value] of Object.entries(party)) form.elements.namedItem(key).value = value;
 
 function readRecord(key) {
   try {
@@ -45,7 +54,11 @@ function readRecord(key) {
 
 function saveRecord(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); }
-  catch { status.textContent = 'This browser cannot save your changes. Download the GM room key to keep them.'; }
+  catch { editorStatus.textContent = 'This browser cannot save changes. Download a project file to keep your work.'; }
+}
+
+function saveProject() {
+  saveRecord(planKey + ':project', project);
 }
 
 function getSettings() {
@@ -58,140 +71,275 @@ function getSettings() {
   };
 }
 
+function syncSettings(settings) {
+  byId('seed').value = settings.seed;
+  roomCount.value = settings.roomCount;
+  byId('loops').value = settings.loopPercent;
+  byId('decor').value = settings.decorPercent;
+  byId('vRooms').textContent = roomCount.value;
+  byId('vLoops').textContent = settings.loopPercent + '%';
+  byId('vDecor').textContent = settings.decorPercent + '%';
+  document.querySelector('#chips [data-t="' + settings.theme + '"]')?.click();
+}
+
+function sessionOutline(minutes) {
+  const time = sessionPlans[minutes]?.time;
+  if (!time) return [];
+  return ['Hook and approach', 'Exploration and clues', 'Fights and finale', 'Breathers and buffer']
+    .map((label, index) => [label, time[index] + ' min']);
+}
+
+function syncParty() {
+  const options = { ...project.party, minutes: project.minutes };
+  for (const [key, value] of Object.entries(options)) form.elements.namedItem(key).value = value;
+}
+
+function sessionDoorStates() {
+  const result = { ...adventure.kinds };
+  if (running) for (const [index, open] of Object.entries(project.session.doors)) {
+    result[index] = open ? 'open' : adventure.kinds[index] === 'open' ? 'closed' : adventure.kinds[index] ?? 'closed';
+  }
+  return result;
+}
+
 function refreshPreview() {
-  if (!dungeon) return;
+  if (!dungeon || !adventure) return;
   const pixels = Math.min(22, pixelsPerSquare(dungeon));
   map.style.setProperty('--battlemap-aspect', dungeon.W / dungeon.H);
   map.style.setProperty('--battlemap-detail-width', (dungeon.W * 17) + 'px');
-  drawBattlemap(map, dungeon, pixels, { grid: grid.checked, numbers: numbers.checked, doors: doors.checked, adventure });
-}
-
-function textElement(tag, content, className) {
-  const element = document.createElement(tag);
-  element.textContent = content;
-  if (className) element.className = className;
-  return element;
-}
-
-function labeledList(entries) {
-  const list = document.createElement('dl');
-  for (const [term, detail] of entries) list.append(textElement('dt', term), textElement('dd', detail));
-  return list;
+  drawBattlemap(map, dungeon, pixels, { grid: grid.checked, numbers: numbers.checked, doors: doors.checked,
+    adventure, furnishings: adventure.furnishings, doorStates: sessionDoorStates(), selected });
 }
 
 function renderOverview() {
-  const { name, hook, objective, complication, reward, rooms } = adventure;
+  const { name, hook, objective, complication, reward, rooms, keyed } = adventure;
   overview.replaceChildren(textElement('h4', name), labeledList([
     ['Hook', hook], ['Objective', objective], ['Complication', complication], ['Quest reward', reward + ' GP']
   ]));
   const counts = [
-    [rooms.filter(room => room.encounter).length, 'encounters'],
-    [rooms.filter(room => room.trap).length, 'traps'],
-    [rooms.filter(room => room.treasure).length, 'treasure rooms']
+    [rooms.filter(room => room.encounter).length, 'encounter'],
+    [rooms.filter(room => room.trap).length, 'trap'],
+    [rooms.filter(room => room.treasure).length, 'treasure room']
   ];
-  overview.append(textElement('p', counts.map(([count, label]) => count + ' ' + label).join(' · '), 'battlemap-room-counts'));
-}
-
-function renderEncounter(encounter) {
-  const section = document.createElement('div');
-  section.className = 'battlemap-encounter';
-  section.append(textElement('h4', encounter.totalXp.toLocaleString() + ' / ' + encounter.budget.toLocaleString() + ' XP'));
-  const list = document.createElement('ul');
-  for (const monster of encounter.monsters) {
-    const item = document.createElement('li');
-    const anchor = textElement('a', monster.name + ' stat block');
-    anchor.href = srdPdf + '#page=' + monster.page;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener noreferrer';
-    const initiative = (monster.initiative >= 0 ? '+' : '') + monster.initiative;
-    const positions = monster.positions.map(tile => (tile.x + 1) + ',' + (tile.y + 1)).join(' · ');
-    item.append(textElement('b', monster.positions.length + ' × ' + monster.name),
-      textElement('p', 'AC ' + monster.ac + ' · HP ' + monster.hp + ' · Initiative ' + initiative +
-        ' · CR ' + monster.cr + ' · ' + monster.xp.toLocaleString() + ' XP each'),
-      textElement('p', 'Starting squares (column,row) ' + positions), anchor);
-    list.append(item);
+  overview.append(textElement('p', counts.map(([count, label]) => count + ' ' + label + (count === 1 ? '' : 's')).join(' · '), 'battlemap-room-counts'));
+  if (project.minutes) overview.append(textElement('h4', project.minutes + '-minute session plan'),
+    labeledList(sessionOutline(project.minutes)));
+  if (keyed.keys.length) {
+    const message = keyed.bossReachable
+      ? keyed.keys.length + ' door ' + (keyed.keys.length === 1 ? 'key or clue is' : 'keys or clues are') + ' reachable from the entrance.'
+      : 'Check the route to the final room. It remains disconnected after opening the keyed doors.';
+    overview.append(textElement('p', message));
   }
-  section.append(list);
-  return section;
 }
 
-function renderRoom(room, opened) {
-  const entry = document.createElement('details');
-  entry.dataset.room = room.id;
-  entry.open = opened;
-  const number = String(room.number).padStart(2, '0');
-  const role = room.role[0].toUpperCase() + room.role.slice(1);
-  const summary = textElement('summary', number + ' · ' + room.name);
-  summary.append(textElement('span', role, 'battlemap-room-role'));
-  const content = document.createElement('div');
-  content.className = 'battlemap-room-content';
-  content.append(textElement('blockquote', room.readAloud), labeledList(roomFeatures(room)));
-  if (room.encounter) content.append(renderEncounter(room.encounter));
+function placeAt(x, y) {
+  if (!placement) return;
+  const accepted = placement.cover ? toggleCover(project, dungeon, selected, x, y)
+    : moveMonster(project, dungeon, selected, placement.group, placement.index, x, y);
+  if (!accepted) {
+    editorStatus.textContent = 'Choose a clear square in this room. Large monsters also need their full footprint.';
+    return;
+  }
+  editorStatus.textContent = placement.cover ? 'Cover updated.' : 'Starting space updated and encounter locked.';
+  placement = undefined;
+  saveProject();
+  refreshAdventure();
+}
 
-  const label = textElement('label', 'GM notes', 'battlemap-note');
-  const input = document.createElement('textarea');
-  input.rows = 3;
-  input.maxLength = 2000;
-  input.placeholder = 'Add your own notes, changes, or reminders.';
-  input.value = typeof notes[room.id] === 'string' ? notes[room.id] : '';
-  input.addEventListener('input', () => {
-    notes[room.id] = input.value;
-    saveRecord(planKey + ':notes', notes);
-  });
-  label.append(input);
-  const rerollRoom = textElement('button', 'Reroll this room');
-  rerollRoom.type = 'button';
-  rerollRoom.addEventListener('click', () => {
-    revision.rooms[room.id] = (revision.rooms[room.id] ?? 0) + 1;
-    saveRevision();
-    refreshAdventure();
-    notesList.querySelector('[data-room="' + room.id + '"] summary')?.focus();
-  });
-  content.append(label, rerollRoom);
-  entry.append(summary, content);
-  return entry;
+function renderSelected() {
+  const room = adventure?.rooms.find(entry => entry.id === selected);
+  if (!room) return;
+  const id = room.id;
+  const state = running ? nextRoomState(project, id) : project.session.rooms[id];
+  const afterEdit = () => { saveProject(); refreshAdventure(); };
+  const actions = {
+    editorOpen,
+    keepEditorOpen: value => { editorOpen = value; },
+    text(field, value) {
+      const entry = project.text[id] ??= {};
+      entry[field] = value.trim();
+      saveProject();
+      const updated = makeProjectAdventure(dungeon, project).rooms.find(item => item.id === id);
+      room[field] = updated[field];
+      if (field === 'name') {
+        roomList.querySelector('h4').textContent = String(room.number).padStart(2, '0') + ' · ' + room.name;
+        roomSelect.selectedOptions[0].textContent = room.number + ' · ' + room.name;
+      }
+    },
+    note(value) {
+      project.notes[id] = value;
+      saveProject();
+    },
+    furnishing(value) {
+      const previous = project.style[id];
+      project.style[id] = value;
+      const changed = makeProjectAdventure(dungeon, project).rooms.find(item => item.id === id);
+      if (changed.placementConflict) {
+        if (previous === undefined) delete project.style[id];
+        else project.style[id] = previous;
+        editorStatus.textContent = 'These furnishings overlap a saved monster. Move it to a clear square first.';
+        renderSelected();
+        return;
+      }
+      editorStatus.textContent = 'Furnishings updated.';
+      afterEdit();
+    },
+    roll(field, remove) {
+      if (rerollProjectRoom(project, dungeon, id, field, remove)) {
+        editorStatus.textContent = remove ? 'Removed ' + field + '.' : 'Updated ' + field + '.';
+        afterEdit();
+      } else {
+        editorStatus.textContent = 'No valid ' + field + ' fits the current room and party settings.';
+      }
+    },
+    rerollRoom() {
+      rerollProjectSingle(project, id);
+      editorStatus.textContent = 'Room rerolled. Locked contents and notes were kept.';
+      afterEdit();
+    },
+    lock(field) {
+      toggleProjectLock(project, dungeon, id, field);
+      editorStatus.textContent = project.changes[id][field].locked ? 'Locked ' + field + '.' : 'Unlocked ' + field + '.';
+      afterEdit();
+    },
+    doorKind(index) { return adventure.kinds[index] ?? 'closed'; },
+    doorLabel(index) {
+      const point = dungeon.doors[index].position;
+      const dx = point.x - (room.x + .5), dy = point.y - (room.y + .5);
+      const side = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'west' : 'east') : (dy < 0 ? 'north' : 'south');
+      return 'Door ' + (index + 1) + ' · ' + side;
+    },
+    door(index, value) {
+      project.doors[index] = value;
+      delete project.session.doors[index];
+      afterEdit();
+    },
+    beginPlacement(settings) {
+      placement = settings;
+      editorStatus.textContent = 'Click a square on the map or enter its column and row.';
+      renderSelected();
+      roomList.querySelector('.battlemap-position input')?.focus({ preventScroll: true });
+    },
+    cancelPlacement() {
+      placement = undefined;
+      editorStatus.textContent = 'Placement cancelled.';
+      renderSelected();
+    },
+    place: placeAt,
+    go(number) { selectRoom(adventure.rooms.find(entry => entry.number === number)?.id); },
+    flag(field, value) {
+      state[field] = value;
+      saveProject();
+    },
+    hp(key, value) {
+      state.hp[key] = value;
+      saveProject();
+    },
+    sessionDoor(index, value) {
+      project.session.doors[index] = value;
+      saveProject();
+      refreshPreview();
+    }
+  };
+  roomList.replaceChildren(roomPanel({ room, project, running, state, placement, actions }));
+}
+
+function selectRoom(id) {
+  if (!adventure?.rooms.some(room => room.id === id)) return;
+  selected = id;
+  roomSelect.value = id;
+  placement = undefined;
+  if (running) {
+    project.session.roomId = id;
+    nextRoomState(project, id).visited = true;
+    saveProject();
+  }
+  renderSelected();
+  refreshPreview();
 }
 
 function refreshAdventure() {
   if (!dungeon) return;
-  adventure = buildAdventure(dungeon, party, revision.all, revision.rooms);
-  const open = new Set([...notesList.querySelectorAll('details[open]')].map(entry => entry.dataset.room));
+  adventure = makeProjectAdventure(dungeon, project);
+  roomSelect.replaceChildren(...adventure.rooms.map(room => {
+    const visited = running && project.session.rooms[room.id]?.visited;
+    return new Option(room.number + ' · ' + room.name + (visited ? ' · visited' : ''), room.id);
+  }));
   renderOverview();
-  notesList.replaceChildren(...adventure.rooms.map(room => renderRoom(room, open.has(String(room.id)))));
-  budget.textContent = '2024 D&D · Up to ' + encounterBudget(party).toLocaleString() + ' XP per encounter';
-  refreshPreview();
+  budget.textContent = '2024 D&D · Up to ' + encounterBudget(project.party).toLocaleString() + ' XP per encounter';
+  selectRoom(adventure.rooms.some(room => room.id === selected) ? selected : dungeon.entrance);
 }
 
-function loadPlan() {
-  try {
-    dungeon = makeBattlemap(getSettings());
-    const { seed, themeKey, roomCount, loopChance, decorDensity } = dungeon.params;
-    planKey = ['rip-dungeon-notes-v1', seed, roomCount, themeKey, loopChance, decorDensity].join(':');
-    // Existing notes were stored directly at planKey.
-    notes = { ...readRecord(planKey), ...readRecord(planKey + ':notes') };
-    const saved = readRecord(planKey + ':revision');
-    revision = { all: saved.all >>> 0, rooms: saved.rooms && typeof saved.rooms === 'object' ? saved.rooms : {} };
-    title.textContent = dungeon.name;
-    stats.textContent = dungeon.rooms.length + ' rooms · ' + dungeon.W + ' × ' + dungeon.H + ' squares · 5 ft per square · Seed ' + seed;
-    status.textContent = '';
-    refreshAdventure();
-    map.hidden = false;
-    for (const button of [...exports, reroll]) button.disabled = false;
-  } catch (error) {
-    dungeon = undefined;
-    adventure = undefined;
-    notesList.replaceChildren();
-    overview.replaceChildren();
-    map.hidden = true;
+function setRunning(value) {
+  running = value;
+  placement = undefined;
+  prepare.setAttribute('aria-pressed', String(!value));
+  run.setAttribute('aria-pressed', String(value));
+  byId('battlemapKeyHeading').textContent = value ? 'Run session' : 'Room editor';
+  form.hidden = value;
+  reroll.hidden = value;
+  editorStatus.textContent = value ? 'Pick a room or follow an exit. Session progress is saved as you play.'
+    : 'Click a room on the map or pick it from the list.';
+  if (project && value) selected = project.session.roomId ?? selected;
+  refreshAdventure();
+}
+
+function renderPngSize() {
+  if (!dungeon) return;
+  const spec = pngExportSpec(dungeon, quality.value, '');
+  byId('battlemapPngSize').textContent = dungeon.W + ' × ' + dungeon.H + ' grid · ' +
+    spec.width.toLocaleString() + ' × ' + spec.height.toLocaleString() + ' pixels · ' + spec.pixels + ' px/square';
+}
+
+function loadPlan(imported) {
+  const settings = imported?.settings ?? getSettings();
+  const plan = makeBattlemap(settings);
+  const { seed, themeKey, roomCount, loopChance, decorDensity } = plan.params;
+  const key = ['rip-dungeon-notes-v1', seed, roomCount, themeKey, loopChance, decorDensity].join(':');
+  let next = imported;
+  if (!next) {
+    const stored = readRecord(key + ':project');
+    if (stored.format) next = decodeProject(JSON.stringify(stored));
+  }
+  if (!next) {
+    const defaults = readRecord(partyKey);
+    next = createProject(settings, defaults);
+    next.minutes = sessionPlans[defaults.minutes] ? defaults.minutes : 0;
+    next.notes = { ...readRecord(key), ...readRecord(key + ':notes') };
+    const legacy = readRecord(key + ':revision');
+    next.revision = legacy.all >>> 0;
+    next.roomRevisions = legacy.rooms && typeof legacy.rooms === 'object' ? legacy.rooms : {};
+  }
+  dungeon = plan;
+  project = next;
+  planKey = key;
+  selected = project.session.roomId ?? dungeon.entrance;
+  editorOpen = false;
+  title.textContent = dungeon.name;
+  stats.textContent = dungeon.rooms.length + ' rooms · ' + dungeon.W + ' × ' + dungeon.H + ' squares · 5 ft per square · Seed ' + seed;
+  status.textContent = '';
+  syncParty();
+  renderPngSize();
+  setRunning(false);
+  map.hidden = false;
+  for (const button of [...exports, reroll, prepare, run]) button.disabled = false;
+}
+
+function loadActiveLayout() {
+  try { loadPlan(); }
+  catch (error) {
+    dungeon = adventure = project = undefined;
     title.textContent = 'Battlemap';
     stats.textContent = '';
-    status.textContent = error.message;
-    for (const button of [...exports, reroll]) button.disabled = true;
+    roomList.replaceChildren();
+    roomSelect.replaceChildren();
+    overview.replaceChildren();
+    budget.textContent = '';
+    byId('battlemapPngSize').textContent = '';
+    map.hidden = true;
+    editorStatus.textContent = error.message;
+    for (const button of [...exports, reroll, prepare, run]) button.disabled = true;
   }
-}
-
-function saveRevision() {
-  saveRecord(planKey + ':revision', revision);
 }
 
 function download(name, blob) {
@@ -209,16 +357,19 @@ function downloadKey(plan, basename) {
     name + ' · ' + plan.name,
     'GM ROOM KEY',
     'Seed ' + plan.params.seed + ' · ' + plan.params.themeKey + ' · ' + plan.rooms.length + ' rooms',
-    party.size + ' characters at level ' + party.level + ' · 2024 D&D · ' +
-      encounterBudget(party).toLocaleString() + ' XP cap per encounter',
+    party.size + ' characters at level ' + party.level + ' · 2024 D&D · ' + encounterBudget(party).toLocaleString() + ' XP cap per encounter',
     'Use the numbered GM map. Room 1 is the entrance. Each square is 5 ft. Red outlines mark monster starting spaces.',
-    '',
-    'Hook: ' + hook,
-    'Objective: ' + objective,
-    'Complication: ' + complication,
-    'Quest reward: ' + reward + ' GP'
+    'Hook: ' + hook, 'Objective: ' + objective, 'Complication: ' + complication, 'Quest reward: ' + reward + ' GP'
   ];
-  const entries = rooms.map(room => formatRoom(room, typeof notes[room.id] === 'string' ? notes[room.id] : ''));
+  if (project.minutes) {
+    header.push(project.minutes + '-minute session target.');
+    for (const [label, duration] of sessionOutline(project.minutes)) header.push(label + ' · ' + duration);
+  }
+  const entries = rooms.map(room => {
+    const formatted = formatRoom(room, typeof project.notes[room.id] === 'string' ? project.notes[room.id] : '');
+    const doorText = room.doors.map(index => 'Door ' + (index + 1) + ' · ' + (adventure.kinds[index] ?? 'closed')).join('\n');
+    return doorText ? formatted + '\n' + doorText : formatted;
+  });
   const text = [header.join('\n'), ...entries, srdAttribution].join('\n\n') + '\n';
   download(basename + '-gm-room-key.txt', new Blob([text], { type: 'text/plain;charset=utf-8' }));
 }
@@ -227,20 +378,25 @@ async function downloadMap(format) {
   if (!dungeon || exporting) return;
   const plan = dungeon;
   const basename = plan.name.toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9]+/g, '-') + '-' + plan.params.seed;
+  if (format === 'project') {
+    download(basename + '.dungeon-forge.json', new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' }));
+    editorStatus.textContent = 'Project downloaded with GM content and session progress.';
+    return;
+  }
   if (format === 'key') {
     downloadKey(plan, basename);
     return;
   }
+
   exporting = true;
   status.textContent = 'Preparing the export…';
   const output = document.createElement('canvas');
   try {
-    const pixels = pixelsPerSquare(plan);
+    const png = pngExportSpec(plan, quality.value, basename + (format === 'gm' ? '-gm' : '-player'));
+    const pixels = format === 'vtt' ? pixelsPerSquare(plan) : png.pixels;
     drawBattlemap(output, plan, pixels, {
-      grid: format === 'vtt' ? false : grid.checked,
-      numbers: format === 'gm',
-      doors: format !== 'vtt' && doors.checked,
-      adventure: format === 'gm' ? adventure : undefined
+      grid: format === 'vtt' ? false : grid.checked, numbers: format === 'gm', doors: format !== 'vtt' && doors.checked,
+      adventure: format === 'gm' ? adventure : undefined, furnishings: adventure.furnishings, doorStates: adventure.kinds
     });
     if (format === 'vtt') {
       const image = output.toDataURL('image/png').split(',')[1];
@@ -249,8 +405,8 @@ async function downloadMap(format) {
       download(basename + '.dd2vtt', new Blob([JSON.stringify(vtt)], { type: 'application/json' }));
     } else {
       const blob = await new Promise(resolve => output.toBlob(resolve, 'image/png'));
-      if (!blob) throw new Error('This browser could not encode the map image.');
-      download(basename + (format === 'gm' ? '-gm.png' : '-player.png'), blob);
+      if (!blob) throw new Error('This browser could not encode the map image. Try compact PNG quality.');
+      download(png.name, blob);
     }
     status.textContent = 'Download ready.';
   } catch (error) {
@@ -261,33 +417,97 @@ async function downloadMap(format) {
   }
 }
 
-openMap.addEventListener('click', () => {
+byId('openBattlemap').addEventListener('click', () => {
   dialog.showModal();
-  loadPlan();
+  loadActiveLayout();
 });
 byId('battlemapClose').addEventListener('click', () => dialog.close());
-byId('battlemapQuick').addEventListener('click', () => {
-  roomCount.value = '8';
+function openLayoutWithRooms(count) {
+  roomCount.value = String(count);
   byId('vRooms').textContent = roomCount.value;
   roomCount.dispatchEvent(new Event('input', { bubbles: true }));
-  loadPlan();
+  loadActiveLayout();
+}
+
+byId('battlemapQuick').addEventListener('click', () => openLayoutWithRooms(8));
+byId('battlemapFitLength').addEventListener('click', () => {
+  if (!project || !form.reportValidity()) return;
+  const settings = Object.fromEntries(new FormData(form));
+  const minutes = Number(settings.minutes);
+  const plan = sessionPlans[minutes];
+  if (!plan) {
+    editorStatus.textContent = 'Choose a timed session first.';
+    return;
+  }
+  const party = normalizeParty(settings);
+  openLayoutWithRooms(plan.rooms);
+  if (project) applyPartySettings(party, minutes);
 });
+byId('battlemapOpenProject').addEventListener('click', () => projectFile.click());
+byId('battlemapShowExports').addEventListener('click', () => byId('battlemapExportHeading').focus());
+projectFile.addEventListener('change', async () => {
+  const file = projectFile.files?.[0];
+  projectFile.value = '';
+  if (!file) return;
+  try {
+    if (file.size > 2_000_000) throw new Error('Choose a Dungeon Forge project no larger than 2 MB.');
+    const imported = decodeProject(await file.text());
+    loadPlan(imported);
+    syncSettings(imported.settings);
+    saveProject();
+    editorStatus.textContent = 'Project restored. Choose Run session to resume saved progress.';
+  } catch (error) {
+    editorStatus.textContent = error.message;
+  }
+});
+function applyPartySettings(party, minutes) {
+  if (JSON.stringify(project.party) !== JSON.stringify(party) || project.minutes !== minutes) {
+    for (const [id, state] of Object.entries(project.session.rooms)) {
+      if (!project.changes[id]?.encounter?.locked) state.hp = {};
+    }
+  }
+  project.party = party;
+  project.minutes = minutes;
+  saveRecord(partyKey, { ...party, minutes });
+  saveProject();
+  syncParty();
+  editorStatus.textContent = 'Adventure updated for this party and session length.';
+  refreshAdventure();
+}
+
 form.addEventListener('submit', event => {
   event.preventDefault();
-  party = normalizeParty(Object.fromEntries(new FormData(form)));
-  saveRecord(partyKey, party);
-  refreshAdventure();
+  if (!project) return;
+  const settings = Object.fromEntries(new FormData(form));
+  applyPartySettings(normalizeParty(settings), Number(settings.minutes));
 });
 reroll.addEventListener('click', () => {
-  revision = { all: revision.all + 1, rooms: {} };
-  saveRevision();
+  rerollProjectAll(project);
+  saveProject();
+  editorStatus.textContent = 'Adventure rerolled. Locked contents and GM notes were kept.';
   refreshAdventure();
+});
+prepare.addEventListener('click', () => setRunning(false));
+run.addEventListener('click', () => setRunning(true));
+roomSelect.addEventListener('change', () => selectRoom(Number(roomSelect.value)));
+map.addEventListener('click', event => {
+  if (!dungeon) return;
+  const rect = map.getBoundingClientRect();
+  const x = Math.floor((event.clientX - rect.left) * dungeon.W / rect.width);
+  const y = Math.floor((event.clientY - rect.top) * dungeon.H / rect.height);
+  if (placement) { placeAt(x, y); return; }
+  const id = projectRoomAt(dungeon, x, y);
+  if (id !== undefined) {
+    selectRoom(id);
+    editorStatus.textContent = 'Room ' + adventure.rooms.find(room => room.id === id).number + ' selected.';
+  }
 });
 zoom.addEventListener('click', () => {
   const detail = zoom.getAttribute('aria-pressed') === 'false';
   zoom.setAttribute('aria-pressed', String(detail));
   map.dataset.detail = String(detail);
 });
+quality.addEventListener('change', renderPngSize);
 for (const checkbox of [grid, numbers, doors]) checkbox.addEventListener('change', refreshPreview);
 dialog.addEventListener('click', event => {
   const button = event.target.closest('[data-battlemap-export]');

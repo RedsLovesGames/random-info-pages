@@ -2,6 +2,7 @@ import { FLOOR, makeRng } from './generator.mjs';
 import { roomKey } from './battlemap-core.mjs';
 import { monsters, srdPdf } from './adventure-monsters.mjs';
 import { scenarios, roomsByRole, traps, puzzles } from './adventure-scenes.mjs';
+import { visibleProps } from './dungeon-furnishings.mjs';
 
 // D&D 2024 Basic Rules, DM’s Toolbox, XP Budget per Character.
 // Each row covers one party level, in low / moderate / high order.
@@ -13,7 +14,6 @@ const xpByLevel = [
   [4500, 7200, 11700], [5000, 8700, 14200], [5500, 10700, 17200], [6400, 13200, 22000]
 ];
 const difficultyNames = ['low', 'moderate', 'high'];
-const floorObstacles = new Set(['pillar', 'sarco', 'debris']);
 const tradeGoods = ['silver reliquary', 'engraved copper cup', 'rough garnet', 'pair of carved ivory dice', 'sealed tin of rare pigment', 'old silver brooch'];
 const lowRewards = ['Potion of Healing', 'Antitoxin', 'Healer’s Kit', '50 feet of Silk Rope'];
 const middleRewards = ['Potion of Greater Healing', 'Potion of Climbing', 'Potion of Water Breathing', 'Spell Scroll (level 1)'];
@@ -42,9 +42,9 @@ function rank(cr) {
   return number / divisor;
 }
 
-function usableTiles(dungeon) {
-  const blocked = new Set(dungeon.props.filter(prop => floorObstacles.has(prop.kind))
-    .map(prop => prop.y * dungeon.W + prop.x));
+export function usableTiles(dungeon, furnishings = []) {
+  const obstacles = dungeon.props.filter(prop => visibleProps.has(prop.kind)).concat(furnishings);
+  const blocked = new Set(obstacles.map(prop => prop.y * dungeon.W + prop.x));
   const rooms = Array.from({ length: dungeon.rooms.length }, () => new Set());
   for (let cell = 0; cell < dungeon.grid.length; cell++) {
     const id = dungeon.roomId[cell];
@@ -147,13 +147,13 @@ function generateTrap(party, rng) {
   };
 }
 
-export function buildAdventure(dungeon, settings, revision = 0, roomRevisions = {}) {
+export function buildAdventure(dungeon, settings, revision = 0, roomRevisions = {}, { furnishings, fightRooms } = {}) {
   const party = normalizeParty(settings);
   const seed = (dungeon.seed ^ Math.imul(1 + revision, 0xa94d4b05)) >>> 0;
   const rng = makeRng(seed);
   const [name, hook, objective, complication, clueA, clueB] = rng.pick(scenarios[dungeon.params.themeKey]);
   const keys = roomKey(dungeon);
-  const cells = usableTiles(dungeon);
+  const cells = usableTiles(dungeon, furnishings);
   const numberById = new Map(keys.map(room => [room.id, room.number]));
   const linked = new Map(keys.map(room => [room.id, []]));
   for (const { a, b } of dungeon.edges) {
@@ -170,7 +170,7 @@ export function buildAdventure(dungeon, settings, revision = 0, roomRevisions = 
     const roomRng = makeRng(seed ^ Math.imul(room.id + 1, 0x9e3779b1) ^
       Math.imul(roomRevisions[room.id] ?? 0, 0x85ebca6b));
     const boss = room.type === 'boss';
-    const fights = boss || room.type === 'elite' ||
+    const fights = fightRooms ? fightRooms.has(room.id) : boss || room.type === 'elite' ||
       (room.type === 'combat' && (room.id === guideRoom.id || roomRng.chance(0.55)));
     const role = room.type === 'combat' && !fights ? 'quiet' : room.type;
     const [name, readAloud, situation] = roomRng.pick(roomsByRole[role]);
@@ -189,6 +189,16 @@ export function buildAdventure(dungeon, settings, revision = 0, roomRevisions = 
   return { party, name, hook, objective, complication, reward, rooms };
 }
 
+export function rollRoomField(dungeon, room, party, field, seed, furnishings) {
+  const rng = makeRng(seed);
+  switch (field) {
+    case 'encounter': return makeEncounter(dungeon, room, party, usableTiles(dungeon, furnishings)[room.id], rng);
+    case 'treasure': return generateTreasure(party, room, rng);
+    case 'trap': return generateTrap(party, rng);
+    case 'puzzle': return rng.pick(puzzles);
+  }
+}
+
 export function describeTreasure(treasure) {
   return treasure.coins + ' GP in coin, a ' + treasure.goods + ' worth ' +
     treasure.goodsValue + ' GP, and ' + treasure.item + '. ' + treasure.location;
@@ -201,6 +211,7 @@ export function roomFeatures(room) {
   ];
   if (room.objective) features.push(['Objective', room.objective]);
   if (room.clue) features.push(['Clue', room.clue]);
+  for (const key of room.keys ?? []) features.push([key.secret ? 'Secret door clue' : 'Key', 'Door ' + (key.index + 1) + (key.secret ? ' · a chalk mark on its stonework identifies the concealed panel.' : ' · a numbered brass key opens this door.')]);
   if (room.trap) {
     const trap = room.trap;
     features.push(['Trap', trap.name], ['Tell', trap.cue + ' ' + trap.search],

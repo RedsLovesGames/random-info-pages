@@ -1,6 +1,7 @@
 import { FLOOR, POOL, WALL } from './generator.mjs';
 import { roomKey } from './battlemap-core.mjs';
 import { textureAtlas } from './battlemap-textures.mjs';
+import { visibleProps } from './dungeon-furnishings.mjs';
 
 // Open stone stays brighter than the void. Interface themes leave map art alone.
 const palettes = {
@@ -10,7 +11,6 @@ const palettes = {
   grim: { void:'#242721', wall:'#404239', cap:'#636653', floor:['#93927a','#a4a087','#aaa58d'], edge:'#3a392d', vein:'#65714670', pool:'#6e8544', poolLow:'#364529', ripple:'#a5a85e60' },
   verdant: { void:'#202923', wall:'#425044', cap:'#60735a', floor:['#9b9e82','#a1a488','#a9a88e'], edge:'#354032', vein:'#4f705051', pool:'#448e76', poolLow:'#234e4c', ripple:'#83d3a376' }
 };
-const visibleProps = new Set(['pillar', 'sarco', 'debris']);
 
 function drawSegments(context, pixels, segments) {
   context.beginPath();
@@ -63,6 +63,53 @@ function drawProp(context, prop, palette, pixels) {
   context.restore();
 }
 
+function drawFurniture(context, item, pixels) {
+  const x = (item.x + 0.5) * pixels;
+  const y = (item.y + 0.5) * pixels;
+  const box = (dx, dy, w, h, color) => {
+    context.fillStyle = color;
+    context.fillRect(x + dx * pixels, y + dy * pixels, w * pixels, h * pixels);
+  };
+  box(-0.27, -0.30, 0.62, 0.64, '#20242a65');
+  if (item.kind === 'bunk') {
+    box(-0.25, -0.36, 0.50, 0.72, '#4b3428');
+    box(-0.19, -0.29, 0.38, 0.19, '#c4bca0');
+    box(-0.19, -0.06, 0.38, 0.34, '#777752');
+  } else if (item.kind === 'altar' || item.kind === 'bench') {
+    box(-0.33, -0.21, 0.66, 0.42, '#595963');
+    box(-0.29, -0.17, 0.58, 0.13, '#bab4ac');
+    if (item.kind === 'altar') box(-0.07, -0.05, 0.14, 0.14, '#bf9665');
+  } else if (item.kind === 'barrel') {
+    context.fillStyle = '#684632';
+    context.beginPath();
+    context.arc(x, y, pixels * 0.27, 0, Math.PI * 2);
+    context.fill();
+    box(-0.19, -0.04, 0.38, 0.08, '#bf9b69');
+  } else {
+    box(-0.29, -0.23, 0.58, 0.46, item.kind === 'cover' ? '#515c65' : '#724a31');
+    box(-0.25, -0.17, 0.50, 0.10, item.kind === 'cover' ? '#919ba0' : '#bc955f');
+    box(-0.06, -0.06, 0.12, 0.16, '#3a322e');
+  }
+}
+
+function highlightRoom(context, dungeon, pixels, id) {
+  if (id === undefined || id === null) return;
+  const segments = [];
+  const W = dungeon.W;
+  for (let i = 0; i < dungeon.roomId.length; i++) {
+    if (dungeon.roomId[i] !== id || dungeon.grid[i] !== FLOOR) continue;
+    const x = i % W, y = Math.floor(i / W);
+    const a = {x, y}, b = {x:x+1, y}, c = {x:x+1, y:y+1}, d = {x, y:y+1};
+    if (dungeon.roomId[i-W] !== id) segments.push([a,b]);
+    if (dungeon.roomId[i+1] !== id) segments.push([b,c]);
+    if (dungeon.roomId[i+W] !== id) segments.push([c,d]);
+    if (dungeon.roomId[i-1] !== id) segments.push([d,a]);
+  }
+  context.strokeStyle = '#56e2cf';
+  context.lineWidth = Math.max(1.4, pixels * .09);
+  drawSegments(context, pixels, segments);
+}
+
 function markMonsters(context, adventure, pixels) {
   if (!adventure) return;
   context.strokeStyle = '#af382a';
@@ -75,7 +122,7 @@ function markMonsters(context, adventure, pixels) {
   }
 }
 
-export function drawBattlemap(canvas, dungeon, pixels, { grid = false, numbers = false, doors = false, adventure } = {}) {
+export function drawBattlemap(canvas, dungeon, pixels, { grid = false, numbers = false, doors = false, adventure, furnishings = [], doorStates = {}, selected } = {}) {
   canvas.width = dungeon.W * pixels;
   canvas.height = dungeon.H * pixels;
   const context = canvas.getContext('2d', { alpha: false });
@@ -115,15 +162,30 @@ export function drawBattlemap(canvas, dungeon, pixels, { grid = false, numbers =
     }
   }
 
+  for (const item of furnishings) drawFurniture(context, item, pixels);
   if (doors) {
-    const segments = dungeon.doors.map(portal => portal.bounds);
+    const normal = [], secret = [], locked = [];
+    for (const [index, portal] of dungeon.doors.entries()) {
+      const kind = doorStates[index];
+      if (kind === 'open') continue;
+      if (kind === 'secret') secret.push(portal.bounds);
+      else if (kind === 'locked') locked.push(portal.bounds);
+      else normal.push(portal.bounds);
+    }
     context.strokeStyle = '#473426';
     context.lineWidth = Math.max(2, pixels * 0.17);
-    drawSegments(context, pixels, segments);
+    drawSegments(context, pixels, [...normal, ...locked]);
     context.strokeStyle = '#b18457';
     context.lineWidth = Math.max(0.8, pixels * 0.065);
-    drawSegments(context, pixels, segments);
+    drawSegments(context, pixels, normal);
+    context.strokeStyle = numbers ? '#e8bd62' : '#b18457';
+    drawSegments(context, pixels, locked);
+    if (numbers) {
+      context.strokeStyle = '#b49bcf';
+      drawSegments(context, pixels, secret);
+    }
   }
+  highlightRoom(context, dungeon, pixels, selected);
 
   if (!numbers) return;
   markMonsters(context, adventure, pixels);

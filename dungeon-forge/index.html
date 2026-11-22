@@ -145,6 +145,14 @@
         <label><input type="checkbox" id="battlemapGrid" checked> Grid lines</label>
         <label><input type="checkbox" id="battlemapNumbers" checked> GM room numbers</label>
       </div>
+      <div class="battlemap-modes" aria-label="Dungeon workspace">
+        <button type="button" id="battlemapPrepare" aria-pressed="true">Prepare</button>
+        <button type="button" id="battlemapRun" aria-pressed="false">Run session</button>
+        <button type="button" data-battlemap-export="project">Save project</button>
+        <button type="button" id="battlemapOpenProject">Open project</button>
+        <button type="button" id="battlemapShowExports">Map exports</button>
+        <input id="battlemapProjectFile" type="file" accept=".json,application/json" hidden>
+      </div>
       <form id="battlemapParty" class="battlemap-party" aria-label="Party setup">
         <label>Party members <input name="size" type="number" min="1" max="8" value="4" required></label>
         <label>Party level <input name="level" type="number" min="1" max="20" value="3" required></label>
@@ -155,7 +163,16 @@
             <option value="high">High</option>
           </select>
         </label>
+        <label>Session length
+          <select name="minutes" aria-label="Session length">
+            <option value="0">Open exploration</option>
+            <option value="90">90-minute delve</option>
+            <option value="180">3-hour session</option>
+            <option value="240">4-hour session</option>
+          </select>
+        </label>
         <button type="submit">Generate adventure</button>
+        <button type="button" id="battlemapFitLength">Size map for session</button>
         <p id="battlemapBudget" role="status"></p>
       </form>
       <div class="battlemap-workspace">
@@ -163,8 +180,24 @@
           <canvas id="battlemapCanvas" role="img" aria-label="Top-down dungeon battlemap" hidden></canvas>
         </figure>
         <div class="battlemap-sidebar">
+          <section class="battlemap-keys" aria-labelledby="battlemapKeyHeading">
+            <h3 id="battlemapKeyHeading">Room editor</h3>
+            <label class="battlemap-field">Room <select id="battlemapRoomSelect" aria-label="Room"></select></label>
+            <p id="battlemapEditorStatus" role="status">Click a room on the map or pick it from the list.</p>
+            <div id="battlemapRooms"></div>
+            <details id="battlemapBrief" class="battlemap-help">
+              <summary>Adventure overview</summary>
+              <div id="battlemapAdventure"></div>
+              <button type="button" id="battlemapReroll">Reroll adventure contents</button>
+            </details>
+            <details class="battlemap-help" id="battlemapSources">
+              <summary>Rules and monster sources</summary>
+              <p>Encounter XP uses the <a href="https://www.dndbeyond.com/sources/dnd/br-2024/dms-toolbox" target="_blank" rel="noopener noreferrer">2024 Basic Rules</a>. The difficulty cap applies to each fight. Traps, rewards, and puzzles are Dungeon Forge suggestions.</p>
+              <p>This work includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”) by Wizards of the Coast LLC, available at <a href="https://www.dndbeyond.com/srd" target="_blank" rel="noopener noreferrer">dndbeyond.com/srd</a>. The SRD 5.2.1 is licensed under the Creative Commons Attribution 4.0 International License, available at <a href="https://creativecommons.org/licenses/by/4.0/legalcode" target="_blank" rel="noopener noreferrer">creativecommons.org/licenses/by/4.0/legalcode</a>.</p>
+            </details>
+          </section>
           <section class="battlemap-exports" aria-labelledby="battlemapExportHeading">
-            <h3 id="battlemapExportHeading">Export</h3>
+            <h3 id="battlemapExportHeading" tabindex="-1">Export</h3>
             <div class="battlemap-choices">
               <label><input type="checkbox" id="battlemapDoors" checked> Closed doors</label>
               <label><input type="checkbox" id="battlemapLights" checked> Room torches</label>
@@ -177,6 +210,14 @@
               <button type="button" data-battlemap-export="gm">Numbered GM PNG</button>
               <button type="button" data-battlemap-export="key">GM room key</button>
             </div>
+            <label class="battlemap-field">PNG quality
+              <select id="battlemapPngQuality" aria-label="PNG quality">
+                <option value="48">Compact · up to 48 px/square</option>
+                <option value="70" selected>Standard · up to 70 px/square</option>
+                <option value="100">High · up to 100 px/square</option>
+              </select>
+            </label>
+            <p id="battlemapPngSize" class="battlemap-fog-note"></p>
             <p id="battlemapStatus" role="status"></p>
             <details class="battlemap-help">
               <summary>Import into Owlbear Rodeo</summary>
@@ -186,19 +227,7 @@
                 <li>Enable fog preview and add a primary light to a player token so vision follows it. Room torches are secondary lights when the importer is set to Auto.</li>
               </ol>
               <p><b>Reveal entrance</b> adds a stationary 10-foot primary light. You can remove it after assigning token vision.</p>
-              <p>You can also add the grid-aligned player PNG as a regular map and use manual fog.</p>
-            </details>
-          </section>
-          <section class="battlemap-keys" aria-labelledby="battlemapKeyHeading">
-            <h3 id="battlemapKeyHeading">GM room key</h3>
-            <div id="battlemapAdventure"></div>
-            <button type="button" id="battlemapReroll">Reroll adventure contents</button>
-            <p class="battlemap-fog-note">Red outlines show monster starting spaces on the GM map. Notes stay in this browser and go only into the GM room key.</p>
-            <div id="battlemapRooms"></div>
-            <details class="battlemap-help">
-              <summary>Rules and monster sources</summary>
-              <p>Encounter XP uses the <a href="https://www.dndbeyond.com/sources/dnd/br-2024/dms-toolbox" target="_blank" rel="noopener noreferrer">2024 Basic Rules</a>. The difficulty cap applies to each fight. Traps, rewards, and puzzles are Dungeon Forge suggestions.</p>
-              <p>This work includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”) by Wizards of the Coast LLC, available at <a href="https://www.dndbeyond.com/srd" target="_blank" rel="noopener noreferrer">dndbeyond.com/srd</a>. The SRD 5.2.1 is licensed under the Creative Commons Attribution 4.0 International License, available at <a href="https://creativecommons.org/licenses/by/4.0/legalcode" target="_blank" rel="noopener noreferrer">creativecommons.org/licenses/by/4.0/legalcode</a>.</p>
+              <p>For a PNG, import it as a map and keep the columns × rows suffix in its filename. Owlbear reads this to align its grid. You can also enter those dimensions in Manual Controls. <a href="https://docs.owlbear.rodeo/docs/aligning-a-map/" target="_blank" rel="noopener noreferrer">Grid alignment guide</a></p>
             </details>
           </section>
         </div>
