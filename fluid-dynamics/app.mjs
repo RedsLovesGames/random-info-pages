@@ -94,7 +94,8 @@ function start() {
 
   function syncCanvases() {
     const is3d = displayMode.value === '3d';
-    syncCanvases();
+    canvas.hidden = is3d;
+    canvas3d.hidden = !is3d;
     canvasGPU.hidden = !usesGPU();
   }
 
