@@ -234,5 +234,5 @@ button, select, summary { cursor: pointer; }
 }
 
 /* The transparent input canvas carries interactive tracer strokes over WebGL. */
-#tank { position: relative; z-index: 2; }
+#tank { position: relative; z-index: 2; background: transparent; }
 #brush-marker { z-index: 3; }
