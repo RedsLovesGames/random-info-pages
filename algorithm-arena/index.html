@@ -33,11 +33,12 @@
       <div class="section-head"><div><p class="kicker">LAB 01 / SORTING</p><h2 id="sorting-title">Six ways to put things in order.</h2></div><p class="section-note">All six methods receive the same generated array. Their bars share one scale.</p></div>
       <div class="control-strip">
         <label>Array size <output id="arraySizeLabel">32</output><input id="arraySize" type="range" min="8" max="64" step="4" value="32" aria-label="Array size"></label>
+        <label>Reproducible seed <input id="arraySeed" type="text" value="0x51a7" maxlength="10" spellcheck="false" aria-label="Seed for sorting input"></label>
         <label>Starting order<select id="distribution"><option value="random">Random</option><option value="sorted">Already sorted</option><option value="reversed">Reversed</option><option value="nearly">Nearly sorted</option><option value="duplicates">Duplicate heavy</option></select></label>
         <label>Playback speed <output id="speedLabel">8 steps/s</output><input id="playbackSpeed" type="range" min="1" max="60" value="8" aria-label="Playback speed"></label>
         <div class="control-actions"><button id="generateArray" class="button quiet" type="button">New array</button><button id="runSorts" class="button primary" type="button">Run six sorts <span>→</span></button></div>
       </div>
-      <div class="transport" aria-label="Sorting playback controls"><button id="sortPlay" type="button" disabled>Pause</button><button id="sortStep" type="button">Step</button><button id="sortRestart" type="button">Restart same input</button><span id="sortPlaybackTime">Playback 0.00 s</span><span id="sortStatus" role="status" aria-live="polite">Ready. Generate an array, then run the race.</span></div>
+      <div class="transport" aria-label="Sorting playback controls"><button id="sortPlay" type="button" disabled>Pause</button><button id="sortStep" type="button">Step</button><button id="sortRestart" type="button">Restart same input</button><button id="exportSortCsv" type="button" disabled>Export results CSV ↓</button><span id="sortPlaybackTime">Playback 0.00 s</span><span id="sortStatus" role="status" aria-live="polite">Ready. Generate an array, then run the race.</span></div>
       <div class="sort-grid" id="sortGrid"></div>
       <p class="method-note"><b>Counts:</b> comparisons test a pair; swaps exchange positions; writes place a value. <b>Measured run:</b> one compute-only pass, excluding trace construction and playback. Small runs may read as 0.00 ms.</p>
     </section>

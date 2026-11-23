@@ -1,0 +1,19 @@
+{
+  "name": "Random Info Pages",
+  "short_name": "Random Info",
+  "description": "Curious tools, experiments, interactive labs and games.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f1ec",
+  "theme_color": "#344ae5",
+  "icons": [
+    {
+      "src": "./assets/rip-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

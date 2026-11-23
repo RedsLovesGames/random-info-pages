@@ -51,6 +51,11 @@
       <div class="panel-heading"><div><span class="panel-index">01</span><h2 id="wave-title">Waveform</h2><span class="panel-desc">AMPLITUDE OVER TIME · DRAG TO SELECT A REGION</span></div><div class="zoom-tools"><label for="waveZoom">ZOOM <output id="waveZoomLabel">1×</output></label><input id="waveZoom" type="range" min="1" max="12" step="0.5" value="1" disabled><label for="wavePan">POSITION</label><input id="wavePan" type="range" min="0" max="100" value="0" disabled></div></div>
       <div class="chart-frame waveform-frame"><canvas id="waveform" tabindex="0" role="img" aria-label="Audio waveform. Drag to select a region; hold Shift and drag to pan."></canvas><div class="chart-axis" id="waveAxis"></div></div>
       <div class="selection-row"><span>SELECTION <b id="selectionReadout">—</b></span><span id="selectionResult" aria-live="polite"></span><button id="analyzeSelection" type="button" disabled>Analyze selected region →</button></div>
+      <div class="audio-exchange" aria-label="Recording export and project handoff">
+        <button id="exportWav" type="button" disabled>Export selection as WAV ↓</button>
+        <button id="sendMarble" type="button" disabled>Send recording to Marble Sequencer ↗</button>
+        <p id="audioExchangeStatus" role="status" aria-live="polite">WAV exports use uncompressed 16-bit PCM. Local transfer never uploads audio.</p>
+      </div>
     </section>
 
     <section class="visual-section" aria-labelledby="spectrogram-title">

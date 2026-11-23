@@ -158,3 +158,10 @@ input[type='range'], input[type='checkbox'] { accent-color: var(--blue); }
   .builder { padding-inline: 10px; }
   .marble-page .sound-test { font-size: 10px; }
 }
+
+/* Builder actions remain reachable on narrow touch screens. */
+.builder-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.builder-tools button:disabled{opacity:.35;cursor:not-allowed}
+html[data-marble-effects="reduced"] .machine *{animation:none!important;transition:none!important}
+@media(max-width:600px){.builder-tools{justify-content:flex-start}
+.builder-tools button{min-height:38px}}

@@ -5,8 +5,11 @@ import { Script, runInNewContext } from 'node:vm';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const classic = readFileSync(new URL('../classic.html', import.meta.url), 'utf8');
-const registryMatch = html.match(/const projects=(\[[\s\S]*?\]);/);
-assert.ok(registryMatch, 'homepage must contain the search/project registry');
+const registrySource = readFileSync(new URL('../design-system/projects.js', import.meta.url), 'utf8');
+const registryMatch = registrySource.match(/const projects=(\[[\s\S]*?\]);/);
+assert.ok(registryMatch, 'the shared canonical project registry must exist');
+assert.match(html, /src="\.\/design-system\/projects\.js"/);
+assert.match(html, /const projects=window\.RIP_PROJECTS;/);
 const projects = runInNewContext(registryMatch[1]);
 
 const requiredRoutes = [

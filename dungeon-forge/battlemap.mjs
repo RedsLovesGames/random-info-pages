@@ -588,3 +588,37 @@ dialog.addEventListener('keydown', event => {
   }
   event.stopPropagation();
 });
+
+// Shared Project Studio adapter. Uses Dungeon Forge's existing validated
+// project format and existing renderer, without exposing the GM notes in captures.
+window.RIPStudio = {
+  getState() {
+    if (!project) throw new Error('Open Battlemap to generate a dungeon first.');
+    return JSON.parse(JSON.stringify(project));
+  },
+  setState(state) {
+    const imported = decodeProject(JSON.stringify(state));
+    syncSettings(imported.settings);
+    loadPlan(imported);
+    saveProject();
+    if (!dialog.open) dialog.showModal();
+    editorStatus.textContent = 'Dungeon project restored through Project Studio.';
+  },
+  async capture() {
+    if (!dungeon) throw new Error('Generate a dungeon before saving a map image.');
+    const output = document.createElement('canvas');
+    try {
+      const spec = pngExportSpec(dungeon, quality.value, 'dungeon-forge');
+      drawBattlemap(output, dungeon, spec.pixels, {
+        grid:grid.checked, numbers:false, doors:doors.checked,
+        furnishings:adventure.furnishings, doorStates:adventure.kinds
+      });
+      return await new Promise((resolve,reject) => output.toBlob(
+        value=>value?resolve(value):reject(new Error('Map PNG encoding failed')),'image/png'));
+    } finally { output.width=output.height=1; }
+  },
+  setQuality(level) {
+    quality.value=level==='eco'?'48':'70';
+    renderPngSize();
+  }
+};

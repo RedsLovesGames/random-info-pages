@@ -102,6 +102,7 @@ function refreshSortCards() {
   drawAllSorts();
   $('#sortPlaybackTime').textContent = 'Playback 0.00 s';
   $('#sortStatus').textContent = 'Ready. All methods will use this same input.';
+  $('#exportSortCsv').disabled = true;
 }
 
 function prepareSorts() {
@@ -111,6 +112,7 @@ function prepareSorts() {
   sortAccumulated = 0; sortStarted = 0;
   drawAllSorts();
   $('#sortStatus').textContent = `Six traces ready · ${initialArray.length} identical values · calculation and playback are timed separately.`;
+  $('#exportSortCsv').disabled = false;
   $('#sortPlay').disabled = false; $('#sortPlay').textContent = 'Pause';
 }
 
@@ -172,9 +174,31 @@ function restartSorts() {
 }
 
 function randomizeArray() {
-  seed += 0x9e3779b9;
+  seed = (seed + 0x9e3779b9) >>> 0;
+  $('#arraySeed').value='0x'+seed.toString(16);
   initialArray = generateArray(Number($('#arraySize').value), $('#distribution').value, seed);
   refreshSortCards();
+}
+function readSeed(value) {
+  const text=String(value).trim();
+  if(!/^(?:0x[\da-f]{1,8}|\d{1,10})$/i.test(text))throw new RangeError('Seed must be an unsigned integer or 0x hexadecimal');
+  const parsed=Number(text);
+  if(!Number.isSafeInteger(parsed)||parsed<0||parsed>0xffffffff)throw new RangeError('Seed must be between 0 and 4294967295');
+  return parsed>>>0;
+}
+function exportSortCsv() {
+  if(!sortRuns.length)return;
+  const rows=[['Algorithm','Input size','Seed','Starting order','Comparisons','Swaps','Writes','Compute runtime (ms)','Trace events'],
+    ...sortRuns.map(run=>[
+      algorithmNames[run.algorithm],initialArray.length,'0x'+seed.toString(16),
+      $('#distribution').value,run.counts.comparisons,run.counts.swaps,run.counts.writes,
+      run.runtimeMs.toFixed(4),run.trace.length
+    ])];
+  const csv=rows.map(row=>row.map(value=>'"'+String(value).replace(/"/g,'""')+'"').join(',')).join('\r\n')+'\r\n';
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a');a.href=url;a.download='algorithm-arena-seed-'+seed.toString(16)+'.csv';
+  a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  $('#sortStatus').textContent='Results CSV downloaded. Compute runtimes are single-run measurements, not benchmarks.';
 }
 
 function configurePlaybackSpeed(value) {
@@ -446,7 +470,16 @@ function runGraphSearch() {
   $('#graphPlay').disabled = false; $('#graphStatus').textContent = `${graphRun.algorithm.toUpperCase()} trace ready · ${graphRun.events.length} events.`; drawGraph(); playGraph();
 }
 
-$('#arraySize').addEventListener('input', () => { $('#arraySizeLabel').textContent = $('#arraySize').value; randomizeArray(); });
+$('#arraySize').addEventListener('input', () => { $('#arraySeed').addEventListener('change',()=>{
+  try{
+    seed=readSeed($('#arraySeed').value);
+    $('#arraySeed').value='0x'+seed.toString(16);
+    initialArray=generateArray(Number($('#arraySize').value),$('#distribution').value,seed);
+    refreshSortCards();
+  }catch(error){$('#sortStatus').textContent=error.message;$('#arraySeed').value='0x'+seed.toString(16)}
+});
+$('#exportSortCsv').addEventListener('click',exportSortCsv);
+$('#arraySizeLabel').textContent = $('#arraySize').value; randomizeArray(); });
 $('#distribution').addEventListener('change', randomizeArray);
 $('#playbackSpeed').addEventListener('input', () => configurePlaybackSpeed($('#playbackSpeed').value));
 $('#runSorts').addEventListener('click', () => { if (!sortRuns.length) prepareSorts(); playSorts(); });
@@ -515,3 +548,52 @@ $('#arraySizeLabel').textContent = $('#arraySize').value;
 $('#speedLabel').textContent = `${playbackSpeed} steps/s`;
 $('#gridWidthLabel').textContent = String(gridWidth); $('#gridHeightLabel').textContent = String(gridHeight);
 renderGrid(); syncGraphControls();
+
+window.RIPStudio = {
+  getState() {
+    return {seed,initialArray:[...initialArray],distribution:$('#distribution').value,
+      gridWidth,gridHeight,walls:[...walls],terrain:{...terrain},
+      startCell:{...startCell},goalCell:{...goalCell},
+      graphNodes:structuredClone(graphNodes),graphEdges:structuredClone(graphEdges)};
+  },
+  setState(state) {
+    if(!state||!Number.isInteger(state.seed)||state.seed<0||state.seed>0xffffffff)
+      throw new Error('Invalid Algorithm Arena project seed');
+    if(!Array.isArray(state.initialArray)||state.initialArray.length<8||state.initialArray.length>64||
+      state.initialArray.some(value=>!Number.isFinite(value)||value<0||value>100000))
+      throw new Error('Invalid saved sorting array');
+    const w=state.gridWidth,h=state.gridHeight;
+    if(!Number.isInteger(w)||!Number.isInteger(h)||w<12||w>36||h<8||h>24)
+      throw new Error('Invalid saved pathfinding grid');
+    if(!Array.isArray(state.walls)||state.walls.some(v=>!Number.isInteger(v)||v<0||v>=w*h))
+      throw new Error('Invalid wall coordinates');
+    if(!state.startCell||!state.goalCell||
+      [state.startCell,state.goalCell].some(p=>!Number.isInteger(p.x)||!Number.isInteger(p.y)||p.x<0||p.x>=w||p.y<0||p.y>=h))
+      throw new Error('Invalid start or goal');
+    pauseSorts();stopPathPlayback();clearInterval(graphTimer);
+    seed=state.seed;initialArray=[...state.initialArray];
+    $('#arraySeed').value='0x'+seed.toString(16);
+    $('#arraySize').value=String(initialArray.length);
+    $('#arraySizeLabel').textContent=String(initialArray.length);
+    if([...$('#distribution').options].some(option=>option.value===state.distribution))
+      $('#distribution').value=state.distribution;
+    gridWidth=w;gridHeight=h;
+    $('#gridWidth').value=String(w);$('#gridHeight').value=String(h);
+    $('#gridWidthLabel').textContent=String(w);$('#gridHeightLabel').textContent=String(h);
+    walls=new Set(state.walls);
+    terrain=state.terrain&&typeof state.terrain==='object'&&!Array.isArray(state.terrain)?{...state.terrain}:{};
+    startCell={...state.startCell};goalCell={...state.goalCell};
+    refreshSortCards();clearSearchMarks();renderGrid();
+    if(Array.isArray(state.graphNodes)&&Array.isArray(state.graphEdges)&&
+      state.graphNodes.length<=50&&state.graphEdges.length<=200){
+      graphNodes=structuredClone(state.graphNodes);graphEdges=structuredClone(state.graphEdges);
+    }
+    resetGraphTrace();drawGraph();
+  },
+  capture() {
+    return new Promise((resolve,reject)=>{
+      const canvas=$('#graphCanvas');
+      canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Graph PNG export failed')),'image/png');
+    });
+  }
+};

@@ -1,3 +1,5 @@
+import { encodeWavRegion } from './export.mjs';
+import { sendAudioToMarble } from '../design-system/bridge.mjs';
 import {
   MAX_DURATION_SECONDS,
   validateAudioInput, estimateDecodedAudioBytes, parseAudioHeader,
@@ -25,6 +27,7 @@ let dryGain = null;
 let wetGain = null;
 let outputGain = null;
 let currentBuffer = null;
+let sourceAudioFile = null;
 let currentMeta = null;
 let duration = 0;
 let playbackPosition = 0;
@@ -290,6 +293,7 @@ function loadBuffer(buffer, meta) {
   preparePeaks(buffer); setTrackFacts(buffer, meta); updateEnabledState(true); updateSelectionReadout(); updateViewControls();
   $('#trackStatus').textContent = 'Ready · file decoding and analysis remain on this device.';
   $('#playButton').disabled = false; $('#stopButton').disabled = false; $('#timeline').disabled = false;
+  $('#exportWav').disabled = false;
   $('#filterEnabled').disabled = false; $('#cutoff').disabled = false; $('#resonance').disabled = false;
   $('#filterStatus').textContent = 'Original playback · enable a filter to compare the signal.';
   try { ensureAudioGraph(); setFilterControls(); } catch (error) { $('#trackStatus').textContent = error.message; }
@@ -359,6 +363,8 @@ async function loadFile(file) {
     validateAudioInput({ bytes: file.size, decodedBytes: buffer.length * buffer.numberOfChannels * 4 });
     const format = file.type ? file.type.replace('audio/', '').toUpperCase() : extension.toUpperCase();
     loadBuffer(buffer, { name: file.name, format });
+    sourceAudioFile = file;
+    $('#sendMarble').disabled = false;
   } catch (error) {
     $('#importError').textContent = error.message || 'The browser could not decode this audio file.';
     $('#importError').hidden = false;
@@ -367,6 +373,8 @@ async function loadFile(file) {
 }
 
 function makeExample() {
+  sourceAudioFile = null;
+  $('#sendMarble').disabled = true;
   const sampleRate = 44100, durationSeconds = 12, length = sampleRate * durationSeconds;
   const buffer = new AudioBuffer({ numberOfChannels: 2, length, sampleRate });
   const left = buffer.getChannelData(0), right = buffer.getChannelData(1);
@@ -642,6 +650,35 @@ $('#wavePan').addEventListener('input', event => {
   updateViewControls(); drawWaveform(); drawSpectrogram();
 });
 
+$('#exportWav').addEventListener('click',async()=>{
+  if(!currentBuffer)return;
+  const button=$('#exportWav');
+  button.disabled=true;
+  try{
+    const start=selection?.start??0,end=selection?.end??duration;
+    const output=encodeWavRegion(currentBuffer,start,end);
+    const url=URL.createObjectURL(output);
+    const link=document.createElement('a');link.href=url;
+    link.download=(currentMeta?.name||'recording').replace(/\.[^.]+$/,'').replace(/[^a-z0-9_-]/gi,'-')+
+      (selection?'-selected-region':'-full-recording')+'.wav';
+    link.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+    $('#audioExchangeStatus').textContent='WAV exported · '+(output.size/1024/1024).toFixed(1)+' MB. '+
+      (currentBuffer.numberOfChannels>2?'The first two channels were used.':'');
+  }catch(error){$('#audioExchangeStatus').textContent='WAV export: '+error.message}
+  finally{button.disabled=false}
+});
+$('#sendMarble').addEventListener('click',async()=>{
+  if(!sourceAudioFile)return;
+  const button=$('#sendMarble');button.disabled=true;
+  $('#audioExchangeStatus').textContent='Passing recording locally…';
+  try{
+    await sendAudioToMarble(sourceAudioFile);
+    location.href='../marble-sequencer/?handoff=1';
+  }catch(error){
+    $('#audioExchangeStatus').textContent='Local handoff unavailable: '+error.message;
+    button.disabled=false;
+  }
+});
 fileInput.addEventListener('change', () => loadFile(fileInput.files?.[0]));
 $('#exampleButton').addEventListener('click', makeExample);
 for (const type of ['dragenter', 'dragover']) dropzone.addEventListener(type, event => { event.preventDefault(); dropzone.classList.add('is-over'); });

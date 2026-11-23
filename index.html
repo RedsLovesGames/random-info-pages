@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f2f1ec">
+<link rel="manifest" href="./site.webmanifest">
 <meta name="description" content="Random Info Pages: a collection of curious tools, experiments, games, visualizations, and useful little corners of the internet.">
 <title>Random Info Pages | An independent project index</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%232b45e5'/%3E%3Ctext x='9' y='46' font-family='Arial,sans-serif' font-size='42' font-weight='900' fill='white'%3ER%3C/text%3E%3C/svg%3E">
@@ -58,6 +59,36 @@
  .project-count{justify-self:end}
  .project-row{min-height:64px}
 }
+
+/* Project discovery: visual previews, favorites and recent-project cards. */
+.project-row-shell{position:relative;border-bottom:1px solid var(--line);padding-right:44px}
+.project-row-shell .project-row{display:flex;align-items:center;gap:18px;border-bottom:0;min-height:83px;padding:9px 8px}
+.project-row-shell .project-row:hover{background:#e9ecfa}
+.project-thumb{width:70px;height:62px;flex:none;display:grid;place-items:center;overflow:hidden;
+  font:italic 700 31px var(--serif);background:#d8dff9;color:#273b9f;border:1px solid rgba(23,33,85,.12);
+  background-image:linear-gradient(145deg,rgba(255,255,255,.3),transparent 45%),repeating-linear-gradient(0deg,transparent 0 14px,rgba(255,255,255,.16) 15px)}
+.project-thumb[data-topic="audio-video"]{background-color:#d9d1f5;color:#5a3da3}
+.project-thumb[data-topic="science-code"]{background-color:#c9e8e7;color:#245e67}
+.project-thumb[data-topic="creative"]{background-color:#f6d8df;color:#9a3859}
+.project-thumb[data-topic="games-friends"]{background-color:#ffe1ca;color:#a44f29}
+.project-thumb[data-topic="simulations"]{background-color:#cee6f8;color:#226a96}
+.project-thumb[data-topic="history"]{background-color:#ece0c3;color:#795a2b}
+.project-thumb[data-topic="civics"]{background-color:#e9d7e3;color:#7b4468}
+.project-fav{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:37px;height:37px;
+  border:1px solid transparent;background:transparent;color:#6c7187;font-size:24px;cursor:pointer;border-radius:5px}
+.project-fav:hover{border-color:var(--line);color:var(--blue)}
+.project-fav[aria-pressed="true"]{color:#bd721e}
+.resume-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.resume-card{display:flex;flex-direction:column;justify-content:space-between;gap:13px;min-height:143px;
+  padding:20px;border:1px solid var(--line);background:var(--white);transition:border-color .2s,transform .2s}
+.resume-card:hover{border-color:var(--blue);transform:translateY(-2px)}
+.resume-card strong{font-size:clamp(17px,2.3vw,27px);line-height:1.1;letter-spacing:-.04em}
+.resume-card small{color:var(--blue);font-weight:600}
+@media(max-width:650px){.project-thumb{width:46px;height:45px;font-size:23px}
+.project-row-shell .project-row{gap:11px;min-height:66px}
+.resume-grid{grid-template-columns:1fr}
+.resume-card{min-height:90px;gap:8px}
+.project-fav{font-size:22px;width:34px;height:34px}}
 </style>
 <script src="./design-system/appearance.js" defer></script></head>
 <body>
@@ -78,10 +109,14 @@
 </section>
 <section class="section index-section" id="index" aria-labelledby="indexHeading"><div class="wrap">
 <div class="section-top"><h2 class="section-head" id="indexHeading">Project index</h2></div>
-<div class="index-utilities"><div class="filters" id="filters" role="tablist" aria-label="Project categories"></div><span class="project-count" id="indexCount" aria-live="polite"></span></div>
+<div class="index-utilities"><div class="filters" id="filters" role="tablist" aria-label="Project categories and saved filters"></div><span class="project-count" id="indexCount" aria-live="polite"></span></div>
 <div class="project-list" id="projectList" role="tabpanel" aria-labelledby="project-tab-all"></div>
 <div class="index-end"><a href="./archive/">3 archived projects</a><a class="underlined" href="#top" id="backTop">Back to top</a></div>
 </div></section>
+<section class="section wrap" id="resumeProjects" aria-labelledby="resumeHeading" hidden>
+<div class="section-top"><h2 class="section-head" id="resumeHeading">Your <em>last stops.</em></h2></div>
+<div id="resumeCards" class="resume-grid"></div>
+</section>
 <section class="section wrap" id="featured" aria-labelledby="featuredHeading">
 <div class="section-top"><h2 class="section-head" id="featuredHeading">Selected projects</h2></div>
 <div class="featured-grid">
@@ -95,8 +130,9 @@
 </main>
 <footer class="wrap footer mono"><span>© 2026 Random Info Pages</span><div class="footer-links"><a href="#featured">Selected</a><a href="#index">Index</a><a href="./archive/">Archive</a><a href="./classic.html">Classic site</a><a href="https://github.com/RedsLovesGames/random-info-pages">GitHub</a></div></footer>
 <dialog class="search-dialog" id="searchDialog" aria-labelledby="dialogLabel"><div class="dialog-inner"><div class="dialog-head"><input type="search" id="dialogInput" class="dialog-input" aria-label="Search projects" placeholder="Find something interesting…" autocomplete="off"><button class="dialog-close mono" id="closeSearch" type="button" aria-label="Close search">ESC</button></div><div class="dialog-sub mono" id="dialogLabel">Search by project, subject, or category · ↑ ↓ Enter</div><div class="dialog-results" id="dialogResults"></div></div></dialog>
+<script src="./design-system/projects.js"></script>
 <script>
-const projects=[{n:'StereoLab',d:'Chirality & Stereochemistry Solver',p:'./chirality/',c:'School',k:'chirality stereochemistry chiral achiral meso r s stereocenter molecular drawing chemistry fischer newman projection enantiomer diastereomer constitutional isomer optical rotation enantiomeric excess ee molfile smiles',g:'science-code'}, {n:'2026 Power Shift',d:'Democratic Midterm Gains Map',p:'./midterm-2026/',c:'Data',k:'2026 election midterms democratic gains flipped seats governors senate house district state legislatures trifectas map results',g:'civics'},{n:'Device Worlds',d:'One URL, Four Operating Systems',p:'./device-worlds/',c:'Experiments',k:'device operating system windows linux apple macos ios android interactive desktop terminal ambient phone experiment responsive automatic detection',g:'simulations'}, {n:'Shard Market',d:'Live Shard Fusion Profit Finder',p:'./shard-fusions/',c:'Games',k:'hypixel skyblock shard fusion crafting bazaar coin flips farming trading liquidity profit coins per hour recipes sells demand',g:'games-friends'},{n:'Belief Atlas',d:'Public Figure Beliefs & Claims',p:'./belief-atlas/',c:'Data',k:'conspiracy matrix public figures sourced statements evidence research beliefs claims comparison positions topics',g:'civics'},{n:'A Day in Messages',d:'September 11: Message Timeline',p:'./9-11-timeline/',c:'Data',k:'September 11 2001 9/11 terrorist attacks pager messages timeline wikileaks archive historical chronology chart interception',g:'history'}, {n:'Draftroom',d:'Novel Writing & Revision',p:'./fiction-workspace/',c:'Tools',k:'fiction writing novel author chapter checklist rubric scene plot pacing characters notes revision drafting workbook local saves',g:'creative'},{n:'Algorithm Arena',d:'Algorithm Visualizer',p:'./algorithm-arena/',c:'Experiments',k:'sorting algorithms bubble insertion selection merge quick heap pathfinding graph BFS DFS Dijkstra A star sonification audio',g:'science-code'},{n:'Cryptography Museum',d:'Interactive Cryptography Museum',p:'./cryptography-museum/',c:'Experiments',k:'caesar enigma vigenere cipher cryptography RSA AES SHA256 historical secret writing',g:'science-code'},{n:'Marble Sequencer',d:'Marble Sequencer',p:'./marble-sequencer/',c:'Experiments',g:'audio-video',k:'music marble machine rhythm percussion mp3 audio MIDI import beat visualizer loop'},{n:'Fluid Dynamics',d:'Fluid Dynamics',p:'./fluid-dynamics/',c:'Experiments',g:'simulations',k:'fluid mechanics physics dye ink viscosity pressure velocity vorticity vortex cylinder wake stable fluids Navier Stokes flow'},{n:'Melon Jelly',d:'Melon Jelly Soft-Body Study',p:'./melon-jelly/',c:'Experiments',k:'watermelon jelly soft body physics tactile stretch wobble WebGPU specimen',g:'simulations'},{n:'Dungeon Forge',d:'Dungeon Forge Generator',p:'./dungeon-forge/',c:'Experiments',k:'procedural dungeon generator seed room corridors roguelike 3D map graph WebGL',g:'simulations'},{n:'Music Microscope',d:'Music & Audio Analyzer',p:'./music-microscope/',c:'Experiments',k:'audio analysis waveform spectrogram FFT frequency spectrum pitch BPM filters local sound',g:'audio-video'},{n:'One Million, Actually',d:'Visualizing One Million',p:'./one-million/',c:'Data',k:'data visualization scale million proportion comparison population probability zoom quantity',g:'maps-data'},{n:'Infrastructure Atlas',d:'U.S. Infrastructure Report Cards',p:'./infrastructure-atlas/',c:'Data',k:'infrastructure report card ASCE states map geography choropleth grades peer relative A to F roads bridges drinking water sector rankings comparisons',g:'maps-data'},{n:'Political Grid',d:'100-Statement Political Survey',p:'./political-grid/',c:'Data',k:'100 statements survey voting x marks stats statistics ideology politics groups questionnaire',g:'civics'},{n:'Word Finder',d:'Anagrams & Palindrome Bonuses',p:'./tools/words/',c:'Tools',k:'word finder solver scrabble letters palindrome anagram longest word game tile rack',g:'word-games'}, {n:'Word Hitlist',d:'Word Hitlist Party Game',p:'./word-hitlist/',c:'Games',k:'word game multiplayer party lobby room anagram letters palindromes goals friends',g:'word-games'}, {n:'The Useless Unit Converter',d:'The Useless Unit Converter',p:'./useless-unit-converter/',c:'Tools',k:'convert length distance height duration time measurements bananas minecraft days unit calculator',g:'everyday'}, {n:'Today',d:'Today: Holidays, History & Slovenia',p:'./today/',c:'Data',k:'what holiday is today this day in history historical events observances calendar how old is slovenia independence statehood day age timer',g:'history'}, {n:'ID Card Maker',d:'Custom ID Card Maker',p:'./id-card-maker/',c:'Tools',k:'custom novelty id card generator photo badge template download png printable',g:'creative'}, {n:'Toolbox',d:'Everyday Web Tools',p:'./tools/',c:'Tools',k:'time zones images converter crop gif background remover inflation currency text list markdown utilities',g:'everyday'},{n:'Wheel',d:'Random Choice Wheel',p:'./wheel/',c:'Tools',k:'wheel names random picker weighted spin roulette saves sharing',g:'everyday'},{n:'When We Meet',d:'Group Availability Planner',p:'./whenwemeet/',c:'Tools',k:'schedule availability group when2meet planning',g:'planning'},{n:'School Schedule',d:'Class & Assignment Planner',p:'./school-schedule/',c:'School',k:'classes deadlines labs semester planner checklist',g:'planning'},{n:'Friend Group Hub',d:'Friend Quotes & Games',p:'./friends/',c:'Friends',k:'quotes guess who said it stats weekly patch notes discord',g:'games-friends'},{n:'Stock Fights',d:'Stock Image Fight Simulator',p:'./stock-fights/',c:'Games',k:'Spenn SpennTF2 stock image fighting game guys characters teams physics arena simulations match 1v1 henchmen battle',g:'games-friends'}, {n:'Tideborne',d:'Tideborne Fishing Guide',p:'./tideborne/',c:'Games',k:'minecraft fish gear specimens records guide',a:true},{n:'Fishing System 2.0',d:'Fishing Mechanics & Calculators',p:'./tide2/',c:'Games',k:'fishscore luck momentum perfect catch calculator',a:true},{n:'VCT Scout Board',d:'Valorant Team Scout & Strategy',p:'./vct-scout/',c:'Games',k:'valorant esports agents maps comps scout',a:true},{n:'Old Ass Politic',d:'U.S. Congress Age Explorer',p:'./oldasspolitic/',c:'Data',k:'congress house senate age politics roster',g:'civics'},{n:'10Groups Heatmap',d:'10Groups Comparison Heatmap',p:'./heatmap/',c:'Data',k:'visualization overlap people coordinates heatmap',g:'maps-data'},{n:'Emperor Director',d:'AI Video Scene Director',p:'./wanuiv2/',c:'Experiments',k:'wan ai generation production interface prototype',g:'audio-video'},{n:'Nerdcore Prompts',d:'Nerdcore Song Prompt Builder',p:'./nerdcore-prompts/',c:'Experiments',k:'music lyrics prompts creative',g:'creative'}];
+const projects=window.RIP_PROJECTS;
 const descriptions={
 '2026 Power Shift':'Explore Democratic gains across state and federal races on an interactive map.',
 'Word Finder':'Enter your letters to find words, anagrams, and palindromes.',
@@ -161,9 +197,9 @@ const indexTopics=[
 ];
 const topicNames=new Map(indexTopics);
 const initialTopic=new URLSearchParams(window.location.search).get('category');
-let currentFilter=topicNames.has(initialTopic)?initialTopic:'all';
+let currentFilter=topicNames.has(initialTopic)||initialTopic==='favorites'||initialTopic==='recent'?initialTopic:'all';
 const filters=document.getElementById('filters');
-const filterButtons=[['all','All'],...indexTopics].map(([topic,label])=>{
+const filterButtons=[['all','All'],['favorites','★ Favorites'],['recent','◷ Recent'],...indexTopics].map(([topic,label])=>{
  const button=document.createElement('button');
  button.type='button';
  button.className='filter';
@@ -177,21 +213,38 @@ const filterButtons=[['all','All'],...indexTopics].map(([topic,label])=>{
 filters.replaceChildren(...filterButtons);
 const topicsByProject=p=>topicNames.get(p.g)||categoryText(p.c);
 const matching=q=>{
- const query=q.trim().toLowerCase();
- return query ? projects.filter(p=>[p.n,p.d,p.c,categoryText(p.c),topicsByProject(p),p.k,descriptions[p.n]].join(' ').toLowerCase().includes(query)) : activeProjects;
+ const query=q.trim();
+ return query ? window.RIPCatalog.search(query,{includeArchived:true}) : activeProjects;
 };
 function makeRow(p){
+ const shell=document.createElement('div');shell.className='project-row-shell';
  const link=document.createElement('a');
  link.className='project-row';
  link.href=p.p;
+ const thumb=document.createElement('span');
+ thumb.className='project-thumb';thumb.dataset.topic=p.g||p.c;
+ thumb.setAttribute('aria-hidden','true');
+ thumb.textContent=(p.d||p.n).charAt(0);
  const name=document.createElement('strong');name.className='project-name';name.textContent=p.d||p.n;
  const desc=document.createElement('span');desc.className='project-description';desc.textContent=descriptions[p.n]||'';
  const summary=document.createElement('span');summary.className='project-summary';summary.append(name,desc);
- link.append(summary);
- return link;
+ link.append(thumb,summary);
+ const fav=document.createElement('button');fav.type='button';
+ fav.className='project-fav';fav.setAttribute('aria-label','Favorite '+(p.d||p.n));
+ function update(){const selected=window.RIPCatalog.favorites().includes(p.slug);
+  fav.textContent=selected?'★':'☆';fav.setAttribute('aria-pressed',String(selected));
+  fav.title=selected?'Remove favorite':'Add favorite';}
+ fav.addEventListener('click',()=>{
+  window.RIPCatalog.toggleFavorite(p.slug);update();
+  if(currentFilter==='favorites')renderIndex();else renderResume();
+ });
+ update();shell.append(link,fav);return shell;
 }
 function renderIndex(){
- const shown=currentFilter==='all'?activeProjects:activeProjects.filter(p=>p.g===currentFilter);
+ const recent=window.RIPCatalog.recent(),favorites=window.RIPCatalog.favorites();
+ const shown=currentFilter==='all'?activeProjects:activeProjects.filter(p=>currentFilter==='favorites'
+    ?favorites.includes(p.slug):currentFilter==='recent'?recent.includes(p.slug):p.g===currentFilter);
+ if(currentFilter==='recent')shown.sort((a,b)=>recent.indexOf(a.slug)-recent.indexOf(b.slug));
  if(currentFilter==='all'){
   const groups=indexTopics.map(([topic,label])=>{
    const section=document.createElement('section');
@@ -204,7 +257,27 @@ function renderIndex(){
  }else{
   projectList.replaceChildren(...shown.map(makeRow));
  }
+ if(!shown.length){
+   const empty=document.createElement('p');empty.className='nothing';
+   empty.textContent=currentFilter==='favorites'?'No favorites yet. Select a star beside any project.':
+     currentFilter==='recent'?'Projects you visit will appear here.':'Nothing in this category yet.';
+   projectList.append(empty);
+ }
  indexCount.textContent=shown.length+' '+(shown.length===1?'project':'projects');
+}
+function renderResume(){
+ const recent=window.RIPCatalog.recent().slice(0,3).map(window.RIPCatalog.get).filter(p=>p&&!p.a);
+ const region=document.getElementById('resumeProjects');
+ region.hidden=!recent.length;
+ if(!recent.length)return;
+ const list=document.getElementById('resumeCards');
+ list.replaceChildren(...recent.map(p=>{
+   const a=document.createElement('a');a.href=p.p;a.className='resume-card';
+   const tag=document.createElement('span');tag.className='mono';tag.textContent=topicsByProject(p);
+   const title=document.createElement('strong');title.textContent=p.d||p.n;
+   const hint=document.createElement('small');hint.textContent='Open project';
+   a.append(tag,title,hint);return a;
+ }));
 }
 function selectTopic(topic,updateUrl){
  currentFilter=topic;
@@ -280,6 +353,10 @@ document.addEventListener('keydown',e=>{
 });
 document.getElementById('backTop').addEventListener('click',e=>{e.preventDefault();window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})});
 selectTopic(currentFilter,false);
+renderResume();
+if('serviceWorker' in navigator&&location.protocol==='https:'){
+ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}),{once:true});
+}
 if('IntersectionObserver' in window){
  const reveal=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){e.target.classList.add('visible');reveal.unobserve(e.target)}},{threshold:.08});
  document.querySelectorAll('.reveal').forEach(el=>reveal.observe(el));

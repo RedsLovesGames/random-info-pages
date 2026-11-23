@@ -601,3 +601,22 @@ if (document.fonts) document.fonts.load('700 64px "Instrument Serif"').then(() =
   templateButtons.forEach(({ canvas, sample }) => drawCard(canvas, sample, 'front', {}, .22));
   updatePreview();
 }).catch(() => {});
+
+// Shared Project Studio delegates to the same project validator and renderer as
+// the existing local save/open and PNG export controls.
+window.RIPStudio = {
+  getState() { return structuredClone(project); },
+  async setState(state) {
+    const next=validateProject(state);
+    await Promise.all(Object.values(next.images).filter(Boolean).map(decodeImage));
+    change(()=>{project=next;imageJobs.clear();},{fields:true});
+    flushDraft();
+  },
+  async capture() {
+    const assets=updatePreview();
+    const canvas=exportCanvases('active',Number(get('export-scale').value)||2,assets)[0];
+    if(!canvas)throw new Error('Card preview is unavailable');
+    return new Promise((resolve,reject)=>canvas.toBlob(
+      blob=>blob?resolve(blob):reject(new Error('PNG export failed')),'image/png'));
+  }
+};

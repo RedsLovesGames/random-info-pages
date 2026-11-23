@@ -1,4 +1,6 @@
 import {LANES,buildPattern,encodePattern,decodePattern,noteName} from './music.mjs';
+import { exportPatternMidi } from './export-midi.mjs';
+import { receiveMarbleAudio } from '../design-system/bridge.mjs';
 import {makeMachine} from './machine.mjs';
 import {importMusic} from './imports.mjs';
 import {Playback} from './playback.mjs';
@@ -14,6 +16,26 @@ const demoRows = [0x1411,0x1010,0x5555,0x0901,0x0040,0x2024,0x4120,0x8080];
 const loopFromURL = decodePattern(new URLSearchParams(location.hash.slice(1)).get('loop') || '');
 let pattern = loopFromURL || {bpm:104, rows:[...demoRows]};
 let patternName = loopFromURL ? 'Shared loop' : 'Demo loop';
+const history=[],future=[];
+const snapshot=()=>({loop:encodePattern(pattern),name:patternName});
+function remember(){
+  const previous=snapshot();
+  if(history.at(-1)?.loop!==previous.loop){history.push(previous);if(history.length>36)history.shift();}
+  future.length=0;
+  updateUndo();
+}
+function updateUndo(){
+  byId('undo-loop').disabled=history.length===0;
+  byId('redo-loop').disabled=future.length===0;
+}
+function restore(state){
+  const next=decodePattern(state.loop);
+  if(!next)throw new Error('The saved loop is invalid');
+  pattern=next;
+  patternName=typeof state.name==='string'?state.name.slice(0,80):'Restored loop';
+  updatePattern({rename:false,keepPosition:false});
+  updateUndo();
+}
 let pendingImport = null;
 let seeking = false;
 let frame = 0;
@@ -168,6 +190,7 @@ function renderGrid() {
         gate.dataset.step = step;
         gate.setAttribute('aria-label',lane.label + ', step ' + (step+1));
         gate.addEventListener('click',() => {
+          remember();
           pattern.rows[index] ^= 1 << step;
           updatePattern();
         });
@@ -263,17 +286,50 @@ view['use-loop'].addEventListener('click',() => {
   selectSong(patternSong());
 });
 view.bpm.addEventListener('change',() => {
+  remember();
   pattern.bpm = Math.round(Math.max(40,Math.min(240,Number(view.bpm.value) || 104)));
   updatePattern();
 });
 view.demo.addEventListener('click',() => {
+  remember();
   pattern = {bpm:104, rows:[...demoRows]};
   patternName = 'Demo loop';
   updatePattern({rename:false,keepPosition:false});
 });
 view.clear.addEventListener('click',() => {
+  remember();
   pattern.rows.fill(0);
   updatePattern({keepPosition:false});
+});
+byId('undo-loop').addEventListener('click',()=>{
+  if(!history.length)return;
+  future.push(snapshot());restore(history.pop());
+});
+byId('redo-loop').addEventListener('click',()=>{
+  if(!future.length)return;
+  history.push(snapshot());restore(future.pop());
+});
+byId('random-loop').addEventListener('click',()=>{
+  remember();
+  pattern.rows=pattern.rows.map((row,lane)=>{
+    let value=0;
+    for(let step=0;step<16;step++){
+      const density=lane<3?.33:.19;
+      if(Math.random()<density)value|=1<<step;
+    }
+    return value;
+  });
+  if(pattern.rows.every(bits=>!bits))pattern.rows[0]=0x1111;
+  updatePattern({keepPosition:false});
+});
+byId('export-midi').addEventListener('click',()=>{
+  try{
+    const bytes=exportPatternMidi(pattern);
+    const url=URL.createObjectURL(new Blob([bytes],{type:'audio/midi'}));
+    const link=document.createElement('a');link.href=url;link.download='marble-loop.mid';
+    link.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+    setStatus('MIDI loop exported.');
+  }catch(error){setStatus('MIDI export failed: '+error.message,true)}
 });
 view.share.addEventListener('click',async () => {
   const url = new URL(location.href);
@@ -319,16 +375,44 @@ for (let note=48; note<=84; note++) view['pitch-choice'].add(new Option(noteName
 view['lane-choice'].value = 3;
 view['lane-choice'].addEventListener('change',renderMachineOptions);
 view['ramp-choice'].addEventListener('change',() => {
+  remember();
   pattern.rails ||= Array(LANES.length).fill(0);
   pattern.rails[Number(view['lane-choice'].value)] = Number(view['ramp-choice'].value);
   updatePattern();
 });
 view['pitch-choice'].addEventListener('change',() => {
+  remember();
   pattern.tuning ||= LANES.map(lane => lane.note);
   pattern.tuning[Number(view['lane-choice'].value)] = Number(view['pitch-choice'].value);
   updatePattern();
 });
 
+window.RIPStudio={
+  getState(){
+    if(player.song.kind!=='pattern')throw new Error('Switch back to your loop before saving an editable pattern');
+    return snapshot();
+  },
+  setState(state){
+    if(!state||typeof state.loop!=='string')throw new Error('Invalid marble project file');
+    history.length=0;future.length=0;restore(state);
+  },
+  capture(){
+    return new Promise((resolve,reject)=>view['marble-canvas'].toBlob(
+      blob=>blob?resolve(blob):reject(new Error('Marble canvas capture failed')),'image/png'));
+  },
+  setQuality(level){
+    document.documentElement.dataset.marbleEffects=level==='eco'?'reduced':'full';
+    machine.resize();invalidate();
+  }
+};
 renderGrid();
 renderPattern();
 selectSong(patternSong());
+updateUndo();
+if(new URLSearchParams(location.search).get('handoff')==='1'){
+  receiveMarbleAudio().then(file=>{
+    if(file){setStatus('Received recording locally from Music Microscope.');
+      loadFile(file);}
+    else setStatus('No pending local recording was found.',true);
+  }).catch(error=>setStatus('Could not receive recording: '+error.message,true));
+}

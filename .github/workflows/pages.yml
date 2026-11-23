@@ -48,7 +48,18 @@ jobs:
 
       - name: Verify archive home
         run: |
-          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs
+          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs
+          node --check design-system/projects.js
+          node --check design-system/rip.js
+          node --check design-system/bridge.mjs
+          node --check sw.js
+          node --check music-microscope/app.js
+          node --check music-microscope/export.mjs
+          node --check marble-sequencer/app.mjs
+          node --check marble-sequencer/export-midi.mjs
+          node --check dungeon-forge/battlemap.mjs
+          node --check id-card-maker/app.mjs
+          node --check algorithm-arena/app.js
           node --check fluid-dynamics/app.mjs
           node --check fluid-dynamics/render.mjs
           node --check fluid-dynamics/three-surface.mjs
@@ -275,6 +286,14 @@ jobs:
           grep -Fq 'id="tank-3d"' /tmp/fluid-studio.html
           grep -Fq 'id="tank-gpu"' /tmp/fluid-studio.html
           grep -Fq 'id="export-size"' /tmp/fluid-studio.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/projects-registry.js "$base/design-system/projects.js"
+          grep -Fq 'RIPCatalog' /tmp/projects-registry.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/studio.js "$base/design-system/rip.js"
+          grep -Fq 'Project studio' /tmp/studio.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/pwa-sw.js "$base/sw.js"
+          grep -Fq 'offline.html' /tmp/pwa-sw.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/marble-midi.js "$base/marble-sequencer/export-midi.mjs"
+          grep -Fq 'exportPatternMidi' /tmp/marble-midi.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/fluid-surface.js "$base/fluid-dynamics/three-surface.mjs"
           grep -Fq 'getContext('\''webgl2'\''' /tmp/fluid-surface.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/fluid-dye-gpu.js "$base/fluid-dynamics/dye-gpu.mjs"

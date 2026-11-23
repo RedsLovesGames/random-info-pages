@@ -58,6 +58,7 @@ test('Fluid Dynamics is discoverable in the simulation index and shared project 
   const read = path => readFileSync(new URL(path, import.meta.url), 'utf8');
   assert.match(read('../index.html'), /p:'\.\/fluid-dynamics\/',c:'Experiments',g:'simulations'/);
   assert.match(read('../classic.html'), /href="\.\/fluid-dynamics\/"/);
-  assert.match(read('../design-system/rip.js'), /\['fluid-dynamics','Fluid Dynamics'/);
+  assert.match(read('../design-system/projects.js'), /n:'Fluid Dynamics'/);
+  assert.match(read('../design-system/rip.js'), /RIPCatalog/);
   assert.match(read('../fluid-dynamics/index.html'), /src="\.\.\/design-system\/appearance\.js"/);
 });

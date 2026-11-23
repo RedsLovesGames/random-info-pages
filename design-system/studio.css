@@ -1,0 +1,78 @@
+/* Shared project studio: scoped deliberately to avoid changing standalone page designs. */
+#rip-site-layer .rip-favorite,
+#rip-site-layer .rip-open-studio {
+  flex-shrink:0;appearance:none;background:transparent;color:var(--rip-ink);
+  border:1px solid var(--rip-line);font:650 12px "DM Sans",Arial,sans-serif;
+  min-height:34px;padding:7px 12px;cursor:pointer;border-radius:4px;
+}
+#rip-site-layer .rip-favorite{min-width:34px;font-size:21px;line-height:1;padding:3px 7px}
+#rip-site-layer .rip-favorite[aria-pressed="true"]{color:#b16b16;background:rgba(238,187,95,.1)}
+#rip-site-layer .rip-open-studio:hover,#rip-site-layer .rip-favorite:hover {border-color:var(--rip-blue);color:var(--rip-blue)}
+#rip-site-layer .rip-studio-dialog{
+  width:min(830px,calc(100vw - 22px));max-height:min(89dvh,960px);padding:0;
+  color:var(--rip-ink);background:var(--rip-paper);border:1px solid var(--rip-line);
+  box-shadow:0 35px 100px rgba(0,0,0,.27);overflow:auto;
+}
+#rip-site-layer .rip-studio-dialog::backdrop{background:rgba(13,19,38,.56);backdrop-filter:blur(7px)}
+#rip-site-layer .rip-studio-head{display:flex;align-items:start;justify-content:space-between;gap:10px;
+  border-bottom:1px solid var(--rip-line);padding:clamp(15px,3vw,30px)}
+#rip-site-layer .rip-studio-eyebrow{font:600 10px "DM Mono",monospace;letter-spacing:.08em;color:var(--rip-blue)}
+#rip-site-layer .rip-studio-head h2{font:700 clamp(29px,5vw,48px)/1 "DM Sans",Arial,sans-serif;
+  letter-spacing:-.065em;margin:10px 0}
+#rip-site-layer .rip-studio-dot{color:var(--rip-blue)}
+#rip-site-layer .rip-studio-current{font-size:13px;color:var(--rip-muted);margin:0}
+#rip-site-layer .rip-studio-close{border:1px solid var(--rip-line);background:transparent;
+  color:var(--rip-ink);font-size:16px;min-width:40px;min-height:40px;cursor:pointer}
+#rip-site-layer .rip-studio-body{padding:clamp(15px,3vw,30px)}
+#rip-site-layer .rip-studio-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+#rip-site-layer .rip-studio-actions button{appearance:none;display:flex;flex-direction:column;align-items:start;
+  justify-content:center;gap:12px;text-align:left;min-height:95px;padding:13px;border:1px solid var(--rip-line);
+  border-radius:6px;background:var(--rip-paper);color:var(--rip-ink);cursor:pointer;
+  font:600 12px/1.3 "DM Sans",Arial,sans-serif}
+#rip-site-layer .rip-studio-actions button>span{font-size:24px;font-weight:400;color:var(--rip-blue)}
+#rip-site-layer .rip-studio-actions button:hover{border-color:var(--rip-blue);transform:translateY(-1px)}
+#rip-site-layer .rip-studio-actions button:disabled{opacity:.36;cursor:not-allowed;transform:none}
+#rip-site-layer .rip-studio-actions button[aria-pressed="true"]{background:var(--rip-blue);color:#fff}
+#rip-site-layer .rip-studio-actions button[aria-pressed="true"]>span{color:#fff}
+#rip-site-layer .rip-studio-lists{margin-top:26px;border:1px solid var(--rip-line);border-radius:6px;overflow:hidden}
+#rip-site-layer .rip-studio-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--rip-line)}
+#rip-site-layer .rip-studio-tabs button{appearance:none;background:transparent;border:0;border-right:1px solid var(--rip-line);
+  padding:13px 7px;color:var(--rip-muted);cursor:pointer;font:600 12px "DM Sans",Arial,sans-serif}
+#rip-site-layer .rip-studio-tabs button:last-child{border-right:0}
+#rip-site-layer .rip-studio-tabs button[aria-selected="true"]{background:var(--rip-ink);color:var(--rip-paper)}
+#rip-site-layer .rip-studio-links{max-height:35dvh;overflow:auto}
+#rip-site-layer .rip-studio-project{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:13px 17px;text-decoration:none!important;color:var(--rip-ink)!important;
+  border-bottom:1px solid var(--rip-line)}
+#rip-site-layer .rip-studio-project:last-child{border-bottom:0}
+#rip-site-layer .rip-studio-project:hover{background:rgba(90,108,190,.10)}
+#rip-site-layer .rip-studio-project b{font:600 clamp(13px,2.1vw,18px) "DM Sans",Arial,sans-serif}
+#rip-site-layer .rip-studio-project small{font:500 10px "DM Mono",monospace;color:var(--rip-muted);text-align:right}
+#rip-site-layer .rip-studio-note{font-size:11px;line-height:1.6;color:var(--rip-muted);margin:17px 0 0}
+#rip-site-layer .rip-status{font:600 12px "DM Sans",Arial,sans-serif;color:var(--rip-blue);min-height:1.2em;margin:8px 0 0}
+#rip-site-layer .rip-status[data-problem="true"]{color:#c44857}
+html[data-rip-performance="low"] *,html[data-rip-performance="low"] *::before,
+html[data-rip-performance="low"] *::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+@media(max-width:650px){
+ #rip-site-layer .rip-site-rail{gap:6px}
+ #rip-site-layer .rip-open-studio{padding:8px}
+ #rip-site-layer .rip-here{max-width:29vw;overflow:hidden;text-overflow:ellipsis}
+ #rip-site-layer .rip-browse{font-size:11px;padding:8px}
+ #rip-site-layer .rip-studio-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #rip-site-layer .rip-studio-actions button{min-height:72px;gap:6px}
+ #rip-site-layer .rip-studio-project{align-items:start;flex-direction:column;gap:4px}
+}
+@media(max-width:390px){#rip-site-layer .rip-here{display:none}
+ #rip-site-layer .rip-open-studio{font-size:11px}
+ #rip-site-layer .rip-actions{gap:4px}}
+@media print{#rip-site-layer{display:none!important}}
+
+/* The project rail should follow the site's appearance without changing project themes. */
+html[data-rip-appearance="dark"] #rip-site-layer{
+  --rip-paper:#171c2b;--rip-ink:#f0f1fb;--rip-muted:#b1b6d2;
+  --rip-line:#38435e;--rip-blue:#aebdff;
+}
+html[data-rip-appearance="dark"] #rip-site-layer .rip-search,
+html[data-rip-appearance="dark"] #rip-site-layer .rip-studio-dialog{
+  background:#171c2b;color:#f0f1fb;
+}
