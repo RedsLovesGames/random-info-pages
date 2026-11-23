@@ -27,7 +27,7 @@ function measureEdges(width, height, hasEdge, point) {
   return runs;
 }
 
-function wallSegments(dungeon) {
+export function wallSegments(dungeon) {
   const inside = (x, y) => occupied(dungeon, x, y);
   return [
     ...measureEdges(dungeon.W, dungeon.H,

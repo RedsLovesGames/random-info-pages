@@ -48,11 +48,12 @@ jobs:
 
       - name: Verify archive home
         run: |
-          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs tests/fluid-adaptive.test.mjs tests/marble-pattern-tools.test.mjs tests/dungeon-markers.test.mjs tests/dungeon-session-zip.test.mjs tests/dungeon-editor-integration.test.mjs
+          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs tests/fluid-adaptive.test.mjs tests/marble-pattern-tools.test.mjs tests/dungeon-markers.test.mjs tests/dungeon-session-zip.test.mjs tests/dungeon-editor-integration.test.mjs tests/dungeon-terrain.test.mjs
           node --check marble-sequencer/pattern-tools.mjs
           node --check dungeon-forge/battlemap-markers.mjs
           node --check dungeon-forge/session-zip.mjs
           node --check dungeon-forge/dungeon-project.mjs
+          node --check dungeon-forge/battlemap-terrain.mjs
           node --check fluid-dynamics/adaptive.mjs
           node --check compare/app.mjs
           node --check design-system/tours.mjs
@@ -315,6 +316,9 @@ jobs:
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/dungeon-editor.html "$base/dungeon-forge/"
           grep -Fq 'id="battlemapMarkerAdd"' /tmp/dungeon-editor.html
           grep -Fq 'data-battlemap-export="package"' /tmp/dungeon-editor.html
+          grep -Fq 'id="battlemapTerrainDetails"' /tmp/dungeon-editor.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/dungeon-terrain.js "$base/dungeon-forge/battlemap-terrain.mjs"
+          grep -Fq 'paintTerrain' /tmp/dungeon-terrain.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/dungeon-marker-module.js "$base/dungeon-forge/battlemap-markers.mjs"
           grep -Fq 'drawMarkerOverlay' /tmp/dungeon-marker-module.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/marble-studio.html "$base/marble-sequencer/"

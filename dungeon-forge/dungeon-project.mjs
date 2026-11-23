@@ -1,5 +1,6 @@
 import { FLOOR } from './generator.mjs';
 import {normalizeMarkers} from './battlemap-markers.mjs';
+import {normalizeTerrainEdits} from './battlemap-terrain.mjs';
 import { buildAdventure, normalizeParty, rollRoomField, usableTiles } from './adventure.mjs';
 import { automaticGate, doorsByRoom, pacedFights, projectKeyPlan } from './dungeon-routes.mjs';
 import { furnishingNames, roomFurnishings } from './dungeon-furnishings.mjs';
@@ -49,7 +50,7 @@ export function createProject(settings = {}, party) {
       theme: ['auto', 'ancient', 'frost', 'molten', 'grim', 'verdant'].includes(settings.theme) ? settings.theme : 'auto'
     },
     party: normalizeParty(party), minutes: 0, revision: 0, roomRevisions: {}, changes: {},
-    notes: {}, doors: {}, style: {}, cover: {}, text: {}, markers: [],
+    notes: {}, doors: {}, style: {}, cover: {}, text: {}, markers: [], terrain: [],
     session: { roomId: null, rooms: {}, doors: {} }
   };
 }
@@ -99,6 +100,7 @@ export function decodeProject(text) {
   project.roomRevisions = indexed(source.roomRevisions, entry => integer(entry, 0, 0xffffffff));
   project.notes = indexed(source.notes, value => typeof value === 'string' ? value.slice(0, 2000) : undefined);
   project.markers = normalizeMarkers(source.markers);
+  project.terrain = normalizeTerrainEdits(source.terrain);
   project.doors = indexed(source.doors, entry => doorKinds.includes(entry) ? entry : undefined);
   project.style = indexed(source.style, entry => furnishingNames.includes(entry) ? entry : undefined);
   project.cover = indexed(source.cover, entry => Array.isArray(entry) ? entry.slice(0, 20).map(point).filter(Boolean) : undefined);

@@ -314,3 +314,19 @@
 #battlemap .battlemap-marker-list small{color:var(--lab-muted);white-space:nowrap;font-size:10px}
 #battlemap #battlemapMarkerStatus{margin:10px 0;line-height:1.5}
 #battlemap #battlemapMarkerStatus[data-error="true"]{color:#c24747}
+
+/* 2D geometry editing. Markers and original 3D scene stay independent. */
+#battlemap .battlemap-terrain{padding:14px 16px;border-bottom:1px solid var(--lab-line);background:var(--lab-paper)}
+#battlemap .battlemap-terrain summary{font-size:14px}
+#battlemap .battlemap-terrain-warning{font-size:11px;line-height:1.55;color:var(--lab-muted);
+ border-left:3px solid var(--lab-blue);padding:7px 10px;background:var(--lab-tint)}
+#battlemap .battlemap-terrain-brushes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:12px 0}
+#battlemap .battlemap-terrain-brushes button{font-size:11px;min-height:41px;text-align:left;padding:7px 9px}
+#battlemap .battlemap-terrain-brushes button[aria-pressed="true"]{background:var(--lab-blue);border-color:var(--lab-blue);color:white}
+#battlemap .battlemap-terrain-history{display:flex;gap:6px;flex-wrap:wrap}
+#battlemap .battlemap-terrain-history button{flex:1 1 80px;font-size:11px;min-height:36px;padding:6px}
+#battlemap #battlemapTerrainStatus{margin:11px 0 0;line-height:1.5}
+#battlemap #battlemapTerrainStatus[data-error="true"]{color:#c24747}
+#battlemapCanvas[data-terrain-active="true"]{cursor:crosshair;touch-action:none;user-select:none}
+@media(max-width:750px){#battlemap .battlemap-terrain{padding:11px 12px}
+#battlemap .battlemap-terrain-brushes button{min-height:44px}}

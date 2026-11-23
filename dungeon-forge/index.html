@@ -180,6 +180,26 @@
           <canvas id="battlemapCanvas" role="img" aria-label="Top-down dungeon battlemap" hidden></canvas>
         </figure>
         <div class="battlemap-sidebar">
+          <section class="battlemap-terrain" aria-labelledby="battlemapTerrainHeading">
+            <details id="battlemapTerrainDetails">
+              <summary id="battlemapTerrainHeading">Edit rooms &amp; corridors (2D)</summary>
+              <p class="battlemap-fog-note">Paint passages, widen room edges, seal corridors or add water. Drag on the map, or tap individual squares. Changes update the battlemap, exported walls, player map, GM map and Owlbear scene.</p>
+              <p class="battlemap-terrain-warning">2D / VTT only. The procedural 3D dungeon remains unchanged. Generated room interiors, monsters and doorway entrances are protected. Corridor sealing cannot disconnect the accessible map.</p>
+              <div class="battlemap-terrain-brushes" role="group" aria-label="Map geometry brushes">
+                <button type="button" data-terrain-tool="corridor" aria-pressed="false">＋ Passage</button>
+                <button type="button" data-terrain-tool="room" aria-pressed="false">▣ Expand room</button>
+                <button type="button" data-terrain-tool="wall" aria-pressed="false">▥ Seal passage</button>
+                <button type="button" data-terrain-tool="water" aria-pressed="false">≈ Water</button>
+                <button type="button" data-terrain-tool="erase" aria-pressed="false">⌫ Restore tile</button>
+              </div>
+              <div class="battlemap-terrain-history">
+                <button type="button" id="battlemapTerrainUndo" disabled>Undo stroke</button>
+                <button type="button" id="battlemapTerrainRedo" disabled>Redo stroke</button>
+                <button type="button" id="battlemapTerrainStop">Select rooms</button>
+              </div>
+              <p id="battlemapTerrainStatus" class="battlemap-fog-note" role="status" aria-live="polite">Select a brush to start editing. The brush only operates in Prepare mode.</p>
+            </details>
+          </section>
           <section class="battlemap-markers" aria-labelledby="battlemapMarkerHeading">
             <details id="battlemapMarkerDetails">
               <summary id="battlemapMarkerHeading">Map markers &amp; annotations</summary>

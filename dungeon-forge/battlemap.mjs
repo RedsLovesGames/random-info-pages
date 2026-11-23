@@ -8,6 +8,8 @@ import { createProject, decodeProject, makeProjectAdventure, moveMonster, nextRo
   rerollProjectAll, rerollProjectRoom, rerollProjectSingle, toggleCover, toggleProjectLock } from './dungeon-project.mjs';
 import { createRoomHistory } from './dungeon-room-history.mjs';
 import {createZip} from './session-zip.mjs';
+import {paintTerrain,replayTerrainEdits,createTerrainHistory,interpolateTiles}
+ from './battlemap-terrain.mjs';
 import { sessionPlans } from './dungeon-routes.mjs';
 import { labeledList, roomPanel, textElement } from './dungeon-room-panel.mjs';
 
@@ -29,6 +31,10 @@ const markerLabel=byId('battlemapMarkerLabel');
 const markerPlayer=byId('battlemapMarkerPlayer');
 const markerUndo=byId('battlemapMarkerUndo');
 const markerRedo=byId('battlemapMarkerRedo');
+const terrainStatus=byId('battlemapTerrainStatus');
+const terrainUndo=byId('battlemapTerrainUndo');
+const terrainRedo=byId('battlemapTerrainRedo');
+const terrainButtons=[...dialog.querySelectorAll('[data-terrain-tool]')];
 const overview = byId('battlemapAdventure');
 const form = byId('battlemapParty');
 const budget = byId('battlemapBudget');
@@ -61,6 +67,8 @@ let history;
 let currentRegion;
 let markerHistory=createMarkerHistory();
 let selectedMarker=null,markerMode=null;
+let baseDungeon,terrainTool=null,terrainStroke=null;
+let terrainHistory=createTerrainHistory();
 
 function readRecord(key) {
   try {
@@ -77,6 +85,75 @@ function saveRecord(key, value) {
 
 function saveProject() {
   saveRecord(planKey + ':project', project);
+}
+function terrainMessage(message,error=false){
+  terrainStatus.textContent=message;
+  terrainStatus.dataset.error=String(error);
+}
+function updateTerrainControls(){
+  for(const button of terrainButtons){
+    button.disabled=!dungeon||running;
+    button.setAttribute('aria-pressed',String(button.dataset.terrainTool===terrainTool));
+  }
+  terrainUndo.disabled=!dungeon||running||!terrainHistory.undoable;
+  terrainRedo.disabled=!dungeon||running||!terrainHistory.redoable;
+  map.dataset.terrainActive=String(Boolean(terrainTool&&!running));
+}
+function stopTerrainTool(){
+  terrainTool=null;
+  updateTerrainControls();
+}
+function finalizeTerrainStroke(){
+  if(!terrainStroke)return;
+  const {before,changed,count}=terrainStroke;
+  terrainStroke=null;
+  if(!changed){updateTerrainControls();return}
+  terrainHistory.save(before,project.terrain);
+  history?.clear();updateUndo();
+  saveProject();refreshAdventure();renderPngSize();updateTerrainControls();
+  stats.textContent=dungeon.rooms.length+' rooms · '+dungeon.W+' × '+dungeon.H+
+    ' squares · 5 ft per square · Seed '+dungeon.params.seed+
+    ' · '+project.terrain.length+' modified tiles';
+  terrainMessage('Saved '+count+' modified tile'+(count===1?'':'s')+
+    '. Updated walls are included in player PNG, GM PNG and Owlbear VTT exports.');
+}
+function terrainTileFromPointer(event){
+  const rect=map.getBoundingClientRect();
+  if(!rect.width||!rect.height)return null;
+  return{
+    x:Math.floor((event.clientX-rect.left)*dungeon.W/rect.width),
+    y:Math.floor((event.clientY-rect.top)*dungeon.H/rect.height)
+  };
+}
+function paintTerrainPointer(event){
+  if(!terrainStroke||!baseDungeon||!dungeon||!terrainTool)return;
+  const next=terrainTileFromPointer(event);
+  if(!next)return;
+  const cells=terrainStroke.last?interpolateTiles(terrainStroke.last,next):[next];
+  terrainStroke.last=next;
+  for(const {x,y} of cells){
+    const id=y*dungeon.W+x;
+    if(terrainStroke.visited.has(id))continue;
+    terrainStroke.visited.add(id);
+    try{
+      const changed=paintTerrain(baseDungeon,project.terrain,x,y,terrainTool);
+      if(!changed.changed)continue;
+      if(project.markers?.some(marker=>marker.x===x&&marker.y===y&&
+        (changed.map.grid[id]!==1&&changed.map.grid[id]!==3)))
+        throw new Error('Move existing markers before sealing this tile.');
+      project.terrain=changed.edits;dungeon=changed.map;
+      terrainStroke.changed=true;terrainStroke.count++;
+      refreshPreview();
+    }catch(error){
+      terrainMessage(error.message||'Could not edit the selected tile.',true);
+    }
+  }
+}
+function restoreTerrainSnapshot(edits){
+  const state=replayTerrainEdits(baseDungeon,edits);
+  project.terrain=state.edits;dungeon=state.map;
+  saveProject();refreshAdventure();renderPngSize();updateTerrainControls();
+  if(state.rejected)terrainMessage('Some saved edits are no longer valid; they were skipped.',true);
 }
 function markerMessage(message,error=false){
   markerStatus.textContent=message;
@@ -382,8 +459,11 @@ function refreshAdventure() {
 }
 
 function setRunning(value) {
+  if(terrainStroke)finalizeTerrainStroke();
   running = value;
   placement = undefined;
+  if(value)terrainTool=null;
+  updateTerrainControls();
   prepare.setAttribute('aria-pressed', String(!value));
   run.setAttribute('aria-pressed', String(value));
   byId('battlemapKeyHeading').textContent = value ? 'Run session' : 'Room editor';
@@ -423,19 +503,29 @@ function loadPlan(imported) {
     next.revision = legacy.all >>> 0;
     next.roomRevisions = legacy.rooms && typeof legacy.rooms === 'object' ? legacy.rooms : {};
   }
-  dungeon = plan;
-  project = next;
+  baseDungeon=plan;
+  const terrainResult=replayTerrainEdits(baseDungeon,next.terrain);
+  dungeon=terrainResult.map;
+  project=next;
+  project.terrain=terrainResult.edits;
+  terrainHistory=createTerrainHistory();
+  terrainStroke=null;terrainTool=null;
   planKey = key;
   markerHistory=createMarkerHistory();
   selectedMarker=null;markerMode=null;
   renderMarkers();
   markerMessage('Place markers on walkable squares. Player visibility is opt-in.');
+  terrainMessage(terrainResult.rejected
+    ?'Skipped '+terrainResult.rejected+' invalid saved geometry edit(s). The rest remain applied.'
+    :'Choose a brush to carve passages, widen rooms or seal corridors. 2D and VTT exports only.',
+    terrainResult.rejected>0);
   if (imported || !projectHistories.has(key)) projectHistories.set(key, createRoomHistory());
   history = projectHistories.get(key);
   selected = project.session.roomId ?? dungeon.entrance;
   editorOpen = false;
   title.textContent = dungeon.name;
-  stats.textContent = dungeon.rooms.length + ' rooms · ' + dungeon.W + ' × ' + dungeon.H + ' squares · 5 ft per square · Seed ' + seed;
+  stats.textContent = dungeon.rooms.length + ' rooms · ' + dungeon.W + ' × ' + dungeon.H + ' squares · 5 ft per square · Seed ' + seed +
+    (project.terrain.length?' · '+project.terrain.length+' modified tiles':'');
   status.textContent = '';
   syncParty();
   renderPngSize();
@@ -447,7 +537,9 @@ function loadPlan(imported) {
 function loadActiveLayout() {
   try { loadPlan(); }
   catch (error) {
-    dungeon = adventure = project = history = currentRegion = undefined;
+    dungeon = adventure = project = history = currentRegion = baseDungeon = undefined;
+    terrainStroke=null;terrainTool=null;terrainHistory=createTerrainHistory();
+    updateTerrainControls();
     updateUndo();
     roomPngSize.textContent = '';
     title.textContent = 'Battlemap';
@@ -552,7 +644,8 @@ async function packageSession(plan,basename){
         'GM FILES: The GM PNG, room key, and editable JSON may include spoilers, trap information, and secret markers.\n'+
         'OWLBEAR: Import the .dd2vtt file through an importer that supports Universal VTT. Scene walls and door information depend on the importing extension.\n'+
         'GRIDS: This dungeon is '+gridName+' squares, 5 feet per square.\n'+
-        'MARKERS: Only markers explicitly set to player-visible appear on player maps and the .dd2vtt image.\n'}
+        'MARKERS: Only markers explicitly set to player-visible appear on player maps and the .dd2vtt image.\n'+
+        'GEOMETRY: Terrain edits affect 2D/VTT files and wall collision segments, but do not modify the generated 3D display.\n'}
     ];
     status.textContent='Packaging '+files.length+' session files…';
     const archive=await createZip(files);
@@ -696,7 +789,61 @@ undo.addEventListener('click', undoRoomEdit);
 prepare.addEventListener('click', () => setRunning(false));
 run.addEventListener('click', () => setRunning(true));
 roomSelect.addEventListener('change', () => selectRoom(Number(roomSelect.value)));
+for(const button of terrainButtons)button.addEventListener('click',()=>{
+  if(!dungeon||running)return;
+  finalizeTerrainStroke();
+  terrainTool=terrainTool===button.dataset.terrainTool?null:button.dataset.terrainTool;
+  markerMode=null;placement=undefined;
+  updateTerrainControls();
+  terrainMessage(terrainTool?
+    'Brush active: '+button.textContent.trim()+'. Drag on the 2D map to edit. Esc cancels the brush.':
+    'Brush disabled. Click a map square to select its room.');
+});
+byId('battlemapTerrainStop').addEventListener('click',()=>{
+  finalizeTerrainStroke();stopTerrainTool();
+  terrainMessage('Select mode restored.');
+});
+terrainUndo.addEventListener('click',()=>{
+  if(!baseDungeon||running)return;
+  finalizeTerrainStroke();
+  const previous=terrainHistory.undo(project.terrain);
+  if(previous===null)return;
+  restoreTerrainSnapshot(previous);
+  terrainMessage('Undid the last geometry stroke.');
+});
+terrainRedo.addEventListener('click',()=>{
+  if(!baseDungeon||running)return;
+  finalizeTerrainStroke();
+  const next=terrainHistory.redo(project.terrain);
+  if(next===null)return;
+  restoreTerrainSnapshot(next);
+  terrainMessage('Restored the next geometry stroke.');
+});
+map.addEventListener('pointerdown',event=>{
+  if(!terrainTool||!dungeon||running||event.button!==0)return;
+  event.preventDefault();
+  map.setPointerCapture(event.pointerId);
+  terrainStroke={
+    pointerId:event.pointerId,
+    before:structuredClone(project.terrain),
+    last:null,visited:new Set(),changed:false,count:0
+  };
+  paintTerrainPointer(event);
+});
+map.addEventListener('pointermove',event=>{
+  if(terrainStroke?.pointerId!==event.pointerId)return;
+  event.preventDefault();paintTerrainPointer(event);
+});
+function finishPointerStroke(event){
+  if(terrainStroke?.pointerId!==event.pointerId)return;
+  paintTerrainPointer(event);
+  finalizeTerrainStroke();
+  if(map.hasPointerCapture(event.pointerId))map.releasePointerCapture(event.pointerId);
+}
+map.addEventListener('pointerup',finishPointerStroke);
+map.addEventListener('pointercancel',finalizeTerrainStroke);
 map.addEventListener('click', event => {
+  if(terrainTool)return;
   if (!dungeon) return;
   const rect = map.getBoundingClientRect();
   const x = Math.floor((event.clientX - rect.left) * dungeon.W / rect.width);
@@ -736,6 +883,7 @@ zoom.addEventListener('click', () => {
 });
 byId('battlemapMarkerAdd').addEventListener('click',()=>{
   if(!dungeon)return;
+  stopTerrainTool();
   markerMode=markerMode==='place'?null:'place';
   placement=undefined;
   markerMessage(markerMode==='place'
@@ -744,6 +892,7 @@ byId('battlemapMarkerAdd').addEventListener('click',()=>{
 });
 byId('battlemapMarkerMove').addEventListener('click',()=>{
   if(selectedMarker===null)return;
+  stopTerrainTool();
   markerMode=markerMode==='move'?null:'move';
   placement=undefined;
   markerMessage(markerMode==='move'
@@ -777,6 +926,11 @@ dialog.addEventListener('click', event => {
 });
 // The underlying exhibit listens for single-letter shortcuts on window.
 dialog.addEventListener('keydown', event => {
+  if(event.key==='Escape'&&terrainTool){
+    event.preventDefault();event.stopPropagation();
+    finalizeTerrainStroke();stopTerrainTool();
+    terrainMessage('Geometry brush cancelled.');return;
+  }
   if(event.key==='Escape'&&markerMode){
     event.preventDefault();event.stopPropagation();
     markerMode=null;markerMessage('Marker operation cancelled.');return;
