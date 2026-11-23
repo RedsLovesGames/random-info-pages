@@ -53,13 +53,13 @@ jobs:
           node --check design-system/rip.js
           node --check design-system/bridge.mjs
           node --check sw.js
-          node --check music-microscope/app.js
+          node --input-type=module --check < music-microscope/app.js
           node --check music-microscope/export.mjs
           node --check marble-sequencer/app.mjs
           node --check marble-sequencer/export-midi.mjs
           node --check dungeon-forge/battlemap.mjs
           node --check id-card-maker/app.mjs
-          node --check algorithm-arena/app.js
+          node --input-type=module --check < algorithm-arena/app.js
           node --check fluid-dynamics/app.mjs
           node --check fluid-dynamics/render.mjs
           node --check fluid-dynamics/three-surface.mjs
