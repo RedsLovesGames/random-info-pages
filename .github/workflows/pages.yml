@@ -139,7 +139,7 @@ jobs:
           for f in wheel/*.js; do node --check "$f"; done
           grep -Fq './styles.css' wheel/index.html
           grep -Fq './app.js' wheel/index.html
-          grep -Fq './wheel/' index.html
+          grep -Fq "p:'./wheel/'" design-system/projects.js
 
       - name: Refresh public VCT team logos
         run: |
