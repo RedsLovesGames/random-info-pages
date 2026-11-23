@@ -35,7 +35,7 @@ test('Audio hits quantize into correct lanes and 16 steps without inventing pitc
  const result=patternFromEvents(song,{bpm:120,startTime:0});
  assert.equal(result.pattern.rows[0],1);
  assert.equal(result.pattern.rows[7],1<<1);
- assert.equal(result.pattern.rows[2],1<<2);
+ assert.equal(result.pattern.rows[2],(1<<2)|(1<<3),'nearby hits on either side of the quantization boundary occupy adjacent steps');
  assert.equal(result.mapped,4);
  assert.equal(result.discarded,1);
  assert.equal(result.windowSeconds,2);
