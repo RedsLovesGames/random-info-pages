@@ -26,13 +26,14 @@ function start() {
   const savedSettings = (() => {
     try { return JSON.parse(localStorage.getItem('rip-fluid-quality-v1') || '{}'); } catch { return {}; }
   })();
-  for (const id of ['quality', 'render-scale', 'glow', 'exposure', 'palette', 'height-scale', 'mesh-grid']) {
+  for (const id of ['quality', 'render-scale', 'glow', 'exposure', 'palette', 'height-scale']) {
     if (savedSettings[id] !== undefined) {
       const element = byId(id);
       if ([...element.options || []].some(o => o.value === String(savedSettings[id])) ||
           (element.type === 'range' && Number.isFinite(Number(savedSettings[id])))) element.value = savedSettings[id];
     }
   }
+  if (typeof savedSettings['mesh-grid'] === 'boolean') meshInput.checked = savedSettings['mesh-grid'];
   let profile = qualityProfile(qualityInput.value, smallScreen);
   let tank = new FluidTank(profile.width, profile.height);
   let { width, height } = tank;
@@ -82,6 +83,7 @@ function start() {
     try {
       const data = Object.fromEntries(['quality', 'render-scale', 'glow', 'exposure', 'palette', 'height-scale', 'mesh-grid']
         .map(id => [id, byId(id).value]));
+      data['mesh-grid'] = meshInput.checked;
       localStorage.setItem('rip-fluid-quality-v1', JSON.stringify(data));
     } catch { /* Persistence is optional. */ }
   }
@@ -144,6 +146,8 @@ function start() {
     canvas.hidden = is3d;
     canvas3d.hidden = !is3d;
     view.disabled = is3d;
+    tankElement.dataset['3d'] = String(is3d);
+    byId('legend').hidden = is3d || !legends[view.value];
     byId('tracer-option').hidden = is3d || view.value !== 'dye';
     byId('reset-camera').hidden = !is3d;
     byId('height-control').hidden = !is3d;
@@ -415,7 +419,7 @@ function start() {
     new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
       restartClock();
-    }).observe(canvas);
+    }).observe(tankElement);
   }
 
   renderer.resize();

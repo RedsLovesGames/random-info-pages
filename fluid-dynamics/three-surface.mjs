@@ -248,21 +248,35 @@ export function createSurface3D(canvas, initialTank) {
     }
   }
 
+  const touchPoints = new Map();
+  let lastPinchDistance = 0;
   canvas.addEventListener('pointerdown', event => {
-    if (event.button !== 0) return;
+    if (event.button !== 0 && event.pointerType === 'mouse') return;
     canvas.setPointerCapture(event.pointerId);
+    touchPoints.set(event.pointerId, { x: event.clientX, y: event.clientY });
     dragging = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    if (touchPoints.size > 1) lastPinchDistance = 0;
   });
   canvas.addEventListener('pointermove', event => {
-    if (!dragging || dragging.id !== event.pointerId) return;
-    azimuth += (event.clientX - dragging.x) * .008;
-    elevation = Math.max(.08, Math.min(1.48, elevation + (event.clientY - dragging.y) * .008));
-    dragging.x = event.clientX;
-    dragging.y = event.clientY;
+    const previous = touchPoints.get(event.pointerId);
+    if (!previous) return;
+    const dx = event.clientX - previous.x, dy = event.clientY - previous.y;
+    touchPoints.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (touchPoints.size > 1) {
+      const points = [...touchPoints.values()];
+      const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+      if (lastPinchDistance > 1) zoom = Math.max(2.8, Math.min(8.5, zoom * lastPinchDistance / Math.max(1, distance)));
+      lastPinchDistance = distance;
+    } else {
+      azimuth += dx * .008;
+      elevation = Math.max(.08, Math.min(1.48, elevation + dy * .008));
+    }
     render();
   });
   for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
     canvas.addEventListener(type, event => {
+      touchPoints.delete(event.pointerId);
+      lastPinchDistance = 0;
       if (dragging?.id === event.pointerId) dragging = null;
     });
   }
