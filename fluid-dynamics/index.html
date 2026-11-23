@@ -114,6 +114,8 @@
               <option value="studio">Studio · maximum CPU load</option>
             </select>
           </label>
+          <label class="check" for="auto-quality"><input id="auto-quality" type="checkbox"> Adaptive performance (automatically adjust simulation quality)</label>
+          <p id="adaptive-status" class="quality-notice" role="status" aria-live="polite"></p>
           <label class="setting" for="render-scale">Display resolution <output id="render-scale-value">1×</output>
             <select id="render-scale">
               <option value="0.75">0.75×</option>
@@ -183,7 +185,7 @@
       <summary>How the model works &amp; references</summary>
       <p>This is a 2D incompressible flow model in a closed tank. Each step moves velocity and dye along the flow, smooths velocity according to viscosity, and solves for a pressure correction to reduce compression. The velocity view shows speed. Vorticity shows how quickly the fluid rotates locally.</p>
       <p>Flow tracers mark the dye’s motion. In the velocity view, arrows point in the local direction of flow. The controls use relative values and the pressure display shows the solver’s correction. In the jet presets, the colored sources push fluid already in the tank.</p>
-      <p>The 3D mode is a WebGL2 height-field visualization extruded from the live 2D dye grid. It is orbitable and responds to the same simulation, but it is not a volumetric 3D Navier–Stokes solver. Quality presets increase the real solver grid and pressure iterations; changing them interpolates the existing dye and velocity field to the new grid. The Spectral GPU renderer shades the 2D dye at display resolution with selectable bicubic reconstruction, lighting, glow, and tone mapping. This does not create physical detail beyond the solver's spatial resolution.</p>
+      <p>The 3D mode is a WebGL2 height-field visualization extruded from the live 2D dye grid. It is orbitable and responds to the same simulation, but it is not a volumetric 3D Navier–Stokes solver. Quality presets increase the real solver grid and pressure iterations; changing them interpolates the existing dye and velocity field to the new grid. Optional adaptive performance targets fluid-update consistency by stepping between quality profiles with hysteresis. It changes simulation resolution as needed and does not measure GPU utilization. The Spectral GPU renderer shades the 2D dye at display resolution with selectable bicubic reconstruction, lighting, glow, and tone mapping. This does not create physical detail beyond the solver's spatial resolution.</p>
       <p>4K, 6K, and 8K PNG exports mean output width in pixels and use a 3:2 aspect ratio. High-resolution captures are GPU- and memory-intensive, and may not be supported by every device. The Canvas2D fallback can upscale an image but cannot recreate additional fluid detail.</p>
       <ul>
         <li><a href="https://paveldogreat.github.io/WebGL-Fluid-Simulation/">Pavel Dobryakov’s WebGL Fluid Simulation</a> inspired the interactive dye brush and bloom.</li>

@@ -48,7 +48,8 @@ jobs:
 
       - name: Verify archive home
         run: |
-          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs
+          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs tests/fluid-adaptive.test.mjs
+          node --check fluid-dynamics/adaptive.mjs
           node --check compare/app.mjs
           node --check design-system/tours.mjs
           node --check design-system/recording.mjs

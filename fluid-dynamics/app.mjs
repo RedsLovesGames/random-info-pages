@@ -3,6 +3,7 @@ import { createTankRenderer } from './render.mjs';
 import { createDyeGPU } from './dye-gpu.mjs';
 import { createSurface3D } from './three-surface.mjs';
 import { qualityProfile, transferFluidState } from './quality.mjs';
+import { LEVELS, createAdaptiveController } from './adaptive.mjs';
 
 const byId = id => document.getElementById(id);
 const canvas = byId('tank');
@@ -14,6 +15,8 @@ else byId('model-error').hidden = false;
 function start() {
   const smallScreen = matchMedia('(max-width: 700px), (pointer: coarse)').matches;
   const qualityInput = byId('quality');
+  const autoQuality = byId('auto-quality');
+  const adaptiveStatus = byId('adaptive-status');
   const displayMode = byId('display-mode');
   const renderScaleInput = byId('render-scale');
   const glowInput = byId('glow');
@@ -43,6 +46,11 @@ function start() {
     }
   }
   if (typeof savedSettings['mesh-grid'] === 'boolean') meshInput.checked = savedSettings['mesh-grid'];
+  if (savedSettings['auto-quality'] === true) autoQuality.checked = true;
+  let autoCeiling = LEVELS.includes(savedSettings['auto-ceiling']) ?
+    savedSettings['auto-ceiling'] : qualityInput.value;
+  const adaptiveController = createAdaptiveController();
+  let previousExternalQuality = null;
   let profile = qualityProfile(qualityInput.value, smallScreen);
   let tank = new FluidTank(profile.width, profile.height);
   let { width, height } = tank;
@@ -123,6 +131,8 @@ function start() {
         'render-engine', 'interpolation', 'surface-detail', 'grain', 'export-size']
         .map(id => [id, byId(id).value]));
       data['mesh-grid'] = meshInput.checked;
+      data['auto-quality'] = autoQuality.checked;
+      data['auto-ceiling'] = autoCeiling;
       localStorage.setItem('rip-fluid-quality-v1', JSON.stringify(data));
     } catch { /* Persistence is optional. */ }
   }
@@ -172,10 +182,16 @@ function start() {
     const actual = active.width + ' × ' + active.height;
     qualityNotice.textContent = 'Solver ' + width + ' × ' + height + ' · ' + profile.iterations
       + ' pressure iterations · live output ' + actual
-      + (displayMode.value === '2d' ? (usesGPU() ? ' · WebGL2' : ' · Canvas2D') : ' · 3D WebGL2');
+      + (displayMode.value === '2d' ? (usesGPU() ? ' · WebGL2' : ' · Canvas2D') : ' · 3D WebGL2')
+      + (autoQuality.checked ? ' · adaptive cap ' + autoCeiling : '');
   }
 
-  function changeQuality() {
+  function changeQuality({manual=false} = {}) {
+    if (manual) {
+      autoCeiling = qualityInput.value;
+      adaptiveController.reset(performance.now());
+      adaptiveStatus.textContent = 'Manual quality ceiling set to ' + autoCeiling + '.';
+    }
     const next = qualityProfile(qualityInput.value, smallScreen);
     if (next.width !== width || next.height !== height) {
       const newTank = new FluidTank(next.width, next.height);
@@ -391,6 +407,16 @@ function start() {
       if (time - frameClock > 1000) {
         const fps = Math.round(frameCounter * 1000 / Math.max(1, time - frameClock));
         byId('fps').textContent = fps + ' FPS';
+        if (autoQuality.checked) {
+          const next = adaptiveController.observe(fps,time,qualityInput.value,autoCeiling);
+          if (next) {
+            const previous = qualityInput.value;
+            qualityInput.value = next;
+            changeQuality();
+            adaptiveStatus.textContent = 'Adaptive quality: ' + previous + ' → ' + next +
+              ' · ' + fps + ' fluid updates/s. Your dye and flow were retained.';
+          }
+        }
         frameClock = time;
         frameCounter = 0;
       }
@@ -455,7 +481,15 @@ function start() {
   stepButton.addEventListener('click', () => { update(); render(); });
   byId('reset').addEventListener('click', () => loadPreset(preset));
   view.addEventListener('change', setView);
-  qualityInput.addEventListener('change', changeQuality);
+  qualityInput.addEventListener('change', () => changeQuality({manual:true}));
+  autoQuality.addEventListener('change', () => {
+    adaptiveController.reset(performance.now());
+    if (autoQuality.checked) autoCeiling = qualityInput.value;
+    adaptiveStatus.textContent = autoQuality.checked
+      ? 'Adaptive quality is on. It can reduce this level if the flow slows below 23 updates/s.'
+      : 'Adaptive quality is off. The chosen quality level remains fixed.';
+    configureRendering();
+  });
   displayMode.addEventListener('change', changeDisplayMode);
   for (const element of [renderScaleInput, glowInput, exposureInput, paletteInput,
     depthInput, meshInput, renderEngine, interpolation, detailInput, grainInput, exportSize]) {
@@ -527,12 +561,20 @@ function start() {
     }
   });
   tracers.addEventListener('change', render);
-  document.addEventListener('visibilitychange', restartClock);
+  document.addEventListener('visibilitychange', () => {
+    adaptiveController.reset(performance.now());
+    frameClock = 0;
+    frameCounter = 0;
+    restartClock();
+  });
   reducedMotion.addEventListener('change', event => { if (event.matches) setPaused(true); });
 
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
+      adaptiveController.reset(performance.now());
+      frameClock = 0;
+      frameCounter = 0;
       restartClock();
     }).observe(tankElement);
   }
@@ -543,6 +585,36 @@ function start() {
   setPaused(paused);
   changeQuality();
   changeDisplayMode();
+  window.RIPStudio = {
+    setQuality(level) {
+      if (level === 'eco') {
+        if (previousExternalQuality === null) previousExternalQuality = qualityInput.value;
+        qualityInput.value = 'eco';
+        changeQuality();
+        adaptiveStatus.textContent = 'Low effects mode selected Eco simulation quality.';
+      } else if (level === 'default' && previousExternalQuality !== null) {
+        qualityInput.value = previousExternalQuality;
+        previousExternalQuality = null;
+        changeQuality();
+        adaptiveStatus.textContent = 'Restored the previous simulation quality.';
+      }
+    },
+    metrics() {
+      return {
+        fps: Number.parseInt(byId('fps').textContent,10)||0,
+        grid: width + ' × ' + height,
+        quality: qualityInput.value
+      };
+    },
+    capture() {
+      if (displayMode.value === '3d' && three) return three.capture(null);
+      if (usesGPU()) return gpu.capture(null);
+      return new Promise((resolve,reject)=>canvas.toBlob(
+        blob=>blob?resolve(blob):reject(new Error('PNG export failed')),'image/png'));
+    }
+  };
+  if (autoQuality.checked)
+    adaptiveStatus.textContent = 'Adaptive quality is active, with a ceiling of ' + autoCeiling + '.';
   if ('ResizeObserver' in window) new ResizeObserver(() => {
     if (displayMode.value === '3d') three?.resize();
     else {
