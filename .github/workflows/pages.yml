@@ -53,6 +53,7 @@ jobs:
           node --check fluid-dynamics/render.mjs
           node --check fluid-dynamics/three-surface.mjs
           node --check fluid-dynamics/quality.mjs
+          node --check fluid-dynamics/dye-gpu.mjs
           node --test tests/midterm-2026.test.mjs
           node --test friends/ranked/rank-riot.test.cjs
           node --test friends/ranked/rank-riot-supabase.test.cjs
@@ -272,8 +273,12 @@ jobs:
           grep -Fq 'id="display-mode"' /tmp/fluid-studio.html
           grep -Fq 'id="quality"' /tmp/fluid-studio.html
           grep -Fq 'id="tank-3d"' /tmp/fluid-studio.html
+          grep -Fq 'id="tank-gpu"' /tmp/fluid-studio.html
+          grep -Fq 'id="export-size"' /tmp/fluid-studio.html
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/fluid-surface.js "$base/fluid-dynamics/three-surface.mjs"
           grep -Fq 'getContext('\''webgl2'\''' /tmp/fluid-surface.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/fluid-dye-gpu.js "$base/fluid-dynamics/dye-gpu.mjs"
+          grep -Fq 'function bicubic' /tmp/fluid-dye-gpu.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/home.html "$base/"
           grep -Fq 'id="fluidCanvas"' /tmp/home.html
           grep -Fq 'id="projectList"' /tmp/home.html

@@ -48,6 +48,7 @@
           <canvas id="tank" tabindex="0" role="group" aria-label="Interactive fluid tank" aria-describedby="tank-help" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Enter Space">
             Your browser needs Canvas 2D to display this simulation.
           </canvas>
+          <canvas id="tank-gpu" hidden aria-hidden="true"></canvas>
           <canvas id="tank-3d" tabindex="0" hidden aria-label="Orbitable 3D concentration surface, derived from the 2D fluid" aria-describedby="mode-help"></canvas>
           <output id="brush-marker" aria-hidden="true"></output>
         </div>
@@ -109,6 +110,8 @@
               <option value="high">High</option>
               <option value="ultra">Ultra</option>
               <option value="cinematic">Cinematic · demanding</option>
+              <option value="extreme">Extreme · powerful GPU/CPU</option>
+              <option value="studio">Studio · maximum CPU load</option>
             </select>
           </label>
           <label class="setting" for="render-scale">Display resolution <output id="render-scale-value">1×</output>
@@ -117,6 +120,20 @@
               <option value="1" selected>1×</option>
               <option value="1.5">1.5×</option>
               <option value="2">2×</option>
+              <option value="3">3×</option>
+              <option value="4">4× · demanding</option>
+            </select>
+          </label>
+          <label class="setting" for="render-engine">2D rendering pipeline
+            <select id="render-engine">
+              <option value="gpu" selected>WebGL2 · Spectral GPU</option>
+              <option value="canvas">Canvas2D · Compatibility</option>
+            </select>
+          </label>
+          <label class="setting" for="interpolation">Fluid reconstruction
+            <select id="interpolation">
+              <option value="linear">Fast · linear</option>
+              <option value="bicubic" selected>High detail · bicubic</option>
             </select>
           </label>
           <label class="setting" for="palette">Color treatment
@@ -130,6 +147,12 @@
           <label class="slider" for="glow"><span>Bloom <output id="glow-value">60%</output></span>
             <input type="range" id="glow" min="0" max="150" value="60">
           </label>
+          <label class="slider" for="surface-detail"><span>Surface detail <output id="surface-detail-value">110%</output></span>
+            <input type="range" id="surface-detail" min="0" max="220" value="110">
+          </label>
+          <label class="slider" for="grain"><span>Fine grain <output id="grain-value">5%</output></span>
+            <input type="range" id="grain" min="0" max="100" value="5">
+          </label>
           <label class="slider" for="exposure"><span>Exposure <output id="exposure-value">100%</output></span>
             <input type="range" id="exposure" min="40" max="200" value="100">
           </label>
@@ -138,8 +161,18 @@
           </label>
           <label class="check" id="mesh-option" hidden><input type="checkbox" id="mesh-grid"> 3D wireframe overlay</label>
           <p id="quality-notice" class="quality-notice"></p>
+          <label class="setting" for="export-size">PNG export resolution
+            <select id="export-size">
+              <option value="current" selected>Current canvas</option>
+              <option value="2048">2K wide · 2048 px</option>
+              <option value="3840">4K wide · 3840 px</option>
+              <option value="5760">6K wide · 5760 px</option>
+              <option value="7680">8K wide · demanding</option>
+            </select>
+          </label>
+          <p id="export-feedback" class="quality-notice" role="status" aria-live="polite"></p>
           <div class="export-actions">
-            <button id="screenshot" type="button">Save PNG</button>
+            <button id="screenshot" type="button">Export PNG</button>
             <button id="reset-camera" type="button" hidden>Reset camera</button>
           </div>
         </section>
@@ -150,7 +183,8 @@
       <summary>How the model works &amp; references</summary>
       <p>This is a 2D incompressible flow model in a closed tank. Each step moves velocity and dye along the flow, smooths velocity according to viscosity, and solves for a pressure correction to reduce compression. The velocity view shows speed. Vorticity shows how quickly the fluid rotates locally.</p>
       <p>Flow tracers mark the dye’s motion. In the velocity view, arrows point in the local direction of flow. The controls use relative values and the pressure display shows the solver’s correction. In the jet presets, the colored sources push fluid already in the tank.</p>
-      <p>The 3D mode is a WebGL2 height-field visualization extruded from the live 2D dye grid. It is orbitable and responds to the same simulation, but it is not a volumetric 3D Navier–Stokes solver. Quality presets increase the real solver grid and pressure iterations; changing them interpolates the existing dye and velocity field to the new grid.</p>
+      <p>The 3D mode is a WebGL2 height-field visualization extruded from the live 2D dye grid. It is orbitable and responds to the same simulation, but it is not a volumetric 3D Navier–Stokes solver. Quality presets increase the real solver grid and pressure iterations; changing them interpolates the existing dye and velocity field to the new grid. The Spectral GPU renderer shades the 2D dye at display resolution with selectable bicubic reconstruction, lighting, glow, and tone mapping. This does not create physical detail beyond the solver's spatial resolution.</p>
+      <p>4K, 6K, and 8K PNG exports mean output width in pixels and use a 3:2 aspect ratio. High-resolution captures are GPU- and memory-intensive, and may not be supported by every device. The Canvas2D fallback can upscale an image but cannot recreate additional fluid detail.</p>
       <ul>
         <li><a href="https://paveldogreat.github.io/WebGL-Fluid-Simulation/">Pavel Dobryakov’s WebGL Fluid Simulation</a> inspired the interactive dye brush and bloom.</li>
         <li><a href="https://piellardj.github.io/navier-stokes-webgl/">Jérémie Piellard’s Navier–Stokes demo</a> inspired the field views and obstacle.</li>

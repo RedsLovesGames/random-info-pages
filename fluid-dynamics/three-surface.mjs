@@ -49,30 +49,51 @@ uniform sampler2D u_dye;
 uniform float u_height;
 uniform float u_exposure;
 uniform float u_wire;
+uniform float u_detail;
+uniform float u_glow;
+uniform int u_palette;
 in vec2 v_uv;
 in float v_height;
 out vec4 fragColor;
+vec3 grade(vec3 color) {
+  if (u_palette == 1) return vec3(color.r*0.64+color.b*0.25, color.g*1.16+color.r*0.10, color.b*1.20);
+  if (u_palette == 2) return vec3(color.r*1.18+color.g*0.2, color.g*0.72, color.b*0.46);
+  if (u_palette == 3) {
+    float l = dot(color, vec3(0.24, 0.58, 0.18));
+    return l * vec3(0.48, 1.04, 1.35);
+  }
+  return color;
+}
 void main() {
   if (u_wire > 0.5) {
-    fragColor = vec4(0.40, 0.83, 1.0, 0.18);
+    fragColor = vec4(0.42, 0.78, 1.0, 0.24);
     return;
   }
-  vec3 rawInk = texture(u_dye, v_uv).rgb;
-  vec2 texel = 1.0 / vec2(textureSize(u_dye, 0));
-  float xl = length(texture(u_dye, v_uv - vec2(texel.x, 0.0)).rgb);
-  float xr = length(texture(u_dye, v_uv + vec2(texel.x, 0.0)).rgb);
-  float yt = length(texture(u_dye, v_uv - vec2(0.0, texel.y)).rgb);
-  float yb = length(texture(u_dye, v_uv + vec2(0.0, texel.y)).rgb);
-  vec3 normal = normalize(vec3((xl - xr) * 2.0 * u_height, (yt - yb) * 2.0 * u_height, 0.72));
-  float diffuse = max(dot(normal, normalize(vec3(-0.45, -0.30, 0.85))), 0.0);
-  float fresnel = pow(1.0 - max(normal.z, 0.0), 2.0);
-  float density = max(max(rawInk.r, rawInk.g), rawInk.b);
-  vec3 ink = pow(max(rawInk, 0.0), vec3(0.78));
-  vec3 dark = vec3(0.047, 0.075, 0.14);
-  vec3 colored = mix(dark, ink * (0.45 + diffuse * 1.55) + vec3(fresnel * 0.24), smoothstep(0.015, 0.4, density));
-  colored += vec3(0.015, 0.05, 0.09) * (0.5 + 0.5 * sin(v_uv.x * 67.0) * sin(v_uv.y * 47.0));
-  colored = vec3(1.0) - exp(-colored * u_exposure);
-  fragColor = vec4(colored, 1.0);
+  vec3 ink = texture(u_dye, v_uv).rgb;
+  vec2 px = 1.0 / vec2(textureSize(u_dye, 0));
+  float l = length(texture(u_dye, v_uv - vec2(px.x,0.0)).rgb);
+  float r = length(texture(u_dye, v_uv + vec2(px.x,0.0)).rgb);
+  float t = length(texture(u_dye, v_uv - vec2(0.0,px.y)).rgb);
+  float b = length(texture(u_dye, v_uv + vec2(0.0,px.y)).rgb);
+  vec3 normal = normalize(vec3((l-r)*2.7*u_height*u_detail, (t-b)*2.7*u_height*u_detail, 0.68));
+  vec3 lightA = normalize(vec3(-0.57,0.32,0.78));
+  vec3 lightB = normalize(vec3(0.45,-0.62,0.70));
+  float diffuse = 0.24 + max(dot(normal,lightA),0.0)*0.85 + max(dot(normal,lightB),0.0)*0.32;
+  float specular = pow(max(dot(normal, normalize(lightA + vec3(0.0,0.0,1.0))),0.0), 34.0);
+  float rim = pow(1.0 - clamp(normal.z,0.0,1.0),2.4);
+  float amount = max(max(ink.r,ink.g),ink.b);
+  vec3 base = vec3(0.026,0.046,0.095);
+  vec3 pigment = pow(max(grade(ink),0.0), vec3(0.84));
+  vec3 reflected = pigment*diffuse + vec3(0.71,0.89,1.0)*specular*0.37;
+  reflected += vec3(0.30,0.58,0.91)*rim*0.24;
+  float coverage = smoothstep(0.006,0.31,amount);
+  vec3 color = mix(base,reflected,coverage);
+  color += grade(ink)*u_glow*0.16;
+  float depthTint = 0.07 * clamp(v_height / max(u_height,0.0001),0.0,1.0);
+  color += vec3(0.09,0.17,0.28)*depthTint;
+  color = max(color*u_exposure,0.0);
+  color = color / (vec3(1.0) + color*0.45);
+  fragColor = vec4(pow(color,vec3(0.93)),1.0);
 }`;
 
 function multiply(a, b) {
@@ -118,11 +139,11 @@ function cameraMatrix(width, height, azimuth, elevation, zoom) {
   return multiply(perspective, view);
 }
 
-export function createSurface3D(canvas, initialTank) {
+export function createSurface3D(canvas, initialTank, mobile = false) {
   const gl = canvas.getContext('webgl2', { alpha: false, antialias: true, preserveDrawingBuffer: true });
   if (!gl) return null;
   const drawProgram = program(gl, vertexShader, fragmentShader);
-  const uniforms = Object.fromEntries(['u_dye', 'u_mvp', 'u_height', 'u_exposure', 'u_wire']
+  const uniforms = Object.fromEntries(['u_dye', 'u_mvp', 'u_height', 'u_exposure', 'u_wire', 'u_detail', 'u_glow', 'u_palette']
     .map(key => [key, gl.getUniformLocation(drawProgram, key)]));
   const vao = gl.createVertexArray();
   const vertices = gl.createBuffer();
@@ -143,6 +164,8 @@ export function createSurface3D(canvas, initialTank) {
   let tank = initialTank, textureData = null, countTriangles = 0, countLines = 0;
   let azimuth = -.67, elevation = .66, zoom = 4.4;
   let mesh = 96, height = .85, exposure = 1.2, wireframe = false, resolution = 1;
+  let detail = 1.1, glow = .6, palette = 'spectrum';
+  const paletteIds = { spectrum: 0, aurora: 1, ember: 2, ice: 3 };
   let dragging = null;
 
   function setTank(nextTank) {
@@ -183,6 +206,9 @@ export function createSurface3D(canvas, initialTank) {
     exposure = opts.exposure ?? exposure;
     wireframe = opts.wireframe ?? wireframe;
     resolution = opts.scale ?? resolution;
+    detail = opts.detail ?? detail;
+    glow = opts.glow ?? glow;
+    palette = opts.palette ?? palette;
     if (opts.mesh && opts.mesh !== mesh) {
       mesh = opts.mesh;
       makeMesh(mesh);
@@ -200,8 +226,9 @@ export function createSurface3D(canvas, initialTank) {
   function resize() {
     const rect = canvas.getBoundingClientRect();
     const scale = Math.min(devicePixelRatio || 1, 2) * resolution;
-    const maxWidth = 2400;
-    const targetWidth = Math.max(2, Math.min(maxWidth, Math.round(rect.width * scale)));
+    const maxWidth = mobile ? 3072 : 5120;
+    const limit = Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE), gl.getParameter(gl.MAX_VIEWPORT_DIMS)[0]);
+    const targetWidth = Math.max(2, Math.min(maxWidth, limit, Math.round(rect.width * scale)));
     const targetHeight = Math.max(2, Math.round(targetWidth * tank.height / tank.width));
     if (canvas.width === targetWidth && canvas.height === targetHeight) return false;
     canvas.width = targetWidth;
@@ -210,9 +237,9 @@ export function createSurface3D(canvas, initialTank) {
     return true;
   }
 
-  function render() {
+  function render(skipResize = false) {
     if (gl.isContextLost()) return;
-    resize();
+    if (!skipResize) resize();
     const { dye: [r, g, b], stride, width, height: rows } = tank;
     for (let y = 0; y < rows; y++) for (let x = 0; x < width; x++) {
       const i = x + y * stride, o = (x + y * width) * 4;
@@ -234,6 +261,9 @@ export function createSurface3D(canvas, initialTank) {
     gl.uniform1f(uniforms.u_height, height);
     gl.uniform1f(uniforms.u_exposure, exposure);
     gl.uniform1f(uniforms.u_wire, 0);
+    gl.uniform1f(uniforms.u_detail, detail);
+    gl.uniform1f(uniforms.u_glow, glow);
+    gl.uniform1i(uniforms.u_palette, paletteIds[palette] ?? 0);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, triangles);
     gl.drawElements(gl.TRIANGLES, countTriangles, gl.UNSIGNED_INT, 0);
     if (wireframe) {
@@ -297,7 +327,26 @@ export function createSurface3D(canvas, initialTank) {
     render();
   });
 
+  async function capture(targetWidth) {
+    const originalWidth = canvas.width, originalHeight = canvas.height;
+    const target = targetWidth || originalWidth;
+    const rows = Math.round(target * tank.height / tank.width);
+    const limit = Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),
+      gl.getParameter(gl.MAX_VIEWPORT_DIMS)[0], gl.getParameter(gl.MAX_VIEWPORT_DIMS)[1]);
+    if (target > limit || rows > limit) throw new Error('3D export exceeds your GPU maximum framebuffer size');
+    try {
+      canvas.width = target;
+      canvas.height = rows;
+      render(true);
+      return await new Promise((resolve, reject) => canvas.toBlob(
+        blob => blob ? resolve(blob) : reject(new Error('PNG encoding failed')), 'image/png'));
+    } finally {
+      canvas.width = originalWidth;
+      canvas.height = originalHeight;
+      render(true);
+    }
+  }
   setTank(tank);
   makeMesh(mesh);
-  return { configure, render, resize, resetCamera, setTank };
+  return { configure, render, resize, resetCamera, setTank, capture };
 }

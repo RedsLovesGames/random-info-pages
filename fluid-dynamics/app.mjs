@@ -1,5 +1,6 @@
 import { FluidTank } from './fluid.mjs';
 import { createTankRenderer } from './render.mjs';
+import { createDyeGPU } from './dye-gpu.mjs';
 import { createSurface3D } from './three-surface.mjs';
 import { qualityProfile, transferFluidState } from './quality.mjs';
 
@@ -21,12 +22,20 @@ function start() {
   const depthInput = byId('height-scale');
   const meshInput = byId('mesh-grid');
   const screenshot = byId('screenshot');
+  const exportSize = byId('export-size');
+  const exportFeedback = byId('export-feedback');
+  const canvasGPU = byId('tank-gpu');
+  const renderEngine = byId('render-engine');
+  const interpolation = byId('interpolation');
+  const detailInput = byId('surface-detail');
+  const grainInput = byId('grain');
   const canvas3d = byId('tank-3d');
   const qualityNotice = byId('quality-notice');
   const savedSettings = (() => {
     try { return JSON.parse(localStorage.getItem('rip-fluid-quality-v1') || '{}'); } catch { return {}; }
   })();
-  for (const id of ['quality', 'render-scale', 'glow', 'exposure', 'palette', 'height-scale']) {
+  for (const id of ['quality', 'render-scale', 'glow', 'exposure', 'palette', 'height-scale',
+    'render-engine', 'interpolation', 'surface-detail', 'grain', 'export-size']) {
     if (savedSettings[id] !== undefined) {
       const element = byId(id);
       if ([...element.options || []].some(o => o.value === String(savedSettings[id])) ||
@@ -38,6 +47,10 @@ function start() {
   let tank = new FluidTank(profile.width, profile.height);
   let { width, height } = tank;
   let renderer = createTankRenderer(canvas, context, tank, smallScreen);
+  let gpu = null;
+  try { gpu = createDyeGPU(canvasGPU, tank, smallScreen); }
+  catch (error) { console.warn('Enhanced fluid renderer unavailable, using Canvas2D', error); }
+  if (!gpu) renderEngine.value = 'canvas';
   let three = null;
   const tracers = byId('tracers');
   const status = byId('tank-status');
@@ -74,14 +87,36 @@ function start() {
   let paused = reducedMotion.matches, visible = true, scheduled = 0, previousTime = 0, elapsed = 0, tick = 0;
   let frameClock = 0, frameCounter = 0;
 
+  function usesGPU() {
+    return displayMode.value === '2d' && view.value === 'dye'
+      && renderEngine.value === 'gpu' && Boolean(gpu);
+  }
+
+  function syncCanvases() {
+    const is3d = displayMode.value === '3d';
+    syncCanvases();
+    canvasGPU.hidden = !usesGPU();
+  }
+
   function render() {
-    if (displayMode.value === '3d' && three) three.render();
-    else renderer.render(view.value, scale, tracers.checked);
+    syncCanvases();
+    if (displayMode.value === '3d' && three) {
+      three.render();
+    } else if (usesGPU()) {
+      try { gpu.render(); }
+      catch (error) {
+        console.error('GPU dye rendering failed; using compatibility renderer', error);
+        renderEngine.value = 'canvas';
+        syncCanvases();
+        renderer.render(view.value, scale, tracers.checked);
+      }
+    } else renderer.render(view.value, scale, tracers.checked);
   }
 
   function saveVisualSettings() {
     try {
-      const data = Object.fromEntries(['quality', 'render-scale', 'glow', 'exposure', 'palette', 'height-scale', 'mesh-grid']
+      const data = Object.fromEntries(['quality', 'render-scale', 'glow', 'exposure', 'palette', 'height-scale',
+        'render-engine', 'interpolation', 'surface-detail', 'grain', 'export-size']
         .map(id => [id, byId(id).value]));
       data['mesh-grid'] = meshInput.checked;
       localStorage.setItem('rip-fluid-quality-v1', JSON.stringify(data));
@@ -91,17 +126,33 @@ function start() {
   function configureRendering() {
     const multiplier = Number(renderScaleInput.value);
     const exposure = Number(exposureInput.value) / 100;
+    const requestedScale = multiplier * profile.renderScale;
+    const glow = Number(glowInput.value) / 100;
+    const detail = Number(detailInput.value) / 100;
+    const grain = Number(grainInput.value) / 100;
     renderer.setOptions({
-      renderScale: multiplier * profile.renderScale,
-      glow: Number(glowInput.value) / 100,
+      renderScale: requestedScale,
+      glow,
       exposure,
       palette: paletteInput.value,
       tracerCount: profile.tracers
     });
+    gpu?.configure({
+      scale: requestedScale,
+      glow,
+      exposure,
+      detail,
+      grain,
+      bicubic: interpolation.value === 'bicubic',
+      palette: paletteInput.value
+    });
     three?.configure({
-      scale: Math.min(2, multiplier * profile.renderScale),
+      scale: Math.min(4, requestedScale),
       height: Number(depthInput.value) / 100,
       exposure,
+      glow,
+      detail,
+      palette: paletteInput.value,
       wireframe: meshInput.checked,
       mesh: profile.mesh
     });
@@ -109,10 +160,15 @@ function start() {
     byId('glow-value').textContent = glowInput.value + '%';
     byId('exposure-value').textContent = exposureInput.value + '%';
     byId('height-scale-value').textContent = depthInput.value + '%';
-    qualityNotice.textContent = 'Solver ' + width + ' × ' + height + ' · ' + profile.iterations
-      + ' pressure iterations · display up to ' + Math.round(profile.renderScale * multiplier * 100) + '%';
+    byId('surface-detail-value').textContent = detailInput.value + '%';
+    byId('grain-value').textContent = grainInput.value + '%';
     saveVisualSettings();
     render();
+    const active = displayMode.value === '3d' ? canvas3d : usesGPU() ? canvasGPU : canvas;
+    const actual = active.width + ' × ' + active.height;
+    qualityNotice.textContent = 'Solver ' + width + ' × ' + height + ' · ' + profile.iterations
+      + ' pressure iterations · live output ' + actual
+      + (displayMode.value === '2d' ? (usesGPU() ? ' · WebGL2' : ' · Canvas2D') : ' · 3D WebGL2');
   }
 
   function changeQuality() {
@@ -125,6 +181,7 @@ function start() {
       height = tank.height;
       scale = height / 104;
       renderer = createTankRenderer(canvas, context, tank, smallScreen);
+      gpu?.setTank(tank);
       three?.setTank(tank);
     }
     profile = next;
@@ -134,7 +191,7 @@ function start() {
 
   function changeDisplayMode() {
     if (displayMode.value === '3d' && !three) {
-      try { three = createSurface3D(canvas3d, tank); } catch (error) {
+      try { three = createSurface3D(canvas3d, tank, smallScreen); } catch (error) {
         console.error('3D surface initialization failed', error);
       }
       if (!three) {
@@ -155,8 +212,9 @@ function start() {
     if (is3d) byId('mode-help').textContent = 'Orbit: drag · Zoom: scroll or pinch-zoom gesture. Height represents 2D dye concentration, not a 3D flow solver.';
     else byId('mode-help').textContent = 'Draw on the 2D tank to stir and add dye.';
     renderer.resize();
+    if (!is3d) gpu?.resize();
     configureRendering();
-    three?.resize();
+    if (is3d) three?.resize();
     render();
   }
 
@@ -362,7 +420,7 @@ function start() {
   function setView() {
     const legend = byId('legend');
     const labels = legends[view.value];
-    legend.hidden = !labels;
+    legend.hidden = !labels || displayMode.value === '3d';
     byId('tracer-option').hidden = Boolean(labels) || displayMode.value === '3d';
     if (labels) {
       byId('legend-low').textContent = labels[0];
@@ -395,21 +453,58 @@ function start() {
   view.addEventListener('change', setView);
   qualityInput.addEventListener('change', changeQuality);
   displayMode.addEventListener('change', changeDisplayMode);
-  for (const element of [renderScaleInput, glowInput, exposureInput, paletteInput, depthInput, meshInput]) {
+  for (const element of [renderScaleInput, glowInput, exposureInput, paletteInput,
+    depthInput, meshInput, renderEngine, interpolation, detailInput, grainInput, exportSize]) {
     element.addEventListener('input', configureRendering);
   }
   byId('reset-camera').addEventListener('click', () => three?.resetCamera());
-  screenshot.addEventListener('click', () => {
-    const source = displayMode.value === '3d' && three ? canvas3d : canvas;
-    source.toBlob(blob => {
-      if (!blob) return;
+  screenshot.addEventListener('click', async () => {
+    if (screenshot.disabled) return;
+    const wasPaused = paused;
+    setPaused(true);
+    screenshot.disabled = true;
+    screenshot.textContent = 'Rendering…';
+    exportFeedback.dataset.error = 'false';
+    exportFeedback.textContent = '';
+    try {
+      const target = exportSize.value === 'current' ? null : Number(exportSize.value);
+      let blob;
+      if (displayMode.value === '3d' && three) {
+        blob = await three.capture(target);
+      } else if (usesGPU()) {
+        blob = await gpu.capture(target);
+      } else {
+        const output = document.createElement('canvas');
+        const w = target || canvas.width;
+        const max = 7680;
+        if (!Number.isInteger(w) || w < 1 || w > max) throw new Error('Invalid PNG dimensions');
+        output.width = w;
+        output.height = Math.round(w * height / width);
+        const ctx = output.getContext('2d');
+        if (!ctx) throw new Error('Canvas export is unavailable');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(canvas, 0, 0, output.width, output.height);
+        blob = await new Promise((resolve, reject) => output.toBlob(
+          value => value ? resolve(value) : reject(new Error('PNG encoding failed')), 'image/png'));
+      }
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'fluid-dynamics-' + displayMode.value + '.png';
+      a.download = 'fluid-dynamics-' + displayMode.value + '-' +
+        (target || (displayMode.value === '3d' ? canvas3d.width : usesGPU() ? canvasGPU.width : canvas.width)) + 'w.png';
       a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }, 'image/png');
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      exportFeedback.textContent = 'PNG ready · ' + (blob.size / 1024 / 1024).toFixed(1) + ' MB';
+    } catch (error) {
+      console.error('Fluid PNG export failed', error);
+      exportFeedback.dataset.error = 'true';
+      exportFeedback.textContent = error.message || 'Export failed on this device';
+    } finally {
+      screenshot.disabled = false;
+      screenshot.textContent = 'Export PNG';
+      if (!wasPaused) setPaused(false);
+    }
   });
   tracers.addEventListener('change', render);
   document.addEventListener('visibilitychange', restartClock);
@@ -428,9 +523,12 @@ function start() {
   setPaused(paused);
   changeQuality();
   changeDisplayMode();
-  new ResizeObserver(() => {
+  if ('ResizeObserver' in window) new ResizeObserver(() => {
     if (displayMode.value === '3d') three?.resize();
-    else renderer.resize();
+    else {
+      renderer.resize();
+      gpu?.resize();
+    }
     render();
   }).observe(tankElement);
 }

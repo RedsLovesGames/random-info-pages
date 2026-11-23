@@ -4,20 +4,22 @@ export const QUALITY = Object.freeze({
   balanced: { width: 156, height: 104, iterations: 19, tracers: 1700, renderScale: 1, mesh: 88 },
   high: { width: 216, height: 144, iterations: 24, tracers: 2900, renderScale: 1.25, mesh: 116 },
   ultra: { width: 288, height: 192, iterations: 30, tracers: 4500, renderScale: 1.6, mesh: 148 },
-  cinematic: { width: 336, height: 224, iterations: 38, tracers: 6500, renderScale: 2, mesh: 180 }
+  cinematic: { width: 336, height: 224, iterations: 38, tracers: 6500, renderScale: 2, mesh: 180 },
+  extreme: { width: 432, height: 288, iterations: 44, tracers: 7000, renderScale: 2.6, mesh: 216 },
+  studio: { width: 540, height: 360, iterations: 50, tracers: 7000, renderScale: 3.2, mesh: 264 }
 });
 export function qualityProfile(name, mobile) {
   const key = Object.hasOwn(QUALITY, name) ? name : 'balanced';
   const value = QUALITY[key];
   if (!mobile) return { ...value };
-  const factor = { eco: .84, balanced: .70, high: .70, ultra: .65, cinematic: .64 }[key];
+  const factor = { eco: .84, balanced: .70, high: .70, ultra: .65, cinematic: .64, extreme: .60, studio: .55 }[key];
   const width = Math.max(64, Math.round(value.width * factor / 6) * 6);
   return {
     ...value, width, height: Math.round(width * 2 / 3),
     iterations: Math.max(11, Math.round(value.iterations * .8)),
     tracers: Math.round(value.tracers * .6),
-    renderScale: Math.min(value.renderScale, 1.5),
-    mesh: Math.min(value.mesh, 132)
+    renderScale: Math.min(value.renderScale, 1.8),
+    mesh: Math.min(value.mesh, 168)
   };
 }
 // Move an existing simulation to a new grid without throwing away the user's artwork.

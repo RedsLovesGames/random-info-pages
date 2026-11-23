@@ -5,7 +5,7 @@ import { FluidTank } from '../fluid-dynamics/fluid.mjs';
 import { QUALITY, qualityProfile, transferFluidState } from '../fluid-dynamics/quality.mjs';
 
 test('quality levels raise physics resolution and iterations and cap mobile work', () => {
-  const names = ['eco', 'balanced', 'high', 'ultra', 'cinematic'];
+  const names = ['eco', 'balanced', 'high', 'ultra', 'cinematic', 'extreme', 'studio'];
   const configs = names.map(name => qualityProfile(name, false));
   assert.ok(configs.every((value, i) => i === 0 || value.width > configs[i - 1].width));
   assert.ok(configs.every((value, i) => i === 0 || value.iterations > configs[i - 1].iterations));
@@ -44,4 +44,25 @@ test('render studio provides actual quality, 3D, and export controls', () => {
   assert.match(three, /getContext\('webgl2'/);
   assert.match(three, /gl\.drawElements\(gl\.TRIANGLES/);
   assert.match(three, /gl\.texSubImage2D/);
+});
+
+test('enhanced WebGL dye pipeline and high-resolution exports are integrated', () => {
+  const file = path => readFileSync(new URL(path, import.meta.url), 'utf8');
+  const html = file('../fluid-dynamics/index.html');
+  const app = file('../fluid-dynamics/app.mjs');
+  const gpu = file('../fluid-dynamics/dye-gpu.mjs');
+  const three = file('../fluid-dynamics/three-surface.mjs');
+  for (const id of ['tank-gpu','render-engine','interpolation','surface-detail','grain','export-size','export-feedback']) {
+    assert.match(html, new RegExp('id="' + id + '"'));
+  }
+  for (const w of ['2048','3840','5760','7680']) assert.match(html, new RegExp('value="' + w + '"'));
+  assert.match(app, /createDyeGPU\(canvasGPU, tank, smallScreen\)/);
+  assert.match(app, /gpu\.capture\(target\)/);
+  assert.match(app, /three\.capture\(target\)/);
+  assert.match(gpu, /function bicubic\(vec2 uv\)/);
+  assert.match(gpu, /gl\.drawArrays\(gl\.TRIANGLES/);
+  assert.match(gpu, /renderSize\(w, h\)/);
+  assert.match(three, /async function capture\(targetWidth\)/);
+  assert.match(three, /u_detail/);
+  assert.match(html, /does not create physical detail beyond the solver/);
 });
