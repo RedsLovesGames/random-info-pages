@@ -3,10 +3,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 const file=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("midterm dashboard is a standalone accessible page registered in homepage",()=>{
- const html=file("midterm-2026/index.html"),home=file("index.html");
+ const html=file("midterm-2026/index.html"),home=file("index.html"),registry=file("design-system/projects.js");
  assert.match(html,/id="layerButtons"/);assert.match(html,/id="mapContainer"/);
  assert.match(html,/id="ledgerRows"/);assert.match(html,/src="\.\/app\.js"/);
- assert.match(home,/\.\/midterm-2026\//);
+ assert.match(home,/const projects=window\.RIP_PROJECTS;/);
+ assert.match(registry,/\.\/midterm-2026\//);
 });
 test("state map geometry includes 50 states plus DC and PR",()=>{
  const svg=file("midterm-2026/us-states.svg");
