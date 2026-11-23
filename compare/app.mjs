@@ -60,6 +60,7 @@ function attach(side){
  listeners.set(side,{win,handler});
 }
 function updateCopyButton(){
+ updateTransportButtons();
  let supported=false;
  try{
   const a=frames.left.contentWindow.RIPStudio;
@@ -71,6 +72,35 @@ function updateCopyButton(){
  $('copy-state').title=supported?'Copy the left project’s editable state to the right panel':
    'Choose the same supported project in both panels to copy editable settings';
 }
+function updateTransportButtons(){
+ let supported=false;
+ try{
+  supported=['left','right'].every(side=>
+   typeof frames[side].contentWindow?.RIPStudio?.transport==='function');
+ }catch{}
+ for(const id of ['play-both','pause-both','reset-both']){
+  const button=$(id);
+  button.disabled=!supported;
+  button.title=supported?'Coordinate playback of two interactive projects':
+    'Available when both projects expose compatible transport controls';
+ }
+ $('transport-help').textContent=supported?
+  'Both projects support coordinated play/pause/reset. Starting is not sample-accurate or frame-locked.':
+  'Choose two pages with supported playback controls (Fluid Dynamics or Marble Sequencer).';
+}
+async function commandBoth(action){
+ try{
+  const controls=['left','right'].map(side=>frames[side].contentWindow?.RIPStudio?.transport);
+  if(controls.some(control=>typeof control!=='function'))
+   throw new Error('Both projects must support coordinated playback.');
+  await Promise.all(['left','right'].map(side=>Promise.resolve(
+    frames[side].contentWindow.RIPStudio.transport(action))));
+  say((action==='play'?'Started':action==='pause'?'Paused':'Reset')+' both projects. Their internal clocks run independently.');
+ }catch(error){say('Coordinated command failed: '+error.message,true)}
+}
+for(const [id,action] of [['play-both','play'],['pause-both','pause'],['reset-both','reset']]){
+ $(id).addEventListener('click',()=>commandBoth(action));
+}
 function load(side){
  const project=valid.get(state[side]);
  if(!project)return;
@@ -81,6 +111,7 @@ function load(side){
  detach(side);
  frames[side].src=rootUrl(state[side]).href;
  $('copy-state').disabled=true;
+ updateTransportButtons();
  updateAddress();
 }
 function change(side,next){

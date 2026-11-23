@@ -290,3 +290,27 @@
 @media (max-width: 750px) {
   #battlemap .battlemap-modes { padding-inline: 12px; }
 }
+
+/* Persistent map markers remain separate from generated room geometry. */
+#battlemap .battlemap-markers{padding:14px 16px;border-bottom:1px solid var(--lab-line);
+  background:var(--lab-paper)}
+#battlemap .battlemap-markers summary{font-size:14px}
+#battlemap .battlemap-marker-form{display:grid;gap:10px;margin:10px 0}
+#battlemap .battlemap-marker-form label{font-size:12px;font-weight:700;display:grid;gap:5px}
+#battlemap .battlemap-marker-form :is(input[type="text"],select){width:100%;min-height:39px;
+  padding:7px 9px;border:1px solid var(--lab-line);border-radius:4px;
+  background:var(--lab-white);color:var(--lab-ink);font:inherit}
+#battlemap .battlemap-marker-form .battlemap-marker-visibility{display:flex;align-items:start;
+  gap:8px;line-height:1.4;font-weight:600}
+#battlemap .battlemap-marker-form input[type="checkbox"]{width:17px;height:17px;flex:none}
+#battlemap .battlemap-marker-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:9px 0}
+#battlemap .battlemap-marker-actions button{font-size:12px;min-height:38px;padding:7px}
+#battlemap #battlemapMarkerAdd{background:var(--lab-blue);color:#fff;border-color:var(--lab-blue)}
+#battlemap .battlemap-marker-list{display:grid;gap:5px;max-height:235px;overflow:auto}
+#battlemap .battlemap-marker-list button{display:flex;gap:7px;justify-content:space-between;
+  align-items:center;text-align:left;width:100%;min-height:37px;font-size:11px;line-height:1.4;padding:7px}
+#battlemap .battlemap-marker-list button[aria-pressed="true"]{border-color:var(--lab-blue);background:var(--lab-tint)}
+#battlemap .battlemap-marker-list span{min-width:0;overflow-wrap:anywhere}
+#battlemap .battlemap-marker-list small{color:var(--lab-muted);white-space:nowrap;font-size:10px}
+#battlemap #battlemapMarkerStatus{margin:10px 0;line-height:1.5}
+#battlemap #battlemapMarkerStatus[data-error="true"]{color:#c24747}

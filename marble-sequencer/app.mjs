@@ -1,5 +1,6 @@
 import {LANES,buildPattern,encodePattern,decodePattern,noteName} from './music.mjs';
 import { exportPatternMidi } from './export-midi.mjs';
+import { rotateRows, euclideanRhythm, patternFromEvents } from './pattern-tools.mjs';
 import { receiveMarbleAudio } from '../design-system/bridge.mjs';
 import {makeMachine} from './machine.mjs';
 import {importMusic} from './imports.mjs';
@@ -89,6 +90,7 @@ function selectSong(song) {
   view.position.value = 0;
   view['time-now'].textContent = '0:00';
   view['use-loop'].hidden = composing;
+  byId('quantize-controls').hidden = composing;
   view.builder.hidden = !composing;
   view.loop.checked = composing;
   seeking = false;
@@ -115,6 +117,9 @@ function renderPattern() {
   view.bpm.value = pattern.bpm;
   renderMachineOptions();
   [...view['lane-choice'].options].forEach((option,index) => {option.textContent=labelForLane(index);});
+  [...byId('euclid-lane').options].forEach((option,index)=>{
+    option.textContent=labelForLane(index);
+  });
   previews.forEach(button => {
     const label = labelForLane(Number(button.dataset.lane));
     button.textContent = label;
@@ -217,6 +222,7 @@ async function loadFile(file) {
       message => {if (pendingImport === request) setStatus(message);});
     if (pendingImport !== request) return;
     selectSong(song);
+    byId('convert-bpm').value=pattern.bpm;
     setStatus(song.events.length ? 'Ready. Tap Play to start the machine.' : 'Ready to play. No clear hits were detected in this recording.');
   } catch (error) {
     if (pendingImport === request && error.name !== 'AbortError') {
@@ -322,6 +328,45 @@ byId('random-loop').addEventListener('click',()=>{
   if(pattern.rows.every(bits=>!bits))pattern.rows[0]=0x1111;
   updatePattern({keepPosition:false});
 });
+for(const [id,shift] of [['rotate-left',-1],['rotate-right',1]]){
+  byId(id).addEventListener('click',()=>{
+    remember();
+    pattern.rows=rotateRows(pattern.rows,shift);
+    updatePattern({keepPosition:false});
+    setStatus('Shifted the complete 16-step pattern '+(shift>0?'right':'left')+'.');
+  });
+}
+byId('euclid-fill').addEventListener('click',()=>{
+  try{
+    const lane=Number(byId('euclid-lane').value);
+    const pulses=Number(byId('euclid-pulses').value);
+    const rotation=Number(byId('euclid-rotation').value);
+    if(!Number.isInteger(lane)||lane<0||lane>=LANES.length)
+      throw new RangeError('Choose an instrument lane');
+    remember();
+    pattern.rows[lane]=euclideanRhythm(pulses,rotation);
+    updatePattern({keepPosition:false});
+    setStatus('Distributed '+pulses+' hits across 16 steps of '+labelForLane(lane)+'.');
+  }catch(error){setStatus('Rhythm generation failed: '+error.message,true)}
+});
+byId('convert-to-pattern').addEventListener('click',()=>{
+  try{
+    if(!['midi','audio'].includes(player.song.kind))
+      throw new Error('Open an audio or MIDI file first.');
+    const bpm=Number(byId('convert-bpm').value);
+    const startTime=Math.max(0,player.position);
+    const {pattern:next,mapped,windowSeconds}=patternFromEvents(player.song,{bpm,startTime});
+    if(!mapped)throw new Error('No detected notes or hits in this window. Move the playhead to a busier section.');
+    remember();
+    const previousName=player.song.name;
+    pattern=next;
+    patternName='From '+previousName.slice(0,65);
+    view.loop.checked=true;
+    updatePattern({rename:false,keepPosition:false});
+    setStatus('Quantized '+mapped+' note/hit events from '+formatTime(startTime)+
+      ' into '+windowSeconds.toFixed(2)+' seconds of editable steps. Timing and pitch are approximations.');
+  }catch(error){setStatus('Cannot create pattern: '+error.message,true)}
+});
 byId('export-midi').addEventListener('click',()=>{
   try{
     const bytes=exportPatternMidi(pattern);
@@ -370,7 +415,10 @@ function animate(now) {
   if (player.running || !machine.idle) invalidate();
 }
 
-LANES.forEach((lane,index) => view['lane-choice'].add(new Option(lane.label,index)));
+LANES.forEach((lane,index) => {
+  view['lane-choice'].add(new Option(lane.label,index));
+  byId('euclid-lane').add(new Option(lane.label,index));
+});
 for (let note=48; note<=84; note++) view['pitch-choice'].add(new Option(noteName(note),note));
 view['lane-choice'].value = 3;
 view['lane-choice'].addEventListener('change',renderMachineOptions);
@@ -403,6 +451,12 @@ window.RIPStudio={
   setQuality(level){
     document.documentElement.dataset.marbleEffects=level==='eco'?'reduced':'full';
     machine.resize();invalidate();
+  },
+  async transport(action){
+    if(action==='play'){await start();return;}
+    if(action==='pause'){player.pause();renderPlayState();return;}
+    if(action==='reset'){player.pause();await reposition(0);renderPlayState();return;}
+    throw new Error('Unknown transport command');
   }
 };
 renderGrid();

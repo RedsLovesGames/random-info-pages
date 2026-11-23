@@ -608,6 +608,12 @@ function start() {
         adaptiveStatus.textContent = 'Restored the previous simulation quality and adaptive setting.';
       }
     },
+    transport(action) {
+      if(action==='play'){setPaused(false);return}
+      if(action==='pause'){setPaused(true);return}
+      if(action==='reset'){loadPreset(preset);setPaused(true);return}
+      throw new Error('Unknown transport command');
+    },
     metrics() {
       return {
         fps: Number.parseInt(byId('fps').textContent,10)||0,

@@ -59,3 +59,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
  .compare-footer{flex-wrap:wrap}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+.compare-transport{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;border:1px solid var(--line);border-radius:7px;padding:4px}
+.compare-transport button{font-size:12px;font-weight:700;padding:8px 10px;min-height:36px}
+.compare-transport-help{grid-column:1/-1;font-size:11px;line-height:1.45;color:var(--muted);margin:0}
+@media(max-width:650px){.compare-transport{width:100%;justify-content:space-between}
+.compare-transport button{font-size:11px}}

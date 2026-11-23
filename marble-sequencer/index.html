@@ -68,6 +68,12 @@
           <input id="volume" type="range" aria-label="Volume" min="0" max="100" value="78">
         </div>
         <button id="use-loop" type="button" hidden>Return to your loop</button>
+        <div id="quantize-controls" class="quantize-controls" hidden>
+          <h3>Make an editable loop</h3>
+          <p>Convert the next 16 steps of this file, starting at the playhead. Audio detection is approximate; MIDI notes are mapped onto the eight available marble lanes.</p>
+          <label>Loop tempo (BPM) <input type="number" id="convert-bpm" min="40" max="240" step="1" value="104" inputmode="numeric"></label>
+          <button id="convert-to-pattern" type="button">Quantize from playhead ↗</button>
+        </div>
         <details class="formats">
           <summary>Supported files</summary>
           <p>MP3, WAV, M4A, AAC, FLAC, Ogg, Opus, AIFF, WMA, and other decodable audio. Standard MIDI (.mid, .midi), RMID, and KAR files play through an in-browser synth.</p>
@@ -87,6 +93,8 @@
           <button id="undo-loop" type="button" disabled>Undo</button>
           <button id="redo-loop" type="button" disabled>Redo</button>
           <button id="random-loop" type="button">Randomize</button>
+          <button id="rotate-left" type="button" title="Move every gate one step earlier">← Shift</button>
+          <button id="rotate-right" type="button" title="Move every gate one step later">Shift →</button>
           <button id="demo" type="button">Demo</button>
           <button id="clear" type="button">Clear</button>
           <button id="export-midi" type="button">Export MIDI ↓</button>
@@ -94,6 +102,13 @@
         </div>
       </header>
       <div class="sequencer" id="sequencer"></div>
+      <div class="rhythm-tools" aria-label="Euclidean rhythm generator">
+        <div><strong>Evenly spaced rhythms</strong><span>Generate a rhythmic pattern on one instrument lane.</span></div>
+        <label>Lane <select id="euclid-lane" aria-label="Rhythm lane"></select></label>
+        <label>Hits <input type="number" id="euclid-pulses" min="0" max="16" step="1" value="5" inputmode="numeric"></label>
+        <label>Rotate <input type="number" id="euclid-rotation" min="-15" max="15" step="1" value="0" inputmode="numeric"></label>
+        <button id="euclid-fill" type="button">Fill lane</button>
+      </div>
       <details class="machine-settings">
         <summary>Customize ramps and bars</summary>
         <div class="machine-options">

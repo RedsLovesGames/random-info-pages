@@ -165,3 +165,9 @@ input[type='range'], input[type='checkbox'] { accent-color: var(--blue); }
 html[data-marble-effects="reduced"] .machine *{animation:none!important;transition:none!important}
 @media(max-width:600px){.builder-tools{justify-content:flex-start}
 .builder-tools button{min-height:38px}}
+
+/* Builder additions use existing palette variables for consistent light/dark themes. */
+.quantize-controls,.rhythm-tools{border-color:var(--border)}
+.quantize-controls{background:var(--face)}
+.quantize-controls input,.rhythm-tools select,.rhythm-tools input{border-color:var(--border);background:var(--face)}
+.quantize-controls button{background:var(--blue)}

@@ -31,9 +31,15 @@
     <label class="toggle"><input type="checkbox" id="sync-scroll"><span>Sync scroll</span></label>
     <label class="layout-picker">Layout <select id="layout"><option value="horizontal">Side by side</option><option value="vertical">Stacked</option></select></label>
     <button type="button" id="copy-state" title="Copy editable state when both panels show the same compatible project" disabled>Copy left → right</button>
+    <div class="compare-transport" role="group" aria-label="Coordinated playback">
+      <button type="button" id="play-both" disabled>▶ Play both</button>
+      <button type="button" id="pause-both" disabled>Ⅱ Pause both</button>
+      <button type="button" id="reset-both" disabled>↺ Reset both</button>
+    </div>
     <button type="button" id="share-compare">Copy comparison link</button>
     <button type="button" id="reset-split">Equal size</button>
   </div>
+  <p id="transport-help" class="compare-transport-help">Choose two projects with supported playback controls to coordinate play, pause and reset.</p>
   <p class="compare-status" id="compare-status" role="status" aria-live="polite">Projects run independently. Scroll synchronization is optional.</p>
 </section>
 <section class="compare-shell" id="compare-shell" data-orientation="horizontal" aria-label="Live comparison panels">
@@ -49,7 +55,7 @@
     <iframe id="right-frame" title="Right interactive project" loading="eager" allow="autoplay; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>
   </div>
 </section>
-<footer class="compare-footer"><p><strong>How comparison works.</strong> Both panels run their own simulations and local data. Sync scroll matches the percentage through each page, not simulation time. Copy state is available only when both projects expose compatible editable snapshots.</p>
+<footer class="compare-footer"><p><strong>How comparison works.</strong> Both panels run their own simulations and local data. Sync scroll matches the percentage through each page, not simulation time. Coordinated transport does not synchronize audio or simulation clocks precisely. Copy state is available only when both projects expose compatible editable snapshots.</p>
 <a href="../">All projects ↗</a></footer>
 </main>
 </body></html>

@@ -180,6 +180,31 @@
           <canvas id="battlemapCanvas" role="img" aria-label="Top-down dungeon battlemap" hidden></canvas>
         </figure>
         <div class="battlemap-sidebar">
+          <section class="battlemap-markers" aria-labelledby="battlemapMarkerHeading">
+            <details id="battlemapMarkerDetails">
+              <summary id="battlemapMarkerHeading">Map markers &amp; annotations</summary>
+              <p class="battlemap-fog-note">Place notes, hazards, NPCs, treasure, clues, or objectives on map squares. GM-only markers are never included in player maps or the Owlbear scene image.</p>
+              <div class="battlemap-marker-form">
+                <label>Marker type <select id="battlemapMarkerKind">
+                  <option value="note">Note</option><option value="danger">Hazard</option>
+                  <option value="loot">Treasure</option><option value="npc">NPC</option>
+                  <option value="clue">Clue</option><option value="objective">Objective</option>
+                </select></label>
+                <label>Label <input type="text" id="battlemapMarkerLabel" maxlength="96" placeholder="e.g. Hidden passage, quest NPC"></label>
+                <label class="battlemap-marker-visibility"><input type="checkbox" id="battlemapMarkerPlayer"> Show on player map and VTT image</label>
+              </div>
+              <div class="battlemap-marker-actions">
+                <button type="button" id="battlemapMarkerAdd">Place on map</button>
+                <button type="button" id="battlemapMarkerMove" disabled>Move selected</button>
+                <button type="button" id="battlemapMarkerApply" disabled>Apply changes</button>
+                <button type="button" id="battlemapMarkerDelete" disabled>Delete</button>
+                <button type="button" id="battlemapMarkerUndo" disabled>Undo</button>
+                <button type="button" id="battlemapMarkerRedo" disabled>Redo</button>
+              </div>
+              <p id="battlemapMarkerStatus" class="battlemap-fog-note" role="status" aria-live="polite">Choose a type, enter a label, then select Place on map.</p>
+              <div class="battlemap-marker-list" id="battlemapMarkerList" role="group" aria-label="Saved map markers"></div>
+            </details>
+          </section>
           <section class="battlemap-keys" aria-labelledby="battlemapKeyHeading">
             <h3 id="battlemapKeyHeading">Room editor</h3>
             <label class="battlemap-field">Room <select id="battlemapRoomSelect" aria-label="Room"></select></label>
@@ -210,6 +235,8 @@
               <label><input type="checkbox" id="battlemapEntranceLight"> Reveal entrance</label>
             </div>
             <button type="button" class="battlemap-download" data-battlemap-export="vtt">Download for Owlbear (.dd2vtt)</button>
+            <button type="button" class="battlemap-download battlemap-session-pack" data-battlemap-export="package">Download complete GM session pack (.zip)</button>
+            <p class="battlemap-fog-note">The ZIP includes separate player and GM maps, Owlbear VTT scene, room key, and editable project. It contains GM-only information: do not share the full ZIP with players.</p>
             <p class="battlemap-fog-note">Scene Importer fills fog and adds walls when it creates a new scene.</p>
             <div class="battlemap-file-options">
               <button type="button" data-battlemap-export="player">Player PNG</button>

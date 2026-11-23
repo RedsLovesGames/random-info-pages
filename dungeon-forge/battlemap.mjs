@@ -1,10 +1,13 @@
 import { makeBattlemap, pixelsPerSquare, pngExportSpec, roomExportRegion, universalVtt } from './battlemap-core.mjs';
 import { drawBattlemap } from './battlemap-render.mjs';
+import {MARKER_KINDS,createMarkerHistory,addMarker,moveMarker,changeMarker,deleteMarker,
+  drawMarkerOverlay,findMarker,markerText} from './battlemap-markers.mjs';
 import { encounterBudget, formatRoom, normalizeParty } from './adventure.mjs';
 import { srdAttribution } from './adventure-monsters.mjs';
 import { createProject, decodeProject, makeProjectAdventure, moveMonster, nextRoomState, projectRoomAt,
   rerollProjectAll, rerollProjectRoom, rerollProjectSingle, toggleCover, toggleProjectLock } from './dungeon-project.mjs';
 import { createRoomHistory } from './dungeon-room-history.mjs';
+import {createZip} from './session-zip.mjs';
 import { sessionPlans } from './dungeon-routes.mjs';
 import { labeledList, roomPanel, textElement } from './dungeon-room-panel.mjs';
 
@@ -19,6 +22,13 @@ const roomList = byId('battlemapRooms');
 const roomSelect = byId('battlemapRoomSelect');
 const undo = byId('battlemapUndoRoom');
 const roomPngSize = byId('battlemapRoomPngSize');
+const markerList=byId('battlemapMarkerList');
+const markerStatus=byId('battlemapMarkerStatus');
+const markerKind=byId('battlemapMarkerKind');
+const markerLabel=byId('battlemapMarkerLabel');
+const markerPlayer=byId('battlemapMarkerPlayer');
+const markerUndo=byId('battlemapMarkerUndo');
+const markerRedo=byId('battlemapMarkerRedo');
 const overview = byId('battlemapAdventure');
 const form = byId('battlemapParty');
 const budget = byId('battlemapBudget');
@@ -49,6 +59,8 @@ let running = false;
 let exporting = false;
 let history;
 let currentRegion;
+let markerHistory=createMarkerHistory();
+let selectedMarker=null,markerMode=null;
 
 function readRecord(key) {
   try {
@@ -66,6 +78,57 @@ function saveRecord(key, value) {
 function saveProject() {
   saveRecord(planKey + ':project', project);
 }
+function markerMessage(message,error=false){
+  markerStatus.textContent=message;
+  markerStatus.dataset.error=String(error);
+}
+function renderMarkers(){
+  const entries=project?.markers||[];
+  if(!entries.some(entry=>entry.id===selectedMarker))selectedMarker=null;
+  const active=entries.find(entry=>entry.id===selectedMarker);
+  markerList.replaceChildren(...entries.map(entry=>{
+    const button=document.createElement('button');
+    button.type='button';button.dataset.markerId=String(entry.id);
+    button.setAttribute('aria-pressed',String(entry.id===selectedMarker));
+    const name=document.createElement('span');
+    name.textContent=(MARKER_KINDS[entry.kind]?.name||'Note')+' · '+(entry.label||'Unlabeled');
+    const detail=document.createElement('small');
+    detail.textContent=entry.player?'Player':'GM only';
+    button.append(name,detail);
+    button.addEventListener('click',()=>{
+      selectedMarker=entry.id;markerMode=null;
+      markerKind.value=entry.kind;
+      markerLabel.value=entry.label;
+      markerPlayer.checked=entry.player;
+      markerMessage('Selected marker at column '+(entry.x+1)+', row '+(entry.y+1)+'.');
+      renderMarkers();refreshPreview();
+    });
+    return button;
+  }));
+  if(!entries.length){
+    const note=document.createElement('p');
+    note.className='battlemap-fog-note';note.textContent='No annotations on this map yet.';
+    markerList.append(note);
+  }
+  for(const name of ['battlemapMarkerMove','battlemapMarkerApply','battlemapMarkerDelete'])
+    byId(name).disabled=!active;
+  byId('battlemapMarkerAdd').disabled=!dungeon;
+  markerUndo.disabled=!markerHistory.undoable;
+  markerRedo.disabled=!markerHistory.redoable;
+}
+function afterMarkerEdit(message){
+  markerMode=null;
+  saveProject();renderMarkers();refreshPreview();
+  markerMessage(message);
+}
+function editMarker(action,successMessage){
+  if(!project||!dungeon)return;
+  try{
+    markerHistory.edit(project,action);
+    afterMarkerEdit(successMessage);
+  }catch(error){markerMessage(error.message||'The marker could not be changed.',true)}
+}
+
 
 function getSettings() {
   return {
@@ -115,6 +178,7 @@ function refreshPreview() {
   map.style.setProperty('--battlemap-detail-width', (dungeon.W * 17) + 'px');
   drawBattlemap(map, dungeon, pixels, { grid: grid.checked, numbers: numbers.checked, doors: doors.checked,
     adventure, furnishings: adventure.furnishings, doorStates: sessionDoorStates(), selected });
+  drawMarkerOverlay(map,dungeon,pixels,project?.markers,{role:'gm',selected:selectedMarker});
 }
 
 function renderOverview() {
@@ -362,6 +426,10 @@ function loadPlan(imported) {
   dungeon = plan;
   project = next;
   planKey = key;
+  markerHistory=createMarkerHistory();
+  selectedMarker=null;markerMode=null;
+  renderMarkers();
+  markerMessage('Place markers on walkable squares. Player visibility is opt-in.');
   if (imported || !projectHistories.has(key)) projectHistories.set(key, createRoomHistory());
   history = projectHistories.get(key);
   selected = project.session.roomId ?? dungeon.entrance;
@@ -390,6 +458,9 @@ function loadActiveLayout() {
     budget.textContent = '';
     byId('battlemapPngSize').textContent = '';
     map.hidden = true;
+    selectedMarker=null;markerMode=null;
+    markerHistory=createMarkerHistory();
+    renderMarkers();
     editorStatus.textContent = error.message;
     for (const button of [...exports, reroll, prepare, run]) button.disabled = true;
   }
@@ -401,10 +472,10 @@ function download(name, blob) {
   link.href = url;
   link.download = name;
   link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
-function downloadKey(plan, basename) {
+function makeRoomKeyText(plan) {
   const { name, party, hook, objective, complication, reward, rooms } = adventure;
   const header = [
     name + ' · ' + plan.name,
@@ -423,10 +494,74 @@ function downloadKey(plan, basename) {
     const doorText = room.doors.map(index => 'Door ' + (index + 1) + ' · ' + (adventure.kinds[index] ?? 'closed')).join('\n');
     return doorText ? formatted + '\n' + doorText : formatted;
   });
-  const text = [header.join('\n'), ...entries, srdAttribution].join('\n\n') + '\n';
-  download(basename + '-gm-room-key.txt', new Blob([text], { type: 'text/plain;charset=utf-8' }));
+  const markers=project.markers?.length?
+    ['CUSTOM MAP MARKERS',...project.markers.map(markerText)].join('\n'):'';
+  const text = [header.join('\n'), ...entries,markers,srdAttribution].filter(Boolean).join('\n\n') + '\n';
+  return text;
 }
-
+function downloadKey(plan,basename){
+  download(basename+'-gm-room-key.txt',new Blob([makeRoomKeyText(plan)],{type:'text/plain;charset=utf-8'}));
+}
+async function packageSession(plan,basename){
+  exporting=true;
+  status.textContent='Preparing player and GM maps…';
+  const spec=pngExportSpec(plan,quality.value,basename);
+  async function makePNG(role){
+    const c=document.createElement('canvas');
+    try{
+      drawBattlemap(c,plan,spec.pixels,{
+        grid:grid.checked,numbers:role==='gm',doors:doors.checked,
+        adventure:role==='gm'?adventure:undefined,
+        furnishings:adventure.furnishings,doorStates:adventure.kinds
+      });
+      drawMarkerOverlay(c,plan,spec.pixels,project.markers,{role});
+      return await new Promise((resolve,reject)=>c.toBlob(
+        result=>result?resolve(result):reject(new Error('PNG encoding failed')),'image/png'));
+    }finally{c.width=c.height=1}
+  }
+  try{
+    const player=await makePNG('player');
+    const gm=await makePNG('gm');
+    status.textContent='Preparing Owlbear VTT scene and GM notes…';
+    const sceneCanvas=document.createElement('canvas');
+    let image;
+    try{
+      const pixels=pixelsPerSquare(plan);
+      drawBattlemap(sceneCanvas,plan,pixels,{
+        grid:false,numbers:false,doors:false,
+        furnishings:adventure.furnishings,doorStates:adventure.kinds
+      });
+      drawMarkerOverlay(sceneCanvas,plan,pixels,project.markers,{role:'player'});
+      image=sceneCanvas.toDataURL('image/png').split(',')[1];
+      if(!image)throw new Error('The Owlbear scene image could not be encoded.');
+    }finally{sceneCanvas.width=sceneCanvas.height=1}
+    const scene=universalVtt(plan,{
+      pixels:pixelsPerSquare(plan),image,
+      doors:doors.checked,lights:lights.checked,entranceLight:entranceLight.checked
+    });
+    const gridName=plan.W+'x'+plan.H;
+    const files=[
+      {name:basename+'-player-'+gridName+'.png',data:player},
+      {name:basename+'-gm-'+gridName+'.png',data:gm},
+      {name:basename+'-owlbear.dd2vtt',data:JSON.stringify(scene)},
+      {name:basename+'-gm-room-key.txt',data:makeRoomKeyText(plan)},
+      {name:basename+'-editable.dungeon-forge.json',data:JSON.stringify(project,null,2)},
+      {name:'README-GM.txt',data:
+        'DUNGEON FORGE SESSION PACK\n\n'+
+        'PLAYER FILE: The player PNG excludes GM-only markers, encounter outlines, and numbered room labels.\n'+
+        'GM FILES: The GM PNG, room key, and editable JSON may include spoilers, trap information, and secret markers.\n'+
+        'OWLBEAR: Import the .dd2vtt file through an importer that supports Universal VTT. Scene walls and door information depend on the importing extension.\n'+
+        'GRIDS: This dungeon is '+gridName+' squares, 5 feet per square.\n'+
+        'MARKERS: Only markers explicitly set to player-visible appear on player maps and the .dd2vtt image.\n'}
+    ];
+    status.textContent='Packaging '+files.length+' session files…';
+    const archive=await createZip(files);
+    download(basename+'-gm-session-pack.zip',archive);
+    status.textContent='GM session package saved · '+(archive.size/1024/1024).toFixed(1)+' MB. Share only the player files with players.';
+  }catch(error){
+    status.textContent='Could not package this session: '+(error.message||String(error));
+  }finally{exporting=false}
+}
 async function downloadMap(format) {
   if (!dungeon || exporting) return;
   const plan = dungeon;
@@ -438,6 +573,10 @@ async function downloadMap(format) {
   }
   if (format === 'key') {
     downloadKey(plan, basename);
+    return;
+  }
+  if (format === 'package') {
+    await packageSession(plan,basename);
     return;
   }
 
@@ -459,6 +598,7 @@ async function downloadMap(format) {
       grid: format === 'vtt' ? false : grid.checked, numbers: isGm, doors: format !== 'vtt' && doors.checked,
       adventure: isGm ? adventure : undefined, furnishings: adventure.furnishings, doorStates: adventure.kinds, region
     });
+    drawMarkerOverlay(output,plan,pixels,project.markers,{region,role:isGm?'gm':'player'});
     if (format === 'vtt') {
       const image = output.toDataURL('image/png').split(',')[1];
       if (!image) throw new Error('This browser could not encode the map image.');
@@ -561,7 +701,28 @@ map.addEventListener('click', event => {
   const rect = map.getBoundingClientRect();
   const x = Math.floor((event.clientX - rect.left) * dungeon.W / rect.width);
   const y = Math.floor((event.clientY - rect.top) * dungeon.H / rect.height);
+  if(markerMode==='place'){
+    editMarker(()=>{
+      const placed=addMarker(project,dungeon,{x,y,kind:markerKind.value,
+        label:markerLabel.value,player:markerPlayer.checked});
+      selectedMarker=placed.id;
+    },'Marker placed at column '+(x+1)+', row '+(y+1)+'.');
+    return;
+  }
+  if(markerMode==='move'){
+    editMarker(()=>moveMarker(project,dungeon,selectedMarker,x,y),
+      'Marker moved to column '+(x+1)+', row '+(y+1)+'.');
+    return;
+  }
   if (placement) { placeAt(x, y); return; }
+  const hovered=findMarker(project,x,y);
+  if(hovered){
+    selectedMarker=hovered.id;
+    markerKind.value=hovered.kind;markerLabel.value=hovered.label;
+    markerPlayer.checked=hovered.player;
+    markerMessage('Selected '+(hovered.label||MARKER_KINDS[hovered.kind]?.name||'marker')+'.');
+    renderMarkers();refreshPreview();return;
+  }
   const id = projectRoomAt(dungeon, x, y);
   if (id !== undefined) {
     selectRoom(id);
@@ -573,6 +734,41 @@ zoom.addEventListener('click', () => {
   zoom.setAttribute('aria-pressed', String(detail));
   map.dataset.detail = String(detail);
 });
+byId('battlemapMarkerAdd').addEventListener('click',()=>{
+  if(!dungeon)return;
+  markerMode=markerMode==='place'?null:'place';
+  placement=undefined;
+  markerMessage(markerMode==='place'
+    ?'Click a walkable square to place '+(MARKER_KINDS[markerKind.value]?.name||'marker')+
+      '. Use Esc to cancel.':'Marker placement cancelled.');
+});
+byId('battlemapMarkerMove').addEventListener('click',()=>{
+  if(selectedMarker===null)return;
+  markerMode=markerMode==='move'?null:'move';
+  placement=undefined;
+  markerMessage(markerMode==='move'
+    ?'Click a new walkable square to move the selected marker.':'Move cancelled.');
+});
+byId('battlemapMarkerApply').addEventListener('click',()=>{
+  if(selectedMarker===null)return;
+  editMarker(()=>changeMarker(project,selectedMarker,{
+    kind:markerKind.value,label:markerLabel.value,player:markerPlayer.checked
+  }),'Marker type, label and visibility saved.');
+});
+byId('battlemapMarkerDelete').addEventListener('click',()=>{
+  if(selectedMarker===null)return;
+  editMarker(()=>{
+    deleteMarker(project,selectedMarker);selectedMarker=null;
+  },'Marker deleted.');
+});
+markerUndo.addEventListener('click',()=>{
+  if(!markerHistory.undo(project))return;
+  selectedMarker=null;afterMarkerEdit('Undid marker edit.');
+});
+markerRedo.addEventListener('click',()=>{
+  if(!markerHistory.redo(project))return;
+  selectedMarker=null;afterMarkerEdit('Redid marker edit.');
+});
 quality.addEventListener('change', renderPngSize);
 for (const checkbox of [grid, numbers, doors]) checkbox.addEventListener('change', refreshPreview);
 dialog.addEventListener('click', event => {
@@ -581,6 +777,10 @@ dialog.addEventListener('click', event => {
 });
 // The underlying exhibit listens for single-letter shortcuts on window.
 dialog.addEventListener('keydown', event => {
+  if(event.key==='Escape'&&markerMode){
+    event.preventDefault();event.stopPropagation();
+    markerMode=null;markerMessage('Marker operation cancelled.');return;
+  }
   if (!undo.disabled && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey &&
       event.key.toLowerCase() === 'z' && !event.target.closest('input, textarea, select, [contenteditable]')) {
     event.preventDefault();
@@ -613,6 +813,7 @@ window.RIPStudio = {
         grid:grid.checked, numbers:false, doors:doors.checked,
         furnishings:adventure.furnishings, doorStates:adventure.kinds
       });
+      drawMarkerOverlay(output,dungeon,spec.pixels,project.markers,{role:'player'});
       return await new Promise((resolve,reject) => output.toBlob(
         value=>value?resolve(value):reject(new Error('Map PNG encoding failed')),'image/png'));
     } finally { output.width=output.height=1; }

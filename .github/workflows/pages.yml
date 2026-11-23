@@ -48,7 +48,11 @@ jobs:
 
       - name: Verify archive home
         run: |
-          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs tests/fluid-adaptive.test.mjs
+          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs tests/fluid-adaptive.test.mjs tests/marble-pattern-tools.test.mjs tests/dungeon-markers.test.mjs tests/dungeon-session-zip.test.mjs tests/dungeon-editor-integration.test.mjs
+          node --check marble-sequencer/pattern-tools.mjs
+          node --check dungeon-forge/battlemap-markers.mjs
+          node --check dungeon-forge/session-zip.mjs
+          node --check dungeon-forge/dungeon-project.mjs
           node --check fluid-dynamics/adaptive.mjs
           node --check compare/app.mjs
           node --check design-system/tours.mjs
@@ -308,6 +312,17 @@ jobs:
           grep -Fq 'startTour' /tmp/guided-tours.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/recording.js "$base/design-system/recording.mjs"
           grep -Fq 'startCanvasRecording' /tmp/recording.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/dungeon-editor.html "$base/dungeon-forge/"
+          grep -Fq 'id="battlemapMarkerAdd"' /tmp/dungeon-editor.html
+          grep -Fq 'data-battlemap-export="package"' /tmp/dungeon-editor.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/dungeon-marker-module.js "$base/dungeon-forge/battlemap-markers.mjs"
+          grep -Fq 'drawMarkerOverlay' /tmp/dungeon-marker-module.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/marble-studio.html "$base/marble-sequencer/"
+          grep -Fq 'id="convert-to-pattern"' /tmp/marble-studio.html
+          grep -Fq 'id="euclid-fill"' /tmp/marble-studio.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/loop-transform.js "$base/marble-sequencer/pattern-tools.mjs"
+          grep -Fq 'patternFromEvents' /tmp/loop-transform.js
+          grep -Fq 'id="play-both"' /tmp/compare-lab.html
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/fluid-surface.js "$base/fluid-dynamics/three-surface.mjs"
           grep -Fq 'getContext('\''webgl2'\''' /tmp/fluid-surface.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/fluid-dye-gpu.js "$base/fluid-dynamics/dye-gpu.mjs"
