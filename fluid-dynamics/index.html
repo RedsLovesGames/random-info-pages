@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#edece5">
+  <meta name="theme-color" content="#eae8f5">
   <meta name="description" content="Stir ink, collide jets, and see the vortices behind an obstacle in an interactive 2D fluid simulation.">
   <title>Fluid Dynamics | Random Info Pages</title>
   <link rel="stylesheet" href="../design-system/rip.css">
   <link rel="stylesheet" href="./styles.css">
   <script defer src="../design-system/rip.js"></script>
-  <script defer src="../design-system/appearance.js" data-native-appearance="light"></script>
+  <script defer src="../design-system/appearance.js" data-native-appearance="light" data-appearance-engine="native"></script>
   <script type="module" src="./app.mjs"></script>
 </head>
 <body>
@@ -30,6 +30,7 @@
               <option value="pressure">Pressure</option>
             </select>
           </label>
+          <span id="tank-status" class="tank-status" aria-hidden="true">Running</span>
           <div class="transport">
             <button type="button" id="pause">Pause</button>
             <button type="button" id="step" disabled>Step</button>
@@ -43,7 +44,8 @@
           <output id="brush-marker" aria-hidden="true"></output>
         </div>
         <div class="tank-caption">
-          <p id="tank-help">Drag to stir. With the tank focused, use arrow keys to move the brush and Space to apply it.</p>
+          <p id="tank-help">Drag to stir. Use the arrow keys and Space when the tank is focused.</p>
+          <label id="tracer-option" class="tracer-option"><input type="checkbox" id="tracers" checked> Flow tracers</label>
           <div class="legend" id="legend" hidden><span id="legend-low"></span><i aria-hidden="true"></i><span id="legend-high"></span></div>
         </div>
         <p id="model-error" role="status" hidden>Canvas 2D is unavailable in this browser.</p>
@@ -95,9 +97,9 @@
     <details class="references">
       <summary>How the model works &amp; references</summary>
       <p>This is a 2D incompressible flow model in a closed tank. Each step moves velocity and dye along the flow, smooths velocity according to viscosity, and solves for a pressure correction to reduce compression. The velocity view shows speed. Vorticity shows how quickly the fluid rotates locally.</p>
-      <p>The controls use relative values and the pressure display shows the solver’s correction. In the jet presets, the colored sources push fluid already in the tank.</p>
+      <p>Flow tracers mark the dye’s motion. In the velocity view, arrows point in the local direction of flow. The controls use relative values and the pressure display shows the solver’s correction. In the jet presets, the colored sources push fluid already in the tank.</p>
       <ul>
-        <li><a href="https://paveldogreat.github.io/WebGL-Fluid-Simulation/">Pavel Dobryakov’s WebGL Fluid Simulation</a> inspired the interactive dye brush.</li>
+        <li><a href="https://paveldogreat.github.io/WebGL-Fluid-Simulation/">Pavel Dobryakov’s WebGL Fluid Simulation</a> inspired the interactive dye brush and bloom.</li>
         <li><a href="https://piellardj.github.io/navier-stokes-webgl/">Jérémie Piellard’s Navier–Stokes demo</a> inspired the field views and obstacle.</li>
         <li><a href="https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-38-fast-fluid-dynamics-simulation-gpu">Mark Harris’s <cite>Fast Fluid Dynamics Simulation on the GPU</cite></a> describes the Stable Fluids method used as the solver reference.</li>
       </ul>

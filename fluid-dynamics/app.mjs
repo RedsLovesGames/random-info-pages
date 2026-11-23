@@ -1,4 +1,5 @@
 import { FluidTank } from './fluid.mjs';
+import { createTankRenderer } from './render.mjs';
 
 const byId = id => document.getElementById(id);
 const canvas = byId('tank');
@@ -10,11 +11,10 @@ else byId('model-error').hidden = false;
 function start() {
   const smallScreen = matchMedia('(max-width: 700px), (pointer: coarse)').matches;
   const tank = smallScreen ? new FluidTank(108, 72) : new FluidTank(156, 104);
-  const { width, height, stride } = tank;
-  canvas.width = width;
-  canvas.height = height;
-  const frame = context.createImageData(width, height);
-  const image = frame.data;
+  const { width, height } = tank;
+  const renderer = createTankRenderer(canvas, context, tank, smallScreen);
+  const tracers = byId('tracers');
+  const status = byId('tank-status');
   const tankElement = canvas.parentElement;
   const view = byId('view'), obstacle = byId('obstacle');
   const pauseButton = byId('pause'), stepButton = byId('step');
@@ -23,6 +23,7 @@ function start() {
   const clampUnit = value => Math.max(0, Math.min(1, value));
   const rgb = hex => [1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16) / 255);
   const teal = rgb('#49ded4'), orange = rgb('#ff8c52'), pink = rgb('#f275b8'), blue = rgb('#6e94ff');
+  const cyan = rgb('#33dee9'), indigo = rgb('#6656ff'), orchid = rgb('#df60ed'), gold = rgb('#ffbc65');
   const buttons = key => [...document.querySelectorAll(`[data-${key}]`)];
   const setPressed = (key, value) => {
     for (const button of buttons(key)) button.setAttribute('aria-pressed', String(button.dataset[key] === value));
@@ -35,9 +36,9 @@ function start() {
     free: { description: 'Start with still fluid and use the brush to put it in motion.', viscosity: 10, persistence: 89 }
   };
   const legends = {
-    velocity: ['Still', 'Fast', '#081019, #39c4dd, #eef8ed'],
-    vorticity: ['Counterclockwise', 'Clockwise', '#589eff, #081019, #ffa46f'],
-    pressure: ['Negative', 'Positive', '#9764ee, #081019, #ffde73']
+    velocity: ['Still', 'Fast', '#101932, #39c4dd, #e0f7ff'],
+    vorticity: ['Counterclockwise', 'Clockwise', '#579cfb, #101932, #ff895f'],
+    pressure: ['Negative', 'Positive', '#9764ee, #101932, #ffcc73']
   };
   const stepInterval = 1000 / 30;
   const scale = height / 104;
@@ -47,46 +48,7 @@ function start() {
   let paused = reducedMotion.matches, visible = true, scheduled = 0, previousTime = 0, elapsed = 0, tick = 0;
 
   function render() {
-    const { u, v, pressure, dye, solid } = tank;
-    const current = view.value;
-    const isCurl = current === 'vorticity';
-    const cool = isCurl ? [80, 150, 232] : [140, 88, 221];
-    const warm = isCurl ? [245, 149, 88] : [244, 206, 92];
-    for (let y = 0, pixel = 0; y < height; y++) {
-      for (let x = 0; x < width; x++, pixel += 4) {
-        const i = y * stride + x;
-        let r = 8, g = 15, b = 22;
-        if (solid[i]) {
-          const edge = !solid[i - 1] || !solid[i + 1] || !solid[i - stride] || !solid[i + stride];
-          r = edge ? 138 : 28;
-          g = edge ? 169 : 44;
-          b = edge ? 172 : 51;
-        } else if (current === 'dye') {
-          // Tone mapping keeps faint filaments visible without clipping bright ink.
-          r += 244 * Math.tanh(Math.pow(dye[0][i], .66) * .9);
-          g += 237 * Math.tanh(Math.pow(dye[1][i], .66) * .9);
-          b += 230 * Math.tanh(Math.pow(dye[2][i], .66) * .9);
-        } else if (current === 'velocity') {
-          const intensity = Math.tanh(Math.hypot(u[i] + u[i + 1], v[i] + v[i + stride]) * .36 / scale);
-          const bright = intensity ** 4;
-          r += 51 * intensity + 179 * bright;
-          g += 196 * intensity + 37 * bright;
-          b += 217 * intensity;
-        } else {
-          const value = isCurl ? tank.curl(x, y) : pressure[i];
-          const strength = Math.tanh(Math.abs(value) * (isCurl ? 3.6 : 3.2));
-          const tint = value < 0 ? cool : warm;
-          r += tint[0] * strength;
-          g += tint[1] * strength;
-          b += tint[2] * strength;
-        }
-        image[pixel] = r;
-        image[pixel + 1] = g;
-        image[pixel + 2] = b;
-        image[pixel + 3] = 255;
-      }
-    }
-    context.putImageData(frame, 0, 0);
+    renderer.render(view.value, scale, tracers.checked);
   }
 
   function source(x, y, dx, dy, color, amount, radius = 3, spin = 0) {
@@ -121,20 +83,33 @@ function start() {
       retention: .932 + .067 * Number(persistence.value) / 100,
       iterations: smallScreen ? 16 : 19
     });
+    if (tracers.checked) renderer.advanceTracers();
     tick++;
   }
 
   function seedVortex() {
-    for (let i = 0; i < 48; i++) {
-      const fraction = i / 47;
-      const distance = .055 + fraction * .25;
-      const angle = fraction * 5.25;
-      for (let stripe = 0; stripe < 2; stripe++) {
-        const t = angle + stripe * Math.PI;
-        source(.5 + distance * Math.cos(t), .5 + 1.5 * distance * Math.sin(t), -.9 * Math.sin(t), .9 * Math.cos(t),
-          stripe === 0 ? teal : orange, .54, 2 + fraction * 2.4, .15);
+    const ink = [[cyan, teal, indigo, cyan, teal, indigo], [orchid, pink, gold, orange, gold, orchid]];
+    for (let arm = 0; arm < ink.length; arm++) {
+      for (let lane = 0; lane < ink[arm].length; lane++) {
+        for (let i = 0; i < 135; i++) {
+          const t = i / 134;
+          const angle = 1.32 + 7.45 * t + Math.PI * arm + lane * .057;
+          const flutter = .011 * Math.sin(15 * t + lane * .82) + .005 * Math.sin(29 * t + lane);
+          const radius = .027 + .31 * t ** 1.17 + (lane - 2.5) * (.003 + .009 * t) + flutter * t;
+          const x = .5 + radius * Math.cos(angle) + .027 * Math.sin(t * 7);
+          const y = .5 + radius * Math.sin(angle) * 1.23 + .033 * Math.cos(t * 8);
+          const taper = .27 + .73 * Math.sin(Math.PI * t) ** .65;
+          const billow = .55 + .45 * Math.sin(9 * t + lane * .96) ** 2;
+          const strength = lane === 2 || lane === 3 ? .62 : .39;
+          tank.addDye(x, y, (0.78 + .65 * t) * scale, ink[arm][lane], strength * taper * billow);
+          if (lane === 2 && i % 4 === 0) {
+            tank.addImpulse(x, y, -.48 * Math.sin(angle) * scale, .48 * Math.cos(angle) * scale, 4 * scale, .11 * scale);
+          }
+        }
       }
     }
+    tank.addImpulse(.44, .44, .1, .1, 12 * scale, 1.25 * scale);
+    tank.addImpulse(.6, .57, -.1, -.1, 10 * scale, .95 * scale);
   }
 
   function updateSliders() {
@@ -153,6 +128,7 @@ function start() {
     persistence.value = presets[preset].persistence;
     obstacle.checked = preset === 'wake';
     tank.clear();
+    renderer.reset();
     tank.setObstacle(obstacle.checked);
     if (preset === 'vortex') seedVortex();
     const startupSteps = { vortex: 2, jets: 15, wake: 22, free: 0 };
@@ -262,6 +238,8 @@ function start() {
     paused = value;
     pauseButton.textContent = paused ? 'Resume' : 'Pause';
     stepButton.disabled = !paused;
+    status.textContent = paused ? 'Paused' : 'Running';
+    status.dataset.running = String(!paused);
     restartClock();
   }
 
@@ -269,6 +247,7 @@ function start() {
     const legend = byId('legend');
     const labels = legends[view.value];
     legend.hidden = !labels;
+    byId('tracer-option').hidden = Boolean(labels);
     if (labels) {
       byId('legend-low').textContent = labels[0];
       byId('legend-high').textContent = labels[1];
@@ -298,6 +277,7 @@ function start() {
   stepButton.addEventListener('click', () => { update(); render(); });
   byId('reset').addEventListener('click', () => loadPreset(preset));
   view.addEventListener('change', setView);
+  tracers.addEventListener('change', render);
   document.addEventListener('visibilitychange', restartClock);
   reducedMotion.addEventListener('change', event => { if (event.matches) setPaused(true); });
 
@@ -308,6 +288,11 @@ function start() {
     }).observe(canvas);
   }
 
+  renderer.resize();
   loadPreset(preset);
+  setView();
   setPaused(paused);
+  new ResizeObserver(() => {
+    if (renderer.resize()) render();
+  }).observe(canvas);
 }
