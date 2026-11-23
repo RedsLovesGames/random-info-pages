@@ -236,6 +236,9 @@ jobs:
           for attempt in {1..12}; do
             if gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=github-pages" |
               jq -e --arg id "$ARTIFACT_ID" 'any(.artifacts[]; (.id | tostring) == $id and .expired == false)' > /dev/null; then
+              # The Pages deployment API may lag behind Actions artifact visibility.
+              # Allow its independent index to converge before deploy-pages queries it.
+              sleep 30
               exit 0
             fi
             sleep 5
@@ -265,6 +268,12 @@ jobs:
           grep -Fq 'id="embeddedDictionary"' /tmp/wordfinder-offline.html
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/wordfinder-sw.js "$base/tools/words/sw.js"
           grep -Fq 'cache.addAll(ASSETS)' /tmp/wordfinder-sw.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/fluid-studio.html "$base/fluid-dynamics/"
+          grep -Fq 'id="display-mode"' /tmp/fluid-studio.html
+          grep -Fq 'id="quality"' /tmp/fluid-studio.html
+          grep -Fq 'id="tank-3d"' /tmp/fluid-studio.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/fluid-surface.js "$base/fluid-dynamics/three-surface.mjs"
+          grep -Fq 'getContext('\''webgl2'\''' /tmp/fluid-surface.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/home.html "$base/"
           grep -Fq 'id="fluidCanvas"' /tmp/home.html
           grep -Fq 'id="projectList"' /tmp/home.html
