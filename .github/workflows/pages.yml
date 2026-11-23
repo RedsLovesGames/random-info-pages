@@ -330,9 +330,9 @@ jobs:
           grep -Fq 'export function detectOS' /tmp/device-worlds.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/device-worlds-v2.js "$base/device-worlds/v2.mjs"
           grep -Fq 'createSignalStore' /tmp/device-worlds-v2.js
-          grep -Fq './device-worlds/' /tmp/home.html
-          grep -Fq './wheel/' /tmp/home.html
-          grep -Fq './friends/' /tmp/home.html
+          grep -Fq "p:'./device-worlds/'" /tmp/projects-registry.js
+          grep -Fq "p:'./wheel/'" /tmp/projects-registry.js
+          grep -Fq "p:'./friends/'" /tmp/projects-registry.js
 
       - name: Check Random Info Computer
         env:
