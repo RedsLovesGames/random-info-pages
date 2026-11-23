@@ -55,6 +55,11 @@ vec3 sampleInk(vec2 uv) {
   vec2 flipped = vec2(uv.x, 1.0 - uv.y);
   return unpackDye(u_bicubic == 1 ? bicubic(flipped) : texture(u_dye, flipped));
 }
+// Lighting and bloom sample a softened field. Keep bicubic only for the
+// visible surface reconstruction to avoid multiplying texture cost ~4×.
+vec3 sampleSoft(vec2 uv) {
+  return unpackDye(texture(u_dye, vec2(uv.x, 1.0 - uv.y)));
+}
 float density(vec3 c) { return max(max(c.r, c.g), c.b); }
 float hash21(vec2 p) {
   return fract(43758.5453 * sin(dot(p, vec2(12.9898, 78.233))));
@@ -73,8 +78,8 @@ void main() {
   vec3 ink = sampleInk(uv);
   float amount = density(ink);
   vec2 stepUV = 1.0 / u_grid;
-  float dx = density(sampleInk(uv - vec2(stepUV.x, 0.0))) - density(sampleInk(uv + vec2(stepUV.x, 0.0)));
-  float dy = density(sampleInk(uv - vec2(0.0, stepUV.y))) - density(sampleInk(uv + vec2(0.0, stepUV.y)));
+  float dx = density(sampleSoft(uv - vec2(stepUV.x, 0.0))) - density(sampleSoft(uv + vec2(stepUV.x, 0.0)));
+  float dy = density(sampleSoft(uv - vec2(0.0, stepUV.y))) - density(sampleSoft(uv + vec2(0.0, stepUV.y)));
   vec3 normal = normalize(vec3(dx * u_detail * 1.6, dy * u_detail * 1.6, 0.85));
   vec3 keyLight = normalize(vec3(-0.58, 0.42, 0.85));
   float lambert = max(dot(normal, keyLight), 0.0);
@@ -91,14 +96,14 @@ void main() {
     vec3 spread = vec3(0.0);
     vec2 nearStep = vec2(2.0, 2.0) / u_grid;
     vec2 farStep = vec2(7.0, 7.0) / u_grid;
-    spread += sampleInk(uv + vec2(nearStep.x, 0.0));
-    spread += sampleInk(uv - vec2(nearStep.x, 0.0));
-    spread += sampleInk(uv + vec2(0.0, nearStep.y));
-    spread += sampleInk(uv - vec2(0.0, nearStep.y));
-    spread += 0.5 * sampleInk(uv + farStep);
-    spread += 0.5 * sampleInk(uv - farStep);
-    spread += 0.5 * sampleInk(uv + vec2(-farStep.x, farStep.y));
-    spread += 0.5 * sampleInk(uv + vec2(farStep.x, -farStep.y));
+    spread += sampleSoft(uv + vec2(nearStep.x, 0.0));
+    spread += sampleSoft(uv - vec2(nearStep.x, 0.0));
+    spread += sampleSoft(uv + vec2(0.0, nearStep.y));
+    spread += sampleSoft(uv - vec2(0.0, nearStep.y));
+    spread += 0.5 * sampleSoft(uv + farStep);
+    spread += 0.5 * sampleSoft(uv - farStep);
+    spread += 0.5 * sampleSoft(uv + vec2(-farStep.x, farStep.y));
+    spread += 0.5 * sampleSoft(uv + vec2(farStep.x, -farStep.y));
     spread /= 6.0;
     lit += (vec3(1.0) - exp(-palette(spread) * 0.95)) * u_bloom * 0.63;
   }
