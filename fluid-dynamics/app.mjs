@@ -6,7 +6,7 @@ import { qualityProfile, transferFluidState } from './quality.mjs';
 
 const byId = id => document.getElementById(id);
 const canvas = byId('tank');
-const context = canvas.getContext('2d', { alpha: false });
+const context = canvas.getContext('2d', { alpha: true });
 
 if (context) start();
 else byId('model-error').hidden = false;
@@ -104,7 +104,10 @@ function start() {
     if (displayMode.value === '3d' && three) {
       three.render();
     } else if (usesGPU()) {
-      try { gpu.render(); }
+      try {
+        gpu.render();
+        renderer.renderTracers(tracers.checked);
+      }
       catch (error) {
         console.error('GPU dye rendering failed; using compatibility renderer', error);
         renderEngine.value = 'canvas';
@@ -474,6 +477,22 @@ function start() {
         blob = await three.capture(target);
       } else if (usesGPU()) {
         blob = await gpu.capture(target);
+        if (tracers.checked) {
+          const bitmap = await createImageBitmap(blob);
+          try {
+            const merged = document.createElement('canvas');
+            merged.width = bitmap.width;
+            merged.height = bitmap.height;
+            const mergedContext = merged.getContext('2d');
+            if (!mergedContext) throw new Error('Tracer PNG compositing is unavailable');
+            mergedContext.drawImage(bitmap, 0, 0);
+            renderer.paintTracers(mergedContext, merged.width);
+            blob = await new Promise((resolve, reject) => merged.toBlob(
+              value => value ? resolve(value) : reject(new Error('PNG compositing failed')), 'image/png'));
+          } finally {
+            bitmap.close?.();
+          }
+        }
       } else {
         const output = document.createElement('canvas');
         const w = target || canvas.width;
