@@ -5,7 +5,7 @@ import {FLOOR,WALL,POOL} from '../dungeon-forge/generator.mjs';
 import {makeBattlemap,universalVtt,wallSegments} from '../dungeon-forge/battlemap-core.mjs';
 import {createProject,decodeProject} from '../dungeon-forge/dungeon-project.mjs';
 import {normalizeTerrainEdits,replayTerrainEdits,paintTerrain,isReachableTopology,
-  createTerrainHistory,interpolateTiles,MAX_TERRAIN_EDITS} from '../dungeon-forge/battlemap-terrain.mjs';
+  createTerrainHistory,interpolateTiles,MAX_TERRAIN_EDITS,hasConnectedRoomFootprints} from '../dungeon-forge/battlemap-terrain.mjs';
 const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const settings={seed:1337,roomCount:8,loopPercent:15,decorPercent:60,theme:'ancient'};
 const dungeon=makeBattlemap(settings);
@@ -131,4 +131,19 @@ test('map editor and Owlbear image export use the modified dungeon, not cosmetic
  assert.match(code,/terrainHistory\.save\(before,project.terrain\)/);
  assert.match(code,/universalVtt\(plan,/);
  assert.match(code,/const plan = dungeon;/);
+});
+
+test('erasing supporting room edges cannot leave detached owned tiles',()=>{
+ const base={W:7,H:7,grid:new Uint8Array(49),
+  roomId:new Int16Array(49).fill(-1),corridor:new Uint8Array(49),
+  doors:[],stats:{}};
+ const cell=(x,y)=>y*base.W+x;
+ base.grid[cell(2,2)]=FLOOR;base.roomId[cell(2,2)]=0;
+ for(const [x,y] of [[2,3],[3,3],[4,3]]){base.grid[cell(x,y)]=FLOOR;base.corridor[cell(x,y)]=1}
+ assert.ok(isReachableTopology(base));
+ const a=paintTerrain(base,[],3,2,'room');
+ const b=paintTerrain(base,a.edits,4,2,'room');
+ assert.equal(b.map.roomId[cell(4,2)],0);
+ assert.equal(hasConnectedRoomFootprints(base,b.map),true);
+ assert.throws(()=>paintTerrain(base,b.edits,3,2,'erase'),/detach/);
 });

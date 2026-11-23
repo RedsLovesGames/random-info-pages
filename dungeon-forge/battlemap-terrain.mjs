@@ -67,6 +67,29 @@ export function isReachableTopology(dungeon){
  return visited===count;
 }
 
+/* Keep every expanded room tile connected to its original room interior,
+ * even if an alternate corridor would keep global walkability connected. */
+export function hasConnectedRoomFootprints(base,updated){
+ const {W,H,roomId,grid}=updated;
+ const reachable=new Uint8Array(W*H),stack=[];
+ for(let i=0;i<grid.length;i++){
+  if(base.roomId[i]<0||!passable(base.grid[i]))continue;
+  if(roomId[i]!==base.roomId[i]||!passable(grid[i]))return false;
+  if(!reachable[i]){reachable[i]=1;stack.push(i)}
+ }
+ while(stack.length){
+  const at=stack.pop(),x=at%W,y=(at/W)|0;
+  for(const next of [x>0?at-1:-1,x<W-1?at+1:-1,y>0?at-W:-1,y<H-1?at+W:-1]){
+   if(next<0||reachable[next]||roomId[next]!==roomId[at]||!passable(grid[next]))continue;
+   reachable[next]=1;stack.push(next);
+  }
+ }
+ for(let i=0;i<grid.length;i++){
+  if(roomId[i]>=0&&passable(grid[i])&&!reachable[i])return false;
+ }
+ return true;
+}
+
 function protectedDoor(base,x,y){
  for(const portal of base.doors||[]){
   if(Math.abs(portal.position.x-(x+.5))<=1.5 &&
@@ -127,6 +150,8 @@ export function paintTerrain(base,edits,x,y,mode){
  const candidate=rebuildTopology(base,next);
  if(!isReachableTopology(candidate))
   throw new Error('This change would disconnect reachable rooms or corridors.');
+ if(!hasConnectedRoomFootprints(base,candidate))
+  throw new Error('This change would detach an expanded room tile from its original room.');
  return {edits:next,map:candidate,changed:true};
 }
 
