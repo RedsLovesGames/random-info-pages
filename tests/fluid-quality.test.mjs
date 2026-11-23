@@ -59,7 +59,7 @@ test('enhanced WebGL dye pipeline and high-resolution exports are integrated', (
   assert.match(app, /createDyeGPU\(canvasGPU, tank, smallScreen\)/);
   assert.match(app, /gpu\.capture\(target\)/);
   assert.match(app, /three\.capture\(target\)/);
-  assert.match(gpu, /function bicubic\(vec2 uv\)/);
+  assert.match(gpu, /vec4 bicubic\(vec2 uv\)/);
   assert.match(gpu, /gl\.drawArrays\(gl\.TRIANGLES/);
   assert.match(gpu, /renderSize\(w, h\)/);
   assert.match(three, /async function capture\(targetWidth\)/);
