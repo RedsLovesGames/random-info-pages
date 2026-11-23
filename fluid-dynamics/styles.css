@@ -232,3 +232,7 @@ button, select, summary { cursor: pointer; }
 @media (max-width: 640px) {
   .quality-controls .setting { margin-block: .55rem; }
 }
+
+/* The transparent input canvas carries interactive tracer strokes over WebGL. */
+#tank { position: relative; z-index: 2; }
+#brush-marker { z-index: 3; }
