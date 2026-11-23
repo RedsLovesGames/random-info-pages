@@ -203,7 +203,8 @@ test('Shard Market is available in the active index', () => {
   const p=projects.find(item=>item.p==='./shard-fusions/');
   assert.ok(p && !p.a && p.c==='Games');
   assert.ok(existsSync(new URL('../shard-fusions/index.html',import.meta.url)));
-  assert.match(html,/Live Shard Fusion Profit Finder/);
+  const registry=readFileSync(new URL('../design-system/projects.js',import.meta.url),'utf8');
+  assert.match(registry,/Live Shard Fusion Profit Finder/);
 });
 
 test('StereoLab sketcher is registered and has independent mobile drawing code', () => {
