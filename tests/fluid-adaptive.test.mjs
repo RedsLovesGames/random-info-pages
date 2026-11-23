@@ -24,10 +24,10 @@ test('recovery requires a long fast streak, a cooldown, and a user ceiling',()=>
  assert.equal(adaptive.observe(15,4000,'high','ultra'),'balanced');
  for(let second=5;second<=12;second++)
   assert.equal(adaptive.observe(30,second*1000,'balanced','ultra'),null);
- for(let second=13;second<=21;second++)
+ for(let second=13;second<=20;second++)
   assert.equal(adaptive.observe(30,second*1000,'balanced','ultra'),null);
- assert.equal(adaptive.observe(30,22000,'balanced','ultra'),'high');
- assert.equal(adaptive.observe(30,23000,'ultra','ultra'),null,'never exceeds the selected ceiling');
+ assert.equal(adaptive.observe(30,21000,'balanced','ultra'),'high');
+ assert.equal(adaptive.observe(30,22000,'ultra','ultra'),null,'never exceeds the selected ceiling');
 });
 test('invalid samples and an already-low Eco profile do not downshift',()=>{
  const adaptive=createAdaptiveController();

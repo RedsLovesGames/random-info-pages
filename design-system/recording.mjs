@@ -38,7 +38,9 @@ export function startCanvasRecording(canvas,{onDone=()=>{},onError=()=>{},onProg
  let bytes=0,ended=false,overflow=false;
  let timer=null,deadline=null;
  const start=Date.now();
- const recorder=new MediaRecorder(stream,{mimeType:format,videoBitsPerSecond:8_000_000});
+ let recorder;
+ try{recorder=new MediaRecorder(stream,{mimeType:format,videoBitsPerSecond:8_000_000})}
+ catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
  const cleanup=()=>{
   if(timer!==null)clearInterval(timer);
   if(deadline!==null)clearTimeout(deadline);

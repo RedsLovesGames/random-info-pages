@@ -51,6 +51,7 @@ function start() {
     savedSettings['auto-ceiling'] : qualityInput.value;
   const adaptiveController = createAdaptiveController();
   let previousExternalQuality = null;
+  let previousExternalAuto = null;
   let profile = qualityProfile(qualityInput.value, smallScreen);
   let tank = new FluidTank(profile.width, profile.height);
   let { width, height } = tank;
@@ -588,15 +589,23 @@ function start() {
   window.RIPStudio = {
     setQuality(level) {
       if (level === 'eco') {
-        if (previousExternalQuality === null) previousExternalQuality = qualityInput.value;
+        if (previousExternalQuality === null) {
+          previousExternalQuality = qualityInput.value;
+          previousExternalAuto = autoQuality.checked;
+        }
+        autoQuality.checked = false;
+        adaptiveController.reset(performance.now());
         qualityInput.value = 'eco';
         changeQuality();
-        adaptiveStatus.textContent = 'Low effects mode selected Eco simulation quality.';
+        adaptiveStatus.textContent = 'Low effects mode selected Eco. Adaptive upshifting is suspended.';
       } else if (level === 'default' && previousExternalQuality !== null) {
         qualityInput.value = previousExternalQuality;
+        autoQuality.checked = Boolean(previousExternalAuto);
         previousExternalQuality = null;
+        previousExternalAuto = null;
+        adaptiveController.reset(performance.now());
         changeQuality();
-        adaptiveStatus.textContent = 'Restored the previous simulation quality.';
+        adaptiveStatus.textContent = 'Restored the previous simulation quality and adaptive setting.';
       }
     },
     metrics() {
@@ -606,9 +615,24 @@ function start() {
         quality: qualityInput.value
       };
     },
-    capture() {
+    async capture() {
       if (displayMode.value === '3d' && three) return three.capture(null);
-      if (usesGPU()) return gpu.capture(null);
+      if (usesGPU()) {
+        const image = await gpu.capture(null);
+        if (!tracers.checked) return image;
+        const bitmap = await createImageBitmap(image);
+        try {
+          const output = document.createElement('canvas');
+          output.width = bitmap.width;
+          output.height = bitmap.height;
+          const ctx = output.getContext('2d');
+          if (!ctx) throw new Error('Image capture is unavailable');
+          ctx.drawImage(bitmap,0,0);
+          renderer.paintTracers(ctx,output.width);
+          return await new Promise((resolve,reject)=>output.toBlob(
+            blob=>blob?resolve(blob):reject(new Error('Image encoding failed')),'image/png'));
+        } finally { bitmap.close?.(); }
+      }
       return new Promise((resolve,reject)=>canvas.toBlob(
         blob=>blob?resolve(blob):reject(new Error('PNG export failed')),'image/png'));
     }
