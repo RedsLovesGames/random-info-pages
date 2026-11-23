@@ -79,7 +79,11 @@
           '<button type="button" data-rip-action="open"><span aria-hidden="true">⇧</span> Open project</button>'+
           '<button type="button" data-rip-action="print"><span aria-hidden="true">▤</span> Print</button>'+
           '<button type="button" data-rip-action="performance" aria-pressed="false"><span aria-hidden="true">◉</span> Reduce effects</button>'+
-          '<button type="button" data-rip-action="help"><span aria-hidden="true">?</span> Shortcuts</button></div>'+
+          '<button type="button" data-rip-action="help"><span aria-hidden="true">?</span> Shortcuts</button>'+
+          '<button type="button" data-rip-action="compare"><span aria-hidden="true">⇄</span> Compare projects</button>'+
+          '<button type="button" data-rip-action="tour"><span aria-hidden="true">⌁</span> Guided tour</button>'+
+          '<button type="button" data-rip-action="record"><span aria-hidden="true">●</span> Record video</button>'+
+          '<button type="button" data-rip-action="diagnostics"><span aria-hidden="true">▥</span> Diagnostics</button></div>'+
         '<div class="rip-studio-lists"><div class="rip-studio-tabs" role="tablist" aria-label="Project recommendations">'+
           '<button type="button" data-rip-view="suggested" aria-selected="true" role="tab">Related</button>'+
           '<button type="button" data-rip-view="favorites" aria-selected="false" role="tab">Favorites</button>'+
@@ -106,6 +110,21 @@
     const browser=layer.querySelector('.rip-search'),query=layer.querySelector('.rip-search-input');
     const results=layer.querySelector('.rip-results');
     const studio=layer.querySelector('.rip-studio-dialog');
+    let activeRecording=null;
+    let recordingDock=null;
+    function finishRecording(message,problem=false){
+      activeRecording=null;
+      const button=studio.querySelector('[data-rip-action="record"]');
+      button.innerHTML='<span aria-hidden="true">●</span> Record video';
+      if(recordingDock){
+        recordingDock.replaceChildren(document.createTextNode(message));
+        recordingDock.dataset.problem=String(problem);
+        const completed=recordingDock;
+        setTimeout(()=>completed.remove(),3500);
+        recordingDock=null;
+      }
+      toast(message,problem);
+    }
     studioState.dialog=studio;studioState.search=query;studioState.results=results;
     function browse(){
       showResults();
@@ -171,6 +190,13 @@
         typeof app?.capture!=='function'&&!document.querySelector('canvas');
       studio.querySelector('[data-rip-action="performance"]').setAttribute('aria-pressed',
         String(document.documentElement.dataset.ripPerformance==='low'));
+      const recording=studio.querySelector('[data-rip-action="record"]');
+      recording.disabled=typeof MediaRecorder==='undefined'||
+        !document.querySelector('canvas')||typeof HTMLCanvasElement.prototype.captureStream!=='function';
+      if(activeRecording)recording.disabled=false;
+      recording.innerHTML=activeRecording?
+        '<span aria-hidden="true">■</span> Stop recording':
+        '<span aria-hidden="true">●</span> Record video';
     }
     const fileInput=studio.querySelector('.rip-open-file');
     fileInput.addEventListener('change',async()=>{
@@ -238,6 +264,61 @@
         toast(low?'Reduced effects enabled.':'Normal effects restored.');
       }else if(action==='help'){
         toast('Ctrl+K: browse · Ctrl+Shift+P: studio · Esc: close · /: search (on the homepage).');
+      }else if(action==='compare'){
+        location.href=root+'compare/?left='+encodeURIComponent(slug)+'&right='+encodeURIComponent(slug);
+      }else if(action==='tour'){
+        try{
+          const tours=await import(root+'design-system/tours.mjs');
+          if(!tours.hasTour(slug))throw new Error('A page-specific guided tour has not been added here yet');
+          studio.close();
+          tours.startTour(slug);
+        }catch(error){toast(error.message||'Unable to start walkthrough',true)}
+      }else if(action==='diagnostics'){
+        try{
+          studio.close();
+          const monitor=await import(root+'design-system/monitor.mjs');
+          monitor.showDiagnostics();
+        }catch(error){toast('Cannot show diagnostics: '+error.message,true)}
+      }else if(action==='record'){
+        if(activeRecording){activeRecording.stop();return}
+        try{
+          const video=await import(root+'design-system/recording.mjs');
+          const target=video.pickCanvas();
+          if(!target)throw new Error('This project has no visible canvas to record');
+          recordingDock=document.createElement('div');
+          recordingDock.className='rip-recording-dock';
+          recordingDock.setAttribute('role','status');
+          recordingDock.innerHTML='<span class="rip-record-dot" aria-hidden="true"></span>'+
+            '<span class="rip-record-progress">Recording silent video · 0 / 45 s</span>'+
+            '<button type="button">Stop and save</button>';
+          document.body.append(recordingDock);
+          studio.close();
+          const finish=(message,problem)=>{
+            finishRecording(message,problem);
+          };
+          activeRecording=video.startCanvasRecording(target,{
+            fps:30,maxSeconds:45,
+            onProgress:(seconds,limit)=>{
+              recordingDock?.querySelector('.rip-record-progress')?.replaceChildren(
+                document.createTextNode('Recording silent video · '+seconds+' / '+limit+' s'));
+            },
+            onDone:(blob,extension)=>{
+              download(blob,slug+'-recording.'+extension);
+              finish('Video saved to your downloads.',false);
+            },
+            onError:error=>finish('Video recording failed: '+(error.message||'Unknown error'),true)
+          });
+          recordingDock.querySelector('button').addEventListener('click',()=>{
+            if(activeRecording)activeRecording.stop();
+            recordingDock.querySelector('button').disabled=true;
+            recordingDock.querySelector('.rip-record-progress').textContent='Finishing video…';
+          });
+          toast('Recording the visible canvas (silent), up to 45 seconds.');
+        }catch(error){
+          recordingDock?.remove();recordingDock=null;activeRecording=null;
+          if(!studio.open)studio.showModal();
+          toast('Cannot record video: '+error.message,true);
+        }
       }
     }
     studio.querySelectorAll('[data-rip-action]').forEach(button=>button.addEventListener('click',()=>{

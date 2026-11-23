@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f1ec">
+<meta name="description" content="Compare two interactive Random Info Pages side by side, synchronize scrolling, and copy supported project settings.">
+<title>Compare Lab | Random Info Pages</title>
+<link rel="stylesheet" href="../design-system/rip.css">
+<link rel="stylesheet" href="./styles.css">
+<script src="../design-system/projects.js"></script>
+<script defer src="../design-system/rip.js"></script>
+<script defer src="../design-system/appearance.js"></script>
+<script type="module" src="./app.mjs"></script>
+</head>
+<body data-rip-page="compare">
+<main class="compare-page">
+<header class="compare-head">
+  <div><p class="eyebrow">RANDOM INFO PAGES / EXPERIMENTS</p>
+    <h1>Compare <em>Lab.</em></h1>
+    <p>Open any two projects together. Compare visual settings, map outputs, algorithms, or creative experiments without juggling tabs.</p>
+  </div>
+  <div class="head-info"><strong>2</strong><span>LIVE WORKSPACES</span><small>No account or uploads required</small></div>
+</header>
+<section class="compare-controls" aria-label="Choose comparison projects">
+  <div class="picker"><label for="left-select"><span class="panel-number">01</span> Left project</label>
+    <select id="left-select"></select></div>
+  <button type="button" id="swap-projects" title="Swap both panels" aria-label="Swap left and right projects">⇄</button>
+  <div class="picker"><label for="right-select"><span class="panel-number">02</span> Right project</label>
+    <select id="right-select"></select></div>
+  <div class="toolbar">
+    <label class="toggle"><input type="checkbox" id="sync-scroll"><span>Sync scroll</span></label>
+    <label class="layout-picker">Layout <select id="layout"><option value="horizontal">Side by side</option><option value="vertical">Stacked</option></select></label>
+    <button type="button" id="copy-state" title="Copy editable state when both panels show the same compatible project" disabled>Copy left → right</button>
+    <button type="button" id="share-compare">Copy comparison link</button>
+    <button type="button" id="reset-split">Equal size</button>
+  </div>
+  <p class="compare-status" id="compare-status" role="status" aria-live="polite">Projects run independently. Scroll synchronization is optional.</p>
+</section>
+<section class="compare-shell" id="compare-shell" data-orientation="horizontal" aria-label="Live comparison panels">
+  <div class="comparison-panel" id="compare-left" data-side="left">
+    <div class="panel-heading"><span>01 / LEFT</span><strong id="left-title">Loading project</strong>
+      <a id="left-open" href="../fluid-dynamics/" target="_blank" rel="noopener noreferrer" aria-label="Open left project in a new tab">Open ↗</a></div>
+    <iframe id="left-frame" title="Left interactive project" loading="eager" allow="autoplay; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </div>
+  <div class="split-handle" id="split-handle" role="separator" tabindex="0" aria-label="Resize comparison panels" aria-valuemin="25" aria-valuemax="75" aria-valuenow="50" aria-orientation="vertical"><span></span></div>
+  <div class="comparison-panel" id="compare-right" data-side="right">
+    <div class="panel-heading"><span>02 / RIGHT</span><strong id="right-title">Loading project</strong>
+      <a id="right-open" href="../fluid-dynamics/" target="_blank" rel="noopener noreferrer" aria-label="Open right project in a new tab">Open ↗</a></div>
+    <iframe id="right-frame" title="Right interactive project" loading="eager" allow="autoplay; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </div>
+</section>
+<footer class="compare-footer"><p><strong>How comparison works.</strong> Both panels run their own simulations and local data. Sync scroll matches the percentage through each page, not simulation time. Copy state is available only when both projects expose compatible editable snapshots.</p>
+<a href="../">All projects ↗</a></footer>
+</main>
+</body></html>

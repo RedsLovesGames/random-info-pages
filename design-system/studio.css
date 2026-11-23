@@ -76,3 +76,19 @@ html[data-rip-appearance="dark"] #rip-site-layer .rip-search,
 html[data-rip-appearance="dark"] #rip-site-layer .rip-studio-dialog{
   background:#171c2b;color:#f0f1fb;
 }
+
+/* User-triggered canvas recording, deliberately separate from project controls. */
+.rip-recording-dock{position:fixed;z-index:99995;top:12px;right:12px;
+  background:#fcfbf8;border:1px solid #c7c9d3;border-radius:10px;
+  box-shadow:0 16px 45px rgba(0,0,0,.22);color:#171b2b;padding:11px 13px;
+  display:flex;align-items:center;gap:12px;font:600 12px/1.4 "DM Sans",system-ui,sans-serif}
+.rip-recording-dock .rip-record-dot{width:9px;height:9px;border-radius:50%;
+  background:#d43d55;box-shadow:0 0 0 4px #d43d5522;flex:none}
+.rip-recording-dock button{border:1px solid #bcc1d5;background:#fff;cursor:pointer;
+  padding:7px 10px;border-radius:6px;color:#192244;font:600 12px system-ui,sans-serif}
+.rip-recording-dock button:disabled{opacity:.45}
+.rip-recording-dock[data-problem="true"]{border-color:#c44857;color:#b23442}
+html[data-rip-appearance="dark"] .rip-recording-dock{background:#202b45;color:#f0f2ff;border-color:#495678}
+@media(max-width:650px){.rip-recording-dock{left:9px;right:9px;top:9px;justify-content:space-between;gap:6px}
+ .rip-recording-dock button{font-size:11px;padding:6px}}
+@media print{.rip-recording-dock{display:none!important}}

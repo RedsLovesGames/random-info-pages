@@ -60,6 +60,10 @@
  .project-row{min-height:64px}
 }
 
+/* Side-by-side project testing is now directly discoverable from the homepage. */
+.hero-text .compare-hero-link{margin-left:8px;border:1px solid var(--blue);background:transparent;color:var(--blue)}
+.hero-text .compare-hero-link:hover{background:var(--blue);color:#fff}
+@media(max-width:650px){.hero-text .compare-hero-link{margin-left:0;margin-top:8px}}
 /* Project discovery: visual previews, favorites and recent-project cards. */
 .project-row-shell{position:relative;border-bottom:1px solid var(--line);padding-right:44px}
 .project-row-shell .project-row{display:flex;align-items:center;gap:18px;border-bottom:0;min-height:83px;padding:9px 8px}
@@ -101,7 +105,7 @@
 <main id="main">
 <section class="hero wrap edge" aria-labelledby="heroHeading">
 <div class="hero-grid">
-<div class="hero-copy"><h1 class="hero-heading" id="heroHeading"><span class="line">Random Info</span><span class="line lower">pages<span class="dot">.</span></span></h1><div class="hero-text"><p class="hero-desc">Useful tools, odd experiments, and little games.</p><a class="browse-projects" href="#index">Browse projects</a></div></div>
+<div class="hero-copy"><h1 class="hero-heading" id="heroHeading"><span class="line">Random Info</span><span class="line lower">pages<span class="dot">.</span></span></h1><div class="hero-text"><p class="hero-desc">Useful tools, odd experiments, and little games.</p><a class="browse-projects" href="#index">Browse projects</a><a class="browse-projects compare-hero-link" href="./compare/">Compare projects ↔</a></div></div>
 <div class="hero-aside" id="fluidStage" aria-label="Interactive abstract flowing-line illustration. Move your cursor to change the waves.">
 <canvas id="fluidCanvas" aria-hidden="true"></canvas>
 <div class="art-caption">Move over the waves</div>

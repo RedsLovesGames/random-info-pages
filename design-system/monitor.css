@@ -1,0 +1,13 @@
+#rip-diagnostics{--diag-paper:#f9faff;--diag-ink:#171e36;position:fixed;z-index:99996;
+  left:12px;bottom:12px;width:min(290px,calc(100vw - 24px));padding:14px 16px;
+  background:var(--diag-paper);border:1px solid #bfc8e2;border-radius:10px;
+  color:var(--diag-ink);box-shadow:0 14px 50px rgba(0,0,0,.25);font:12px/1.5 system-ui,-apple-system,sans-serif}
+html[data-rip-appearance="dark"] #rip-diagnostics{--diag-paper:#1b253c;--diag-ink:#f2f5ff;border-color:#485773}
+#rip-diagnostics .rip-diagnostic-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:9px}
+#rip-diagnostics .rip-diagnostic-head strong{font-size:13px}
+#rip-diagnostics .rip-diagnostic-head button{border:1px solid #8c9bbc;border-radius:5px;background:transparent;color:inherit;width:26px;height:26px;cursor:pointer}
+#rip-diagnostics .rip-diagnostic-values{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px}
+#rip-diagnostics .rip-diagnostic-values span{opacity:.7}
+#rip-diagnostics .rip-diagnostic-values b{font-variant-numeric:tabular-nums;white-space:nowrap}
+#rip-diagnostics p{font-size:10px;opacity:.7;line-height:1.55;margin:11px 0 0}
+@media print{#rip-diagnostics{display:none!important}}

@@ -48,7 +48,11 @@ jobs:
 
       - name: Verify archive home
         run: |
-          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs
+          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs
+          node --check compare/app.mjs
+          node --check design-system/tours.mjs
+          node --check design-system/recording.mjs
+          node --check design-system/monitor.mjs
           node --check design-system/projects.js
           node --check design-system/rip.js
           node --check design-system/bridge.mjs
@@ -294,6 +298,15 @@ jobs:
           grep -Fq 'offline.html' /tmp/pwa-sw.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/marble-midi.js "$base/marble-sequencer/export-midi.mjs"
           grep -Fq 'exportPatternMidi' /tmp/marble-midi.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/compare-lab.html "$base/compare/"
+          grep -Fq 'id="left-frame"' /tmp/compare-lab.html
+          grep -Fq 'id="right-frame"' /tmp/compare-lab.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/compare-app.js "$base/compare/app.mjs"
+          grep -Fq 'history.replaceState' /tmp/compare-app.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/guided-tours.js "$base/design-system/tours.mjs"
+          grep -Fq 'startTour' /tmp/guided-tours.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/recording.js "$base/design-system/recording.mjs"
+          grep -Fq 'startCanvasRecording' /tmp/recording.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/fluid-surface.js "$base/fluid-dynamics/three-surface.mjs"
           grep -Fq 'getContext('\''webgl2'\''' /tmp/fluid-surface.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/fluid-dye-gpu.js "$base/fluid-dynamics/dye-gpu.mjs"
