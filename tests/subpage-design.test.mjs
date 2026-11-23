@@ -62,7 +62,7 @@ test('project switcher reads canonical registry and scopes its optional studio s
   const registry=file('design-system/projects.js');
   assert.doesNotThrow(()=>new Script(script));
   assert.doesNotThrow(()=>new Script(registry));
-  assert.match(script,/window\.self!==window\.top/);
+  assert.match(script,/window\.self\s*!==\s*window\.top/);
   assert.match(script,/design-system\/projects\.js/);
   assert.match(script,/RIPCatalog/);
   assert.match(script,/showModal\(\)/);
