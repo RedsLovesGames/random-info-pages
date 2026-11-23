@@ -1,5 +1,7 @@
 import { FluidTank } from './fluid.mjs';
 import { createTankRenderer } from './render.mjs';
+import { createSurface3D } from './three-surface.mjs';
+import { qualityProfile, transferFluidState } from './quality.mjs';
 
 const byId = id => document.getElementById(id);
 const canvas = byId('tank');
@@ -10,9 +12,32 @@ else byId('model-error').hidden = false;
 
 function start() {
   const smallScreen = matchMedia('(max-width: 700px), (pointer: coarse)').matches;
-  const tank = smallScreen ? new FluidTank(108, 72) : new FluidTank(156, 104);
-  const { width, height } = tank;
-  const renderer = createTankRenderer(canvas, context, tank, smallScreen);
+  const qualityInput = byId('quality');
+  const displayMode = byId('display-mode');
+  const renderScaleInput = byId('render-scale');
+  const glowInput = byId('glow');
+  const exposureInput = byId('exposure');
+  const paletteInput = byId('palette');
+  const depthInput = byId('height-scale');
+  const meshInput = byId('mesh-grid');
+  const screenshot = byId('screenshot');
+  const canvas3d = byId('tank-3d');
+  const qualityNotice = byId('quality-notice');
+  const savedSettings = (() => {
+    try { return JSON.parse(localStorage.getItem('rip-fluid-quality-v1') || '{}'); } catch { return {}; }
+  })();
+  for (const id of ['quality', 'render-scale', 'glow', 'exposure', 'palette', 'height-scale', 'mesh-grid']) {
+    if (savedSettings[id] !== undefined) {
+      const element = byId(id);
+      if ([...element.options || []].some(o => o.value === String(savedSettings[id])) ||
+          (element.type === 'range' && Number.isFinite(Number(savedSettings[id])))) element.value = savedSettings[id];
+    }
+  }
+  let profile = qualityProfile(qualityInput.value, smallScreen);
+  let tank = new FluidTank(profile.width, profile.height);
+  let { width, height } = tank;
+  let renderer = createTankRenderer(canvas, context, tank, smallScreen);
+  let three = null;
   const tracers = byId('tracers');
   const status = byId('tank-status');
   const tankElement = canvas.parentElement;
@@ -41,14 +66,94 @@ function start() {
     pressure: ['Negative', 'Positive', '#9764ee, #101932, #ffcc73']
   };
   const stepInterval = 1000 / 30;
-  const scale = height / 104;
+  let scale = height / 104;
   const pointers = new Map();
   let keyboard = { x: .5, y: .5 };
   let preset = 'vortex', mode = 'ink', paint = teal;
   let paused = reducedMotion.matches, visible = true, scheduled = 0, previousTime = 0, elapsed = 0, tick = 0;
+  let frameClock = 0, frameCounter = 0;
 
   function render() {
-    renderer.render(view.value, scale, tracers.checked);
+    if (displayMode.value === '3d' && three) three.render();
+    else renderer.render(view.value, scale, tracers.checked);
+  }
+
+  function saveVisualSettings() {
+    try {
+      const data = Object.fromEntries(['quality', 'render-scale', 'glow', 'exposure', 'palette', 'height-scale', 'mesh-grid']
+        .map(id => [id, byId(id).value]));
+      localStorage.setItem('rip-fluid-quality-v1', JSON.stringify(data));
+    } catch { /* Persistence is optional. */ }
+  }
+
+  function configureRendering() {
+    const multiplier = Number(renderScaleInput.value);
+    const exposure = Number(exposureInput.value) / 100;
+    renderer.setOptions({
+      renderScale: multiplier * profile.renderScale,
+      glow: Number(glowInput.value) / 100,
+      exposure,
+      palette: paletteInput.value,
+      tracerCount: profile.tracers
+    });
+    three?.configure({
+      scale: Math.min(2, multiplier * profile.renderScale),
+      height: Number(depthInput.value) / 100,
+      exposure,
+      wireframe: meshInput.checked,
+      mesh: profile.mesh
+    });
+    byId('render-scale-value').textContent = multiplier + '×';
+    byId('glow-value').textContent = glowInput.value + '%';
+    byId('exposure-value').textContent = exposureInput.value + '%';
+    byId('height-scale-value').textContent = depthInput.value + '%';
+    qualityNotice.textContent = 'Solver ' + width + ' × ' + height + ' · ' + profile.iterations
+      + ' pressure iterations · display up to ' + Math.round(profile.renderScale * multiplier * 100) + '%';
+    saveVisualSettings();
+    render();
+  }
+
+  function changeQuality() {
+    const next = qualityProfile(qualityInput.value, smallScreen);
+    if (next.width !== width || next.height !== height) {
+      const newTank = new FluidTank(next.width, next.height);
+      transferFluidState(tank, newTank);
+      tank = newTank;
+      width = tank.width;
+      height = tank.height;
+      scale = height / 104;
+      renderer = createTankRenderer(canvas, context, tank, smallScreen);
+      three?.setTank(tank);
+    }
+    profile = next;
+    updateSliders();
+    configureRendering();
+  }
+
+  function changeDisplayMode() {
+    if (displayMode.value === '3d' && !three) {
+      try { three = createSurface3D(canvas3d, tank); } catch (error) {
+        console.error('3D surface initialization failed', error);
+      }
+      if (!three) {
+        displayMode.value = '2d';
+        byId('mode-help').textContent = 'WebGL2 is unavailable; the 2D simulation remains fully functional.';
+      }
+    }
+    const is3d = displayMode.value === '3d';
+    canvas.hidden = is3d;
+    canvas3d.hidden = !is3d;
+    view.disabled = is3d;
+    byId('tracer-option').hidden = is3d || view.value !== 'dye';
+    byId('reset-camera').hidden = !is3d;
+    byId('height-control').hidden = !is3d;
+    byId('mesh-option').hidden = !is3d;
+    if (is3d) byId('mode-help').textContent = 'Orbit: drag · Zoom: scroll or pinch-zoom gesture. Height represents 2D dye concentration, not a 3D flow solver.';
+    else byId('mode-help').textContent = 'Draw on the 2D tank to stir and add dye.';
+    renderer.resize();
+    configureRendering();
+    three?.resize();
+    render();
   }
 
   function source(x, y, dx, dy, color, amount, radius = 3, spin = 0) {
@@ -81,9 +186,9 @@ function start() {
     tank.step({
       viscosity: (Number(viscosity.value) / 100) ** 1.4 * 1.6,
       retention: .932 + .067 * Number(persistence.value) / 100,
-      iterations: smallScreen ? 16 : 19
+      iterations: profile.iterations
     });
-    if (tracers.checked) renderer.advanceTracers();
+    if (tracers.checked && displayMode.value === '2d') renderer.advanceTracers();
     tick++;
   }
 
@@ -216,6 +321,13 @@ function start() {
     previousTime = time;
     if (elapsed >= stepInterval) {
       update();
+      frameCounter++;
+      if (time - frameClock > 1000) {
+        const fps = Math.round(frameCounter * 1000 / Math.max(1, time - frameClock));
+        byId('fps').textContent = fps + ' FPS';
+        frameClock = time;
+        frameCounter = 0;
+      }
       elapsed %= stepInterval;
       render();
     }
@@ -247,7 +359,7 @@ function start() {
     const legend = byId('legend');
     const labels = legends[view.value];
     legend.hidden = !labels;
-    byId('tracer-option').hidden = Boolean(labels);
+    byId('tracer-option').hidden = Boolean(labels) || displayMode.value === '3d';
     if (labels) {
       byId('legend-low').textContent = labels[0];
       byId('legend-high').textContent = labels[1];
@@ -277,6 +389,24 @@ function start() {
   stepButton.addEventListener('click', () => { update(); render(); });
   byId('reset').addEventListener('click', () => loadPreset(preset));
   view.addEventListener('change', setView);
+  qualityInput.addEventListener('change', changeQuality);
+  displayMode.addEventListener('change', changeDisplayMode);
+  for (const element of [renderScaleInput, glowInput, exposureInput, paletteInput, depthInput, meshInput]) {
+    element.addEventListener('input', configureRendering);
+  }
+  byId('reset-camera').addEventListener('click', () => three?.resetCamera());
+  screenshot.addEventListener('click', () => {
+    const source = displayMode.value === '3d' && three ? canvas3d : canvas;
+    source.toBlob(blob => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'fluid-dynamics-' + displayMode.value + '.png';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, 'image/png');
+  });
   tracers.addEventListener('change', render);
   document.addEventListener('visibilitychange', restartClock);
   reducedMotion.addEventListener('change', event => { if (event.matches) setPaused(true); });
@@ -292,7 +422,11 @@ function start() {
   loadPreset(preset);
   setView();
   setPaused(paused);
+  changeQuality();
+  changeDisplayMode();
   new ResizeObserver(() => {
-    if (renderer.resize()) render();
-  }).observe(canvas);
+    if (displayMode.value === '3d') three?.resize();
+    else renderer.resize();
+    render();
+  }).observe(tankElement);
 }

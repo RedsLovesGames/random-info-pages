@@ -48,8 +48,11 @@ jobs:
 
       - name: Verify archive home
         run: |
-          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs
+          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs
           node --check fluid-dynamics/app.mjs
+          node --check fluid-dynamics/render.mjs
+          node --check fluid-dynamics/three-surface.mjs
+          node --check fluid-dynamics/quality.mjs
           node --test tests/midterm-2026.test.mjs
           node --test friends/ranked/rank-riot.test.cjs
           node --test friends/ranked/rank-riot-supabase.test.cjs

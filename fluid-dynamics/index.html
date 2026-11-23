@@ -22,6 +22,12 @@
     <div class="workbench">
       <section class="tank-panel" aria-label="Simulation tank">
         <div class="tank-toolbar">
+          <label class="view-label" for="display-mode">Display
+            <select id="display-mode">
+              <option value="2d">2D tank</option>
+              <option value="3d">3D dye surface</option>
+            </select>
+          </label>
           <label class="view-label" for="view">View
             <select id="view">
               <option value="dye">Dye</option>
@@ -30,6 +36,7 @@
               <option value="pressure">Pressure</option>
             </select>
           </label>
+          <span id="fps" class="tank-status" aria-label="Render frame rate">FPS</span>
           <span id="tank-status" class="tank-status" aria-hidden="true">Running</span>
           <div class="transport">
             <button type="button" id="pause">Pause</button>
@@ -41,10 +48,11 @@
           <canvas id="tank" tabindex="0" role="group" aria-label="Interactive fluid tank" aria-describedby="tank-help" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Enter Space">
             Your browser needs Canvas 2D to display this simulation.
           </canvas>
+          <canvas id="tank-3d" tabindex="0" hidden aria-label="Orbitable 3D concentration surface, derived from the 2D fluid" aria-describedby="mode-help"></canvas>
           <output id="brush-marker" aria-hidden="true"></output>
         </div>
         <div class="tank-caption">
-          <p id="tank-help">Drag to stir. Use the arrow keys and Space when the tank is focused.</p>
+          <div><p id="tank-help">Drag to stir. Use the arrow keys and Space when the tank is focused.</p><p id="mode-help">Draw on the 2D tank to stir and add dye.</p></div>
           <label id="tracer-option" class="tracer-option"><input type="checkbox" id="tracers" checked> Flow tracers</label>
           <div class="legend" id="legend" hidden><span id="legend-low"></span><i aria-hidden="true"></i><span id="legend-high"></span></div>
         </div>
@@ -91,6 +99,50 @@
           </label>
           <label class="check"><input id="obstacle" type="checkbox"> Cylinder obstacle</label>
         </section>
+
+        <section class="control-section quality-controls">
+          <h2>Render studio</h2>
+          <label class="setting" for="quality">Simulation quality
+            <select id="quality">
+              <option value="eco">Eco</option>
+              <option value="balanced" selected>Balanced</option>
+              <option value="high">High</option>
+              <option value="ultra">Ultra</option>
+              <option value="cinematic">Cinematic · demanding</option>
+            </select>
+          </label>
+          <label class="setting" for="render-scale">Display resolution <output id="render-scale-value">1×</output>
+            <select id="render-scale">
+              <option value="0.75">0.75×</option>
+              <option value="1" selected>1×</option>
+              <option value="1.5">1.5×</option>
+              <option value="2">2×</option>
+            </select>
+          </label>
+          <label class="setting" for="palette">Color treatment
+            <select id="palette">
+              <option value="spectrum">Original spectrum</option>
+              <option value="aurora">Aurora</option>
+              <option value="ember">Ember</option>
+              <option value="ice">Glacial</option>
+            </select>
+          </label>
+          <label class="slider" for="glow"><span>Bloom <output id="glow-value">60%</output></span>
+            <input type="range" id="glow" min="0" max="150" value="60">
+          </label>
+          <label class="slider" for="exposure"><span>Exposure <output id="exposure-value">100%</output></span>
+            <input type="range" id="exposure" min="40" max="200" value="100">
+          </label>
+          <label class="slider" id="height-control" for="height-scale" hidden><span>3D relief <output id="height-scale-value">85%</output></span>
+            <input type="range" id="height-scale" min="0" max="250" value="85">
+          </label>
+          <label class="check" id="mesh-option" hidden><input type="checkbox" id="mesh-grid"> 3D wireframe overlay</label>
+          <p id="quality-notice" class="quality-notice"></p>
+          <div class="export-actions">
+            <button id="screenshot" type="button">Save PNG</button>
+            <button id="reset-camera" type="button" hidden>Reset camera</button>
+          </div>
+        </section>
       </aside>
     </div>
 
@@ -98,6 +150,7 @@
       <summary>How the model works &amp; references</summary>
       <p>This is a 2D incompressible flow model in a closed tank. Each step moves velocity and dye along the flow, smooths velocity according to viscosity, and solves for a pressure correction to reduce compression. The velocity view shows speed. Vorticity shows how quickly the fluid rotates locally.</p>
       <p>Flow tracers mark the dye’s motion. In the velocity view, arrows point in the local direction of flow. The controls use relative values and the pressure display shows the solver’s correction. In the jet presets, the colored sources push fluid already in the tank.</p>
+      <p>The 3D mode is a WebGL2 height-field visualization extruded from the live 2D dye grid. It is orbitable and responds to the same simulation, but it is not a volumetric 3D Navier–Stokes solver. Quality presets increase the real solver grid and pressure iterations; changing them interpolates the existing dye and velocity field to the new grid.</p>
       <ul>
         <li><a href="https://paveldogreat.github.io/WebGL-Fluid-Simulation/">Pavel Dobryakov’s WebGL Fluid Simulation</a> inspired the interactive dye brush and bloom.</li>
         <li><a href="https://piellardj.github.io/navier-stokes-webgl/">Jérémie Piellard’s Navier–Stokes demo</a> inspired the field views and obstacle.</li>

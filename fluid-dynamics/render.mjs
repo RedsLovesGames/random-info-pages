@@ -2,6 +2,11 @@ const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 const depth = (r, g, b, i) => Math.max(r[i], g[i], b[i]);
 
 export function createTankRenderer(canvas, context, tank, mobile) {
+  let options = { renderScale: 1, exposure: 1, glow: .6, palette: 'spectrum', tracerCount: mobile ? 950 : 2350 };
+  function setOptions(next) {
+    options = { ...options, ...next };
+    resize();
+  }
   const { width, height, stride } = tank;
   const field = document.createElement('canvas');
   field.width = width;
@@ -16,7 +21,7 @@ export function createTankRenderer(canvas, context, tank, mobile) {
   bloomContext.filter = 'blur(1.65px)';
   const backdrop = document.createElement('canvas');
   const background = backdrop.getContext('2d', { alpha: false });
-  const tracerCount = mobile ? 950 : 2350;
+  const tracerCount = mobile ? 4200 : 7000;
   const traces = new Float32Array(tracerCount * 2);
   let seed = 1;
 
@@ -37,7 +42,7 @@ export function createTankRenderer(canvas, context, tank, mobile) {
 
   function resize() {
     const bounds = canvas.getBoundingClientRect();
-    const target = Math.min(mobile ? 840 : 1600, Math.max(width, Math.round(bounds.width * Math.min(devicePixelRatio || 1, 2))));
+    const target = Math.min(mobile ? 2000 : 3200, Math.max(width, Math.round(bounds.width * Math.min(devicePixelRatio || 1, 2) * options.renderScale)));
     if (target === canvas.width && backdrop.width === target) return false;
     canvas.width = backdrop.width = target;
     canvas.height = backdrop.height = Math.round(target * height / width);
@@ -84,7 +89,7 @@ export function createTankRenderer(canvas, context, tank, mobile) {
 
   function advanceTracers() {
     const { u, v, solid } = tank;
-    for (let i = 0; i < traces.length; i += 2) {
+    for (let i = 0; i < Math.min(traces.length, options.tracerCount * 2); i += 2) {
       const x = traces[i], y = traces[i + 1];
       const dx = tank.sample(u, x, y - .5, width, height - 1);
       const dy = tank.sample(v, x - .5, y, width - 1, height);
@@ -125,9 +130,19 @@ export function createTankRenderer(canvas, context, tank, mobile) {
               const intensity = Math.tanh(1.05 * Math.sqrt(density));
               const exposure = 225 * intensity * clamp(1 + .48 * normalLight, .38, 1.5) / density;
               const highlight = 48 * intensity ** 4 * Math.max(0, normalLight);
-              r = red[i] * exposure + highlight;
-              g = green[i] * exposure + highlight;
-              b = blue[i] * exposure + highlight;
+              r = (red[i] * exposure + highlight) * options.exposure;
+              g = (green[i] * exposure + highlight) * options.exposure;
+              b = (blue[i] * exposure + highlight) * options.exposure;
+              if (options.palette === 'aurora') {
+                const nr = r * .63 + b * .22, ng = g * 1.14 + r * .12;
+                r = nr; g = ng; b = b * 1.12;
+              } else if (options.palette === 'ember') {
+                const nr = r * 1.16 + g * .23, ng = g * .72 + b * .12;
+                r = nr; g = ng; b *= .42;
+              } else if (options.palette === 'ice') {
+                const shine = .24 * r + .58 * g + .18 * b;
+                r = shine * .48; g = shine * 1.02; b = shine * 1.33;
+              }
             }
           } else if (isVelocity) {
             const magnitude = .5 * Math.hypot(u[i] + u[i + 1], v[i] + v[i + stride]);
@@ -161,7 +176,7 @@ export function createTankRenderer(canvas, context, tank, mobile) {
     const pixel = canvas.width / width;
     const highlights = new Path2D();
     const filaments = new Path2D();
-    for (let i = 0; i < traces.length; i += 2) {
+    for (let i = 0; i < Math.min(traces.length, options.tracerCount * 2); i += 2) {
       const x = traces[i], y = traces[i + 1];
       const cell = Math.floor(x) + Math.floor(y) * stride;
       const concentration = depth(red, green, blue, cell);
@@ -241,11 +256,16 @@ export function createTankRenderer(canvas, context, tank, mobile) {
     context.drawImage(backdrop, 0, 0);
     context.save();
     context.globalCompositeOperation = 'screen';
-    if (view === 'dye') {
-      // Blur the much smaller simulation buffer before compositing at screen size.
+    if (view === 'dye' && options.glow > 0) {
+      // Two light scales: a sharp small halo and a wide soft atmospheric bloom.
       bloomContext.clearRect(0, 0, width, height);
+      bloomContext.filter = 'blur(1.5px)';
       bloomContext.drawImage(field, 0, 0);
-      context.globalAlpha = .6;
+      context.globalAlpha = options.glow * .38;
+      context.filter = 'blur(' + Math.round(w / 90) + 'px)';
+      context.drawImage(bloom, 0, 0, w, h);
+      context.filter = 'none';
+      context.globalAlpha = options.glow * .5;
       context.drawImage(bloom, 0, 0, w, h);
     }
     context.globalAlpha = 1;
@@ -256,5 +276,5 @@ export function createTankRenderer(canvas, context, tank, mobile) {
     if (tank.obstacle) paintCylinder();
   }
 
-  return { advanceTracers, render, reset, resize };
+  return { advanceTracers, render, reset, resize, setOptions };
 }
