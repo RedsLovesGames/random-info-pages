@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#edece5">
+  <meta name="description" content="Stir ink, collide jets, and see the vortices behind an obstacle in an interactive 2D fluid simulation.">
+  <title>Fluid Dynamics | Random Info Pages</title>
+  <link rel="stylesheet" href="../design-system/rip.css">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="../design-system/rip.js"></script>
+  <script defer src="../design-system/appearance.js" data-native-appearance="light"></script>
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <main class="fluid-page">
+    <header class="heading">
+      <h1>Fluid <em>Dynamics.</em></h1>
+      <p>Stir a tank of dye, collide two jets, or see what happens to the flow behind an obstacle.</p>
+    </header>
+
+    <div class="workbench">
+      <section class="tank-panel" aria-label="Simulation tank">
+        <div class="tank-toolbar">
+          <label class="view-label" for="view">View
+            <select id="view">
+              <option value="dye">Dye</option>
+              <option value="velocity">Velocity</option>
+              <option value="vorticity">Vorticity</option>
+              <option value="pressure">Pressure</option>
+            </select>
+          </label>
+          <div class="transport">
+            <button type="button" id="pause">Pause</button>
+            <button type="button" id="step" disabled>Step</button>
+            <button type="button" id="reset">Reset</button>
+          </div>
+        </div>
+        <div class="tank">
+          <canvas id="tank" tabindex="0" role="group" aria-label="Interactive fluid tank" aria-describedby="tank-help" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Enter Space">
+            Your browser needs Canvas 2D to display this simulation.
+          </canvas>
+          <output id="brush-marker" aria-hidden="true"></output>
+        </div>
+        <div class="tank-caption">
+          <p id="tank-help">Drag to stir. With the tank focused, use arrow keys to move the brush and Space to apply it.</p>
+          <div class="legend" id="legend" hidden><span id="legend-low"></span><i aria-hidden="true"></i><span id="legend-high"></span></div>
+        </div>
+        <p id="model-error" role="status" hidden>Canvas 2D is unavailable in this browser.</p>
+      </section>
+
+      <aside class="controls" aria-label="Fluid controls">
+        <section class="control-section">
+          <h2>Experiments</h2>
+          <div class="presets" role="group" aria-label="Experiment presets">
+            <button type="button" data-preset="vortex" aria-pressed="true">Vortex</button>
+            <button type="button" data-preset="jets" aria-pressed="false">Colliding jets</button>
+            <button type="button" data-preset="wake" aria-pressed="false">Cylinder wake</button>
+            <button type="button" data-preset="free" aria-pressed="false">Blank tank</button>
+          </div>
+          <p id="preset-help">Follow two dyes around a rotating center.</p>
+        </section>
+
+        <section class="control-section">
+          <h2>Brush</h2>
+          <div class="brush-modes" role="group" aria-label="Brush mode">
+            <button type="button" data-mode="ink" aria-pressed="true">Ink + stir</button>
+            <button type="button" data-mode="stir" aria-pressed="false">Stir only</button>
+          </div>
+          <div class="brush-colors" role="group" aria-label="Ink color">
+            <button type="button" class="swatch" data-color="#49ded4" aria-pressed="true" aria-label="Turquoise" title="Turquoise"></button>
+            <button type="button" class="swatch" data-color="#ff8c52" aria-pressed="false" aria-label="Tangerine" title="Tangerine"></button>
+            <button type="button" class="swatch" data-color="#f275b8" aria-pressed="false" aria-label="Pink" title="Pink"></button>
+            <button type="button" class="swatch" data-color="#6e94ff" aria-pressed="false" aria-label="Periwinkle" title="Periwinkle"></button>
+            <button type="button" class="swatch" data-color="#fde65e" aria-pressed="false" aria-label="Yellow" title="Yellow"></button>
+          </div>
+          <label class="slider" for="brush-size"><span>Brush size <output id="brush-size-value" for="brush-size"></output></span>
+            <input type="range" id="brush-size" min="1" max="10" value="4">
+          </label>
+        </section>
+
+        <section class="control-section fluid-controls">
+          <h2>Fluid</h2>
+          <label class="slider" for="viscosity"><span>Viscosity <output id="viscosity-value" for="viscosity"></output></span>
+            <input type="range" id="viscosity" min="0" max="100" value="10">
+          </label>
+          <label class="slider" for="persistence"><span>Dye persistence <output id="persistence-value" for="persistence"></output></span>
+            <input type="range" id="persistence" min="10" max="100" value="89">
+          </label>
+          <label class="check"><input id="obstacle" type="checkbox"> Cylinder obstacle</label>
+        </section>
+      </aside>
+    </div>
+
+    <details class="references">
+      <summary>How the model works &amp; references</summary>
+      <p>This is a 2D incompressible flow model in a closed tank. Each step moves velocity and dye along the flow, smooths velocity according to viscosity, and solves for a pressure correction to reduce compression. The velocity view shows speed. Vorticity shows how quickly the fluid rotates locally.</p>
+      <p>The controls use relative values and the pressure display shows the solver’s correction. In the jet presets, the colored sources push fluid already in the tank.</p>
+      <ul>
+        <li><a href="https://paveldogreat.github.io/WebGL-Fluid-Simulation/">Pavel Dobryakov’s WebGL Fluid Simulation</a> inspired the interactive dye brush.</li>
+        <li><a href="https://piellardj.github.io/navier-stokes-webgl/">Jérémie Piellard’s Navier–Stokes demo</a> inspired the field views and obstacle.</li>
+        <li><a href="https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-38-fast-fluid-dynamics-simulation-gpu">Mark Harris’s <cite>Fast Fluid Dynamics Simulation on the GPU</cite></a> describes the Stable Fluids method used as the solver reference.</li>
+      </ul>
+    </details>
+  </main>
+</body>
+</html>

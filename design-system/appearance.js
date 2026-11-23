@@ -53,6 +53,7 @@
     'cryptography-museum': ['lever', 'sand', 'M5 10h14v10H5zM8 10V7a4 4 0 1 1 8 0v3m-4 3v4'],
     'device-worlds': ['frame', 'violet', 'M2 5h14v11H2zM6 19h6m-3-3v3m9-9h4v10h-6v-4m2 2h2'],
     'dungeon-forge': ['frame', 'amber', 'M4 20V5h3v3h3V5h4v3h3V5h3v15zM9 20v-6a3 3 0 0 1 6 0v6'],
+    'fluid-dynamics': ['horizon', 'teal', 'M3 7c3 0 3-3 6-3s3 3 6 3 3-3 6-3M3 13c3 0 3-3 6-3s3 3 6 3 3-3 6-3M3 19c3 0 3-3 6-3s3 3 6 3 3-3 6-3'],
     'fiction-workspace': ['stack', 'sand', 'M5 4h10l4 4v12H5zM14 4v5h5M8 12h8m-8 3h8m-8 3h5'],
     'friends': ['horizon', 'rose', 'M3 19c0-4 2-6 5-6s5 2 5 6m0-5c4-2 8 0 8 5M8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6m9 0a3 3 0 1 0 0 6 3 3 0 0 0 0-6'],
     'friends/ranked': ['lever', 'amber', 'M7 4h10v5a5 5 0 0 1-10 0zM7 6H3v2c0 2 2 4 5 4m9-6h4v2c0 2-2 4-5 4m-4 2v5m-4 1h8'],
