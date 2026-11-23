@@ -57,17 +57,20 @@ test('archived VCT and Tideborne apps are excluded from the new visual system',(
   assert.ok(!file('archive/index.html').includes('design-system/rip.js'));
 });
 
-test('project switcher script is self-contained and does not intercept app shortcuts',()=>{
+test('project switcher reads canonical registry and scopes its optional studio shortcuts',()=>{
   const script=file('design-system/rip.js');
+  const registry=file('design-system/projects.js');
   assert.doesNotThrow(()=>new Script(script));
+  assert.doesNotThrow(()=>new Script(registry));
   assert.match(script,/window\.self!==window\.top/);
-  assert.match(script,/dlg\.showModal\(\)/);
-  assert.match(script,/dlg\.close\(\)/);
-  assert.match(script,/const catalog=\[/);
-  assert.doesNotMatch(script,/localStorage|sessionStorage|e\.ctrlKey|e\.metaKey/);
-  for(const slug of active)assert.ok(script.includes("'"+slug+"'"),slug+' searchable');
+  assert.match(script,/design-system\/projects\.js/);
+  assert.match(script,/RIPCatalog/);
+  assert.match(script,/showModal\(\)/);
+  assert.match(script,/window\.RIPStudio/);
+  assert.doesNotMatch(script,/const catalog=\[/,'navigation does not duplicate project data');
+  for(const slug of active)assert.ok(registry.includes("p:'./"+slug+"/'"),slug+' indexed');
   for(const slug of ['vct-scout','tideborne','tide2'])
-    assert.ok(!script.includes("['"+slug+"'"),slug+' not offered as active');
+    assert.match(registry,new RegExp("p:'\\./"+slug+"/'[^}]*a:true"),slug+' stays archived');
 });
 
 test('design CSS is isolated from app CSS and respects reduced motion',()=>{

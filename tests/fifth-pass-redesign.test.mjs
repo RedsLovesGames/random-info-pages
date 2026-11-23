@@ -74,7 +74,9 @@ test('Emperor Director workflow is clear about preview simulations and preserves
 
 test('all 19 projects in current index have received at least one bespoke interaction pass',()=>{
  const home=read('index.html');
- const block=home.match(/const projects=\[[\s\S]*?\];/)?.[0]||'';
+ assert.match(home,/const projects=window\.RIP_PROJECTS;/);
+ const registry=read('design-system/projects.js');
+ const block=registry.match(/const projects=\[[\s\S]*?\];/)?.[0]||'';
  const archived=['vct-scout','tideborne','tide2'];
  const activeSlugs=['belief-atlas','9-11-timeline','fiction-workspace','algorithm-arena',
    'cryptography-museum','music-microscope','one-million','infrastructure-atlas','political-grid',
