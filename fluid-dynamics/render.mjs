@@ -171,9 +171,9 @@ export function createTankRenderer(canvas, context, tank, mobile) {
     fieldContext.putImageData(frame, 0, 0);
   }
 
-  function paintTracers() {
+  function paintTracers(target = context, outputWidth = canvas.width) {
     const { u, v, dye: [red, green, blue], solid } = tank;
-    const pixel = canvas.width / width;
+    const pixel = outputWidth / width;
     const highlights = new Path2D();
     const filaments = new Path2D();
     for (let i = 0; i < Math.min(traces.length, options.tracerCount * 2); i += 2) {
@@ -189,11 +189,11 @@ export function createTankRenderer(canvas, context, tank, mobile) {
       trace.moveTo(x * pixel, y * pixel);
       trace.lineTo((x - dx * length) * pixel, (y - dy * length) * pixel);
     }
-    context.lineWidth = Math.max(.75, canvas.width / 1350);
-    context.strokeStyle = 'rgba(203, 233, 255, .23)';
-    context.stroke(filaments);
-    context.strokeStyle = 'rgba(231, 247, 255, .42)';
-    context.stroke(highlights);
+    target.lineWidth = Math.max(.75, canvas.width / 1350);
+    target.strokeStyle = 'rgba(203, 233, 255, .23)';
+    target.stroke(filaments);
+    target.strokeStyle = 'rgba(231, 247, 255, .42)';
+    target.stroke(highlights);
   }
 
   function paintVelocityArrows() {
@@ -276,5 +276,10 @@ export function createTankRenderer(canvas, context, tank, mobile) {
     if (tank.obstacle) paintCylinder();
   }
 
-  return { advanceTracers, render, reset, resize, setOptions };
+  function renderTracers(show) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    if (show) paintTracers();
+  }
+
+  return { advanceTracers, render, reset, resize, setOptions, renderTracers, paintTracers };
 }
