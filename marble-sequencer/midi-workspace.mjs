@@ -1,8 +1,9 @@
 /* Multitrack MIDI editor and SMF1 exporter.
- * Imported MIDI is intentionally flattened to elapsed seconds by the parser.
- * Export emits fixed 120 BPM ticks: note timing, channels and programs remain,
- * but the original variable tempo map cannot be reconstructed.
+ * The parser supplies seconds-based note timing and, when possible, the
+ * source PPQ tempo map. Export uses inverse timing to reconstruct tick
+ * positions across tempo changes; unsupported timing uses 120 BPM.
  */
+import {normalizeMidiTiming,midiSecondsToTick} from './midi-timing.mjs';
 export const MIDI_MAX_EVENTS=50000;
 export const MIDI_WORKSPACE_FORMAT='rip-marble-midi-workspace-v1';
 const valid=(n,min,max)=>Number.isFinite(n)&&n>=min&&n<=max;
@@ -10,12 +11,20 @@ const byte=(n)=>Math.max(0,Math.min(127,Math.round(n)));
 export function normalizeMidiEvents(input){
  if(!Array.isArray(input)||!input.length||input.length>MIDI_MAX_EVENTS)
   throw new RangeError('A MIDI workspace needs 1 to 50,000 notes.');
- return input.map(e=>{
+ const usedIds=new Set();
+ return input.map((e,index)=>{
   if(!e||!valid(e.time,0,3600)||!valid(e.duration,.001,600)||!valid(e.note,0,127)||
      !valid(e.channel,0,15)||!valid(e.track,0,63)||
      !valid(e.velocity,0,1)||!valid(e.program??0,0,127))
    throw new RangeError('Invalid MIDI event or unsupported track/channel.');
-  return {time:Number(e.time),duration:Number(e.duration),note:byte(e.note),
+  let id=typeof e.id==='string'&&/^[a-zA-Z0-9:_-]{1,64}$/.test(e.id)
+   ?e.id:'n'+index;
+  if(usedIds.has(id)){
+   id='n'+index;let suffix=0;
+   while(usedIds.has(id))id='n'+index+'_'+(++suffix);
+  }
+  usedIds.add(id);
+  return {id,time:Number(e.time),duration:Number(e.duration),note:byte(e.note),
    channel:Math.round(e.channel),track:Math.round(e.track),velocity:Number(e.velocity),
    program:byte(e.program??0)};
  }).sort((a,b)=>a.time-b.time||a.track-b.track||a.note-b.note);
@@ -56,15 +65,17 @@ export function changeMidiNote(events,index,{note,time,duration,velocity}={}){
    velocity:velocity===undefined?old.velocity:Number(velocity)};
  return normalizeMidiEvents(events.map((event,i)=>i===index?edited:event));
 }
-export function buildMidiWorkspace({name,events,muted=[]}){
+export function buildMidiWorkspace({name,events,muted=[],timing=null}){
  const notes=normalizeMidiEvents(events);
  const groups=trackSummary(notes).map(group=>group.track);
  const mutedSet=new Set(muted);
  if(!Array.isArray(muted)||muted.some(track=>!Number.isInteger(track)||!groups.includes(track)))
   throw new RangeError('Unrecognized muted track.');
  const nameSafe=typeof name==='string'?name.slice(0,120):'Imported MIDI';
+ const tempoMap=normalizeMidiTiming(timing);
  return {format:MIDI_WORKSPACE_FORMAT,name:nameSafe,
-  events:notes,muted:[...mutedSet].sort((a,b)=>a-b)};
+  events:notes,muted:[...mutedSet].sort((a,b)=>a-b),
+  ...(tempoMap?{timing:tempoMap}:{})};
 }
 export function midiPlaybackSong(workspace){
  const muted=new Set(workspace.muted);
@@ -93,11 +104,18 @@ function chunk(entries){
 export function exportMultitrackMidi(workspace){
  const w=buildMidiWorkspace(workspace);
  const groups=trackSummary(w.events);
- const start=chunk([{tick:0,order:0,data:[0xff,0x51,0x03,0x07,0xa1,0x20]}]);
+ const ppq=w.timing?.ppq??480;
+ const toTick=seconds=>w.timing
+  ?midiSecondsToTick(seconds,w.timing):Math.round(seconds*ppq*2);
+ const tempoEntries=w.timing
+  ?w.timing.changes.map(({tick,us})=>({tick,order:0,data:[
+    0xff,0x51,0x03,(us>>>16)&255,(us>>>8)&255,us&255]}))
+  :[{tick:0,order:0,data:[0xff,0x51,0x03,0x07,0xa1,0x20]}];
+ const start=chunk(tempoEntries);
  const tracks=groups.map(group=>{
   const entries=[],programs=new Array(16).fill(-1);
   for(const event of w.events.filter(e=>e.track===group.track)){
-   const tick=Math.round(event.time*960),end=Math.max(tick+1,Math.round((event.time+event.duration)*960));
+   const tick=toTick(event.time),end=Math.max(tick+1,toTick(event.time+event.duration));
    if(event.channel!==9&&programs[event.channel]!==event.program){
     entries.push({tick,order:-1,data:[0xc0|event.channel,event.program]});
     programs[event.channel]=event.program;
@@ -108,6 +126,6 @@ export function exportMultitrackMidi(workspace){
   }
   return chunk(entries);
  });
- const header=[...ascii('MThd'),...u32(6),...u16(1),...u16(1+tracks.length),...u16(480)];
+ const header=[...ascii('MThd'),...u32(6),...u16(1),...u16(1+tracks.length),...u16(ppq)];
  return new Uint8Array([...header,...start,...tracks.flat()]);
 }

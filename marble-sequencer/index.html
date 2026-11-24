@@ -76,11 +76,40 @@
         </div>
         <details id="midi-workspace" class="midi-workspace" hidden open>
           <summary>Multitrack MIDI editor <span id="midi-track-count"></span></summary>
-          <p>Edit the actual imported MIDI tracks and individual notes. Unlike 16-step quantization, original timing, channels, and track separation are retained. Export uses a fixed 120 BPM timing map.</p>
+          <p>Edit the actual imported MIDI tracks and individual notes. Unlike 16-step quantization, original timing, channels, and track separation are retained. Export retains the imported tempo map for standard PPQ MIDI files; unsupported timing formats and legacy JSON fall back to 120 BPM.</p>
           <div class="midi-track-head">
             <label>Track <select id="midi-track"></select></label>
             <label class="midi-mute"><input id="midi-mute" type="checkbox"> Mute this track in playback</label>
           </div>
+          <section class="midi-piano" aria-labelledby="midi-piano-title">
+            <div class="midi-piano-header">
+              <div><h3 id="midi-piano-title">Piano roll</h3>
+                <p>Click or tap a note to select it. Drag a note to change pitch and timing, or drag its right edge to resize. A drag saves as one undo step.</p></div>
+              <button type="button" id="piano-jump">Jump to playhead</button>
+            </div>
+            <div class="midi-piano-options">
+              <label>Window <select id="piano-span">
+                <option value="4">4 s</option><option value="8" selected>8 s</option>
+                <option value="16">16 s</option><option value="32">32 s</option>
+              </select></label>
+              <label>Pitch floor <input id="piano-low" type="number" min="0" max="116" value="48" step="1"></label>
+              <label>Pitch rows <select id="piano-rows">
+                <option value="12">12</option><option value="24">24</option>
+                <option value="36" selected>36</option><option value="48">48</option>
+              </select></label>
+              <label>Snap <select id="piano-snap">
+                <option value="0">Off (1 ms)</option><option value="0.05">50 ms</option>
+                <option value="0.125" selected>125 ms</option><option value="0.25">250 ms</option>
+                <option value="0.5">500 ms</option><option value="1">1 second</option>
+              </select></label>
+            </div>
+            <canvas id="piano-canvas" width="1000" height="320" tabindex="0" aria-label="MIDI piano roll. Tap or drag notes; use the Select MIDI note dropdown below for keyboard-accessible editing."></canvas>
+            <label class="midi-piano-scrubber">Timeline start
+              <input id="piano-scroll" type="range" min="0" max="0" value="0" step="0.01" aria-label="Scroll MIDI piano roll along timeline">
+              <output id="piano-offset" for="piano-scroll">0.00 s</output>
+            </label>
+            <p id="piano-hint" role="status" aria-live="polite">Showing the selected track. Zoom and scroll to find a note.</p>
+          </section>
           <div class="midi-track-fields">
             <label>Transpose (semitones) <input id="midi-transpose" type="number" min="-24" max="24" step="1" value="0"></label>
             <label>Velocity (%) <input id="midi-velocity-scale" type="number" min="10" max="200" step="5" value="100"></label>

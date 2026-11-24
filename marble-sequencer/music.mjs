@@ -1,4 +1,5 @@
 import parseMidi from './vendor/midi-parser.mjs';
+import {collectMidiTiming} from './midi-timing.mjs';
 
 export const LANES = [
   {label:'Kick', note:36, channel:9}, {label:'Snare', note:38, channel:9},
@@ -70,7 +71,9 @@ export function decodeMidi(input) {
       duration = result.end;
     }
     if (!events.length) throw new Error('No playable MIDI notes');
-    return {events, duration, tracks:tracks.length};
+    const timing=header.format!==2&&!header.framesPerSecond
+      ?collectMidiTiming(pieces[0],header.ticksPerBeat):null;
+    return {events, duration, tracks:tracks.length,timing};
   } catch (problem) {
     throw new Error('Could not read this MIDI file. ' + (problem?.message || String(problem)));
   }

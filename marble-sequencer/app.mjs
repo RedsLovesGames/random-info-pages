@@ -1,5 +1,6 @@
 import {LANES,buildPattern,encodePattern,decodePattern,noteName} from './music.mjs';
 import { exportPatternMidi } from './export-midi.mjs';
+import {createPianoRoll} from './piano-roll-ui.mjs';
 import {buildMidiWorkspace,midiPlaybackSong,trackSummary,changeMidiTrack,changeMidiNote,
   exportMultitrackMidi,MIDI_WORKSPACE_FORMAT} from './midi-workspace.mjs';
 import { rotateRows, euclideanRhythm, patternFromEvents } from './pattern-tools.mjs';
@@ -40,7 +41,7 @@ function restore(state){
   updateUndo();
 }
 let pendingImport = null;
-let midiWorkspace=null,midiTrack=0,midiNotePage=0;
+let midiWorkspace=null,midiTrack=0,midiNotePage=0,selectedMidiId=null,pianoRoll=null;
 const midiPast=[],midiFuture=[];
 const midiSnapshot=()=>structuredClone(midiWorkspace);
 function midiStatus(text,error=false){
@@ -64,20 +65,27 @@ function currentMidiGroup(){
 function renderMidiNotes(){
   const noteChoice=byId('midi-note');
   const indices=currentMidiGroup()?.indices||[];
+  if(selectedMidiId){
+    const selectedPosition=indices.findIndex(index=>midiWorkspace.events[index].id===selectedMidiId);
+    if(selectedPosition>=0)midiNotePage=Math.floor(selectedPosition/30);
+    else selectedMidiId=null;
+  }
   const pages=Math.max(1,Math.ceil(indices.length/30));
-  midiNotePage=Math.min(midiNotePage,pages-1);
+  midiNotePage=Math.max(0,Math.min(midiNotePage,pages-1));
   const subset=indices.slice(midiNotePage*30,(midiNotePage+1)*30);
-  const before=Number(noteChoice.value);
   noteChoice.replaceChildren();
   for(const index of subset){
     const e=midiWorkspace.events[index],option=new Option(
       noteName(e.note)+' · '+e.time.toFixed(2)+'s · ch '+(e.channel+1),index);
     noteChoice.add(option);
   }
-  if(subset.includes(before))noteChoice.value=String(before);
+  let selectedIndex=subset.find(index=>midiWorkspace.events[index].id===selectedMidiId);
+  if(selectedIndex===undefined)selectedIndex=subset[0];
+  const selected=midiWorkspace?.events[selectedIndex];
+  selectedMidiId=selected?.id||null;
+  if(selected)noteChoice.value=String(selectedIndex);
   byId('midi-prev-page').disabled=midiNotePage===0;
   byId('midi-next-page').disabled=midiNotePage>=pages-1;
-  const selected=midiWorkspace?.events[Number(noteChoice.value)];
   for(const [id,value] of [
     ['midi-note-pitch',selected?.note],['midi-note-time',selected?.time],
     ['midi-note-length',selected?.duration],
@@ -103,6 +111,7 @@ function renderMidiWorkspace(){
   byId('midi-undo').disabled=!midiPast.length;
   byId('midi-redo').disabled=!midiFuture.length;
   renderMidiNotes();
+  pianoRoll?.render();
 }
 function refreshMidiPlayback(message){
   if(!midiWorkspace)return;
@@ -111,6 +120,7 @@ function refreshMidiPlayback(message){
   selectSong(midiPlaybackSong(midiWorkspace));
   player.offset=Math.min(position,player.song.duration);
   renderMidiWorkspace();
+  pianoRoll?.render();
   if(wasPlaying)start();
   if(message)midiStatus(message);
 }
@@ -313,7 +323,7 @@ async function loadFile(file) {
     if(song.kind==='midi'){
       midiWorkspace=buildMidiWorkspace(song);
       midiPast.length=0;midiFuture.length=0;
-      midiTrack=trackSummary(midiWorkspace.events)[0].track;midiNotePage=0;
+      midiTrack=trackSummary(midiWorkspace.events)[0].track;midiNotePage=0;selectedMidiId=null;
       selectSong(midiPlaybackSong(midiWorkspace));
       midiStatus('Loaded '+midiWorkspace.events.length+' notes. Tracks can be edited independently.');
     }else{midiWorkspace=null;selectSong(song)}
@@ -329,11 +339,21 @@ async function loadFile(file) {
 }
 
 byId('midi-track').addEventListener('change',()=>{
-  midiTrack=Number(byId('midi-track').value);midiNotePage=0;renderMidiWorkspace();
+  midiTrack=Number(byId('midi-track').value);midiNotePage=0;selectedMidiId=null;
+  renderMidiWorkspace();
 });
-byId('midi-note').addEventListener('change',renderMidiNotes);
-byId('midi-prev-page').addEventListener('click',()=>{midiNotePage=Math.max(0,midiNotePage-1);renderMidiNotes()});
-byId('midi-next-page').addEventListener('click',()=>{midiNotePage++;renderMidiNotes()});
+byId('midi-note').addEventListener('change',()=>{
+  const selected=midiWorkspace?.events[Number(byId('midi-note').value)];
+  selectedMidiId=selected?.id||null;
+  renderMidiNotes();
+  pianoRoll?.focusNote(selected);
+});
+byId('midi-prev-page').addEventListener('click',()=>{
+  midiNotePage=Math.max(0,midiNotePage-1);selectedMidiId=null;renderMidiNotes();pianoRoll?.render();
+});
+byId('midi-next-page').addEventListener('click',()=>{
+  midiNotePage++;selectedMidiId=null;renderMidiNotes();pianoRoll?.render();
+});
 byId('midi-mute').addEventListener('change',()=>{
   const checked=byId('midi-mute').checked;
   midiEdit(()=>{
@@ -376,7 +396,9 @@ byId('midi-export').addEventListener('click',()=>{
   try{
     const bytes=exportMultitrackMidi(midiWorkspace);
     midiDownload(bytes,'marble-multitrack-edited.mid','audio/midi');
-    midiStatus('Exported '+trackSummary(midiWorkspace.events).length+' separate MIDI tracks. Event times retain their seconds, using an exported 120 BPM map.');
+    midiStatus('Exported '+trackSummary(midiWorkspace.events).length+' MIDI tracks. '+
+      (midiWorkspace.timing?'Preserved '+midiWorkspace.timing.changes.length+' source tempo segment(s).':
+      'A constant 120 BPM export map was used because source tempo information is unavailable.'));
   }catch(error){midiStatus('MIDI export failed: '+error.message,true)}
 });
 byId('midi-save-json').addEventListener('click',()=>{
@@ -396,7 +418,7 @@ byId('midi-json-file').addEventListener('change',async()=>{
     const next=buildMidiWorkspace(object);
     pendingImport?.abort();pendingImport=null;
     midiWorkspace=next;midiPast.length=0;midiFuture.length=0;
-    midiTrack=trackSummary(next.events)[0].track;midiNotePage=0;
+    midiTrack=trackSummary(next.events)[0].track;midiNotePage=0;selectedMidiId=null;
     selectSong(midiPlaybackSong(next));
     midiStatus('Restored '+next.events.length+' editable notes.');
   }catch(error){midiStatus('Could not open the MIDI workspace: '+error.message,true)}
@@ -577,6 +599,7 @@ function animate(now) {
     if (view['time-now'].textContent !== label) view['time-now'].textContent = label;
   }
   machine.draw(player.song,position,player.running,now);
+  if(player.song.kind==='midi'&&player.running)pianoRoll?.tick(now);
   const step = player.song.kind === 'pattern' && (player.running || seeking)
     ? Math.min(15,Math.floor(position * pattern.bpm / 15)) : -1;
   updateStep(step);
@@ -613,7 +636,7 @@ window.RIPStudio={
     if(state?.format===MIDI_WORKSPACE_FORMAT){
       const next=buildMidiWorkspace(state);
       midiWorkspace=next;midiPast.length=0;midiFuture.length=0;
-      midiTrack=trackSummary(next.events)[0].track;midiNotePage=0;
+      midiTrack=trackSummary(next.events)[0].track;midiNotePage=0;selectedMidiId=null;
       selectSong(midiPlaybackSong(next));
       return;
     }
@@ -635,6 +658,28 @@ window.RIPStudio={
     throw new Error('Unknown transport command');
   }
 };
+pianoRoll=createPianoRoll({
+  getState:()=>({
+    workspace:midiWorkspace,kind:player.song?.kind,
+    track:midiTrack,selectedId:selectedMidiId,position:player.position
+  }),
+  onSelect(id){
+    selectedMidiId=id;
+    const note=midiWorkspace?.events.find(event=>event.id===id);
+    if(!note)return;
+    midiTrack=note.track;
+    renderMidiWorkspace();
+  },
+  onEdit(id,changes){
+    const index=midiWorkspace?.events.findIndex(event=>event.id===id)??-1;
+    if(index<0){midiStatus('The selected note no longer exists.',true);return}
+    selectedMidiId=id;
+    midiEdit(()=>buildMidiWorkspace({...midiWorkspace,
+      events:changeMidiNote(midiWorkspace.events,index,changes)}),
+      'Moved or resized '+noteName(changes.note)+' in the piano roll. Undo is available.');
+  },
+  onSeek(time){reposition(time)}
+});
 renderGrid();
 renderPattern();
 selectSong(patternSong());

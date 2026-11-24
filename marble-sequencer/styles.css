@@ -195,3 +195,27 @@ html[data-marble-effects="reduced"] .machine *{animation:none!important;transiti
 .midi-track-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 .midi-note-nav button{font-size:10px;padding:5px}}
 @media(max-width:380px){.midi-track-fields{grid-template-columns:1fr}}
+
+/* Coordinate-driven MIDI piano roll: source notes stay editable with the form. */
+.midi-piano{display:grid;gap:9px;padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.midi-piano-header{display:flex;justify-content:space-between;align-items:start;gap:12px}
+.midi-piano-header h3{margin:0;font-size:16px;letter-spacing:-.03em}
+.midi-piano-header p{font-size:10px;line-height:1.45;margin:4px 0;color:var(--muted)}
+.midi-piano-header button{flex:none;font-size:10px;min-height:34px}
+.midi-piano-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.midi-piano-options label{font-size:10px;font-weight:700;display:grid;gap:4px;color:var(--muted)}
+.midi-piano-options input,.midi-piano-options select{min-width:0;width:100%;font-size:11px;padding:7px}
+#piano-canvas{width:100%;height:280px;display:block;touch-action:none;user-select:none;cursor:crosshair;
+ background:var(--face);border:1px solid var(--border);border-radius:4px}
+#piano-canvas[data-dragging="true"]{cursor:grabbing}
+.midi-piano-scrubber{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;
+ gap:10px;font-size:10px;font-weight:700;color:var(--muted)}
+.midi-piano-scrubber input{width:100%;padding:0;min-height:30px;accent-color:var(--blue)}
+#piano-offset{min-width:50px;text-align:right;font-family:var(--mono)}
+.midi-piano #piano-hint{font-size:10px;line-height:1.45;margin:0;color:var(--muted)}
+@media(max-width:900px){.midi-piano-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.midi-piano{padding:8px 0}.midi-piano-header{flex-wrap:wrap}
+.midi-piano-header button{width:100%}#piano-canvas{height:245px}
+.midi-piano-scrubber{grid-template-columns:1fr auto;gap:3px}
+.midi-piano-scrubber input{grid-column:1/-1;grid-row:2}
+.midi-piano-options label{font-size:9px}}
