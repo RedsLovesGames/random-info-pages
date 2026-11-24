@@ -74,6 +74,42 @@
           <label>Loop tempo (BPM) <input type="number" id="convert-bpm" min="40" max="240" step="1" value="104" inputmode="numeric"></label>
           <button id="convert-to-pattern" type="button">Quantize from playhead ↗</button>
         </div>
+        <details id="midi-workspace" class="midi-workspace" hidden open>
+          <summary>Multitrack MIDI editor <span id="midi-track-count"></span></summary>
+          <p>Edit the actual imported MIDI tracks and individual notes. Unlike 16-step quantization, original timing, channels, and track separation are retained. Export uses a fixed 120 BPM timing map.</p>
+          <div class="midi-track-head">
+            <label>Track <select id="midi-track"></select></label>
+            <label class="midi-mute"><input id="midi-mute" type="checkbox"> Mute this track in playback</label>
+          </div>
+          <div class="midi-track-fields">
+            <label>Transpose (semitones) <input id="midi-transpose" type="number" min="-24" max="24" step="1" value="0"></label>
+            <label>Velocity (%) <input id="midi-velocity-scale" type="number" min="10" max="200" step="5" value="100"></label>
+            <label>Shift (ms) <input id="midi-shift" type="number" min="-2000" max="2000" step="10" value="0"></label>
+          </div>
+          <button type="button" id="midi-apply-track">Apply to selected track</button>
+          <p class="midi-small">Individual notes (sorted by onset). Choose a note to edit its pitch, start, duration, and velocity.</p>
+          <div class="midi-note-nav">
+            <button id="midi-prev-page" type="button">← Previous</button>
+            <select id="midi-note" aria-label="Select MIDI note"></select>
+            <button id="midi-next-page" type="button">Next →</button>
+          </div>
+          <div class="midi-track-fields">
+            <label>Pitch (0–127) <input id="midi-note-pitch" type="number" min="0" max="127" step="1"></label>
+            <label>Start (sec) <input id="midi-note-time" type="number" min="0" max="3600" step="0.01"></label>
+            <label>Length (sec) <input id="midi-note-length" type="number" min="0.001" max="600" step="0.01"></label>
+            <label>Velocity (%) <input id="midi-note-velocity" type="number" min="0" max="100" step="1"></label>
+          </div>
+          <button id="midi-apply-note" type="button">Save selected note</button>
+          <div class="midi-action-row">
+            <button type="button" id="midi-undo" disabled>Undo edit</button>
+            <button type="button" id="midi-redo" disabled>Redo edit</button>
+            <button type="button" id="midi-export">Download edited .mid</button>
+            <button type="button" id="midi-save-json">Download editable JSON</button>
+            <button type="button" id="midi-open-json">Open editable JSON</button>
+            <input type="file" id="midi-json-file" hidden accept=".json,application/json">
+          </div>
+          <p id="midi-editor-status" role="status" aria-live="polite">MIDI edits are held locally until you download a file.</p>
+        </details>
         <details class="formats">
           <summary>Supported files</summary>
           <p>MP3, WAV, M4A, AAC, FLAC, Ogg, Opus, AIFF, WMA, and other decodable audio. Standard MIDI (.mid, .midi), RMID, and KAR files play through an in-browser synth.</p>

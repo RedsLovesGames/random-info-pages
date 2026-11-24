@@ -1,5 +1,7 @@
 import {LANES,buildPattern,encodePattern,decodePattern,noteName} from './music.mjs';
 import { exportPatternMidi } from './export-midi.mjs';
+import {buildMidiWorkspace,midiPlaybackSong,trackSummary,changeMidiTrack,changeMidiNote,
+  exportMultitrackMidi,MIDI_WORKSPACE_FORMAT} from './midi-workspace.mjs';
 import { rotateRows, euclideanRhythm, patternFromEvents } from './pattern-tools.mjs';
 import { receiveMarbleAudio } from '../design-system/bridge.mjs';
 import {makeMachine} from './machine.mjs';
@@ -38,6 +40,92 @@ function restore(state){
   updateUndo();
 }
 let pendingImport = null;
+let midiWorkspace=null,midiTrack=0,midiNotePage=0;
+const midiPast=[],midiFuture=[];
+const midiSnapshot=()=>structuredClone(midiWorkspace);
+function midiStatus(text,error=false){
+  const output=byId('midi-editor-status');
+  output.textContent=text;output.dataset.error=String(error);
+}
+function midiSaveHistory(){
+  if(!midiWorkspace)return;
+  midiPast.push(midiSnapshot());
+  if(midiPast.length>32)midiPast.shift();
+  midiFuture.length=0;
+}
+function midiDownload(data,name,type){
+  const url=URL.createObjectURL(new Blob([data],{type}));
+  const a=document.createElement('a');a.href=url;a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
+function currentMidiGroup(){
+  return trackSummary(midiWorkspace?.events||[]).find(t=>t.track===midiTrack);
+}
+function renderMidiNotes(){
+  const noteChoice=byId('midi-note');
+  const indices=currentMidiGroup()?.indices||[];
+  const pages=Math.max(1,Math.ceil(indices.length/30));
+  midiNotePage=Math.min(midiNotePage,pages-1);
+  const subset=indices.slice(midiNotePage*30,(midiNotePage+1)*30);
+  const before=Number(noteChoice.value);
+  noteChoice.replaceChildren();
+  for(const index of subset){
+    const e=midiWorkspace.events[index],option=new Option(
+      noteName(e.note)+' · '+e.time.toFixed(2)+'s · ch '+(e.channel+1),index);
+    noteChoice.add(option);
+  }
+  if(subset.includes(before))noteChoice.value=String(before);
+  byId('midi-prev-page').disabled=midiNotePage===0;
+  byId('midi-next-page').disabled=midiNotePage>=pages-1;
+  const selected=midiWorkspace?.events[Number(noteChoice.value)];
+  for(const [id,value] of [
+    ['midi-note-pitch',selected?.note],['midi-note-time',selected?.time],
+    ['midi-note-length',selected?.duration],
+    ['midi-note-velocity',selected?Math.round(selected.velocity*100):null]
+  ])byId(id).value=value===undefined||value===null?'':String(value);
+  byId('midi-apply-note').disabled=!selected;
+}
+function renderMidiWorkspace(){
+  const panel=byId('midi-workspace');
+  panel.hidden=!midiWorkspace||player.song?.kind!=='midi';
+  if(panel.hidden)return;
+  const groups=trackSummary(midiWorkspace.events);
+  byId('midi-track-count').textContent=groups.length+' tracks · '+midiWorkspace.events.length.toLocaleString()+' notes';
+  if(!groups.some(g=>g.track===midiTrack)){midiTrack=groups[0].track;midiNotePage=0}
+  const select=byId('midi-track');
+  const existing=[...select.options].map(option=>Number(option.value));
+  if(existing.length!==groups.length||existing.some((v,i)=>v!==groups[i].track)){
+    select.replaceChildren(...groups.map(g=>new Option(
+      'Track '+(g.track+1)+' · '+g.notes+' notes',g.track)));
+  }
+  select.value=String(midiTrack);
+  byId('midi-mute').checked=midiWorkspace.muted.includes(midiTrack);
+  byId('midi-undo').disabled=!midiPast.length;
+  byId('midi-redo').disabled=!midiFuture.length;
+  renderMidiNotes();
+}
+function refreshMidiPlayback(message){
+  if(!midiWorkspace)return;
+  const position=player.position;
+  const wasPlaying=player.running;
+  selectSong(midiPlaybackSong(midiWorkspace));
+  player.offset=Math.min(position,player.song.duration);
+  renderMidiWorkspace();
+  if(wasPlaying)start();
+  if(message)midiStatus(message);
+}
+function midiEdit(action,message){
+  if(!midiWorkspace)return;
+  try{
+    const previous=midiSnapshot();
+    const next=action();
+    if(JSON.stringify(next)===JSON.stringify(previous))return;
+    midiSaveHistory();
+    midiWorkspace=next;
+    refreshMidiPlayback(message);
+  }catch(error){midiStatus(error.message||'MIDI edit failed.',true)}
+}
+
 let seeking = false;
 let frame = 0;
 let visibleStep = -1;
@@ -92,6 +180,7 @@ function selectSong(song) {
   view['use-loop'].hidden = composing;
   byId('quantize-controls').hidden = composing;
   view.builder.hidden = !composing;
+  renderMidiWorkspace();
   view.loop.checked = composing;
   seeking = false;
   updateStep(-1);
@@ -221,7 +310,13 @@ async function loadFile(file) {
     const song = await importMusic(file,player.openAudio(),request.signal,
       message => {if (pendingImport === request) setStatus(message);});
     if (pendingImport !== request) return;
-    selectSong(song);
+    if(song.kind==='midi'){
+      midiWorkspace=buildMidiWorkspace(song);
+      midiPast.length=0;midiFuture.length=0;
+      midiTrack=trackSummary(midiWorkspace.events)[0].track;midiNotePage=0;
+      selectSong(midiPlaybackSong(midiWorkspace));
+      midiStatus('Loaded '+midiWorkspace.events.length+' notes. Tracks can be edited independently.');
+    }else{midiWorkspace=null;selectSong(song)}
     byId('convert-bpm').value=pattern.bpm;
     setStatus(song.events.length ? 'Ready. Tap Play to start the machine.' : 'Ready to play. No clear hits were detected in this recording.');
   } catch (error) {
@@ -233,6 +328,79 @@ async function loadFile(file) {
   }
 }
 
+byId('midi-track').addEventListener('change',()=>{
+  midiTrack=Number(byId('midi-track').value);midiNotePage=0;renderMidiWorkspace();
+});
+byId('midi-note').addEventListener('change',renderMidiNotes);
+byId('midi-prev-page').addEventListener('click',()=>{midiNotePage=Math.max(0,midiNotePage-1);renderMidiNotes()});
+byId('midi-next-page').addEventListener('click',()=>{midiNotePage++;renderMidiNotes()});
+byId('midi-mute').addEventListener('change',()=>{
+  const checked=byId('midi-mute').checked;
+  midiEdit(()=>{
+    const muted=new Set(midiWorkspace.muted);
+    if(checked)muted.add(midiTrack);else muted.delete(midiTrack);
+    return buildMidiWorkspace({...midiWorkspace,muted:[...muted]});
+  },checked?'Track muted for playback. Export retains all notes.':'Track unmuted.');
+});
+byId('midi-apply-track').addEventListener('click',()=>{
+  midiEdit(()=>buildMidiWorkspace({...midiWorkspace,
+    events:changeMidiTrack(midiWorkspace.events,midiTrack,{
+      transpose:Number(byId('midi-transpose').value),
+      velocity:Number(byId('midi-velocity-scale').value),
+      shiftMs:Number(byId('midi-shift').value)
+    })}),'Updated track '+(midiTrack+1)+' pitch, timing, and velocity.');
+  byId('midi-transpose').value='0';
+  byId('midi-velocity-scale').value='100';byId('midi-shift').value='0';
+});
+byId('midi-apply-note').addEventListener('click',()=>{
+  const index=Number(byId('midi-note').value);
+  midiEdit(()=>buildMidiWorkspace({...midiWorkspace,
+    events:changeMidiNote(midiWorkspace.events,index,{
+      note:Number(byId('midi-note-pitch').value),
+      time:Number(byId('midi-note-time').value),
+      duration:Number(byId('midi-note-length').value),
+      velocity:Number(byId('midi-note-velocity').value)/100
+    })}),'Saved an individual MIDI note without changing the other tracks.');
+});
+byId('midi-undo').addEventListener('click',()=>{
+  if(!midiPast.length)return;
+  midiFuture.push(midiSnapshot());midiWorkspace=midiPast.pop();
+  refreshMidiPlayback('Undid MIDI edit.');
+});
+byId('midi-redo').addEventListener('click',()=>{
+  if(!midiFuture.length)return;
+  midiPast.push(midiSnapshot());midiWorkspace=midiFuture.pop();
+  refreshMidiPlayback('Redid MIDI edit.');
+});
+byId('midi-export').addEventListener('click',()=>{
+  try{
+    const bytes=exportMultitrackMidi(midiWorkspace);
+    midiDownload(bytes,'marble-multitrack-edited.mid','audio/midi');
+    midiStatus('Exported '+trackSummary(midiWorkspace.events).length+' separate MIDI tracks. Event times retain their seconds, using an exported 120 BPM map.');
+  }catch(error){midiStatus('MIDI export failed: '+error.message,true)}
+});
+byId('midi-save-json').addEventListener('click',()=>{
+  if(!midiWorkspace)return;
+  midiDownload(JSON.stringify(midiWorkspace,null,2),'marble-multitrack-workspace.json','application/json');
+  midiStatus('Saved an editable, self-contained local MIDI workspace.');
+});
+byId('midi-open-json').addEventListener('click',()=>byId('midi-json-file').click());
+byId('midi-json-file').addEventListener('change',async()=>{
+  const file=byId('midi-json-file').files?.[0];
+  byId('midi-json-file').value='';
+  if(!file)return;
+  try{
+    if(file.size>12*1024*1024)throw new RangeError('MIDI project JSON is too large.');
+    const object=JSON.parse(await file.text());
+    if(object.format!==MIDI_WORKSPACE_FORMAT)throw new Error('Not a Marble MIDI workspace.');
+    const next=buildMidiWorkspace(object);
+    pendingImport?.abort();pendingImport=null;
+    midiWorkspace=next;midiPast.length=0;midiFuture.length=0;
+    midiTrack=trackSummary(next.events)[0].track;midiNotePage=0;
+    selectSong(midiPlaybackSong(next));
+    midiStatus('Restored '+next.events.length+' editable notes.');
+  }catch(error){midiStatus('Could not open the MIDI workspace: '+error.message,true)}
+});
 view['open-file'].addEventListener('click',() => view['file-input'].click());
 view['file-input'].addEventListener('change',() => {
   loadFile(view['file-input'].files[0]);
@@ -437,10 +605,18 @@ view['pitch-choice'].addEventListener('change',() => {
 
 window.RIPStudio={
   getState(){
-    if(player.song.kind!=='pattern')throw new Error('Switch back to your loop before saving an editable pattern');
+    if(player.song.kind==='midi'&&midiWorkspace)return midiSnapshot();
+    if(player.song.kind!=='pattern')throw new Error('Switch back to your loop or an imported MIDI track before saving editable state');
     return snapshot();
   },
   setState(state){
+    if(state?.format===MIDI_WORKSPACE_FORMAT){
+      const next=buildMidiWorkspace(state);
+      midiWorkspace=next;midiPast.length=0;midiFuture.length=0;
+      midiTrack=trackSummary(next.events)[0].track;midiNotePage=0;
+      selectSong(midiPlaybackSong(next));
+      return;
+    }
     if(!state||typeof state.loop!=='string')throw new Error('Invalid marble project file');
     history.length=0;future.length=0;restore(state);
   },

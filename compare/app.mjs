@@ -1,3 +1,4 @@
+import {createBaseline,parseBaseline,recordTrial,safeMetricSummary,SCENARIO_FORMAT} from './repro.mjs';
 const $=id=>document.getElementById(id);
 const catalogue=window.RIPCatalog;
 if(!catalogue)throw new Error('Project registry failed to load.');
@@ -14,6 +15,175 @@ const state={left:valid.has(params.get('left'))?params.get('left'):fallbackLeft,
 const listeners=new Map();
 let scrollBusy=false;
 let split=50;
+let baseline=null,trials=[],trialRunning=false,trialTimer=null,trialResolver=null,trialRevision=0;
+let pendingBaseline=null;
+const frameReady={left:false,right:false};
+function reproMessage(message,error=false){
+  const output=$('repro-status');output.textContent=message;output.dataset.error=String(error);
+}
+function adapters(){
+  return ['left','right'].map(side=>frames[side].contentWindow?.RIPStudio);
+}
+function scenarioSupported(){
+  try{return frameReady.left&&frameReady.right&&adapters().every(
+    x=>typeof x?.getState==='function'&&typeof x?.setState==='function'&&
+    typeof x?.transport==='function')}
+  catch{return false}
+}
+function renderTrialResults(){
+  const output=$('trial-results');
+  output.replaceChildren();
+  if(!trials.length){
+    const empty=document.createElement('p');empty.textContent='No trials recorded.';
+    output.append(empty);return;
+  }
+  for(const trial of [...trials].reverse().slice(0,20)){
+    const row=document.createElement('div');row.className='trial-entry';
+    const title=document.createElement('strong');
+    title.textContent='Trial '+trial.index+' · '+(trial.elapsedMs/1000).toFixed(2)+'s';
+    const metrics=document.createElement('code');
+    metrics.textContent='LEFT '+JSON.stringify(trial.after.left)+
+      '   |   RIGHT '+JSON.stringify(trial.after.right);
+    row.append(title,metrics);output.append(row);
+  }
+}
+function refreshTrialButtons(){
+  const supported=scenarioSupported(),ready=Boolean(baseline)&&
+    baseline.left===state.left&&baseline.right===state.right;
+  $('capture-baseline').disabled=trialRunning||!supported;
+  $('restore-baseline').disabled=trialRunning||!supported||!ready;
+  $('run-trial').disabled=trialRunning||!supported||!ready;
+  $('stop-trial').disabled=!trialRunning;
+  $('export-trials').disabled=!baseline||trialRunning;
+  $('trial-duration').disabled=trialRunning;
+}
+function cancelTrial(){
+  if(!trialRunning)return;
+  ++trialRevision;
+  clearTimeout(trialTimer);
+  trialTimer=null;
+  trialRunning=false;
+  trialResolver?.(false);trialResolver=null;
+  for(const adapter of adapters())try{adapter?.transport?.('pause')}catch{}
+  reproMessage('The timed trial was cancelled. No incomplete results were stored.',true);
+  refreshTrialButtons();
+}
+function resetBaselineOnChange(){
+  cancelTrial();
+  baseline=null;pendingBaseline=null;trials=[];
+  renderTrialResults();refreshTrialButtons();
+}
+async function captureBaseline(){
+  try{
+    if(!scenarioSupported())throw new Error('Both pages must support editable state and transport.');
+    const [left,right]=await Promise.all(adapters().map(a=>a.getState()));
+    baseline=createBaseline({left:state.left,right:state.right,
+      duration:Number($('trial-duration').value),
+      states:{left,right}});
+    trials=[];renderTrialResults();refreshTrialButtons();
+    reproMessage('Baseline captured for '+baseline.left+' and '+baseline.right+
+      '. Restore it before each timed trial.');
+  }catch(error){reproMessage('Baseline capture failed: '+error.message,true)}
+}
+async function restoreBaseline(){
+  if(!baseline||!scenarioSupported()||
+     baseline.left!==state.left||baseline.right!==state.right)
+    throw new Error('Load the two matching projects before restoring this baseline.');
+  const [a,b]=adapters();
+  await Promise.all([a.transport('pause'),b.transport('pause')]);
+  await Promise.all([a.setState(structuredClone(baseline.states.left)),
+    b.setState(structuredClone(baseline.states.right))]);
+}
+async function getTrialMetrics(){
+  const [left,right]=await Promise.all(adapters().map(async adapter=>{
+    try{return safeMetricSummary(await adapter.metrics?.())}catch{return{}}
+  }));
+  return {left,right};
+}
+async function runTrial(){
+  if(trialRunning)return;
+  const revision=++trialRevision;
+  try{
+    if(!baseline||!scenarioSupported())throw new Error('Capture a compatible baseline first.');
+    baseline.duration=Number($('trial-duration').value);
+    baseline=parseBaseline(baseline);
+    trialRunning=true;refreshTrialButtons();
+    reproMessage('Restoring the baseline for this timed trial…');
+    await restoreBaseline();
+    if(revision!==trialRevision)return;
+    const before=await getTrialMetrics();
+    const startedAt=Date.now();
+    const [left,right]=adapters();
+    await Promise.all([left.transport('play'),right.transport('play')]);
+    reproMessage('Trial running for '+baseline.duration+' seconds. Both projects maintain independent clocks.');
+    const completed=await new Promise(resolve=>{
+      trialResolver=resolve;
+      trialTimer=setTimeout(()=>resolve(true),baseline.duration*1000);
+    });
+    trialResolver=null;trialTimer=null;
+    if(!completed||revision!==trialRevision)return;
+    await Promise.all([left.transport('pause'),right.transport('pause')]);
+    const endedAt=Date.now();
+    const after=await getTrialMetrics();
+    const result=recordTrial(baseline,{before,after,startedAt,endedAt});
+    result.index=trials.length+1;
+    trials.push(result);renderTrialResults();
+    reproMessage('Saved trial '+result.index+' · elapsed '+(result.elapsedMs/1000).toFixed(2)+
+      ' seconds. These are repeatable starting conditions, not deterministic simulation frames.');
+  }catch(error){reproMessage('Trial failed: '+error.message,true)}
+  finally{
+    if(revision===trialRevision){trialRunning=false;refreshTrialButtons()}
+  }
+}
+async function restoreImportedBaseline(){
+  if(!pendingBaseline||!frameReady.left||!frameReady.right||
+    !scenarioSupported())return;
+  const imported=pendingBaseline;pendingBaseline=null;
+  baseline=imported;trials=[];renderTrialResults();
+  $('trial-duration').value=String(imported.duration);
+  try{
+    await restoreBaseline();refreshTrialButtons();
+    reproMessage('Imported '+imported.left+' / '+imported.right+' and restored both configurations.');
+  }catch(error){reproMessage('Imported baseline could not be restored: '+error.message,true)}
+}
+$('capture-baseline').addEventListener('click',captureBaseline);
+$('restore-baseline').addEventListener('click',async()=>{
+  try{await restoreBaseline();reproMessage('Both initial configurations restored.')}
+  catch(error){reproMessage('Restore failed: '+error.message,true)}
+});
+$('run-trial').addEventListener('click',runTrial);
+$('stop-trial').addEventListener('click',cancelTrial);
+$('trial-duration').addEventListener('change',()=>{
+  if(baseline)baseline.duration=Number($('trial-duration').value);
+});
+$('export-trials').addEventListener('click',()=>{
+  if(!baseline)return;
+  const report={format:'rip-compare-notebook-v1',baseline,
+    trials,exportedAt:new Date().toISOString(),
+    limitations:'Restores configuration and preset, not raw solver cells or frame-locked execution.'};
+  const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='random-info-pages-trial-notebook.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+  reproMessage('Trial notebook exported locally with initial configurations and '+trials.length+' result(s).');
+});
+$('import-trials').addEventListener('click',()=>$('trial-file').click());
+$('trial-file').addEventListener('change',async()=>{
+  const file=$('trial-file').files?.[0];$('trial-file').value='';
+  if(!file)return;
+  try{
+    if(file.size>2*1024*1024)throw new Error('Choose a baseline under 2 MB.');
+    const object=JSON.parse(await file.text());
+    const imported=parseBaseline(object.format==='rip-compare-notebook-v1'?object.baseline:object);
+    if(!valid.has(imported.left)||!valid.has(imported.right))
+      throw new Error('The file references an unknown or archived project.');
+    resetBaselineOnChange();pendingBaseline=imported;
+    state.left=imported.left;state.right=imported.right;
+    load('left');load('right');
+    reproMessage('Loading both saved projects before applying their baseline…');
+  }catch(error){reproMessage('Import failed: '+error.message,true)}
+});
+
 function say(message,error=false){status.textContent=message;status.dataset.error=String(error)}
 function makeOptions(select){
  const group=new DocumentFragment();
@@ -61,6 +231,7 @@ function attach(side){
 }
 function updateCopyButton(){
  updateTransportButtons();
+ refreshTrialButtons();
  let supported=false;
  try{
   const a=frames.left.contentWindow.RIPStudio;
@@ -102,6 +273,7 @@ for(const [id,action] of [['play-both','play'],['pause-both','pause'],['reset-bo
  $(id).addEventListener('click',()=>commandBoth(action));
 }
 function load(side){
+ frameReady[side]=false;
  const project=valid.get(state[side]);
  if(!project)return;
  source[side].value=state[side];
@@ -116,6 +288,7 @@ function load(side){
 }
 function change(side,next){
  if(!valid.has(next))return;
+ resetBaselineOnChange();
  state[side]=next;load(side);
  say('Projects run independently. Use sync scroll to match page positions.');
 }
@@ -124,11 +297,14 @@ for(const side of ['left','right']){
  source[side].value=state[side];
  source[side].addEventListener('change',()=>change(side,source[side].value));
  frames[side].addEventListener('load',()=>{
+  frameReady[side]=true;
   attach(side);updateCopyButton();
+  restoreImportedBaseline();
   say((side==='left'?'Left':'Right')+' project loaded.');
  });
 }
 $('swap-projects').addEventListener('click',()=>{
+ resetBaselineOnChange();
  const left=state.left;state.left=state.right;state.right=left;
  load('left');load('right');say('Projects swapped.');
 });
@@ -195,4 +371,6 @@ handle.addEventListener('keydown',event=>{
 window.addEventListener('resize',()=>updateSplit(split));
 updateLayout($('layout').value);
 updateSplit(50);
+renderTrialResults();
+refreshTrialButtons();
 load('left');load('right');

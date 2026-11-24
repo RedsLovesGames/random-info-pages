@@ -47,6 +47,7 @@ let analysisWorker = null;
 let analysisRevision = 0;
 let loadRequest = 0;
 let spectralData = null;
+let tonalCandidates = [];
 let analysisSampleRate = 0;
 let liveFrame = 0;
 let lastMeterUpdate = 0;
@@ -237,6 +238,8 @@ function preparePeaks(buffer) {
 function launchAnalysisWorker(buffer, revision) {
   if (analysisWorker) analysisWorker.terminate();
   spectralData = null; analysisSampleRate = 0;
+  tonalCandidates=[];
+  drawTonalCandidates();
   $('#analysisStatus').textContent = 'Preparing a bounded background analysis…';
   $('#onsetCount').textContent = '—'; $('#tempoCandidates').textContent = '—'; $('#frequencyEstimate').textContent = '—';
   $('#onsetNote').textContent = 'Analysis is running locally.'; $('#tempoNote').textContent = 'Candidates may be half-time or double-time.'; $('#frequencyNote').textContent = 'Strongest spectral peak, not necessarily the musical pitch.';
@@ -251,6 +254,8 @@ function launchAnalysisWorker(buffer, revision) {
     if (message.progress) { $('#analysisStatus').textContent = message.progress; return; }
     if (message.error) { $('#analysisStatus').textContent = message.error; return; }
     spectralData = message.spectrogram; analysisSampleRate = message.analysisRate;
+    tonalCandidates=Array.isArray(message.tonalCandidates)?message.tonalCandidates:[];
+    drawTonalCandidates();
     $('#analysisStatus').textContent = 'Background analysis complete · estimates are approximate.';
     $('#onsetCount').textContent = message.onsets.length ? message.onsets.length.toLocaleString() : 'None';
     $('#onsetNote').textContent = message.onsets.length ? `Detected attacks across ${formatTime(duration, false)}. Soft or sustained sounds can be missed.` : 'No clear transient pattern was detected.';
@@ -291,6 +296,31 @@ function setFilterEnabled() {
 
 /* Live tonal A/B: the analyser is deliberately upstream of the output-only
  * notch chain, so its plots always represent the original frequency content. */
+function drawTonalCandidates(){
+  const target=$('#notchCandidates');
+  if(!target)return;
+  target.replaceChildren();
+  if(!tonalCandidates.length){
+    const notice=document.createElement('p');
+    notice.textContent=spectralData?'No persistent narrowband tones identified. This does not mean the audio is noise-free.':'Analyze a recording to see stable frequencies.';
+    target.append(notice);return;
+  }
+  for(const candidate of tonalCandidates){
+    const button=document.createElement('button');
+    button.type='button';
+    button.textContent=candidate.frequency.toFixed(1)+' Hz';
+    button.title='Present in '+Math.round(candidate.persistence*100)+'% of sample windows. May be music rather than noise.';
+    button.addEventListener('click',()=>{
+      const max=Math.min(10000,Math.floor(currentBuffer.sampleRate*.44));
+      $('#notchFrequency').value=String(Math.max(40,Math.min(max,candidate.frequency)));
+      $('#notchHarmonics').value='1';
+      $('#notchEnabled').checked=true;
+      configureNotch();
+      $('#notchStatus').textContent='Selected '+candidate.frequency.toFixed(1)+' Hz. This is a stable spectral candidate, not verified unwanted noise. Listen with the filter on/off.';
+    });
+    target.append(button);
+  }
+}
 function currentNotchSettings(){
   const sampleRate=currentBuffer?.sampleRate||audioContext?.sampleRate;
   if(!sampleRate)throw new Error('Load a recording before using a tonal filter.');

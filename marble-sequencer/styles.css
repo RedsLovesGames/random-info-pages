@@ -171,3 +171,27 @@ html[data-marble-effects="reduced"] .machine *{animation:none!important;transiti
 .quantize-controls{background:var(--face)}
 .quantize-controls input,.rhythm-tools select,.rhythm-tools input{border-color:var(--border);background:var(--face)}
 .quantize-controls button{background:var(--blue)}
+
+/* Per-track MIDI editing controls without collapsing source note timing. */
+.midi-workspace{padding:14px;border:1px solid var(--border);border-radius:6px;background:var(--paper)}
+.midi-workspace summary{font-size:14px;font-weight:800;color:var(--ink);cursor:pointer}
+.midi-workspace summary span{font-size:11px;font-weight:500;color:var(--muted)}
+.midi-workspace>p{font-size:11px;line-height:1.55;color:var(--muted);margin:9px 0}
+.midi-track-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.midi-track-head label{font-size:12px;font-weight:700}
+.midi-track-head select{margin-left:7px;max-width:190px}
+.midi-track-head .midi-mute{display:flex;gap:6px;align-items:center;font-weight:600}
+.midi-track-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
+.midi-track-fields label{display:grid;gap:4px;font-size:10px;font-weight:700;color:var(--muted)}
+.midi-track-fields input{width:100%;min-width:0;font-size:12px}
+.midi-workspace .midi-note-nav{display:flex;gap:5px;align-items:center}
+.midi-note-nav select{flex:1;min-width:0;max-width:100%}
+.midi-note-nav button{font-size:10px;padding:7px}
+.midi-workspace .midi-action-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:12px}
+.midi-action-row button{font-size:10px;line-height:1.3;padding:7px;white-space:normal}
+#midi-export{background:var(--blue);color:white;border-color:var(--blue)}
+#midi-editor-status{overflow-wrap:anywhere}
+@media(max-width:690px){.source-panel>#midi-workspace{grid-column:1/-1}
+.midi-track-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.midi-note-nav button{font-size:10px;padding:5px}}
+@media(max-width:380px){.midi-track-fields{grid-template-columns:1fr}}

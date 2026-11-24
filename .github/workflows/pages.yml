@@ -48,7 +48,7 @@ jobs:
 
       - name: Verify archive home
         run: |
-          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs tests/fluid-adaptive.test.mjs tests/marble-pattern-tools.test.mjs tests/dungeon-markers.test.mjs tests/dungeon-session-zip.test.mjs tests/dungeon-editor-integration.test.mjs tests/dungeon-terrain.test.mjs tests/music-notch.test.mjs tests/music-notch-integration.test.mjs
+          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs tests/fluid-adaptive.test.mjs tests/marble-pattern-tools.test.mjs tests/dungeon-markers.test.mjs tests/dungeon-session-zip.test.mjs tests/dungeon-editor-integration.test.mjs tests/dungeon-terrain.test.mjs tests/music-notch.test.mjs tests/music-notch-integration.test.mjs tests/music-tonal-analysis.test.mjs tests/marble-midi-workspace.test.mjs tests/compare-repro.test.mjs tests/new-labs-integration.test.mjs
           node --check marble-sequencer/pattern-tools.mjs
           node --check dungeon-forge/battlemap-markers.mjs
           node --check dungeon-forge/session-zip.mjs
@@ -67,6 +67,9 @@ jobs:
           node --check music-microscope/export.mjs
           node --check music-microscope/notch.mjs
           node --check music-microscope/notch-worker.mjs
+          node --check music-microscope/tonal-analysis.mjs
+          node --check marble-sequencer/midi-workspace.mjs
+          node --check compare/repro.mjs
           node --check marble-sequencer/app.mjs
           node --check marble-sequencer/export-midi.mjs
           node --check dungeon-forge/battlemap.mjs
@@ -309,6 +312,10 @@ jobs:
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/compare-lab.html "$base/compare/"
           grep -Fq 'id="left-frame"' /tmp/compare-lab.html
           grep -Fq 'id="right-frame"' /tmp/compare-lab.html
+          grep -Fq 'id="capture-baseline"' /tmp/compare-lab.html
+          grep -Fq 'id="run-trial"' /tmp/compare-lab.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/compare-repro.js "$base/compare/repro.mjs"
+          grep -Fq 'createBaseline' /tmp/compare-repro.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/compare-app.js "$base/compare/app.mjs"
           grep -Fq 'history.replaceState' /tmp/compare-app.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/guided-tours.js "$base/design-system/tours.mjs"
@@ -318,6 +325,9 @@ jobs:
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/music-microscope.html "$base/music-microscope/"
           grep -Fq 'id="notchFrequency"' /tmp/music-microscope.html
           grep -Fq 'id="exportNotch"' /tmp/music-microscope.html
+          grep -Fq 'id="notchCandidates"' /tmp/music-microscope.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/tonal-frequency.js "$base/music-microscope/tonal-analysis.mjs"
+          grep -Fq 'detectStableTones' /tmp/tonal-frequency.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/music-notch.js "$base/music-microscope/notch.mjs"
           grep -Fq 'filterNotchPCM' /tmp/music-notch.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/music-notch-worker.js "$base/music-microscope/notch-worker.mjs"
@@ -333,6 +343,9 @@ jobs:
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/marble-studio.html "$base/marble-sequencer/"
           grep -Fq 'id="convert-to-pattern"' /tmp/marble-studio.html
           grep -Fq 'id="euclid-fill"' /tmp/marble-studio.html
+          grep -Fq 'id="midi-workspace"' /tmp/marble-studio.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/multitrack.js "$base/marble-sequencer/midi-workspace.mjs"
+          grep -Fq 'exportMultitrackMidi' /tmp/multitrack.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/loop-transform.js "$base/marble-sequencer/pattern-tools.mjs"
           grep -Fq 'patternFromEvents' /tmp/loop-transform.js
           grep -Fq 'id="play-both"' /tmp/compare-lab.html

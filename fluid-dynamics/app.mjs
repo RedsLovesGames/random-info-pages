@@ -587,6 +587,49 @@ function start() {
   changeQuality();
   changeDisplayMode();
   window.RIPStudio = {
+    /* Configuration snapshot, not a raw fluid-grid checkpoint. */
+    getState() {
+      return {
+        format:'rip-fluid-settings-v1',
+        preset,quality:qualityInput.value,adaptive:autoQuality.checked,
+        view:view.value,displayMode:displayMode.value,
+        brushSize:Number(brushSize.value),viscosity:Number(viscosity.value),
+        persistence:Number(persistence.value),obstacle:obstacle.checked,
+        tracers:tracers.checked
+      };
+    },
+    setState(value) {
+      if(!value||value.format!=='rip-fluid-settings-v1'||
+        !Object.hasOwn(presets,value.preset)||
+        !LEVELS.includes(value.quality))
+        throw new Error('Unsupported fluid simulation configuration.');
+      for(const name of ['brushSize','viscosity','persistence']){
+        if(!Number.isFinite(value[name]))throw new RangeError('Invalid fluid input: '+name);
+      }
+      const validSelect=(select,value)=>[...select.options].some(o=>o.value===value);
+      if(!validSelect(view,value.view)||!['2d','3d'].includes(value.displayMode))
+        throw new RangeError('Invalid fluid visualization configuration.');
+      setPaused(true);
+      qualityInput.value=value.quality;
+      autoQuality.checked=value.adaptive===true;
+      autoCeiling=value.quality;
+      adaptiveController.reset(performance.now());
+      changeQuality();
+      loadPreset(value.preset);
+      for(const [element,v] of [[brushSize,value.brushSize],
+        [viscosity,value.viscosity],[persistence,value.persistence]]){
+        element.value=String(Math.max(Number(element.min),Math.min(Number(element.max),v)));
+      }
+      obstacle.checked=value.obstacle===true;
+      tank.setObstacle(obstacle.checked);
+      updateSliders();
+      view.value=value.view;
+      tracers.checked=value.tracers===true;
+      displayMode.value=value.displayMode;
+      changeDisplayMode();
+      setView();render();
+      setPaused(true);
+    },
     setQuality(level) {
       if (level === 'eco') {
         if (previousExternalQuality === null) {
@@ -618,7 +661,9 @@ function start() {
       return {
         fps: Number.parseInt(byId('fps').textContent,10)||0,
         grid: width + ' × ' + height,
-        quality: qualityInput.value
+        quality: qualityInput.value,
+        simulatedSteps:tick,
+        preset
       };
     },
     async capture() {

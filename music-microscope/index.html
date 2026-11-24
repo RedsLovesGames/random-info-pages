@@ -108,6 +108,12 @@
               </select>
             </label>
           </div>
+          <div class="tonal-detection" aria-label="Persistent narrowband frequencies">
+            <strong>Persistent spectral lines <span>(candidates, not identified noise)</span></strong>
+            <div id="notchCandidates" class="tonal-candidates" role="group" aria-label="Detected persistent frequencies">
+              <p>Analyze a recording to see stable frequencies.</p>
+            </div>
+          </div>
           <p id="notchBandLabel" class="tonal-bands">Load a recording to enable filtering.</p>
           <button type="button" id="exportNotch" class="tonal-export" disabled>Export processed WAV ↓</button>
           <p id="notchStatus" role="status" aria-live="polite">Processed export applies only the tonal filter, not the low/high/band-pass experiment above. No audio uploads.</p>

@@ -54,3 +54,12 @@ footer{border-top:1px solid var(--line);padding:16px 0 24px;display:flex;justify
 @media(max-width:850px){.tonal-repair-head{grid-template-columns:1fr;gap:20px}.tonal-caution{margin-top:16px}.tonal-fields{gap:9px}}
 @media(max-width:500px){.tonal-repair{padding:14px}.tonal-fields{grid-template-columns:1fr}
 .tonal-fields label:last-child{grid-column:auto}.notch-presets button{flex:1 1 auto;font-size:9px}}
+
+.tonal-detection{border:1px solid var(--line);border-radius:5px;padding:11px;background:var(--panel)}
+.tonal-detection>strong{font:700 10px var(--sans);color:var(--ink);display:block}
+.tonal-detection>strong span{font-weight:400;color:var(--muted)}
+.tonal-candidates{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.tonal-candidates p{font:10px/1.5 var(--mono);color:var(--muted);margin:0}
+.tonal-candidates button{font:700 10px var(--mono);padding:8px 10px;color:var(--teal);
+  border:1px solid var(--teal);background:transparent;min-height:36px;cursor:pointer}
+.tonal-candidates button:hover{background:var(--teal);color:#101819}

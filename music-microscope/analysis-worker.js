@@ -1,4 +1,5 @@
 import { computeSpectrogram, detectOnsets, estimateTempo, prominentFrequency } from './analysis.mjs';
+import {detectStableTones} from './tonal-analysis.mjs';
 
 self.addEventListener('message', event => {
   const { id, channels, sampleRate } = event.data;
@@ -18,7 +19,8 @@ self.addEventListener('message', event => {
     const onsets = detectOnsets(samples, analysisRate);
     const tempo = estimateTempo(onsets);
     const frequency = prominentFrequency(samples, analysisRate);
-    self.postMessage({ id, spectrogram, onsets, tempo, frequency, analysisRate }, [spectrogram.pixels.buffer]);
+    const tonalCandidates=detectStableTones(samples,analysisRate);
+    self.postMessage({ id, spectrogram, onsets, tempo, frequency, tonalCandidates, analysisRate }, [spectrogram.pixels.buffer]);
   } catch (error) {
     self.postMessage({ id, error: error instanceof Error ? error.message : 'Analysis failed.' });
   }

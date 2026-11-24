@@ -42,6 +42,29 @@
   <p id="transport-help" class="compare-transport-help">Choose two projects with supported playback controls to coordinate play, pause and reset.</p>
   <p class="compare-status" id="compare-status" role="status" aria-live="polite">Projects run independently. Scroll synchronization is optional.</p>
 </section>
+<section class="repro-studio" aria-labelledby="repro-title">
+  <div class="repro-heading">
+    <div><p class="eyebrow">REPEATABLE WORKFLOWS / 03</p>
+      <h2 id="repro-title">Trial notebook.</h2>
+      <p>Capture both starting configurations, restore them between trials, then compare measurements for fixed-duration runs. Fluid snapshots restore a preset and controls, not the underlying solver grid. Timers are approximate and simulations are not frame-locked.</p>
+    </div>
+    <label class="repro-duration">Trial duration <select id="trial-duration">
+      <option value="5">5 seconds</option><option value="10" selected>10 seconds</option>
+      <option value="15">15 seconds</option><option value="30">30 seconds</option>
+    </select></label>
+  </div>
+  <div class="repro-buttons">
+    <button id="capture-baseline" type="button" disabled>Capture baseline</button>
+    <button id="restore-baseline" type="button" disabled>Restore baseline</button>
+    <button id="run-trial" type="button" disabled>▶ Run timed trial</button>
+    <button id="stop-trial" type="button" disabled>Stop trial</button>
+    <button id="export-trials" type="button" disabled>Export trial notebook (.json)</button>
+    <button id="import-trials" type="button">Import baseline (.json)</button>
+    <input id="trial-file" type="file" accept=".json,application/json" hidden>
+  </div>
+  <p id="repro-status" class="repro-status" role="status" aria-live="polite">Load two projects with editable-state adapters, then capture a baseline.</p>
+  <div id="trial-results" class="trial-results" role="log" aria-live="polite"><p>No trials recorded.</p></div>
+</section>
 <section class="compare-shell" id="compare-shell" data-orientation="horizontal" aria-label="Live comparison panels">
   <div class="comparison-panel" id="compare-left" data-side="left">
     <div class="panel-heading"><span>01 / LEFT</span><strong id="left-title">Loading project</strong>
