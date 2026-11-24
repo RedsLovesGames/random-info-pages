@@ -9,7 +9,7 @@ test('piano roll provides time/pitch navigation, pointer editing, and keyboard a
  for(const id of ['midi-piano-title','piano-span','piano-low','piano-rows','piano-snap',
   'piano-canvas','piano-scroll','piano-offset','piano-hint','piano-jump'])
   assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(html,/keyboard-accessible editing/);
+ assert.match(html,/also support keyboard editing/);
  assert.match(app,/pianoRoll=createPianoRoll\(/);
  assert.match(app,/selectedMidiId/);
  assert.match(app,/pianoRoll\?\.tick\(now\)/);
