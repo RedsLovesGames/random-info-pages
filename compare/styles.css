@@ -88,3 +88,12 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .repro-steps{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700}
 .repro-steps select{min-height:39px;padding:7px;border:1px solid var(--line)}
 .repro-buttons #run-steps{background:#223b68;border-color:#223b68;color:#fff}
+
+.trial-summary{font-size:11px;font-weight:650;color:var(--ink);margin:10px 0}
+.trial-entry{display:grid;gap:5px}
+.trial-entry-header{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.trial-signature{font:10px/1.4 var(--mono,monospace);color:var(--muted)}
+.trial-entry[data-hash-comparison="matching"] .trial-signature{color:#31866a}
+.trial-entry[data-hash-comparison="different"] .trial-signature{color:#bf6643}
+.trial-metrics{display:grid;gap:3px}
+.trial-metrics code{display:block;font-size:10px;line-height:1.45;white-space:normal;overflow-wrap:anywhere}

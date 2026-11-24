@@ -65,10 +65,13 @@
     <button id="run-steps" type="button" disabled>Run fixed-step comparison</button>
     <button id="stop-trial" type="button" disabled>Stop trial</button>
     <button id="export-trials" type="button" disabled>Export trial notebook (.json)</button>
+    <button id="export-trials-csv" type="button" disabled>Export trial metrics (.csv)</button>
+    <button id="clear-trials" type="button" disabled>Clear results</button>
     <button id="import-trials" type="button">Import baseline (.json)</button>
     <input id="trial-file" type="file" accept=".json,application/json" hidden>
   </div>
   <p id="repro-status" class="repro-status" role="status" aria-live="polite">Load two projects with editable-state adapters, then capture a baseline.</p>
+  <p id="trial-summary" class="trial-summary">No measurements to compare yet.</p>
   <div id="trial-results" class="trial-results" role="log" aria-live="polite"><p>No trials recorded.</p></div>
 </section>
 <section class="compare-shell" id="compare-shell" data-orientation="horizontal" aria-label="Live comparison panels">

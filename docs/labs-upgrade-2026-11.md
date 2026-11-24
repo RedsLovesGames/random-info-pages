@@ -27,3 +27,7 @@ The fingerprint is derived from Float32 bit representations and is not a guarant
 A responsive canvas editor shows a single selected MIDI track at a time, with pitch rows and a seconds ruler. Click a note to select it and edit numeric fields below; drag its body to change pitch and onset, or drag the trailing edge to resize duration. Changes are snapped to selectable 50, 125, 250 or 500 ms, one second, or unsnapped 1 ms. Each drag enters the existing 32-step MIDI undo history as one action. The track selector, note dropdown, numeric fields, and undo/redo remain keyboard-operable alternatives. Note IDs persist in editable JSON so selection remains stable after changing note start times and resorting events.
 
 The renderer displays a bounded time/pitch viewport, not every note in a large source at once; choose a wider time window, pitch floor, or timeline scrollbar to see other sections.
+
+## Trial notebook metrics and CSV export
+
+Compare Lab now shows each completed trial's reported metrics separately for the left and right projects, along with an explicit matching/different/unavailable label for solver-state signatures. Its summary reports how many trials have comparable signatures and how many match. Results can be exported as a UTF-8 CSV for spreadsheet analysis, with before/after metrics, elapsed times, and fixed-step counts. CSV formula-like strings are escaped to reduce spreadsheet injection risk. The original JSON notebook and baseline import remain available. Clearing trial results does not remove the captured baseline.

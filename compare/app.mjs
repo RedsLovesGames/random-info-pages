@@ -1,4 +1,5 @@
 import {createBaseline,parseBaseline,recordTrial,safeMetricSummary,SCENARIO_FORMAT} from './repro.mjs';
+import {exportTrialCsv,trialHashComparison} from './trial-export.mjs';
 const $=id=>document.getElementById(id);
 const catalogue=window.RIPCatalog;
 if(!catalogue)throw new Error('Project registry failed to load.');
@@ -31,21 +32,44 @@ function scenarioSupported(){
   catch{return false}
 }
 function renderTrialResults(){
-  const output=$('trial-results');
+  const output=$('trial-results'),summary=$('trial-summary');
   output.replaceChildren();
   if(!trials.length){
     const empty=document.createElement('p');empty.textContent='No trials recorded.';
-    output.append(empty);return;
+    output.append(empty);
+    summary.textContent='No measurements to compare yet.';
+    refreshTrialButtons();return;
   }
+  const comparisons=trials.map(trialHashComparison);
+  const available=comparisons.filter(result=>result!=='unavailable');
+  const matches=available.filter(result=>result==='matching').length;
+  summary.textContent=trials.length+' trial(s) recorded. '+
+    (available.length?matches+'/'+available.length+' comparable state signatures match.':
+      'No pair of solver signatures is available to compare.');
   for(const trial of [...trials].reverse().slice(0,20)){
     const row=document.createElement('div');row.className='trial-entry';
+    const result=trialHashComparison(trial);
+    row.dataset.hashComparison=result;
+    const header=document.createElement('div');header.className='trial-entry-header';
     const title=document.createElement('strong');
     title.textContent='Trial '+trial.index+' · '+(
       trial.mode==='fixed-step'?trial.steps+' fixed steps':(trial.elapsedMs/1000).toFixed(2)+'s');
-    const metrics=document.createElement('code');
-    metrics.textContent='LEFT '+JSON.stringify(trial.after.left)+
-      '   |   RIGHT '+JSON.stringify(trial.after.right);
-    row.append(title,metrics);output.append(row);
+    const judgement=document.createElement('span');
+    judgement.className='trial-signature';
+    judgement.textContent=result==='matching'?'Matching signatures':
+      result==='different'?'Different signatures':'No comparable signatures';
+    header.append(title,judgement);
+    const metrics=document.createElement('div');metrics.className='trial-metrics';
+    for(const side of ['left','right']){
+      const data=trial.after?.[side]||{};
+      const text=document.createElement('code');
+      text.textContent=side.toUpperCase()+' · '+
+        (Object.keys(data).length
+          ?Object.entries(data).map(([name,value])=>name+': '+value).join(' | ')
+          :'No metrics supplied');
+      metrics.append(text);
+    }
+    row.append(header,metrics);output.append(row);
   }
 }
 function refreshTrialButtons(){
@@ -58,6 +82,8 @@ function refreshTrialButtons(){
     !adapters().every(a=>typeof a?.advanceSteps==='function');
   $('stop-trial').disabled=!trialRunning;
   $('export-trials').disabled=!baseline||trialRunning;
+  $('export-trials-csv').disabled=!baseline||!trials.length||trialRunning;
+  $('clear-trials').disabled=!trials.length||trialRunning;
   $('trial-duration').disabled=trialRunning;
   $('step-count').disabled=trialRunning;
 }
@@ -207,6 +233,22 @@ $('export-trials').addEventListener('click',()=>{
   a.href=url;a.download='random-info-pages-trial-notebook.json';a.click();
   setTimeout(()=>URL.revokeObjectURL(url),30000);
   reproMessage('Trial notebook exported locally with initial configurations and '+trials.length+' result(s).');
+});
+$('export-trials-csv').addEventListener('click',()=>{
+  if(!baseline||!trials.length)return;
+  try{
+    const csv=exportTrialCsv(baseline,trials);
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='random-info-pages-trials.csv';a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    reproMessage('Exported '+trials.length+' trial(s) as a spreadsheet-compatible CSV, including pre/post metrics and state hashes.');
+  }catch(error){reproMessage('CSV export failed: '+error.message,true)}
+});
+$('clear-trials').addEventListener('click',()=>{
+  if(trialRunning)return;
+  trials=[];renderTrialResults();
+  reproMessage('Trial results cleared; the captured baseline is still available.');
 });
 $('import-trials').addEventListener('click',()=>$('trial-file').click());
 $('trial-file').addEventListener('change',async()=>{
