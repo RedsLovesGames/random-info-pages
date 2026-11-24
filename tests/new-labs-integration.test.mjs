@@ -24,7 +24,7 @@ test('Marble Sequencer exposes independently editable MIDI tracks and notes',()=
  for(const method of ['changeMidiTrack','changeMidiNote','exportMultitrackMidi','buildMidiWorkspace',
  'midiPlaybackSong','midiSaveHistory'])
    assert.ok(app.includes(method),method);
- assert.match(app,/midiWorkspace=buildMidiWorkspace\(song\)/);
+ assert.match(app,/restoreMidiWorkspace\(song,/);
  assert.match(app,/state\?\.format===MIDI_WORKSPACE_FORMAT/);
  assert.match(html,/retains the imported tempo map/);
  assert.match(html,/fallback|fall back/i);
