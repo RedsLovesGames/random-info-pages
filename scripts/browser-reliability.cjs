@@ -97,8 +97,8 @@ async function main(){
    'Importing another MIDI song retained the previous recoveries',25000);
   const before=await page.locator('#midi-revision option').count();
   await page.locator('#midi-checkpoint').click();
-  await wait(page,()=>document.querySelectorAll('#midi-revision option').length>before,
-   'Manual MIDI checkpoint created a new revision');
+  await wait(page,count=>document.querySelectorAll('#midi-revision option').length>count,
+   'Manual MIDI checkpoint created a new revision',18000,before);
   await page.locator('#midi-revision').selectOption({index:1});
   const [download]=await Promise.all([
    page.waitForEvent('download'),page.locator('#midi-export-draft').click()
