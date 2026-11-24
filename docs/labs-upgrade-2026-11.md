@@ -45,3 +45,7 @@ Compare Lab `rip-compare-notebook-v1` import now restores **both the baseline an
 ### Live-browser verification
 
 The independent <https://redslovesgames.github.io/random-info-pages/tests/browser-reliability.html> fixture exercises real browser IndexedDB persistence, MIDI note editing math, variable-tempo MIDI file export/import, and Compare Lab notebook compatibility. The fixture uses `rip-reliability-test` instead of the app's production draft database, so it never reads, changes, or deletes a user's saved MIDI work. For reload persistence, save the probe, refresh the page, then verify it. Automated Node tests remain part of GitHub Actions; a live-browser run supplements them, it does not substitute for cross-browser or mobile regression coverage.
+
+### Automated real-browser acceptance
+
+The GitHub Pages workflow now runs `scripts/browser-reliability.cjs` using headless Chromium and Playwright against the actual assembled `_site`, before uploading it. It tests five browser-only module assertions, IndexedDB persistence across a page reload, a synthetic MIDI file imported into Marble Sequencer followed by autosave and recovery, and Compare Lab restoration of notebook trial history with both Fluid Dynamics panels present. If these acceptance tests fail, the production artifact is not uploaded. It uses synthetic, isolated test data and cannot modify user projects.
