@@ -137,8 +137,17 @@
             <button type="button" id="midi-open-json">Open editable JSON</button>
             <input type="file" id="midi-json-file" hidden accept=".json,application/json">
           </div>
-          <p id="midi-editor-status" role="status" aria-live="polite">MIDI edits are held locally until you download a file.</p>
+          <p id="midi-autosave-status" role="status" aria-live="polite">Edits are automatically backed up in this browser when persistent storage is available.</p>
+          <p id="midi-editor-status" role="status" aria-live="polite">Download editable JSON for a separate backup or to move this project to another device.</p>
         </details>
+        <section id="midi-recovery" class="midi-recovery" hidden aria-labelledby="midi-recovery-heading">
+          <h3 id="midi-recovery-heading">Recover MIDI draft</h3>
+          <p id="midi-recovery-details" role="status" aria-live="polite"></p>
+          <div class="midi-action-row">
+            <button id="midi-restore-draft" type="button">Restore saved draft</button>
+            <button id="midi-discard-draft" type="button">Discard recovery copy</button>
+          </div>
+        </section>
         <details class="formats">
           <summary>Supported files</summary>
           <p>MP3, WAV, M4A, AAC, FLAC, Ogg, Opus, AIFF, WMA, and other decodable audio. Standard MIDI (.mid, .midi), RMID, and KAR files play through an in-browser synth.</p>

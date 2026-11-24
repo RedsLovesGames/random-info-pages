@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Random Info Pages | Browser Reliability Checks</title>
+<style>
+:root{color-scheme:light dark;font-family:system-ui,sans-serif}
+body{margin:0 auto;max-width:760px;padding:24px;line-height:1.5}
+h1{font-size:1.6rem}button{font:inherit;padding:10px 14px;cursor:pointer;margin:4px}
+button:focus-visible{outline:3px solid currentColor;outline-offset:2px}
+#results{white-space:pre-wrap;border:1px solid currentColor;border-radius:8px;padding:14px;min-height:6em;font-family:ui-monospace,monospace}
+p{max-width:65ch}small{display:block;margin-top:20px}
+</style>
+</head>
+<body>
+<main>
+<h1>Browser reliability checks</h1>
+<p>This page exercises the live site modules in the browser, including IndexedDB persistence and MIDI/Compare Lab JSON round trips. It uses a separate test database and never reads or changes your real MIDI draft.</p>
+<button id="run-checks" type="button">Run checks</button>
+<button id="save-probe" type="button">Save reload probe</button>
+<button id="verify-probe" type="button">Verify probe after reload</button>
+<pre id="results" role="status" aria-live="polite">Ready to run.</pre>
+<small>For a real reload test, save the probe, refresh this page, then verify it. This check page stores no audio or personal information.</small>
+</main>
+<script type="module">
+import {createMidiDraftStore} from '../marble-sequencer/midi-autosave.mjs';
+import {makeRollLayout,hitRollNote,dragRollNote} from '../marble-sequencer/piano-roll.mjs';
+import {buildMidiWorkspace,exportMultitrackMidi} from '../marble-sequencer/midi-workspace.mjs';
+import {decodeMidi} from '../marble-sequencer/music.mjs';
+import {createTrialNotebook,parseTrialNotebook} from '../compare/notebook.mjs';
+const $=id=>document.getElementById(id);
+const storage=createMidiDraftStore({dbName:'rip-reliability-test',key:'probe'});
+const event={id:'test-note',time:1,duration:.5,note:60,track:0,
+ channel:0,velocity:.7,program:5};
+const project=()=>buildMidiWorkspace({name:'Browser reload probe',
+ events:[event],muted:[],timing:{ppq:480,changes:[{tick:0,us:500000},{tick:480,us:750000}]}});
+const baseline={format:'rip-compare-scenario-v1',left:'fluid-dynamics',
+ right:'fluid-dynamics',duration:10,states:{left:{preset:'basic'},right:{preset:'basic'}}};
+const trial={mode:'fixed-step',steps:60,elapsedMs:900,
+ startedAt:'2026-11-24T00:00:00Z',endedAt:'2026-11-24T00:00:00.900Z',
+ before:{left:{simulatedSteps:0},right:{simulatedSteps:0}},
+ after:{left:{simulatedSteps:60,stateHash:'same'},right:{simulatedSteps:60,stateHash:'same'}}};
+const log=(message)=>{$('results').textContent+=message+'\n'};
+function assert(ok,message){if(!ok)throw new Error(message)}
+$('run-checks').addEventListener('click',async()=>{
+ $('results').textContent='Running browser checks…\n';
+ let n=0;
+ async function check(label,fn){try{await fn();n++;log('PASS '+label)}catch(error){log('FAIL '+label+': '+error.message)}}
+ await check('MIDI tempo metadata survives file export/import',async()=>{
+  const midi=project(),converted=decodeMidi(exportMultitrackMidi(midi));
+  assert(converted.timing.changes.length===2,'tempo changes lost');
+  assert(converted.events.length===1,'notes lost');
+ });
+ await check('MIDI piano-roll hit testing and editing geometry',()=>{
+  const layout=makeRollLayout([event],0,{span:4,low:48,rows:24,width:700,height:280});
+  const r=layout.rects[0];assert(hitRollNote(layout,r.x+4,r.y+3)?.id==='test-note','hit missing');
+  const changed=dragRollNote(event,{dx:layout.pxPerSecond*.25,dy:0,mode:'move',snap:.125},layout);
+  assert(changed.time===1.25,'move did not snap');
+ });
+ await check('Compare Lab exports and restores historical trials',()=>{
+  const result=parseTrialNotebook(JSON.parse(JSON.stringify(createTrialNotebook(baseline,[trial]))));
+  assert(result.trials.length===1&&result.trials[0].after.left.stateHash==='same','trial history lost');
+ });
+ await check('Old standalone baselines still import',()=>{
+  const result=parseTrialNotebook(baseline);assert(result.legacy&&result.trials.length===0,'baseline fallback failed');
+ });
+ await check('Browser recovery reads and clears an isolated draft',async()=>{
+  await storage.clear();await storage.save(project());
+  assert((await storage.read()).workspace.name==='Browser reload probe','saved draft missing');
+  await storage.clear();assert(await storage.read()===null,'draft clear failed');
+ });
+ log(n===5?'ALL 5 CHECKS PASSED':'Only '+n+' / 5 checks passed');
+});
+$('save-probe').addEventListener('click',async()=>{
+ $('results').textContent='Saving isolated reload test…\n';
+ try{await storage.save(project());log('SAVED: refresh the page, then click Verify probe after reload.')}
+ catch(error){log('FAIL: '+error.message)}
+});
+$('verify-probe').addEventListener('click',async()=>{
+ $('results').textContent='Reading isolated reload test…\n';
+ try{
+  const result=await storage.read();
+  assert(result?.workspace?.events?.[0]?.id==='test-note'&&
+   result.workspace.timing.changes.length===2,'No matching saved project found');
+  log('PASS: Browser persisted the MIDI draft across page reloads.');
+  await storage.clear();log('Test draft cleared.');
+ }catch(error){log('FAIL: '+error.message)}
+});
+</script>
+</body>
+</html>

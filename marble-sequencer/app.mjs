@@ -1,6 +1,7 @@
 import {LANES,buildPattern,encodePattern,decodePattern,noteName} from './music.mjs';
 import { exportPatternMidi } from './export-midi.mjs';
 import {createPianoRoll} from './piano-roll-ui.mjs';
+import {createMidiDraftStore} from './midi-autosave.mjs';
 import {buildMidiWorkspace,midiPlaybackSong,trackSummary,changeMidiTrack,changeMidiNote,
   exportMultitrackMidi,MIDI_WORKSPACE_FORMAT} from './midi-workspace.mjs';
 import { rotateRows, euclideanRhythm, patternFromEvents } from './pattern-tools.mjs';
@@ -44,6 +45,63 @@ let pendingImport = null;
 let midiWorkspace=null,midiTrack=0,midiNotePage=0,selectedMidiId=null,pianoRoll=null;
 const midiPast=[],midiFuture=[];
 const midiSnapshot=()=>structuredClone(midiWorkspace);
+const midiDraftStore=createMidiDraftStore();
+let midiDraftTimer=null,midiDraftRevision=0;
+function scheduleMidiDraftSave(immediate=false){
+ if(!midiWorkspace)return;
+ clearTimeout(midiDraftTimer);
+ const draft=midiSnapshot(),revision=++midiDraftRevision;
+ const indicator=byId('midi-autosave-status');
+ indicator.textContent='Saving recovery copy to this browser…';
+ indicator.dataset.error='false';
+ const fail=error=>{
+  if(revision!==midiDraftRevision)return;
+  indicator.dataset.error='true';
+  indicator.textContent='Autosave failed: '+(error?.message||'Browser storage unavailable')+
+    '. Download editable JSON now to avoid losing changes.';
+ };
+ const persist=()=>{
+  midiDraftTimer=null;
+  try{
+   midiDraftStore.save(draft).then(saved=>{
+    if(revision!==midiDraftRevision)return;
+    indicator.dataset.error='false';
+    indicator.textContent='Autosaved locally at '+
+      new Date(saved.updatedAt).toLocaleTimeString()+'. Download editable JSON for a separate backup.';
+   }).catch(fail);
+  }catch(error){fail(error)}
+ };
+ if(immediate)persist();
+ else midiDraftTimer=setTimeout(persist,350);
+}
+function restoreMidiWorkspace(next,message){
+ pendingImport?.abort();pendingImport=null;
+ midiWorkspace=buildMidiWorkspace(next);
+ midiPast.length=0;midiFuture.length=0;
+ midiTrack=trackSummary(midiWorkspace.events)[0].track;
+ midiNotePage=0;selectedMidiId=null;
+ byId('midi-recovery').hidden=true;
+ selectSong(midiPlaybackSong(midiWorkspace));
+ scheduleMidiDraftSave(true);
+ midiStatus(message);
+}
+async function offerMidiRecovery(){
+ const banner=byId('midi-recovery'),details=byId('midi-recovery-details');
+ try{
+  const draft=await midiDraftStore.read();
+  if(!draft||midiWorkspace)return;
+  const workspace=draft.workspace;
+  details.textContent=workspace.name+' · '+workspace.events.length.toLocaleString()+
+   ' notes · last saved '+new Date(draft.updatedAt).toLocaleString()+
+   '. Restore the workspace or discard this browser-only recovery copy.';
+  banner.hidden=false;
+ }catch(error){
+  details.textContent='Could not inspect saved MIDI draft: '+(error?.message||String(error))+
+   '. Existing recovery data has not been deleted.';
+  banner.hidden=false;
+  byId('midi-restore-draft').disabled=true;
+ }
+}
 function midiStatus(text,error=false){
   const output=byId('midi-editor-status');
   output.textContent=text;output.dataset.error=String(error);
@@ -133,6 +191,7 @@ function midiEdit(action,message){
     midiSaveHistory();
     midiWorkspace=next;
     refreshMidiPlayback(message);
+    scheduleMidiDraftSave();
   }catch(error){midiStatus(error.message||'MIDI edit failed.',true)}
 }
 
@@ -321,11 +380,8 @@ async function loadFile(file) {
       message => {if (pendingImport === request) setStatus(message);});
     if (pendingImport !== request) return;
     if(song.kind==='midi'){
-      midiWorkspace=buildMidiWorkspace(song);
-      midiPast.length=0;midiFuture.length=0;
-      midiTrack=trackSummary(midiWorkspace.events)[0].track;midiNotePage=0;selectedMidiId=null;
-      selectSong(midiPlaybackSong(midiWorkspace));
-      midiStatus('Loaded '+midiWorkspace.events.length+' notes. Tracks can be edited independently.');
+      restoreMidiWorkspace(song,'Loaded '+song.events.length+
+        ' notes. An editable recovery copy is saved locally.');
     }else{midiWorkspace=null;selectSong(song)}
     byId('convert-bpm').value=pattern.bpm;
     setStatus(song.events.length ? 'Ready. Tap Play to start the machine.' : 'Ready to play. No clear hits were detected in this recording.');
@@ -386,11 +442,13 @@ byId('midi-undo').addEventListener('click',()=>{
   if(!midiPast.length)return;
   midiFuture.push(midiSnapshot());midiWorkspace=midiPast.pop();
   refreshMidiPlayback('Undid MIDI edit.');
+  scheduleMidiDraftSave();
 });
 byId('midi-redo').addEventListener('click',()=>{
   if(!midiFuture.length)return;
   midiPast.push(midiSnapshot());midiWorkspace=midiFuture.pop();
   refreshMidiPlayback('Redid MIDI edit.');
+  scheduleMidiDraftSave();
 });
 byId('midi-export').addEventListener('click',()=>{
   try{
@@ -416,12 +474,33 @@ byId('midi-json-file').addEventListener('change',async()=>{
     const object=JSON.parse(await file.text());
     if(object.format!==MIDI_WORKSPACE_FORMAT)throw new Error('Not a Marble MIDI workspace.');
     const next=buildMidiWorkspace(object);
-    pendingImport?.abort();pendingImport=null;
-    midiWorkspace=next;midiPast.length=0;midiFuture.length=0;
-    midiTrack=trackSummary(next.events)[0].track;midiNotePage=0;selectedMidiId=null;
-    selectSong(midiPlaybackSong(next));
-    midiStatus('Restored '+next.events.length+' editable notes.');
+    restoreMidiWorkspace(next,'Opened '+next.events.length+
+      ' editable notes. Recovery autosave is active.');
   }catch(error){midiStatus('Could not open the MIDI workspace: '+error.message,true)}
+});
+byId('midi-restore-draft').addEventListener('click',async()=>{
+ try{
+  const draft=await midiDraftStore.read();
+  if(!draft)throw new Error('No MIDI recovery copy was found.');
+  restoreMidiWorkspace(draft.workspace,'Recovered MIDI draft saved on '+
+    new Date(draft.updatedAt).toLocaleString()+'.');
+ }catch(error){byId('midi-recovery-details').textContent=
+   'Recovery failed: '+(error?.message||String(error));}
+});
+byId('midi-discard-draft').addEventListener('click',async()=>{
+ try{
+  clearTimeout(midiDraftTimer);
+  await midiDraftStore.clear();
+  byId('midi-recovery').hidden=true;
+  midiStatus('Browser recovery copy discarded. Download your JSON project for backups.');
+ }catch(error){byId('midi-recovery-details').textContent=
+   'Could not discard the local draft: '+(error?.message||String(error));}
+});
+document.addEventListener('visibilitychange',()=>{
+ if(document.visibilityState==='hidden'&&midiWorkspace)scheduleMidiDraftSave(true);
+});
+window.addEventListener('pagehide',()=>{
+ if(midiWorkspace)scheduleMidiDraftSave(true);
 });
 view['open-file'].addEventListener('click',() => view['file-input'].click());
 view['file-input'].addEventListener('change',() => {
@@ -635,9 +714,7 @@ window.RIPStudio={
   setState(state){
     if(state?.format===MIDI_WORKSPACE_FORMAT){
       const next=buildMidiWorkspace(state);
-      midiWorkspace=next;midiPast.length=0;midiFuture.length=0;
-      midiTrack=trackSummary(next.events)[0].track;midiNotePage=0;selectedMidiId=null;
-      selectSong(midiPlaybackSong(next));
+      restoreMidiWorkspace(next,'Loaded editable MIDI state. Browser recovery copy updated.');
       return;
     }
     if(!state||typeof state.loop!=='string')throw new Error('Invalid marble project file');
@@ -684,6 +761,7 @@ renderGrid();
 renderPattern();
 selectSong(patternSong());
 updateUndo();
+offerMidiRecovery();
 if(new URLSearchParams(location.search).get('handoff')==='1'){
   receiveMarbleAudio().then(file=>{
     if(file){setStatus('Received recording locally from Music Microscope.');

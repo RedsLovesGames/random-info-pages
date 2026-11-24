@@ -48,7 +48,7 @@ jobs:
 
       - name: Verify archive home
         run: |
-          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs tests/fluid-adaptive.test.mjs tests/marble-pattern-tools.test.mjs tests/dungeon-markers.test.mjs tests/dungeon-session-zip.test.mjs tests/dungeon-editor-integration.test.mjs tests/dungeon-terrain.test.mjs tests/music-notch.test.mjs tests/music-notch-integration.test.mjs tests/music-tonal-analysis.test.mjs tests/marble-midi-workspace.test.mjs tests/marble-midi-timing.test.mjs tests/marble-variable-tempo.test.mjs tests/marble-piano-roll.test.mjs tests/marble-piano-integration.test.mjs tests/compare-repro.test.mjs tests/compare-trial-export.test.mjs tests/compare-trial-ui.test.mjs tests/new-labs-integration.test.mjs tests/fluid-signature.test.mjs
+          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs tests/fluid-adaptive.test.mjs tests/marble-pattern-tools.test.mjs tests/dungeon-markers.test.mjs tests/dungeon-session-zip.test.mjs tests/dungeon-editor-integration.test.mjs tests/dungeon-terrain.test.mjs tests/music-notch.test.mjs tests/music-notch-integration.test.mjs tests/music-tonal-analysis.test.mjs tests/marble-midi-workspace.test.mjs tests/marble-midi-timing.test.mjs tests/marble-variable-tempo.test.mjs tests/marble-piano-roll.test.mjs tests/marble-piano-integration.test.mjs tests/compare-repro.test.mjs tests/compare-notebook.test.mjs tests/marble-midi-autosave.test.mjs tests/reliability-ui.test.mjs tests/compare-trial-export.test.mjs tests/compare-trial-ui.test.mjs tests/new-labs-integration.test.mjs tests/fluid-signature.test.mjs
           node --check marble-sequencer/pattern-tools.mjs
           node --check dungeon-forge/battlemap-markers.mjs
           node --check dungeon-forge/session-zip.mjs
@@ -70,10 +70,12 @@ jobs:
           node --check music-microscope/notch-worker.mjs
           node --check music-microscope/tonal-analysis.mjs
           node --check marble-sequencer/midi-workspace.mjs
+          node --check marble-sequencer/midi-autosave.mjs
           node --check marble-sequencer/midi-timing.mjs
           node --check marble-sequencer/piano-roll.mjs
           node --check marble-sequencer/piano-roll-ui.mjs
           node --check compare/repro.mjs
+          node --check compare/notebook.mjs
           node --check compare/trial-export.mjs
           node --check marble-sequencer/app.mjs
           node --check marble-sequencer/export-midi.mjs
@@ -321,6 +323,8 @@ jobs:
           grep -Fq 'id="run-trial"' /tmp/compare-lab.html
           grep -Fq 'id="run-steps"' /tmp/compare-lab.html
           grep -Fq 'id="export-trials-csv"' /tmp/compare-lab.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/compare-notebook.js "$base/compare/notebook.mjs"
+          grep -Fq 'parseTrialNotebook' /tmp/compare-notebook.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/trial-export.js "$base/compare/trial-export.mjs"
           grep -Fq 'exportTrialCsv' /tmp/trial-export.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/compare-repro.js "$base/compare/repro.mjs"
@@ -353,6 +357,13 @@ jobs:
           grep -Fq 'id="convert-to-pattern"' /tmp/marble-studio.html
           grep -Fq 'id="euclid-fill"' /tmp/marble-studio.html
           grep -Fq 'id="midi-workspace"' /tmp/marble-studio.html
+          grep -Fq 'id="midi-recovery"' /tmp/marble-studio.html
+          grep -Fq 'id="midi-autosave-status"' /tmp/marble-studio.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/midi-autosave.js "$base/marble-sequencer/midi-autosave.mjs"
+          grep -Fq 'createMidiDraftStore' /tmp/midi-autosave.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/browser-reliability.html "$base/tests/browser-reliability.html"
+          grep -Fq 'id="run-checks"' /tmp/browser-reliability.html
+          grep -Fq 'id="verify-probe"' /tmp/browser-reliability.html
           grep -Fq 'id="piano-canvas"' /tmp/marble-studio.html
           grep -Fq 'id="piano-scroll"' /tmp/marble-studio.html
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/piano-roll-ui.js "$base/marble-sequencer/piano-roll-ui.mjs"

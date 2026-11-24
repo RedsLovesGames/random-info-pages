@@ -219,3 +219,12 @@ html[data-marble-effects="reduced"] .machine *{animation:none!important;transiti
 .midi-piano-scrubber{grid-template-columns:1fr auto;gap:3px}
 .midi-piano-scrubber input{grid-column:1/-1;grid-row:2}
 .midi-piano-options label{font-size:9px}}
+
+/* Persistent offline MIDI recovery controls use the same existing panel palette. */
+.midi-recovery{padding:12px 14px;border:1px solid var(--border);border-radius:6px;
+ background:var(--face);display:grid;gap:7px}
+.midi-recovery[hidden]{display:none}
+.midi-recovery h3{margin:0;font-size:14px;letter-spacing:-.025em}
+.midi-recovery p{margin:0;font-size:11px;line-height:1.55;color:var(--muted);overflow-wrap:anywhere}
+#midi-autosave-status{font-size:10px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}
+#midi-autosave-status[data-error="true"]{color:var(--danger,#ad4637)}

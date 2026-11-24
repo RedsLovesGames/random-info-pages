@@ -1,5 +1,7 @@
 import {createBaseline,parseBaseline,recordTrial,safeMetricSummary,SCENARIO_FORMAT} from './repro.mjs';
 import {exportTrialCsv,trialHashComparison} from './trial-export.mjs';
+import {createTrialNotebook,parseTrialNotebook,MAX_NOTEBOOK_BYTES,
+ MAX_NOTEBOOK_TRIALS} from './notebook.mjs';
 const $=id=>document.getElementById(id);
 const catalogue=window.RIPCatalog;
 if(!catalogue)throw new Error('Project registry failed to load.');
@@ -17,7 +19,7 @@ const listeners=new Map();
 let scrollBusy=false;
 let split=50;
 let baseline=null,trials=[],trialRunning=false,trialTimer=null,trialResolver=null,trialRevision=0;
-let pendingBaseline=null;
+let pendingBaseline=null,pendingTrials=[];
 const frameReady={left:false,right:false};
 function reproMessage(message,error=false){
   const output=$('repro-status');output.textContent=message;output.dataset.error=String(error);
@@ -100,7 +102,7 @@ function cancelTrial(){
 }
 function resetBaselineOnChange(){
   cancelTrial();
-  baseline=null;pendingBaseline=null;trials=[];
+  baseline=null;pendingBaseline=null;pendingTrials=[];trials=[];
   renderTrialResults();refreshTrialButtons();
 }
 async function captureBaseline(){
@@ -158,7 +160,9 @@ async function runFixedSteps(){
     entry.index=trials.length+1;entry.mode='fixed-step';
     entry.steps=count;entry.requestedSeconds=null;
     entry.note='Both solvers advanced the same number of discrete updates from restored presets. Signatures may differ if configurations or hardware differ.';
-    trials.push(entry);renderTrialResults();
+    trials.push(entry);
+    if(trials.length>MAX_NOTEBOOK_TRIALS)trials.shift();
+    renderTrialResults();
     const identical=after.left.stateHash&&after.left.stateHash===after.right.stateHash;
     reproMessage('Saved '+count+' fixed solver steps. Signatures '+
       (identical?'match.':'differ or are unavailable.')+
@@ -193,7 +197,9 @@ async function runTrial(){
     const after=await getTrialMetrics();
     const result=recordTrial(baseline,{before,after,startedAt,endedAt});
     result.index=trials.length+1;
-    trials.push(result);renderTrialResults();
+    trials.push(result);
+    if(trials.length>MAX_NOTEBOOK_TRIALS)trials.shift();
+    renderTrialResults();
     reproMessage('Saved trial '+result.index+' · elapsed '+(result.elapsedMs/1000).toFixed(2)+
       ' seconds. These are repeatable starting conditions, not deterministic simulation frames.');
   }catch(error){reproMessage('Trial failed: '+error.message,true)}
@@ -204,13 +210,20 @@ async function runTrial(){
 async function restoreImportedBaseline(){
   if(!pendingBaseline||!frameReady.left||!frameReady.right||
     !scenarioSupported())return;
-  const imported=pendingBaseline;pendingBaseline=null;
-  baseline=imported;trials=[];renderTrialResults();
+  const imported=pendingBaseline,recorded=pendingTrials;
+  pendingBaseline=null;pendingTrials=[];
+  baseline=imported;
   $('trial-duration').value=String(imported.duration);
   try{
-    await restoreBaseline();refreshTrialButtons();
-    reproMessage('Imported '+imported.left+' / '+imported.right+' and restored both configurations.');
-  }catch(error){reproMessage('Imported baseline could not be restored: '+error.message,true)}
+    await restoreBaseline();
+    trials=recorded;
+    renderTrialResults();refreshTrialButtons();
+    reproMessage('Imported '+imported.left+' / '+imported.right+
+      ', restored both configurations and '+recorded.length+' recorded trial(s).');
+  }catch(error){
+    reproMessage('Imported baseline could not be restored: '+error.message+
+      '. The history was not installed; reimport after resolving the project error.',true);
+  }
 }
 $('capture-baseline').addEventListener('click',captureBaseline);
 $('restore-baseline').addEventListener('click',async()=>{
@@ -225,14 +238,14 @@ $('trial-duration').addEventListener('change',()=>{
 });
 $('export-trials').addEventListener('click',()=>{
   if(!baseline)return;
-  const report={format:'rip-compare-notebook-v1',baseline,
-    trials,exportedAt:new Date().toISOString(),
-    limitations:'Restores configuration and preset, not raw solver cells or frame-locked execution.'};
-  const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download='random-info-pages-trial-notebook.json';a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),30000);
-  reproMessage('Trial notebook exported locally with initial configurations and '+trials.length+' result(s).');
+  try{
+    const report=createTrialNotebook(baseline,trials);
+    const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='random-info-pages-trial-notebook.json';a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    reproMessage('Notebook exported with both configurations and '+trials.length+' recorded trial(s).');
+  }catch(error){reproMessage('Notebook export failed: '+error.message,true)}
 });
 $('export-trials-csv').addEventListener('click',()=>{
   if(!baseline||!trials.length)return;
@@ -255,15 +268,19 @@ $('trial-file').addEventListener('change',async()=>{
   const file=$('trial-file').files?.[0];$('trial-file').value='';
   if(!file)return;
   try{
-    if(file.size>2*1024*1024)throw new Error('Choose a baseline under 2 MB.');
+    if(file.size>MAX_NOTEBOOK_BYTES)throw new Error('Choose a notebook under 8 MB.');
     const object=JSON.parse(await file.text());
-    const imported=parseBaseline(object.format==='rip-compare-notebook-v1'?object.baseline:object);
-    if(!valid.has(imported.left)||!valid.has(imported.right))
+    const imported=parseTrialNotebook(object);
+    if(!valid.has(imported.baseline.left)||!valid.has(imported.baseline.right))
       throw new Error('The file references an unknown or archived project.');
-    resetBaselineOnChange();pendingBaseline=imported;
-    state.left=imported.left;state.right=imported.right;
+    // Validate all recorded trials before changing the active project selection.
+    resetBaselineOnChange();
+    pendingBaseline=imported.baseline;
+    pendingTrials=imported.trials;
+    state.left=imported.baseline.left;state.right=imported.baseline.right;
     load('left');load('right');
-    reproMessage('Loading both saved projects before applying their baseline…');
+    reproMessage('Loading both saved projects, then restoring baseline and '+
+      imported.trials.length+' historical trial(s)…');
   }catch(error){reproMessage('Import failed: '+error.message,true)}
 });
 
