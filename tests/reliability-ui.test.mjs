@@ -5,13 +5,16 @@ const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 test('MIDI recovery controls persist edits and expose restoring or discarding local drafts',()=>{
  const html=read('marble-sequencer/index.html'),app=read('marble-sequencer/app.mjs');
  for(const id of ['midi-autosave-status','midi-recovery','midi-recovery-heading',
-   'midi-restore-draft','midi-discard-draft','midi-recovery-details'])
+   'midi-restore-draft','midi-discard-draft','midi-recovery-details',
+   'midi-revision','midi-export-draft','midi-checkpoint'])
   assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(app,/import \{createMidiDraftStore\} from '\.\/midi-autosave\.mjs'/);
+ assert.match(app,/import \{createMidiRecoveryVault\} from '\.\/midi-recovery-history\.mjs'/);
  assert.match(app,/function scheduleMidiDraftSave\(/);
- assert.match(app,/midiDraftStore\.save\(draft\)/);
- assert.match(app,/midiDraftStore\.read\(\)/);
- assert.match(app,/midiDraftStore\.clear\(\)/);
+ assert.match(app,/midiDraftStore\.save\(draft,\{session,checkpoint\}\)/);
+ assert.match(app,/midiDraftStore\.list\(\)/);
+ assert.match(app,/midiDraftStore\.load\(id\)/);
+ assert.match(app,/midiDraftStore\.discard\(id\)/);
+ assert.match(app,/midiDraftSession=newMidiSession\(\)/);
  assert.match(app,/offerMidiRecovery\(\)/);
  assert.match(app,/scheduleMidiDraftSave\(\);/);
  assert.match(app,/visibilitychange/);

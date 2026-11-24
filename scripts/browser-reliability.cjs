@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const http=require('node:http');
 const {pathToFileURL}=require('node:url');
-const {chromium}=require('playwright');
+const {chromium,firefox}=require('playwright');
 
 const root=path.resolve(process.cwd(),'_site');
 const port=8876;
@@ -30,8 +30,8 @@ const server=http.createServer((req,res)=>{
  }catch(error){res.writeHead(500);res.end(error.message)}
 });
 const baseUrl='http://127.0.0.1:'+port;
-const wait=async(page,fn,description,timeout=18000)=>{
- try{await page.waitForFunction(fn,null,{timeout})}
+const wait=async(page,fn,description,timeout=18000,arg=null)=>{
+ try{await page.waitForFunction(fn,arg,{timeout})}
  catch(error){throw new Error(description+': '+error.message)}
 };
 const check=(ok,message)=>{if(!ok)throw new Error(message)};
@@ -50,9 +50,9 @@ async function main(){
   // Test the actual IndexedDB implementation through a real browser.
   await page.goto(baseUrl+'/tests/browser-reliability.html');
   await page.locator('#run-checks').click();
-  await wait(page,()=>document.querySelector('#results')?.textContent.includes('ALL 5 CHECKS PASSED'),
+  await wait(page,()=>document.querySelector('#results')?.textContent.includes('ALL 6 CHECKS PASSED'),
    'Browser module checks');
-  console.log('PASS browser module checks (5/5)');
+  console.log('PASS browser module checks (6/6)');
   await page.locator('#save-probe').click();
   await wait(page,()=>document.querySelector('#results')?.textContent.includes('SAVED:'),
    'Browser probe save');
@@ -75,7 +75,7 @@ async function main(){
   });
   await wait(page,()=>document.querySelector('#midi-workspace')?.hidden===false,
     'MIDI workspace imported');
-  await wait(page,()=>document.querySelector('#midi-autosave-status')?.textContent.includes('Autosaved locally'),
+  await wait(page,()=>document.querySelector('#midi-autosave-status')?.textContent.includes('stored locally at'),
     'MIDI project autosaved in IndexedDB',25000);
   await page.reload();
   await wait(page,()=>document.querySelector('#midi-recovery')?.hidden===false,
@@ -85,6 +85,54 @@ async function main(){
    document.querySelector('#midi-track-count')?.textContent.includes('1 notes'),
    'MIDI restored into the editor');
   console.log('PASS MIDI file import, autosave, page reload, and restore controls');
+  check(await page.locator('#midi-revision option').count()>=1,
+   'Recovered MIDI version must appear in the revision selector');
+  const alternate=buildMidiWorkspace({...midi,name:'Second MIDI project',
+   events:[{...midi.events[0],note:67}]});
+  await page.locator('#file-input').setInputFiles({
+   name:'second-browser-song.mid',mimeType:'audio/midi',
+   buffer:Buffer.from(exportMultitrackMidi(alternate))
+  });
+  await wait(page,()=>document.querySelectorAll('#midi-revision option').length>=3,
+   'Importing another MIDI song retained the previous recoveries',25000);
+  const before=await page.locator('#midi-revision option').count();
+  await page.locator('#midi-checkpoint').click();
+  await wait(page,()=>document.querySelectorAll('#midi-revision option').length>before,
+   'Manual MIDI checkpoint created a new revision');
+  await page.locator('#midi-revision').selectOption({index:1});
+  const [download]=await Promise.all([
+   page.waitForEvent('download'),page.locator('#midi-export-draft').click()
+  ]);
+  check(download.suggestedFilename().endsWith('.json'),
+   'Selected MIDI recovery version did not export JSON');
+  const beforeDelete=await page.locator('#midi-revision option').count();
+  await page.locator('#midi-discard-draft').click();
+  await wait(page,expected=>document.querySelectorAll('#midi-revision option').length===expected,
+   'Deleting one recovery revision must preserve the others',16000,beforeDelete-1);
+  console.log('PASS multiple MIDI recovery versions, manual checkpoint, JSON export and targeted deletion');
+  // Mobile viewport checks use actual touch-capable Chromium, not CSS-only inspection.
+  const mobileContext=await browser.newContext({
+   viewport:{width:390,height:844},isMobile:true,hasTouch:true,
+   deviceScaleFactor:2,acceptDownloads:true
+  });
+  try{
+   const mobile=await mobileContext.newPage();
+   await mobile.goto(baseUrl+'/marble-sequencer/');
+   await mobile.locator('#file-input').setInputFiles({
+    name:'mobile-recovery.mid',mimeType:'audio/midi',buffer:Buffer.from(bytes)
+   });
+   await wait(mobile,()=>document.querySelector('#midi-autosave-status')?.textContent.includes('stored locally at'),
+    'Mobile MIDI import and autosave',25000);
+   const recovery=mobile.locator('#midi-recovery');
+   await recovery.scrollIntoViewIfNeeded();
+   const bounds=await recovery.boundingBox();
+   check(bounds&&bounds.x>=-2&&bounds.x+bounds.width<=392,
+    'Mobile recovery history exceeds 390px viewport');
+   await mobile.locator('#midi-checkpoint').tap();
+   await wait(mobile,()=>document.querySelectorAll('#midi-revision option').length>=2,
+    'Touch checkpoint adds a revision on a mobile viewport');
+   console.log('PASS mobile 390px touch recovery controls and fit');
+  }finally{await mobileContext.close()}
   // Compare Lab should restore recorded historical trials, not only its baseline.
   await page.goto(baseUrl+'/compare/?left=fluid-dynamics&right=fluid-dynamics');
   await wait(page,()=>{
@@ -117,8 +165,25 @@ async function main(){
   check(await page.locator('#export-trials-csv').isEnabled(),
    'CSV export must remain enabled');
   console.log('PASS Compare Lab notebook baseline and history UI restoration');
-  console.log('All live-browser acceptance checks passed');
  }finally{await browser.close()}
+ // Independent Firefox verification catches engine-specific IndexedDB and module issues.
+ const firefoxBrowser=await firefox.launch({headless:true});
+ try{
+  const firefoxPage=await firefoxBrowser.newPage({viewport:{width:1000,height:750}});
+  await firefoxPage.goto(baseUrl+'/tests/browser-reliability.html');
+  await firefoxPage.locator('#run-checks').click();
+  await wait(firefoxPage,()=>document.querySelector('#results')?.textContent.includes('ALL 6 CHECKS PASSED'),
+   'Firefox browser module and versioned recovery checks',25000);
+  await firefoxPage.locator('#save-probe').click();
+  await wait(firefoxPage,()=>document.querySelector('#results')?.textContent.includes('SAVED:'),
+   'Firefox revision save');
+  await firefoxPage.reload();
+  await firefoxPage.locator('#verify-probe').click();
+  await wait(firefoxPage,()=>document.querySelector('#results')?.textContent.includes('PASS: Browser persisted'),
+   'Firefox IndexedDB recovery after reload',25000);
+  console.log('PASS Firefox six module checks and reload persistence');
+ }finally{await firefoxBrowser.close()}
+ console.log('All Chromium desktop, Chromium mobile, and Firefox acceptance checks passed');
 }
 main().then(()=>server.close()).catch(error=>{
  console.error('BROWSER ACCEPTANCE FAILURE:',error.stack||error);

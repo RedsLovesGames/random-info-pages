@@ -24,13 +24,15 @@ p{max-width:65ch}small{display:block;margin-top:20px}
 <small>For a real reload test, save the probe, refresh this page, then verify it. This check page stores no audio or personal information.</small>
 </main>
 <script type="module">
-import {createMidiDraftStore} from '../marble-sequencer/midi-autosave.mjs';
+import {createMidiRecoveryVault} from '../marble-sequencer/midi-recovery-history.mjs';
 import {makeRollLayout,hitRollNote,dragRollNote} from '../marble-sequencer/piano-roll.mjs';
 import {buildMidiWorkspace,exportMultitrackMidi} from '../marble-sequencer/midi-workspace.mjs';
 import {decodeMidi} from '../marble-sequencer/music.mjs';
 import {createTrialNotebook,parseTrialNotebook} from '../compare/notebook.mjs';
 const $=id=>document.getElementById(id);
-const storage=createMidiDraftStore({dbName:'rip-reliability-test',key:'probe'});
+const storage=createMidiRecoveryVault({
+ dbName:'rip-reliability-test',historyKey:'rip-reliability-history',
+ legacyKey:'rip-reliability-legacy'});
 const event={id:'test-note',time:1,duration:.5,note:60,track:0,
  channel:0,velocity:.7,program:5};
 const project=()=>buildMidiWorkspace({name:'Browser reload probe',
@@ -66,15 +68,28 @@ $('run-checks').addEventListener('click',async()=>{
   const result=parseTrialNotebook(baseline);assert(result.legacy&&result.trials.length===0,'baseline fallback failed');
  });
  await check('Browser recovery reads and clears an isolated draft',async()=>{
-  await storage.clear();await storage.save(project());
+  await storage.clear();await storage.save(project(),{session:'fixtureSession'});
   assert((await storage.read()).workspace.name==='Browser reload probe','saved draft missing');
+  assert((await storage.list()).length===1,'saved revision missing');
   await storage.clear();assert(await storage.read()===null,'draft clear failed');
  });
- log(n===5?'ALL 5 CHECKS PASSED':'Only '+n+' / 5 checks passed');
+ await check('Distinct MIDI imports retain separate recoverable versions',async()=>{
+  await storage.clear();
+  await storage.save({...project(),name:'Old song'},{session:'firstSession'});
+  await storage.save({...project(),name:'New song'},{session:'secondSession'});
+  const versions=await storage.list();
+  assert(versions.length===2,'new song erased the old song');
+  assert(versions[0].name==='New song'&&versions[1].name==='Old song','wrong revision order');
+  await storage.discard(versions[0].id);
+  assert((await storage.read()).workspace.name==='Old song','older recovery was lost');
+  await storage.clear();
+ });
+ log(n===6?'ALL 6 CHECKS PASSED':'Only '+n+' / 6 checks passed');
 });
 $('save-probe').addEventListener('click',async()=>{
  $('results').textContent='Saving isolated reload test…\n';
- try{await storage.save(project());log('SAVED: refresh the page, then click Verify probe after reload.')}
+ try{await storage.save(project(),{session:'reloadProbe'});
+  log('SAVED: refresh the page, then click Verify probe after reload.')}
  catch(error){log('FAIL: '+error.message)}
 });
 $('verify-probe').addEventListener('click',async()=>{

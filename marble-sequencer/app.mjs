@@ -1,7 +1,7 @@
 import {LANES,buildPattern,encodePattern,decodePattern,noteName} from './music.mjs';
 import { exportPatternMidi } from './export-midi.mjs';
 import {createPianoRoll} from './piano-roll-ui.mjs';
-import {createMidiDraftStore} from './midi-autosave.mjs';
+import {createMidiRecoveryVault} from './midi-recovery-history.mjs';
 import {buildMidiWorkspace,midiPlaybackSong,trackSummary,changeMidiTrack,changeMidiNote,
   exportMultitrackMidi,MIDI_WORKSPACE_FORMAT} from './midi-workspace.mjs';
 import { rotateRows, euclideanRhythm, patternFromEvents } from './pattern-tools.mjs';
@@ -45,29 +45,61 @@ let pendingImport = null;
 let midiWorkspace=null,midiTrack=0,midiNotePage=0,selectedMidiId=null,pianoRoll=null;
 const midiPast=[],midiFuture=[];
 const midiSnapshot=()=>structuredClone(midiWorkspace);
-const midiDraftStore=createMidiDraftStore();
-let midiDraftTimer=null,midiDraftRevision=0;
-function scheduleMidiDraftSave(immediate=false){
+const midiDraftStore=createMidiRecoveryVault();
+const newMidiSession=()=>('s'+(globalThis.crypto?.randomUUID?.()||
+  Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)).replaceAll('-',''));
+let midiDraftSession=newMidiSession(),midiDraftTimer=null,midiDraftRevision=0;
+function updateMidiRecovery(entries,preferredId){
+ const banner=byId('midi-recovery'),select=byId('midi-revision');
+ const previous=preferredId||select.value;
+ select.replaceChildren(...entries.map(entry=>new Option(
+  new Date(entry.updatedAt).toLocaleString()+' · '+entry.name+
+   ' · '+entry.notes.toLocaleString()+' notes',entry.id)));
+ select.value=entries.some(entry=>entry.id===previous)?previous:entries[0]?.id||'';
+ banner.hidden=!entries.length;
+ for(const id of ['midi-restore-draft','midi-export-draft','midi-discard-draft'])
+  byId(id).disabled=!entries.length;
+ byId('midi-recovery-details').textContent=entries.length?
+  'Stored locally: '+entries.length+' of 8 recent versions. Select a snapshot to restore, download, or delete. Loading another MIDI file will not erase these versions.':
+  'No saved MIDI recovery versions in this browser.';
+}
+async function offerMidiRecovery(preferredId){
+ try{
+  const entries=await midiDraftStore.list();
+  updateMidiRecovery(entries,preferredId);
+ }catch(error){
+  const banner=byId('midi-recovery');
+  banner.hidden=false;
+  byId('midi-recovery-details').textContent='Cannot read browser recovery history: '+
+   (error?.message||String(error))+
+   '. Existing recovery data has not been deleted. Download JSON for any open project.';
+  for(const id of ['midi-restore-draft','midi-export-draft','midi-discard-draft'])
+   byId(id).disabled=true;
+ }
+}
+function scheduleMidiDraftSave(immediate=false,checkpoint=false){
  if(!midiWorkspace)return;
  clearTimeout(midiDraftTimer);
- const draft=midiSnapshot(),revision=++midiDraftRevision;
+ const draft=midiSnapshot(),revision=++midiDraftRevision,session=midiDraftSession;
  const indicator=byId('midi-autosave-status');
- indicator.textContent='Saving recovery copy to this browser…';
+ indicator.textContent='Saving recovery version to this browser…';
  indicator.dataset.error='false';
  const fail=error=>{
   if(revision!==midiDraftRevision)return;
   indicator.dataset.error='true';
   indicator.textContent='Autosave failed: '+(error?.message||'Browser storage unavailable')+
-    '. Download editable JSON now to avoid losing changes.';
+   '. Download editable JSON now to avoid losing changes.';
  };
  const persist=()=>{
   midiDraftTimer=null;
   try{
-   midiDraftStore.save(draft).then(saved=>{
+   midiDraftStore.save(draft,{session,checkpoint}).then(saved=>{
     if(revision!==midiDraftRevision)return;
     indicator.dataset.error='false';
-    indicator.textContent='Autosaved locally at '+
-      new Date(saved.updatedAt).toLocaleTimeString()+'. Download editable JSON for a separate backup.';
+    indicator.textContent=(checkpoint?'Checkpoint':'Autosave')+' stored locally at '+
+     new Date(saved.draft.updatedAt).toLocaleTimeString()+
+     '. '+saved.versions+' recovery version(s) kept. Download editable JSON for an independent backup.';
+    offerMidiRecovery(saved.revision);
    }).catch(fail);
   }catch(error){fail(error)}
  };
@@ -77,30 +109,13 @@ function scheduleMidiDraftSave(immediate=false){
 function restoreMidiWorkspace(next,message){
  pendingImport?.abort();pendingImport=null;
  midiWorkspace=buildMidiWorkspace(next);
+ midiDraftSession=newMidiSession();
  midiPast.length=0;midiFuture.length=0;
  midiTrack=trackSummary(midiWorkspace.events)[0].track;
  midiNotePage=0;selectedMidiId=null;
- byId('midi-recovery').hidden=true;
  selectSong(midiPlaybackSong(midiWorkspace));
  scheduleMidiDraftSave(true);
  midiStatus(message);
-}
-async function offerMidiRecovery(){
- const banner=byId('midi-recovery'),details=byId('midi-recovery-details');
- try{
-  const draft=await midiDraftStore.read();
-  if(!draft||midiWorkspace)return;
-  const workspace=draft.workspace;
-  details.textContent=workspace.name+' · '+workspace.events.length.toLocaleString()+
-   ' notes · last saved '+new Date(draft.updatedAt).toLocaleString()+
-   '. Restore the workspace or discard this browser-only recovery copy.';
-  banner.hidden=false;
- }catch(error){
-  details.textContent='Could not inspect saved MIDI draft: '+(error?.message||String(error))+
-   '. Existing recovery data has not been deleted.';
-  banner.hidden=false;
-  byId('midi-restore-draft').disabled=true;
- }
 }
 function midiStatus(text,error=false){
   const output=byId('midi-editor-status');
@@ -478,23 +493,39 @@ byId('midi-json-file').addEventListener('change',async()=>{
       ' editable notes. Recovery autosave is active.');
   }catch(error){midiStatus('Could not open the MIDI workspace: '+error.message,true)}
 });
+byId('midi-checkpoint').addEventListener('click',()=>{
+ if(!midiWorkspace)return;
+ scheduleMidiDraftSave(true,true);
+ midiStatus('Creating a separate recovery checkpoint for the current MIDI project.');
+});
 byId('midi-restore-draft').addEventListener('click',async()=>{
  try{
-  const draft=await midiDraftStore.read();
-  if(!draft)throw new Error('No MIDI recovery copy was found.');
-  restoreMidiWorkspace(draft.workspace,'Recovered MIDI draft saved on '+
-    new Date(draft.updatedAt).toLocaleString()+'.');
+  const id=byId('midi-revision').value;
+  const draft=await midiDraftStore.load(id);
+  restoreMidiWorkspace(draft.workspace,'Recovered version from '+
+   new Date(draft.updatedAt).toLocaleString()+'. Earlier versions remain available.');
  }catch(error){byId('midi-recovery-details').textContent=
    'Recovery failed: '+(error?.message||String(error));}
 });
+byId('midi-export-draft').addEventListener('click',async()=>{
+ try{
+  const draft=await midiDraftStore.load(byId('midi-revision').value);
+  midiDownload(JSON.stringify(draft.workspace,null,2),
+   'marble-recovery-'+new Date(draft.updatedAt).toISOString().replace(/[:.]/g,'-')+'.json',
+   'application/json');
+  midiStatus('Downloaded the selected recovery revision as an editable JSON project.');
+ }catch(error){byId('midi-recovery-details').textContent=
+   'Could not export this recovery version: '+(error?.message||String(error));}
+});
 byId('midi-discard-draft').addEventListener('click',async()=>{
  try{
-  clearTimeout(midiDraftTimer);
-  await midiDraftStore.clear();
-  byId('midi-recovery').hidden=true;
-  midiStatus('Browser recovery copy discarded. Download your JSON project for backups.');
+  const id=byId('midi-revision').value;
+  const remaining=await midiDraftStore.discard(id);
+  updateMidiRecovery(remaining);
+  midiStatus('Selected recovery revision deleted. '+remaining.length+
+   ' older version(s) remain. Autosave continues while editing.');
  }catch(error){byId('midi-recovery-details').textContent=
-   'Could not discard the local draft: '+(error?.message||String(error));}
+   'Could not delete the selected version: '+(error?.message||String(error));}
 });
 document.addEventListener('visibilitychange',()=>{
  if(document.visibilityState==='hidden'&&midiWorkspace)scheduleMidiDraftSave(true);
