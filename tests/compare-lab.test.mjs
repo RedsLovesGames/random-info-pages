@@ -19,7 +19,7 @@ test('Compare Lab is a public, indexed project with two real iframe workspaces',
   assert.match(html,new RegExp('id="'+id+'"'));
  assert.match(html,/src="\.\.\/design-system\/appearance\.js"/);
  assert.match(html,/src="\.\.\/design-system\/projects\.js"/);
- assert.doesNotThrow(()=>new Script(source.replace(/^import .*?;\\n/gm,''))); // ES-module imports are validated separately by node --check
+ assert.doesNotThrow(()=>new Script(source.replace(/^import .*?;\n/gm,''))); // ES-module imports are validated separately by node --check
  assert.match(source,/valid\.has\(params\.get\('left'\)\)/);
  assert.match(source,/history\.replaceState/);
  assert.match(source,/target\.scrollTo/);
