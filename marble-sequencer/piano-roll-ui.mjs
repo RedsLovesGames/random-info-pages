@@ -1,6 +1,6 @@
 /* Canvas piano-roll controller. Notes are picked from the exact imported MIDI
  * workspace; edits commit through its shared history, never directly mutate it. */
-import {makeRollLayout,hitRollNote,dragRollNote,scrollForNote} from './piano-roll.mjs';
+import {makeRollLayout,hitRollNote,dragRollNote,scrollForNote,hasRollDragIntent} from './piano-roll.mjs';
 import {noteName} from './music.mjs';
 
 const el=id=>document.getElementById(id);
@@ -104,9 +104,12 @@ export function createPianoRoll({getState,onSelect,onEdit,onSeek}){
    ctx.strokeStyle='#d94848';ctx.lineWidth=2;
    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvasHeight-7);ctx.stroke();
   }
-  hint.textContent='Track '+(state.track+1)+' · '+layout.rects.length+
+  hint.textContent=gesture?.draft
+   ?noteName(gesture.draft.note)+' · start '+gesture.draft.time.toFixed(3)+
+     ' s · length '+gesture.draft.duration.toFixed(3)+' s · release to save'
+   :'Track '+(state.track+1)+' · '+layout.rects.length+
     ' visible note(s) · '+start.toFixed(2)+'–'+(start+span).toFixed(2)+
-    ' s · drag middle to move, right edge to resize. Existing note form remains keyboard-accessible.';
+    ' s · drag to move/resize. Arrow keys nudge a selected note; Shift+←/→ changes its duration.';
  }
  function focusNote(event){
   if(!event)return;
@@ -152,19 +155,46 @@ export function createPianoRoll({getState,onSelect,onEdit,onSeek}){
   gesture={pointerId:event.pointerId,id:hit.id,original:{...original},
    start:p,mode:hit.mode,draft:null,model:layout};
   canvas.setPointerCapture(event.pointerId);
-  canvas.dataset.dragging='true';
+  canvas.dataset.dragging='false';
  });
  canvas.addEventListener('pointermove',event=>{
   if(!gesture||event.pointerId!==gesture.pointerId)return;
   event.preventDefault();
-  const at=position(event);
+  const at=position(event),dx=at.x-gesture.start.x,dy=at.y-gesture.start.y;
+  // A small touch or mouse jitter is selection, not an edit. In particular
+  // it must not quantize an originally off-grid note accidentally.
+  if(!hasRollDragIntent(dx,dy)){
+    if(gesture.draft){gesture.draft=null;paint()}
+    return;
+  }
+  canvas.dataset.dragging='true';
   gesture.draft=dragRollNote(gesture.original,
-   {dx:at.x-gesture.start.x,dy:at.y-gesture.start.y,
-    mode:gesture.mode,snap:Number(snap.value)},gesture.model);
+   {dx,dy,mode:gesture.mode,snap:Number(snap.value)},gesture.model);
   paint();
  });
  canvas.addEventListener('pointerup',event=>finishGesture(event,false));
  canvas.addEventListener('pointercancel',event=>finishGesture(event,true));
+ canvas.addEventListener('keydown',event=>{
+  if(event.altKey||event.ctrlKey||event.metaKey||
+     !['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key))return;
+  const state=getState();
+  const current=state.workspace?.events.find(note=>note.id===state.selectedId);
+  if(!current||state.kind!=='midi')return;
+  event.preventDefault();
+  const step=Number(snap.value)||.01;
+  const next={note:current.note,time:current.time,duration:current.duration};
+  if(event.key==='ArrowUp')next.note=clamp(current.note+1,0,127);
+  else if(event.key==='ArrowDown')next.note=clamp(current.note-1,0,127);
+  else if(event.shiftKey){
+    next.duration=clamp(Math.round((current.duration+
+      (event.key==='ArrowRight'?step:-step))*1000)/1000,.001,600);
+  }else{
+    next.time=clamp(Math.round((current.time+
+      (event.key==='ArrowRight'?step:-step))*1000)/1000,0,3600);
+  }
+  if(next.note!==current.note||next.time!==current.time||next.duration!==current.duration)
+    onEdit(current.id,next);
+ });
  for(const control of [spanControl,lowControl,rowsControl,snap,scroll])
   control.addEventListener(control===scroll?'input':'change',paint);
  el('piano-jump').addEventListener('click',()=>{

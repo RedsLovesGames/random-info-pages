@@ -18,6 +18,10 @@ test('piano roll provides time/pitch navigation, pointer editing, and keyboard a
  assert.match(ui,/dragRollNote\(gesture\.original,/);
  assert.match(ui,/onEdit\(id,\{note:draft\.note,time:draft\.time,duration:draft\.duration\}\)/);
  assert.match(ui,/pointercancel/);
+ assert.match(ui,/hasRollDragIntent\(dx,dy\)/);
+ assert.match(ui,/canvas\.addEventListener\('keydown'/);
+ assert.match(ui,/event\.shiftKey/);
+ assert.match(ui,/release to save/);
 });
 test('tempo maps persist from MIDI import through editor and event-based export',()=>{
  const music=read('marble-sequencer/music.mjs'),

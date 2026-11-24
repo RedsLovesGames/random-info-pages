@@ -31,3 +31,7 @@ The renderer displays a bounded time/pitch viewport, not every note in a large s
 ## Trial notebook metrics and CSV export
 
 Compare Lab now shows each completed trial's reported metrics separately for the left and right projects, along with an explicit matching/different/unavailable label for solver-state signatures. Its summary reports how many trials have comparable signatures and how many match. Results can be exported as a UTF-8 CSV for spreadsheet analysis, with before/after metrics, elapsed times, and fixed-step counts. CSV formula-like strings are escaped to reduce spreadsheet injection risk. The original JSON notebook and baseline import remain available. Clearing trial results does not remove the captured baseline.
+
+### Piano-roll interaction safeguards
+
+The canvas ignores pointer movement smaller than 5 CSS pixels so selecting an off-grid MIDI note does not inadvertently snap its start time. Deliberate drags show a continuously updated note, onset and duration before release. With the piano-roll canvas focused, Up/Down arrow keys move the selected note by one semitone, Left/Right move its onset by the active snap interval (10 ms when snap is off), and Shift+Left/Right resize its duration. The original numeric controls remain an alternative for keyboard and screen-reader use.

@@ -40,3 +40,12 @@ test('roll scroll follows notes and viewport validation rejects bad arguments',(
  assert.throws(()=>makeRollLayout(events,0,{span:9}),/viewport/);
  assert.throws(()=>dragRollNote(events[0],{snap:.03},layout),/drag/);
 });
+
+test('pointer drag threshold rejects tiny selection jitter but accepts deliberate movement',async()=>{
+ const {hasRollDragIntent}=await import('../marble-sequencer/piano-roll.mjs');
+ assert.equal(hasRollDragIntent(.2,1),false);
+ assert.equal(hasRollDragIntent(3,3),false);
+ assert.equal(hasRollDragIntent(4,3),true);
+ assert.equal(hasRollDragIntent(-10,0),true);
+ assert.throws(()=>hasRollDragIntent(2,3,-1),/threshold/);
+});

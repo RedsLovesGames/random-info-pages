@@ -61,3 +61,9 @@ export function scrollForNote(event,span,duration){
   throw new TypeError('Invalid MIDI timeline jump');
  return clamp(event.time-span*.3,0,Math.max(0,duration-span));
 }
+
+export function hasRollDragIntent(dx,dy,threshold=5){
+ if(!Number.isFinite(dx)||!Number.isFinite(dy)||!Number.isFinite(threshold)||threshold<0)
+  throw new RangeError('Invalid drag threshold.');
+ return Math.hypot(dx,dy)>=threshold;
+}
