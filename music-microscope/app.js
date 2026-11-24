@@ -1,4 +1,5 @@
 import { encodeWavRegion } from './export.mjs';
+import { notchBands, spectrumFrequency, MAX_FILTERED_FRAMES } from './notch.mjs';
 import { sendAudioToMarble } from '../design-system/bridge.mjs';
 import {
   MAX_DURATION_SECONDS,
@@ -50,6 +51,10 @@ let analysisSampleRate = 0;
 let liveFrame = 0;
 let lastMeterUpdate = 0;
 let frameSpectrum = null;
+let notchNodes = [];
+let pickingNotch = false;
+let notchExportJob = null;
+let notchExportSerial = 0;
 
 function ensureAudioGraph() {
   if (audioContext) return audioContext;
@@ -61,6 +66,10 @@ function ensureAudioGraph() {
   dryGain = audioContext.createGain(); wetGain = audioContext.createGain(); outputGain = audioContext.createGain();
   dryGain.gain.value = 1; wetGain.gain.value = 0; outputGain.gain.value = Number($('#volume').value) / 100;
   dryGain.connect(analyser); filterNode.connect(wetGain); wetGain.connect(analyser); analyser.connect(outputGain); outputGain.connect(audioContext.destination);
+  notchNodes=Array.from({length:6},()=>{
+    const node=audioContext.createBiquadFilter();
+    node.type='notch';return node;
+  });
   frameSpectrum = new Uint8Array(analyser.frequencyBinCount);
   return audioContext;
 }
@@ -280,23 +289,129 @@ function setFilterEnabled() {
   setFilterControls();
 }
 
+/* Live tonal A/B: the analyser is deliberately upstream of the output-only
+ * notch chain, so its plots always represent the original frequency content. */
+function currentNotchSettings(){
+  const sampleRate=currentBuffer?.sampleRate||audioContext?.sampleRate;
+  if(!sampleRate)throw new Error('Load a recording before using a tonal filter.');
+  const frequency=Number($('#notchFrequency').value);
+  const q=Number($('#notchQ').value);
+  const harmonics=Number($('#notchHarmonics').value);
+  return {frequency,q,harmonics,bands:notchBands({frequency,q,harmonics},sampleRate)};
+}
+function configureNotch(){
+  if(!currentBuffer)return;
+  try{
+    const max=Math.min(10000,Math.floor(currentBuffer.sampleRate*.44));
+    const input=$('#notchFrequency');
+    input.max=String(max);
+    input.value=String(Math.round(Math.min(max,Math.max(40,Number(input.value)||60))*10)/10);
+    const config=currentNotchSettings();
+    $('#notchQLabel').textContent=config.q+' Q';
+    $('#notchBandLabel').textContent='Affected bands: '+
+      config.bands.map(band=>Number(band.frequency.toFixed(1)).toLocaleString()+' Hz').join(' · ')+
+      ' · Q '+config.q;
+    if(analyser&&outputGain&&notchNodes.length){
+      analyser.disconnect();
+      for(const node of notchNodes)node.disconnect();
+      if($('#notchEnabled').checked){
+        let source=analyser;
+        for(let index=0;index<config.bands.length;index++){
+          const band=config.bands[index],node=notchNodes[index];
+          node.frequency.setTargetAtTime(band.frequency,audioContext.currentTime,.01);
+          node.Q.setTargetAtTime(band.q,audioContext.currentTime,.01);
+          source.connect(node);source=node;
+        }
+        source.connect(outputGain);
+      }else analyser.connect(outputGain);
+    }
+    $('#exportNotch').disabled=!$('#notchEnabled').checked||Boolean(notchExportJob);
+    $('#notchStatus').textContent=$('#notchEnabled').checked?
+      'Tonal attenuation enabled for listening. The original audio is unchanged; export a processed WAV to save a copy.':
+      'Original audio playback. Toggle the tonal filter on for an instant A/B comparison.';
+    drawSpectrum();
+  }catch(error){
+    $('#notchEnabled').checked=false;$('#exportNotch').disabled=true;
+    $('#notchStatus').textContent='Cannot configure tonal processing: '+error.message;
+    if(analyser&&outputGain){analyser.disconnect();analyser.connect(outputGain)}
+  }
+}
+function cancelNotchExport(){
+  if(notchExportJob)notchExportJob.abort(new Error('The source recording changed. The previous export was cancelled.'));
+}
+function processNotchRegion(buffer,start,end,config){
+  if(typeof Worker==='undefined')return Promise.reject(new Error('A browser Worker is required for safe processed WAV export.'));
+  const rate=buffer.sampleRate;
+  const first=Math.max(0,Math.floor(start*rate));
+  const last=Math.min(buffer.length,Math.ceil(end*rate));
+  const warmup=Math.min(first,Math.round(rate*.25));
+  const length=last-first+warmup;
+  if(length<1||length>MAX_FILTERED_FRAMES)
+    return Promise.reject(new RangeError('Choose a shorter selection for tonal processing.'));
+  notchBands(config,rate);
+  const channels=Array.from({length:Math.min(2,buffer.numberOfChannels)},(_,index)=>
+    buffer.getChannelData(index).slice(first-warmup,last));
+  return new Promise((resolve,reject)=>{
+    const id=++notchExportSerial;
+    let worker,timeout=null,done=false;
+    const finish=(error,result)=>{
+      if(done)return;
+      done=true;
+      if(timeout!==null)clearTimeout(timeout);
+      worker?.terminate();
+      if(notchExportJob===job)notchExportJob=null;
+      if(error)reject(error);else resolve(result);
+    };
+    const job={abort:reason=>finish(reason)};
+    try{
+      worker=new Worker(new URL('./notch-worker.mjs',import.meta.url),{type:'module'});
+      notchExportJob=job;
+      worker.onerror=()=>finish(new Error('The local audio processing Worker failed.'));
+      worker.onmessage=event=>{
+        const message=event.data;
+        if(message.id!==id)return;
+        if(message.error)return finish(new Error(message.error));
+        const filtered=message.channels.map(bytes=>new Float32Array(bytes));
+        if(filtered.length<1||filtered.some(channel=>channel.length!==message.length))
+          return finish(new Error('Invalid processed audio output.'));
+        finish(null,{
+          numberOfChannels:filtered.length,
+          sampleRate:message.sampleRate,
+          length:message.length,
+          duration:message.length/message.sampleRate,
+          getChannelData:index=>filtered[index]
+        });
+      };
+      timeout=setTimeout(()=>finish(new Error('Local processing timed out. Try a shorter selection.')),90000);
+      worker.postMessage({id,sampleRate:rate,config,warmup,
+        channels:channels.map(channel=>channel.buffer)},channels.map(channel=>channel.buffer));
+    }catch(error){finish(error)}
+  });
+}
+
 function loadBuffer(buffer, meta) {
   if (buffer.duration <= 0 || buffer.duration > MAX_DURATION_SECONDS) throw new RangeError('Audio duration is outside the supported range of 0 to 180 seconds.');
   if (buffer.numberOfChannels > 8 || buffer.numberOfChannels < 1) throw new RangeError('This recording has an unsupported number of audio channels.');
   const decodedBytes = buffer.length * buffer.numberOfChannels * 4;
   validateAudioInput({ bytes: 1, decodedBytes });
   loadRequest += 1;
+  cancelNotchExport();
   pausePlayback(); stopSource();
   currentBuffer = buffer; currentMeta = meta; duration = buffer.duration; playbackPosition = 0;
   selection = null; viewZoom = 1; viewStart = 0;
   $('#loopSelection').checked = false; $('#filterEnabled').checked = false;
+  $('#notchEnabled').checked=false;pickingNotch=false;
+  spectrumCanvas.dataset.pickNotch='false';
+  $('#pickNotch').setAttribute('aria-pressed','false');
+  for(const id of ['notchEnabled','notchFrequency','notchQ','notchHarmonics','notch50','notch60','pickNotch'])
+    $('#'+id).disabled=false;
   preparePeaks(buffer); setTrackFacts(buffer, meta); updateEnabledState(true); updateSelectionReadout(); updateViewControls();
   $('#trackStatus').textContent = 'Ready · file decoding and analysis remain on this device.';
   $('#playButton').disabled = false; $('#stopButton').disabled = false; $('#timeline').disabled = false;
   $('#exportWav').disabled = false;
   $('#filterEnabled').disabled = false; $('#cutoff').disabled = false; $('#resonance').disabled = false;
   $('#filterStatus').textContent = 'Original playback · enable a filter to compare the signal.';
-  try { ensureAudioGraph(); setFilterControls(); } catch (error) { $('#trackStatus').textContent = error.message; }
+  try { ensureAudioGraph(); setFilterControls();configureNotch(); } catch (error) { $('#trackStatus').textContent = error.message; }
   const revision = ++analysisRevision;
   launchAnalysisWorker(buffer, revision);
   drawWaveform(); drawSpectrogram(); updateMeters(true); startLiveLoop();
@@ -527,6 +642,19 @@ function drawSpectrum() {
   }
   ctx.strokeStyle = '#68c5ba'; ctx.lineWidth = 1.5; ctx.stroke();
   ctx.lineTo(width, height - 14); ctx.lineTo(0, height - 14); ctx.closePath(); ctx.fillStyle = '#68c5ba18'; ctx.fill();
+  if(currentBuffer&&$('#notchEnabled').checked){
+    try{
+      const bands=currentNotchSettings().bands;
+      ctx.save();ctx.setLineDash([4,3]);ctx.strokeStyle='#f5c877';
+      ctx.lineWidth=1.3;ctx.fillStyle='#f5c877';ctx.font='9px monospace';
+      for(const band of bands){
+        if(band.frequency<20||band.frequency>=max)continue;
+        const x=Math.log(band.frequency/20)/Math.log(max/20)*width;
+        ctx.beginPath();ctx.moveTo(x,2);ctx.lineTo(x,height-17);ctx.stroke();
+      }
+      ctx.restore();
+    }catch{/* wait for valid frequency controls */}
+  }
   const bars = bandLevels(frameSpectrum, rate, analyser.fftSize);
   bars.forEach(band => {
     const row = $(`.band-row[data-band="${band.name}"]`);
@@ -667,6 +795,64 @@ $('#exportWav').addEventListener('click',async()=>{
   }catch(error){$('#audioExchangeStatus').textContent='WAV export: '+error.message}
   finally{button.disabled=false}
 });
+$('#notchEnabled').addEventListener('change',configureNotch);
+for(const id of ['notchFrequency','notchQ','notchHarmonics']){
+  $('#'+id).addEventListener('change',configureNotch);
+  if(id==='notchQ')$('#'+id).addEventListener('input',configureNotch);
+}
+for(const frequency of [50,60])$('#notch'+frequency).addEventListener('click',()=>{
+  if(!currentBuffer)return;
+  $('#notchFrequency').value=String(frequency);
+  $('#notchEnabled').checked=true;
+  configureNotch();
+});
+$('#pickNotch').addEventListener('click',()=>{
+  if(!currentBuffer)return;
+  pickingNotch=!pickingNotch;
+  spectrumCanvas.dataset.pickNotch=String(pickingNotch);
+  $('#pickNotch').setAttribute('aria-pressed',String(pickingNotch));
+  $('#notchStatus').textContent=pickingNotch?
+    'Play the recording, then click a frequency in the Live spectrum. This chooses the target, not an automatically identified noise source.':
+    'Frequency picking cancelled.';
+});
+spectrumCanvas.addEventListener('click',event=>{
+  if(!pickingNotch||!currentBuffer)return;
+  const rect=spectrumCanvas.getBoundingClientRect();
+  const fraction=(event.clientX-rect.left)/Math.max(1,rect.width);
+  const frequency=spectrumFrequency(fraction,audioContext.sampleRate);
+  const max=Math.min(10000,Math.floor(currentBuffer.sampleRate*.44));
+  $('#notchFrequency').value=(Math.max(40,Math.min(max,frequency))).toFixed(1);
+  $('#notchEnabled').checked=true;
+  pickingNotch=false;spectrumCanvas.dataset.pickNotch='false';
+  $('#pickNotch').setAttribute('aria-pressed','false');
+  configureNotch();
+});
+$('#exportNotch').addEventListener('click',async()=>{
+  if(!currentBuffer||!$('#notchEnabled').checked||notchExportJob)return;
+  const button=$('#exportNotch'),source=currentBuffer;
+  const from=selection?.start??0,to=selection?.end??duration;
+  let settings;
+  try{settings=currentNotchSettings()}
+  catch(error){$('#notchStatus').textContent=error.message;return}
+  button.disabled=true;
+  $('#notchStatus').textContent='Rendering a processed copy on your device. This does not modify the original file.';
+  try{
+    const output=await processNotchRegion(source,from,to,settings);
+    if(currentBuffer!==source)throw new Error('The recording changed during rendering.');
+    const wav=encodeWavRegion(output,0,output.duration);
+    const url=URL.createObjectURL(wav);
+    const link=document.createElement('a');link.href=url;
+    const name=(currentMeta?.name||'recording').replace(/\.[^.]+$/,'').replace(/[^a-z0-9_-]/gi,'-');
+    link.download=name+'-tonal-filtered'+(selection?'-selection':'')+'.wav';
+    link.click();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    $('#notchStatus').textContent='Processed WAV exported ('+(wav.size/1024/1024).toFixed(1)+
+      ' MB). Original audio remains unmodified. Other playback filters were not applied.';
+  }catch(error){
+    $('#notchStatus').textContent='Processed export unavailable: '+error.message;
+  }finally{button.disabled=!currentBuffer||!$('#notchEnabled').checked||Boolean(notchExportJob)}
+});
+
 $('#sendMarble').addEventListener('click',async()=>{
   if(!sourceAudioFile)return;
   const button=$('#sendMarble');button.disabled=true;
@@ -718,5 +904,21 @@ window.addEventListener('keydown', event => {
 });
 
 window.addEventListener('resize', () => { drawWaveform(); drawSpectrogram(); drawSpectrum(); drawStereo(0, 0); });
+window.RIPStudio={
+  async transport(action){
+    if(action==='play')return startPlayback();
+    if(action==='pause'){pausePlayback();return}
+    if(action==='reset'){stopPlayback();return}
+    throw new Error('Unknown transport command');
+  },
+  capture(){
+    if(!currentBuffer)throw new Error('Load a recording before capturing a spectrogram.');
+    return new Promise((resolve,reject)=>spectrogramCanvas.toBlob(
+      result=>result?resolve(result):reject(new Error('Spectrogram PNG capture failed')),'image/png'));
+  },
+  metrics(){return{sampleRate:currentBuffer?.sampleRate||0,
+    duration:currentBuffer?.duration||0,
+    notch:$('#notchEnabled').checked}}
+};
 createBandRows();
 drawWaveform(); drawSpectrogram(); drawStereo(0, 0);

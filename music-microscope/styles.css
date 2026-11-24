@@ -23,3 +23,34 @@ footer{border-top:1px solid var(--line);padding:16px 0 24px;display:flex;justify
 .audio-exchange p{flex-basis:100%;font:10px/1.5 var(--mono);color:var(--muted);margin:0}
 @media(max-width:650px){.audio-exchange{display:grid;grid-template-columns:1fr 1fr}
 .audio-exchange button{font-size:9px;padding:9px}.audio-exchange p{grid-column:1/-1}}
+
+/* Local tonal repair, harmonics and browser-DSP comparisons. */
+.tonal-repair{border:1px solid var(--line);background:#111e20;padding:clamp(15px,3vw,34px);margin-top:21px}
+.tonal-repair-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,.85fr);gap:clamp(16px,4vw,58px)}
+.tonal-repair h2{font:400 clamp(32px,4.7vw,62px)/1.04 var(--serif);letter-spacing:-.02em;color:var(--ink);margin:12px 0}
+.tonal-repair h2 em{color:var(--teal)}
+.tonal-explanation,.tonal-caution{font-size:11px;line-height:1.65;color:var(--muted);max-width:500px;margin:13px 0}
+.tonal-caution{border-left:2px solid var(--amber);padding-left:12px;margin-top:24px}
+.tonal-caution strong{color:var(--amber)}
+.tonal-repair-controls{min-width:0;display:grid;gap:12px;align-content:start}
+.tonal-toggle{display:flex;align-items:center;gap:11px;font:700 11px/1.5 var(--sans);color:var(--ink)}
+.tonal-toggle input{accent-color:var(--teal);width:19px;height:19px;flex:none}
+.notch-presets{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.notch-presets button{border:1px solid var(--line);background:transparent;color:var(--ink);padding:9px 11px;font:700 10px var(--sans);cursor:pointer}
+.notch-presets button[aria-pressed="true"],.notch-presets button:hover:not(:disabled){border-color:var(--teal);color:var(--teal)}
+.tonal-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.tonal-fields label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;font:700 9px/1.5 var(--mono);color:var(--muted)}
+.tonal-fields label:last-child{grid-column:1/-1}
+.tonal-fields label>input,.tonal-fields label>select{grid-column:1/-1;width:100%;min-width:0;
+ background:#1c3032;border:1px solid var(--line);color:var(--ink);font:11px var(--sans);padding:9px}
+.tonal-fields input[type="range"]{padding:0;accent-color:var(--teal);height:34px}
+.tonal-fields label>output{font-size:9px;color:var(--amber)}
+.tonal-bands{color:var(--teal);font:10px/1.5 var(--mono);margin:0;word-break:break-word}
+.tonal-export{min-height:44px;border:1px solid var(--teal);background:#176f64;color:#fff;font:700 11px var(--sans);cursor:pointer;padding:10px}
+.tonal-export:hover:not(:disabled){filter:brightness(1.18)}
+.tonal-repair button:disabled,.tonal-repair input:disabled,.tonal-repair select:disabled{opacity:.48;cursor:not-allowed}
+#notchStatus{font:10px/1.65 var(--mono);color:var(--muted);margin:0}
+#spectrum[data-pick-notch="true"]{cursor:crosshair;outline:2px dashed var(--amber);outline-offset:2px}
+@media(max-width:850px){.tonal-repair-head{grid-template-columns:1fr;gap:20px}.tonal-caution{margin-top:16px}.tonal-fields{gap:9px}}
+@media(max-width:500px){.tonal-repair{padding:14px}.tonal-fields{grid-template-columns:1fr}
+.tonal-fields label:last-child{grid-column:auto}.notch-presets button{flex:1 1 auto;font-size:9px}}

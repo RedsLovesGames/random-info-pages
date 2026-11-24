@@ -75,6 +75,46 @@
       <div class="filter-controls"><label>FILTER<select id="filterType"><option value="lowpass">Low-pass</option><option value="highpass">High-pass</option><option value="bandpass">Band-pass</option></select></label><label>CUTOFF <output id="cutoffLabel">2,000 Hz</output><input id="cutoff" type="range" min="20" max="18000" step="10" value="2000" aria-label="Filter cutoff frequency" disabled></label><label>RESONANCE <output id="resonanceLabel">0.7 Q</output><input id="resonance" type="range" min="0.1" max="12" step="0.1" value="0.7" aria-label="Filter resonance" disabled></label><div id="filterStatus" role="status">Load a recording to start a filter experiment.</div></div>
     </section>
 
+    <section class="tonal-repair" aria-labelledby="notch-title">
+      <div class="tonal-repair-head">
+        <div>
+          <p class="eyebrow">NARROWBAND SIGNAL REPAIR / 07</p>
+          <h2 id="notch-title">Remove a hum.<br><em>Keep the recording.</em></h2>
+          <p class="tonal-explanation">Target a steady electronic hum or tonal whine with precision notch filters. Toggle on and off while listening to compare. Your original recording is preserved.</p>
+          <p class="tonal-caution"><strong>Important:</strong> This attenuates narrow frequency bands, not broadband fan hiss or desk vibration. It can also remove musical notes at those frequencies. The live spectrum displays the sound <em>before</em> the notch filters.</p>
+        </div>
+        <div class="tonal-repair-controls">
+          <label class="tonal-toggle"><input id="notchEnabled" type="checkbox" disabled> Enable tonal removal preview</label>
+          <div class="notch-presets" role="group" aria-label="Electrical hum presets">
+            <button type="button" id="notch50" disabled>50 Hz hum</button>
+            <button type="button" id="notch60" disabled>60 Hz hum</button>
+            <button type="button" id="pickNotch" disabled aria-pressed="false">Pick from spectrum</button>
+          </div>
+          <div class="tonal-fields">
+            <label>Target frequency <span>Hz</span>
+              <input type="number" id="notchFrequency" min="40" max="10000" step="0.1" value="60" inputmode="decimal" disabled>
+            </label>
+            <label>Filter sharpness <output id="notchQLabel">16 Q</output>
+              <input type="range" id="notchQ" min="3" max="60" step="1" value="16" disabled>
+            </label>
+            <label>Harmonic bands
+              <select id="notchHarmonics" disabled>
+                <option value="1">1 · target only</option>
+                <option value="2">2 · target + 2×</option>
+                <option value="3" selected>3 · up to 3×</option>
+                <option value="4">4 · up to 4×</option>
+                <option value="5">5 · up to 5×</option>
+                <option value="6">6 · up to 6×</option>
+              </select>
+            </label>
+          </div>
+          <p id="notchBandLabel" class="tonal-bands">Load a recording to enable filtering.</p>
+          <button type="button" id="exportNotch" class="tonal-export" disabled>Export processed WAV ↓</button>
+          <p id="notchStatus" role="status" aria-live="polite">Processed export applies only the tonal filter, not the low/high/band-pass experiment above. No audio uploads.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="insights" aria-labelledby="insights-title"><div class="panel-heading"><div><span class="panel-index">06</span><h2 id="insights-title">A few careful estimates</h2><span class="panel-desc">ANALYSIS IS EVIDENCE, NOT CERTAINTY</span></div><span id="analysisStatus" role="status" aria-live="polite">Waiting for a recording.</span></div><div class="insight-grid"><article><span>ATTACKS / ONSETS</span><strong id="onsetCount">—</strong><p id="onsetNote">No analysis yet.</p></article><article><span>TEMPO CANDIDATES</span><strong id="tempoCandidates">—</strong><p id="tempoNote">Candidates can be half-time or double-time; a steady estimate is not guaranteed.</p></article><article><span>PROMINENT FREQUENCY</span><strong id="frequencyEstimate">—</strong><p id="frequencyNote">A strongest spectral peak is not necessarily the musical pitch.</p></article></div></section>
   </main>
   <footer><a href="../">← BACK TO ALL PROJECTS</a><span>NO UPLOAD · NO EXTERNAL SERVICE · LOCAL WEB AUDIO</span><span>PLAY / PAUSE <kbd>SPACE</kbd></span></footer>

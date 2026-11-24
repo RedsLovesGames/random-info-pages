@@ -31,6 +31,9 @@ const TOUR_DEFINITIONS=Object.freeze({
     ['#audioInputSection','Choose a recording','Load a local file or generate the example. Your audio is not uploaded.'],
     ['#waveform','Read the waveform','Drag on the waveform to isolate a time region for inspection.'],
     ['#spectrogram','Find frequency patterns','Bright bands indicate stronger energy at corresponding frequencies over time.'],
+    ['#notchEnabled','Compare hum-removal playback','Toggle narrowband attenuation on or off; your source stays unchanged.'],
+    ['#notchFrequency','Target a specific tonal frequency','Try 50 or 60 Hz for electrical hum, or use the live spectrum to pick a steady whine.'],
+    ['#exportNotch','Save only the filtered copy','Export the tonal-filtered signal as a local WAV. The low/high-pass experiment is not included.'],
     ['#exportWav','Export the selected region','Save a 16-bit PCM WAV of the selection, or the whole recording.'],
     ['#sendMarble','Send audio to a different project','Transfer your original local file directly into Marble Sequencer without uploading it.']
   ],

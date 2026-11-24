@@ -48,7 +48,7 @@ jobs:
 
       - name: Verify archive home
         run: |
-          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs tests/fluid-adaptive.test.mjs tests/marble-pattern-tools.test.mjs tests/dungeon-markers.test.mjs tests/dungeon-session-zip.test.mjs tests/dungeon-editor-integration.test.mjs tests/dungeon-terrain.test.mjs
+          node --test tests/home-index.test.mjs tests/site-appearance.test.mjs tests/fluid-dynamics.test.mjs tests/fluid-quality.test.mjs tests/project-studio.test.mjs tests/studio-integration.test.mjs tests/compare-lab.test.mjs tests/fluid-adaptive.test.mjs tests/marble-pattern-tools.test.mjs tests/dungeon-markers.test.mjs tests/dungeon-session-zip.test.mjs tests/dungeon-editor-integration.test.mjs tests/dungeon-terrain.test.mjs tests/music-notch.test.mjs tests/music-notch-integration.test.mjs
           node --check marble-sequencer/pattern-tools.mjs
           node --check dungeon-forge/battlemap-markers.mjs
           node --check dungeon-forge/session-zip.mjs
@@ -65,6 +65,8 @@ jobs:
           node --check sw.js
           node --input-type=module --check < music-microscope/app.js
           node --check music-microscope/export.mjs
+          node --check music-microscope/notch.mjs
+          node --check music-microscope/notch-worker.mjs
           node --check marble-sequencer/app.mjs
           node --check marble-sequencer/export-midi.mjs
           node --check dungeon-forge/battlemap.mjs
@@ -313,6 +315,13 @@ jobs:
           grep -Fq 'startTour' /tmp/guided-tours.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/recording.js "$base/design-system/recording.mjs"
           grep -Fq 'startCanvasRecording' /tmp/recording.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/music-microscope.html "$base/music-microscope/"
+          grep -Fq 'id="notchFrequency"' /tmp/music-microscope.html
+          grep -Fq 'id="exportNotch"' /tmp/music-microscope.html
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/music-notch.js "$base/music-microscope/notch.mjs"
+          grep -Fq 'filterNotchPCM' /tmp/music-notch.js
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/music-notch-worker.js "$base/music-microscope/notch-worker.mjs"
+          grep -Fq 'filterNotchPCM' /tmp/music-notch-worker.js
           curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 2 -o /tmp/dungeon-editor.html "$base/dungeon-forge/"
           grep -Fq 'id="battlemapMarkerAdd"' /tmp/dungeon-editor.html
           grep -Fq 'data-battlemap-export="package"' /tmp/dungeon-editor.html
