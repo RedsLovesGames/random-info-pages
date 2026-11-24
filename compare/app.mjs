@@ -40,7 +40,8 @@ function renderTrialResults(){
   for(const trial of [...trials].reverse().slice(0,20)){
     const row=document.createElement('div');row.className='trial-entry';
     const title=document.createElement('strong');
-    title.textContent='Trial '+trial.index+' · '+(trial.elapsedMs/1000).toFixed(2)+'s';
+    title.textContent='Trial '+trial.index+' · '+(
+      trial.mode==='fixed-step'?trial.steps+' fixed steps':(trial.elapsedMs/1000).toFixed(2)+'s');
     const metrics=document.createElement('code');
     metrics.textContent='LEFT '+JSON.stringify(trial.after.left)+
       '   |   RIGHT '+JSON.stringify(trial.after.right);
@@ -53,9 +54,12 @@ function refreshTrialButtons(){
   $('capture-baseline').disabled=trialRunning||!supported;
   $('restore-baseline').disabled=trialRunning||!supported||!ready;
   $('run-trial').disabled=trialRunning||!supported||!ready;
+  $('run-steps').disabled=trialRunning||!supported||!ready||
+    !adapters().every(a=>typeof a?.advanceSteps==='function');
   $('stop-trial').disabled=!trialRunning;
   $('export-trials').disabled=!baseline||trialRunning;
   $('trial-duration').disabled=trialRunning;
+  $('step-count').disabled=trialRunning;
 }
 function cancelTrial(){
   if(!trialRunning)return;
@@ -99,6 +103,42 @@ async function getTrialMetrics(){
     try{return safeMetricSummary(await adapter.metrics?.())}catch{return{}}
   }));
   return {left,right};
+}
+async function runFixedSteps(){
+  if(trialRunning)return;
+  const revision=++trialRevision;
+  try{
+    if(!baseline||!scenarioSupported()||
+      !adapters().every(a=>typeof a?.advanceSteps==='function'))
+      throw new Error('Both projects must support explicit solver stepping.');
+    const count=Number($('step-count').value);
+    if(![30,60,120].includes(count))throw new RangeError('Choose 30, 60, or 120 solver steps.');
+    trialRunning=true;refreshTrialButtons();
+    reproMessage('Restoring both solver configurations for '+count+' fixed steps…');
+    await restoreBaseline();
+    if(revision!==trialRevision)return;
+    const before=await getTrialMetrics(),startedAt=Date.now();
+    const [left,right]=adapters();
+    for(let done=0;done<count;done+=10){
+      if(revision!==trialRevision)return;
+      await Promise.all([left.advanceSteps(Math.min(10,count-done)),
+        right.advanceSteps(Math.min(10,count-done))]);
+      reproMessage('Fixed-step comparison: '+Math.min(count,done+10)+'/'+count+' solver updates per panel.');
+      await new Promise(resolve=>requestAnimationFrame(resolve));
+    }
+    if(revision!==trialRevision)return;
+    const endedAt=Date.now(),after=await getTrialMetrics();
+    const entry=recordTrial(baseline,{before,after,startedAt,endedAt});
+    entry.index=trials.length+1;entry.mode='fixed-step';
+    entry.steps=count;entry.requestedSeconds=null;
+    entry.note='Both solvers advanced the same number of discrete updates from restored presets. Signatures may differ if configurations or hardware differ.';
+    trials.push(entry);renderTrialResults();
+    const identical=after.left.stateHash&&after.left.stateHash===after.right.stateHash;
+    reproMessage('Saved '+count+' fixed solver steps. Signatures '+
+      (identical?'match.':'differ or are unavailable.')+
+      ' Results may vary with different configurations and hardware.');
+  }catch(error){reproMessage('Fixed-step trial failed: '+error.message,true)}
+  finally{if(revision===trialRevision){trialRunning=false;refreshTrialButtons()}}
 }
 async function runTrial(){
   if(trialRunning)return;
@@ -152,6 +192,7 @@ $('restore-baseline').addEventListener('click',async()=>{
   catch(error){reproMessage('Restore failed: '+error.message,true)}
 });
 $('run-trial').addEventListener('click',runTrial);
+$('run-steps').addEventListener('click',runFixedSteps);
 $('stop-trial').addEventListener('click',cancelTrial);
 $('trial-duration').addEventListener('change',()=>{
   if(baseline)baseline.duration=Number($('trial-duration').value);

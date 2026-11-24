@@ -4,6 +4,7 @@ import { createDyeGPU } from './dye-gpu.mjs';
 import { createSurface3D } from './three-surface.mjs';
 import { qualityProfile, transferFluidState } from './quality.mjs';
 import { LEVELS, createAdaptiveController } from './adaptive.mjs';
+import {fluidSignature} from './signature.mjs';
 
 const byId = id => document.getElementById(id);
 const canvas = byId('tank');
@@ -657,12 +658,23 @@ function start() {
       if(action==='reset'){loadPreset(preset);setPaused(true);return}
       throw new Error('Unknown transport command');
     },
+    /* Explicit integer solver stepping for comparable fixed-step trials.
+     * No wall-clock simulation updates are permitted during this command. */
+    advanceSteps(count) {
+      if(!Number.isInteger(count)||count<1||count>10)
+        throw new RangeError('Advance between 1 and 10 fixed solver steps per batch.');
+      if(!paused)throw new Error('Pause the solver before fixed stepping.');
+      for(let i=0;i<count;i++)update();
+      render();
+      return {simulatedSteps:tick,signature:fluidSignature(tank)};
+    },
     metrics() {
       return {
         fps: Number.parseInt(byId('fps').textContent,10)||0,
         grid: width + ' × ' + height,
         quality: qualityInput.value,
         simulatedSteps:tick,
+        stateHash:fluidSignature(tank).hash,
         preset
       };
     },

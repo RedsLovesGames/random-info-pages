@@ -46,7 +46,7 @@
   <div class="repro-heading">
     <div><p class="eyebrow">REPEATABLE WORKFLOWS / 03</p>
       <h2 id="repro-title">Trial notebook.</h2>
-      <p>Capture both starting configurations, restore them between trials, then compare measurements for fixed-duration runs. Fluid snapshots restore a preset and controls, not the underlying solver grid. Timers are approximate and simulations are not frame-locked.</p>
+      <p>Capture both starting configurations, restore them between trials, then compare measurements for fixed-duration runs. Fluid snapshots restore a preset and controls, not the underlying solver grid. Timers are approximate and simulations are not frame-locked. With two Fluid Dynamics panels, fixed-step trials compare solver signatures after an equal number of updates.</p>
     </div>
     <label class="repro-duration">Trial duration <select id="trial-duration">
       <option value="5">5 seconds</option><option value="10" selected>10 seconds</option>
@@ -57,6 +57,12 @@
     <button id="capture-baseline" type="button" disabled>Capture baseline</button>
     <button id="restore-baseline" type="button" disabled>Restore baseline</button>
     <button id="run-trial" type="button" disabled>▶ Run timed trial</button>
+    <label class="repro-steps">Fixed steps
+      <select id="step-count"><option value="30">30 steps</option>
+        <option value="60" selected>60 steps</option><option value="120">120 steps</option>
+      </select>
+    </label>
+    <button id="run-steps" type="button" disabled>Run fixed-step comparison</button>
     <button id="stop-trial" type="button" disabled>Stop trial</button>
     <button id="export-trials" type="button" disabled>Export trial notebook (.json)</button>
     <button id="import-trials" type="button">Import baseline (.json)</button>

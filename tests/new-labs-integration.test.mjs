@@ -39,6 +39,9 @@ test('Compare Lab has portable baselines, repeatable time windows and honest lim
  assert.match(app,/Promise\.all\(\[a\.setState\(/);
  assert.match(app,/baseline\.duration\*1000/);
  assert.match(html,/not frame-locked/);
+ assert.match(html,/id="run-steps"/);
+ assert.match(app,/async function runFixedSteps\(/);
+ assert.match(app,/left\.advanceSteps\(/);
 });
 test('Fluid configuration adaptor uses safe snapshots rather than raw solver cell capture',()=>{
  const fluid=read('fluid-dynamics/app.mjs');
@@ -48,4 +51,6 @@ test('Fluid configuration adaptor uses safe snapshots rather than raw solver cel
  assert.match(fluid,/loadPreset\(value\.preset\)/);
  assert.match(fluid,/setPaused\(true\)/);
  assert.match(fluid,/simulatedSteps:tick/);
+ assert.match(fluid,/stateHash:fluidSignature\(tank\)\.hash/);
+ assert.match(fluid,/advanceSteps\(count\)/);
 });
