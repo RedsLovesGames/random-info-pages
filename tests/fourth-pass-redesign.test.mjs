@@ -1,12 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
-import {Script} from 'node:vm';
+import {Script,runInNewContext} from 'node:vm';
 
 const root=new URL('../',import.meta.url);
 const read=p=>readFileSync(new URL(p,root),'utf8');
 const changes=[
- ['belief-atlas','research-flow','research-flow-grid'],
  ['cryptography-museum','visitor-route','museum-paths'],
  ['one-million','comparison-presets','scale-examples'],
  ['heatmap','explore-guide','heatmap-guide']
@@ -19,7 +18,7 @@ function checkCss(path){
  assert.match(css,/prefers-reduced-motion:reduce/,path+' motion accessibility');
 }
 
-test('four newly designed entrypoints load correct isolated assets',()=>{
+test('remaining guided entrypoints load correct isolated assets',()=>{
  for(const [slug,asset,selector] of changes){
   const page=read(slug+'/index.html');
   assert.match(page,new RegExp('class="'+selector),slug+' visual flow');
@@ -33,15 +32,70 @@ test('four newly designed entrypoints load correct isolated assets',()=>{
  }
 });
 
-test('Belief Atlas directs review through existing evidence filters and never adds claims',()=>{
- const page=read('belief-atlas/index.html'),code=read('belief-atlas/research-flow.js');
- for(const action of ['unresearched','researched','people','method'])
-  assert.ok(page.includes('data-research-path="'+action+'"'));
- for(const id of ['statusFilter','matrixTable','search','recordView','reviewCount'])
-  assert.ok(page.includes('id="'+id+'"'),id+' original control');
- assert.match(code,/status\.dispatchEvent\(new Event\('change'/);
- assert.match(code,/MutationObserver/);
- assert.doesNotMatch(code,/localStorage\.setItem|fetch\(|\.innerHTML\s*=/);
+test('Belief Atlas supports evidence review and keeps published and local records separate',()=>{
+ const page=read('belief-atlas/index.html');
+ const source=page.match(/<script>([\s\S]*?)<\/script>/)[1];
+ for(const id of ['statusFilter','matrixTable','search','recordView','reviewCount','matrixMode','listMode','prevColumns','nextColumns','editRecord','resetFilters'])
+  assert.ok(page.includes('id="'+id+'"'),id+' control exists');
+ for(const filter of ['published','external','local','researched','unresearched'])
+  assert.ok(page.includes('value="'+filter+'"'),filter+' filter exists');
+ assert.match(page,/data-appearance-engine="native"/);
+ assert.match(page,/prefers-reduced-motion:reduce/);
+ assert.doesNotThrow(()=>new Script(source));
+ const elements=new Map(),stored=new Map();
+ const element=selector=>{
+  if(!elements.has(selector))elements.set(selector,{
+   value:selector==='#statusFilter'?'published':selector==='#sort'?'name':'',
+   innerHTML:'',textContent:'',hidden:false,open:false,style:{},disabled:false,
+   setAttribute(){},addEventListener(){},querySelectorAll(){return[]},focus(){},isConnected:true
+  });
+  return elements.get(selector);
+ };
+ const location={hash:''};
+ const document={querySelector:element,addEventListener(){},body:{style:{}},activeElement:null};
+ const localStorage={getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)};
+ const api=runInNewContext(source+';({filtered,render,openCell,closeCell,record,id,view:()=>view,offset:()=>columnOffset,published:PUBLISHED,externalUrl,people:PEOPLE,topics:TOPICS})',{document,localStorage,window:{location},location,URL,alert:message=>{throw Error(message)}});
+ assert.ok(Object.keys(api.published).length>0);
+ for(const [key,row] of Object.entries(api.published)){
+  const [person,topic]=JSON.parse(key);
+  assert.ok(api.people.includes(person)&&api.topics.includes(topic),'valid pairing');
+  assert.ok(row.quote&&row.notes&&/^https?:\/\//.test(row.source),'attributed evidence');
+  assert.ok(['believes','leans-believe','unclear','leans-deny','denies'].includes(row.stance));
+ }
+ const person='Donald Trump',topic='2020 presidential election stolen';
+ const key=api.id(person,topic),original=api.published[key];
+ assert.ok(original);
+ assert.match(element('#matrixTable').innerHTML,/scope="row"/);
+ element('#listMode').onclick();
+ assert.equal(api.view(),'list');
+ assert.equal(element('#shown').textContent,Object.keys(api.published).length+' matching evidence records');
+ api.openCell(person,topic);
+ assert.match(element('#recordView').innerHTML,/Open evidence source/);
+ assert.equal(element('#editRecord').open,false);
+ element('#stance').value='unclear';
+ element('#quote').value='Local test summary';
+ element('#save').onclick();
+ assert.equal(api.record(person,topic).stance,'unclear');
+ assert.equal(api.published[key].stance,original.stance);
+ assert.equal(JSON.parse(stored.get('rip-belief-atlas-v1')).records[key].stance,'unclear');
+ element('#statusFilter').value='local';api.render();
+ assert.equal(element('#shown').textContent,'1 matching evidence records');
+ api.openCell(person,topic);
+ element('#remove').onclick();
+ assert.equal(api.record(person,topic).stance,original.stance);
+ assert.equal(Object.keys(JSON.parse(stored.get('rip-belief-atlas-v1')).records).length,0);
+ element('#matrixMode').onclick();
+ element('#statusFilter').value='external';api.render();
+ assert.equal(api.filtered().pp.length,40);
+ assert.equal(api.filtered().tt.length,17);
+ element('#statusFilter').value='';api.render();
+ element('#nextColumns').onclick();
+ assert.equal(api.offset(),24);
+ assert.match(element('#columnPage').textContent,/^25/);
+ element('#prevColumns').onclick();
+ assert.equal(api.offset(),0);
+ element('#resetFilters').onclick();
+ assert.equal(element('#statusFilter').value,'published');
 });
 
 test('Cryptography Museum tour uses the pre-existing device-only passport',()=>{
