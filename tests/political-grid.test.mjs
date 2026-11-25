@@ -95,11 +95,11 @@ test('overlap uses exact selected checks, not jointly unchecked statements', () 
     { set: new Set([25,75]) },
     { set: new Set([25,50,75]) }
   ];
-  assert.equal(mask(25, profiles), 7);
-  assert.equal(mask(50, profiles), 5);
-  assert.equal(mask(0, profiles), 1);
-  assert.equal(mask(75, profiles), 6);
-  assert.equal(mask(99, profiles), 0);
+  assert.equal(mask(25, profiles), 7n);
+  assert.equal(mask(50, profiles), 5n);
+  assert.equal(mask(0, profiles), 1n);
+  assert.equal(mask(75, profiles), 6n);
+  assert.equal(mask(99, profiles), 0n);
   assert.equal(bits(7), 3);
   assert.equal(bits(5), 2);
   assert.equal(shown(0, 3), false);
@@ -137,4 +137,24 @@ test('comparison view uses labeled colored boxes, not a numbered canvas', () => 
   assert.doesNotMatch(extension, /canvasDraw\(|getContext\(/);
   assert.match(comparisonCss, /grid-template-columns:repeat\(10,minmax\(92px,1fr\)\)/);
   assert.match(comparisonCss, /overflow-x:auto/);
+});
+
+test('large comparisons use arbitrary-length masks and only observed combinations',()=>{
+  const context={localStorage:{getItem:()=>null},document:{readyState:'loading',addEventListener(){}},window:{}};
+  vm.runInNewContext(script+'\n'+extension,context,{timeout:2000});
+  const {mask,bits,shown,fullMask,observedCombinations}=context.window.PoliticalGridOverlap;
+  const selected=Array.from({length:201},(_,i)=>({name:'Person '+i,set:new Set([0,...(i===0||i===32||i===200?[1]:[])])}));
+  assert.equal(mask(0,selected),fullMask(201));
+  assert.equal(bits(mask(0,selected)),201);
+  assert.equal(mask(1,selected),1n|(1n<<32n)|(1n<<200n));
+  assert.equal(bits(mask(1,selected)),3);
+  assert.equal(shown(mask(1,selected),201),true);
+  assert.equal(shown(0n,201),false);
+  const distribution=observedCombinations(selected);
+  assert.equal(distribution.size,3);
+  assert.equal(distribution.get(0n),98);
+  assert.equal([...distribution.values()].reduce((a,b)=>a+b,0),100);
+  assert.match(html,/id="overlap-select-all"/);
+  assert.match(html,/id="overlap-clear-all"/);
+  assert.doesNotMatch(extension,/view\.selected\.length\s*<\s*4|slice\(0,4\)|1<<selected\.length/);
 });

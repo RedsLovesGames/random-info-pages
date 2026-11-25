@@ -5,8 +5,18 @@
   const COLORS = ["#ff5a5f","#4f7cff","#2ecc71","#ffb020"];
   const MIX = {3:"#a65cff",5:"#d7c05a",6:"#40bfd6",9:"#ff8d58",10:"#aa9cdf",12:"#a1db4d",7:"#e2beff",11:"#ffcab9",13:"#d9f39e",14:"#bfdcfa",15:"#ffffff"};
   const EDGE=45,STEP=101,R=40,SIZE=1100;
-  const view = { mode:"community", filter:"any", exact:1, selected:["me"], profiles:[], loading:false, error:"",hover:-1,pinned:-1 };
-  const bits = n => { let count=0;while(n){count+=n&1;n>>>=1;}return count; };
+  const view = { mode:"community", filter:"any", exact:1n, pairRow:0, pairCol:0, selected:["me"], profiles:[], loading:false, error:"",hover:-1,pinned:-1 };
+  const bit = i => 1n << BigInt(i);
+  const fullMask = n => bit(n)-1n;
+  const bits = value => {let n=BigInt(value),count=0;while(n>0n){n &= n-1n;count++;}return count;};
+  const pairPageSize=12;
+  function personColor(i) {
+    if(i<COLORS.length)return COLORS[i];
+    const hue=(i*137.508)%360, f=k=>{const a=(k+hue/30)%12;return Math.round(255*(.62-.25*Math.max(-1,Math.min(a-3,9-a,1)))).toString(16).padStart(2,"0")};
+    return "#"+f(0)+f(8)+f(4);
+  }
+  function availablePeople(){return [{id:"me",name:"You (live)",picks:[...state.picks],local:true},...view.profiles];}
+  function matchingPeople(){const query=$h("overlap-search").value.trim().toLocaleLowerCase();return availablePeople().filter(p=>p.name.toLocaleLowerCase().includes(query));}
   const coords = id => {const q=Math.floor(id/25),p=id%25;return {x:(q%2)*5+p%5,y:Math.floor(q/2)*5+Math.floor(p/5)};};
   const at = (x,y) => (Math.floor(y/5)*2+Math.floor(x/5))*25+(y%5)*5+(x%5);
   const toHex = (hex,a) => {
@@ -14,18 +24,29 @@
     return "rgba("+rgb.join(",")+","+Math.max(0,Math.min(1,a))+")";
   };
   function people() {
-    const options=[{id:"me",name:"You (live)",picks:[...state.picks],local:true},...view.profiles];
-    return view.selected.map((key,i)=>options.find(p=>p.id===key)).filter(Boolean).slice(0,4)
-      .map((p,i)=>({...p,set:new Set(p.picks),color:COLORS[i]}));
+    const options=new Map(availablePeople().map(p=>[p.id,p]));
+    return view.selected.map(key=>options.get(key)).filter(Boolean)
+      .map((p,i)=>({...p,set:new Set(p.picks),color:personColor(i)}));
   }
-  function mask(id,selected){return selected.reduce((m,p,i)=>m+(p.set.has(id)?(1<<i):0),0);}
-  function combo(maskValue,selected){return selected.filter((p,i)=>maskValue&(1<<i)).map(p=>p.name).join(" + ");}
-  function color(maskValue){return bits(maskValue)===1?COLORS[Math.log2(maskValue)]:MIX[maskValue]||"#f9f9fb";}
+  function mask(id,selected){return selected.reduce((m,p,i)=>p.set.has(id)?m|bit(i):m,0n);}
+  function combo(maskValue,selected){const m=BigInt(maskValue);return selected.filter((p,i)=>(m&bit(i))!==0n).map(p=>p.name).join(" + ");}
+  function color(maskValue,n=people().length){
+    const m=BigInt(maskValue),count=bits(m);
+    if(n<=4)return count===1?personColor(m.toString(2).length-1):MIX[String(m)]||"#f9f9fb";
+    if(count===1)return personColor(m.toString(2).length-1);
+    const ratio=count/Math.max(1,n),lo=[70,125,180],hi=[246,224,117];
+    return "#"+lo.map((v,i)=>Math.round(v+(hi[i]-v)*ratio).toString(16).padStart(2,"0")).join("");
+  }
+  function observedCombinations(selected){
+    const dist=new Map();
+    for(const statement of STATEMENTS){const m=mask(statement.id,selected);dist.set(m,(dist.get(m)||0)+1);}
+    return dist;
+  }
   function shown(m,n){
-    if(!m)return false;
+    m=BigInt(m);if(!m)return false;
     if(view.filter==="shared")return bits(m)>=2;
     if(view.filter==="single")return bits(m)===1;
-    if(view.filter==="all")return m===(1<<n)-1;
+    if(view.filter==="all")return m===fullMask(n);
     if(view.filter==="exact")return m===view.exact;
     return true;
   }
@@ -114,8 +135,8 @@
       }else{
         const matched=mask(statement.id,selected);
         active=shown(matched,n);
-        paint=active?color(matched):statement.color;
-        intensity=active?.91:.09;
+        paint=active?color(matched,n):statement.color;
+        intensity=active?(n>4?.45+.55*bits(matched)/n:.91):.09;
         summary=active?bits(matched)+" of "+n+" selected: "+combo(matched,selected):"No match for current overlap filter";
         cell.value.textContent=active?bits(matched)+" / "+n:"";
       }
@@ -136,12 +157,17 @@
       node(legend,"div","","density-scale");
       node(legend,"span","0% selected → 100% selected");
     }else {
-      selected.forEach(p=>{
+      if(n<=4)selected.forEach(p=>{
         const chip=node(legend,"span","","legend-person");
         const dot=node(chip,"i","");dot.style.background=p.color;
         node(chip,"span",p.name);
       });
-      node(legend,"span",selected.length?"Solid box colors indicate who marked each statement":"Select people to see their X marks");
+      if(n>4){
+        node(legend,"span","1 of "+n+" marked");
+        const scale=node(legend,"div","","density-scale");scale.style.background="linear-gradient(90deg,#467db4,#f6e075)";
+        node(legend,"span","All "+n+" marked");
+        node(legend,"span","Single-person matches retain that person's color. Inspect any box for the exact names.");
+      }else node(legend,"span",n?"Solid box colors indicate who marked each statement":"Select people to see their X marks");
     }
   }
   function inspect(){
@@ -178,7 +204,7 @@
     $h("mode-people").setAttribute("aria-pressed",String(isPeople));
     $h("overlap-person-panel").hidden=!isPeople;
     $h("overlap-mode-hint").textContent=isPeople?
-      "Each colored box shows which selected people marked that statement. Shared statements use combination colors.":
+      "Compare any number of loaded profiles. For larger groups, shared boxes use a count-based color scale; inspect a box for exact names.":
       "Brighter boxes mean a higher percentage of all saved responses selected them.";
     $h("heatmap-title").textContent=isPeople?"Multi-person intersection heatmap":"Community selection density";
     $h("heatmap-badge").textContent=isPeople?people().length+" people":"All saved responses";
@@ -188,28 +214,32 @@
     }
     $h("exact-controls").hidden=view.filter!=="exact";
   }
+  function selectionChanged(){view.exact=fullMask(view.selected.length);view.pairRow=0;view.pairCol=0;picker();render();}
   function toggle(id){
     if(view.selected.includes(id))view.selected=view.selected.filter(k=>k!==id);
-    else if(view.selected.length<4)view.selected.push(id);
-    view.exact=(1<<view.selected.length)-1;picker();render();
+    else view.selected.push(id);
+    selectionChanged();
+  }
+  function selectMatching(){
+    view.selected=[...new Set([...view.selected,...matchingPeople().map(p=>p.id)])];
+    selectionChanged();
   }
   function picker(){
     presetUi();
     const selected=people(),chips=$h("overlap-selected-chips"),list=$h("overlap-people-list");
     reset(chips);reset(list);
-    $h("overlap-selected-count").textContent=selected.length+" / 4";
+    $h("overlap-selected-count").textContent=selected.length+" selected";
+    $h("overlap-select-all").textContent=$h("overlap-search").value.trim()?"Select all matching":"Select all loaded";
     selected.forEach(p=>{
       const b=node(chips,"button",p.name+" ×","person-chip");
       b.type="button";b.style.setProperty("--person-color",p.color);
       b.addEventListener("click",()=>toggle(p.id));
     });
-    const query=$h("overlap-search").value.trim().toLocaleLowerCase();
-    const options=[{id:"me",name:"You (live)",picks:[...state.picks],local:true},...view.profiles]
-      .filter(p=>p.name.toLocaleLowerCase().includes(query)).slice(0,100);
+    const options=matchingPeople();
     for(const p of options){
       const active=view.selected.includes(p.id);
       const b=node(list,"button","","person-option"+(active?" chosen":""));
-      b.type="button";b.disabled=!active&&view.selected.length>=4;
+      b.type="button";
       b.setAttribute("aria-pressed",String(active));
       node(b,"span",p.name);node(b,"small",(p.local?"Local":"Opted in")+" · "+p.picks.length+" marks");
       node(b,"b",active?"✓":"+");
@@ -217,14 +247,20 @@
     }
     $h("overlap-browser-note").textContent=view.error?"Profile lookup failed: "+view.error:view.loading?
       "Loading saved profiles…":view.profiles.length?
-      view.profiles.length+" saved profiles loaded (latest 200 maximum). If your own saved name is visible, avoid comparing it with “You (live)” as two separate people.":
+      view.profiles.length+" saved profiles loaded (server returns latest 200). All loaded profiles can be selected. Avoid comparing your saved name with “You (live)” as two separate people.":
       "No saved profiles yet. You can inspect your local marks or community density.";
     const select=$h("exact-combo");reset(select);
-    for(let m=1;m<(1<<selected.length);m++){
-      const opt=node(select,"option",bits(m)+" · "+combo(m,selected));opt.value=String(m);
+    const all=fullMask(selected.length);
+    const dist=observedCombinations(selected);
+    const available=[...dist.keys()].filter(m=>m!==0n).sort((a,b)=>dist.get(b)-dist.get(a));
+    if(all&&!available.includes(all))available.unshift(all);
+    if(!all)view.exact=0n;
+    else if(!available.includes(view.exact))view.exact=all;
+    select.disabled=!available.length;
+    if(!available.length){const opt=node(select,"option","No people selected");opt.value="0";}
+    for(const m of available){
+      const opt=node(select,"option",bits(m)+" of "+selected.length+" · "+(dist.get(m)||0)+" statements · "+combo(m,selected));opt.value=String(m);
     }
-    if(!selected.length)view.exact=0;
-    else if(!view.exact||view.exact>=(1<<selected.length))view.exact=(1<<selected.length)-1;
     select.value=String(view.exact);
   }
   function barRow(target,title,value,pct,paint,onclick){
@@ -243,24 +279,35 @@
       [comboPanel,pairPanel,groupPanel,commonPanel].forEach(target=>node(target,"p","Choose a person to start comparing.","empty"));
       return;
     }
-    const masks=STATEMENTS.map(s=>mask(s.id,selected)),dist=new Map();
-    masks.forEach(m=>dist.set(m,(dist.get(m)||0)+1));
-    node(comboPanel,"p",(dist.get(0)||0)+" statements marked by none of these people.","mini-hint");
-    [...dist].filter(([m])=>m!==0).sort((a,b)=>b[1]-a[1]).forEach(([m,quantity])=>{
-      barRow(comboPanel,combo(m,selected),quantity+" / 100",quantity,color(m),()=>{
+    const masks=STATEMENTS.map(s=>mask(s.id,selected)),dist=observedCombinations(selected);
+    node(comboPanel,"p",(dist.get(0n)||0)+" statements marked by none of these people.","mini-hint");
+    [...dist].filter(([m])=>m!==0n).sort((a,b)=>b[1]-a[1]).forEach(([m,quantity])=>{
+      barRow(comboPanel,combo(m,selected),quantity+" / 100",quantity,color(m,n),()=>{
         view.mode="people";view.filter="exact";view.exact=m;picker();render();
         $h("overlap-box-grid").scrollIntoView({block:"center",behavior:"smooth"});
       });
     });
     if(n<2)node(pairPanel,"p","Choose at least two people for pairwise Jaccard similarity.","empty");
     else {
-      const table=node(pairPanel,"table","","pair-table"),thead=node(table,"thead",""),tr=node(thead,"tr","");
+      const pages=Math.ceil(n/pairPageSize);
+      view.pairRow=Math.min(view.pairRow,pages-1);view.pairCol=Math.min(view.pairCol,pages-1);
+      const rows=selected.slice(view.pairRow*pairPageSize,(view.pairRow+1)*pairPageSize),cols=selected.slice(view.pairCol*pairPageSize,(view.pairCol+1)*pairPageSize);
+      if(pages>1){
+        const controls=node(pairPanel,"div","","pair-page-controls");
+        for(const [label,key] of [["Rows","pairRow"],["Columns","pairCol"]]){
+          const field=node(controls,"label",label+" ");const select=node(field,"select","");select.setAttribute("aria-label",label+" of similarity matrix");
+          for(let i=0;i<pages;i++){const option=node(select,"option",(i*pairPageSize+1)+"–"+Math.min(n,(i+1)*pairPageSize));option.value=String(i);}
+          select.value=String(view[key]);select.addEventListener("change",()=>{view[key]=Number(select.value);analytics();});
+        }
+      }
+      const table=node(pairPanel,"table","","pair-table");table.style.minWidth=Math.max(330,(cols.length+1)*88)+"px";
+      const thead=node(table,"thead",""),tr=node(thead,"tr","");
       node(tr,"th","");
-      selected.forEach(p=>node(tr,"th",p.name));
+      cols.forEach(p=>node(tr,"th",p.name));
       const tbody=node(table,"tbody","");
-      for(const p of selected){
+      for(const p of rows){
         const r=node(tbody,"tr","");node(r,"th",p.name);
-        for(const q of selected){
+        for(const q of cols){
           const intersection=STATEMENTS.filter(s=>p.set.has(s.id)&&q.set.has(s.id)).length;
           const union=p.set.size+q.set.size-intersection;
           const score=union?intersection/union:null;
@@ -270,7 +317,7 @@
         }
       }
     }
-    const table=node(groupPanel,"table","","group-profile-table");
+    const table=node(groupPanel,"table","","group-profile-table");table.style.minWidth=Math.max(330,(n+1)*88)+"px";
     const h=node(table,"thead",""),hr=node(h,"tr","");
     node(hr,"th","Group");selected.forEach(p=>node(hr,"th",p.name));
     const body=node(table,"tbody","");
@@ -304,7 +351,7 @@
         .slice(0,200);
       const ids=new Set(["me",...view.profiles.map(p=>p.id)]);
       view.selected=view.selected.filter(k=>ids.has(k));
-      if(!view.selected.length)view.selected=["me"];
+      view.exact=fullMask(view.selected.length);view.pairRow=0;view.pairCol=0;
     }catch(error){view.error=error.message||"Network unavailable";}
     finally{view.loading=false;picker();render();}
   }
@@ -313,16 +360,18 @@
     $h("mode-people").addEventListener("click",()=>{view.mode="people";picker();render();});
     $h("overlap-search").addEventListener("input",picker);
     $h("overlap-refresh").addEventListener("click",reload);
-    $h("overlap-only-me").addEventListener("click",()=>{view.selected=["me"];view.exact=1;picker();render();});
+    $h("overlap-only-me").addEventListener("click",()=>{view.selected=["me"];selectionChanged();});
+    $h("overlap-select-all").addEventListener("click",selectMatching);
+    $h("overlap-clear-all").addEventListener("click",()=>{view.selected=[];selectionChanged();});
     $h("overlap-presets").addEventListener("click",event=>{
       const b=event.target.closest("[data-filter]");if(!b)return;
-      view.filter=b.dataset.filter;if(view.filter==="exact")view.exact=(1<<people().length)-1;
+      view.filter=b.dataset.filter;if(view.filter==="exact")view.exact=fullMask(people().length);
       picker();render();
     });
-    $h("exact-combo").addEventListener("change",e=>{view.exact=Number(e.target.value);render();});
+    $h("exact-combo").addEventListener("change",e=>{view.exact=BigInt(e.target.value);render();});
     picker();render();reload();
   }
-  window.PoliticalGridOverlap={render,reload,coords,at,mask,bits,shown};
+  window.PoliticalGridOverlap={render,reload,coords,at,mask,bits,shown,fullMask,observedCombinations};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",setup);
   else setup();
 })();

@@ -69,15 +69,15 @@
       <div class="map-tabs" role="group" aria-label="Heatmap view"><button type="button" id="mode-community" class="active" aria-pressed="true">Community density</button><button type="button" id="mode-people" aria-pressed="false">Person overlaps</button></div>
       <p id="overlap-mode-hint" class="overlap-helper">Brighter boxes mean a larger share of saved submissions selected that statement.</p>
       <div id="overlap-person-panel" class="person-panel" hidden>
-        <div class="control-label">PEOPLE <span id="overlap-selected-count">0 / 4</span></div><p class="mini-hint">Choose up to four saved profiles. Your unsaved marks stay on this device.</p>
+        <div class="control-label">PEOPLE <span id="overlap-selected-count">0 selected</span></div><p class="mini-hint">Select any number of loaded profiles. Your unsaved marks stay on this device.</p>
         <div id="overlap-selected-chips" class="selected-chips"></div>
         <label class="visually-hidden" for="overlap-search">Find saved profiles</label><input type="search" id="overlap-search" class="people-search" placeholder="Find a saved nickname…" autocomplete="off">
-        <div id="overlap-people-list" class="people-list"></div><div id="overlap-browser-note" class="mini-hint">Saved profiles appear here.</div>
+        <div class="map-actions selection-actions"><button type="button" class="quiet-button" id="overlap-select-all">Select all loaded</button><button type="button" class="quiet-button" id="overlap-clear-all">Clear selection</button></div><div id="overlap-people-list" class="people-list"></div><div id="overlap-browser-note" class="mini-hint">Saved profiles appear here.</div>
         <div class="control-label">OVERLAP PRESETS</div>
         <div id="overlap-presets" class="overlap-presets" role="group" aria-label="Overlap filters">
           <button type="button" data-filter="any">Any marked</button><button type="button" data-filter="shared">Shared by 2+</button><button type="button" data-filter="all">All selected people</button><button type="button" data-filter="single">Exactly one</button><button type="button" data-filter="exact">Exact combination</button>
         </div>
-        <div id="exact-controls" class="exact-controls" hidden><label for="exact-combo">MATCH ONLY THIS EXACT SET</label><select id="exact-combo"></select></div>
+        <div id="exact-controls" class="exact-controls" hidden><label for="exact-combo">MATCH AN OBSERVED EXACT SET</label><select id="exact-combo"></select></div>
         <div class="map-actions"><button type="button" class="quiet-button" id="overlap-only-me">Only my marks</button><button type="button" class="quiet-button" id="overlap-refresh">↻ Reload profiles</button></div>
       </div>
     </section>
@@ -87,7 +87,7 @@
           <div id="overlap-box-grid" class="overlap-box-grid" role="group" aria-label="100 statement comparison heatmap"></div>
         </div>
         <div class="heatmap-legend" id="heatmap-legend"></div>
-        <p class="heatmap-caption">The original four quadrants and all statement wording are preserved. Box colors show community selection frequency or exact person overlaps, <strong>not</strong> ideology. Select a box to inspect it. Scroll sideways on narrow screens. A small dot means your local grid has an X.</p>
+        <p class="heatmap-caption">The original four quadrants and all statement wording are preserved. Box colors show community selection frequency, exact combinations for small groups, or overlap counts for larger groups, <strong>not</strong> ideology. Select a box to inspect it. Scroll sideways on narrow screens. A small dot means your local grid has an X.</p>
       </div>
       <div class="panel inspect-panel"><span class="section-index" id="inspect-index">SELECT A BOX</span><h3 id="inspect-statement">Hover over or select a statement box to inspect it.</h3><div id="inspect-details" class="inspect-details">Selection counts and exact participant matches appear here.</div></div>
     </div>
