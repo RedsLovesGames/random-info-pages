@@ -7,13 +7,15 @@ const buttons=[...document.querySelectorAll('[data-congress-preset]')];
 const clear=$('clearCongressFilters');
 if(inputs.some(x=>!x)||!buttons.length||!clear)return;
 const [search,chamber,party,sort]=inputs;
+const extras=['stateFilter','generationFilter','regionFilter','votingFilter','minAge','maxAge'].map($).filter(Boolean);
+function resetExtra(){extras.forEach(el=>el.value=el.tagName==='SELECT'?'all':'');}
 function change(select,value){
  if(select.value!==value){select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}))}
 }
 function sync(){
  buttons.forEach(button=>{
   const action=button.dataset.congressPreset;
-  const selected=action==='all'?chamber.value==='all'&&party.value==='all'&&search.value==='':
+  const selected=action==='all'?chamber.value==='all'&&party.value==='all'&&search.value===''&&extras.every(el=>el.tagName==='SELECT'?el.value==='all':el.value===''):
     action==='House'||action==='Senate'?chamber.value===action:
     sort.value===action;
   button.setAttribute('aria-pressed',String(selected));
@@ -21,13 +23,13 @@ function sync(){
 }
 buttons.forEach(button=>button.addEventListener('click',()=>{
  const action=button.dataset.congressPreset;
- if(action==='all'){chamber.value='all';party.value='all';search.value='';chamber.dispatchEvent(new Event('change',{bubbles:true}))}
+ if(action==='all'){chamber.value='all';party.value='all';search.value='';resetExtra();chamber.dispatchEvent(new Event('change',{bubbles:true}))}
  else if(action==='House'||action==='Senate'){change(chamber,action)}
  else {change(sort,action)}
  sync();
 }));
 clear.addEventListener('click',()=>{
- search.value='';chamber.value='all';party.value='all';sort.value='ageDesc';
+ search.value='';chamber.value='all';party.value='all';sort.value='partyAge';resetExtra();if($('colorMode'))$('colorMode').value='party';
  search.dispatchEvent(new Event('input',{bubbles:true}));sync();search.focus()
 });
 [search,chamber,party,sort].forEach(el=>el.addEventListener(el===search?'input':'change',sync));

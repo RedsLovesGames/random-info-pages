@@ -130,3 +130,23 @@ test('Archived projects and classic homepage are never redesign targets',()=>{
  assert.ok(!read('classic.html').includes('wayfinder.js'));
  assert.match(read('archive/index.html'),/Five preserved projects/);
 });
+
+test('Congress restores seat maps without dropping existing member profiles or roster source',()=>{
+ const html=read('oldasspolitic/index.html');
+ for(const id of ['houseMap','senateMap','seatView','listView','seatDetail','stateFilter','minAge','maxAge','generationFilter','regionFilter','votingFilter','colorMode'])assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(html,/577ca04282d14688cb14f6559eb27b52bdc50dfc/);
+ assert.match(html,/function layoutSeats/);
+ assert.match(html,/dimmed/);
+ assert.match(html,/\.\/member\/\?id=/);
+ const inline=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+ assert.doesNotThrow(()=>new Function(inline));
+ const geometry=inline.slice(inline.indexOf('function layoutSeats('),inline.indexOf('function renderSeatMap('));
+ const layout=new Function(geometry+';return layoutSeats')();
+ for(const n of [100,435,441]){
+  const points=layout(n);assert.equal(points.length,n);
+  for(let i=0;i<n;i++){
+   const a=points[i];assert.ok(a.x-a.r>=0&&a.x+a.r<=1000&&a.y-a.r>=0&&a.y+a.r<=540);
+   for(let j=0;j<i;j++){const b=points[j];assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=a.r+b.r-.01);}
+  }
+ }
+});
