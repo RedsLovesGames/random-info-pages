@@ -150,3 +150,23 @@ test('Congress restores seat maps without dropping existing member profiles or r
   }
  }
 });
+
+test('November election snapshot distinguishes called seats from hypothetical outcomes',()=>{
+ const html=read('oldasspolitic/index.html');
+ const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+ const source=script.replace('init();})();','globalThis.snapshotTest={electionGroups,electionSenateGroups,electionDots,renderElection};})();');
+ const nodes=new Map();
+ const element=id=>{if(!nodes.has(id))nodes.set(id,{value:'',innerHTML:'',textContent:'',addEventListener(){},setAttribute(){}});return nodes.get(id)};
+ const global={};
+ new Function('document','globalThis',source)({getElementById:element,querySelectorAll(){return[]}},global);
+ const api=global.snapshotTest;
+ assert.deepEqual(api.electionGroups(false).map(g=>g.count),[259,3,173]);
+ assert.deepEqual(api.electionGroups(true).map(g=>g.count),[262,173]);
+ assert.deepEqual(api.electionSenateGroups().map(g=>g.count),[54,2,44]);
+ assert.equal((element('electionHouse').innerHTML.match(/<circle /g)||[]).length,435);
+ assert.equal((element('electionHouse').innerHTML.match(/stroke-dasharray/g)||[]).length,3);
+ assert.equal((element('electionSenate').innerHTML.match(/<circle /g)||[]).length,100);
+ api.renderElection(false);
+ assert.doesNotMatch(element('electionHouse').innerHTML,/stroke-dasharray/);
+ assert.match(element('electionScenarioNote').textContent,/not vacancies/);
+});
