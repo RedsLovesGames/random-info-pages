@@ -6,8 +6,8 @@ import { Script } from 'node:vm';
 const root=new URL('../',import.meta.url);
 const file=path=>readFileSync(new URL(path,root),'utf8');
 const active=[
-  'belief-atlas','9-11-timeline','fiction-workspace','algorithm-arena',
-  'cryptography-museum','music-microscope','one-million',
+  'belief-atlas','fiction-workspace','algorithm-arena',
+  'cryptography-museum','music-microscope',
   'infrastructure-atlas','political-grid','tools','wheel','whenwemeet',
   'school-schedule','friends','stock-fights','oldasspolitic','heatmap',
   'wanuiv2','nerdcore-prompts'
@@ -20,8 +20,8 @@ const excluded=[
   'tideborne/fish','tideborne/getting-started','tide2/mechanics-reference.html'
 ];
 
-test('all 19 active app entrypoints include one scoped site shell',()=>{
-  assert.equal(active.length,19);
+test('all 17 active app entrypoints include one scoped site shell',()=>{
+  assert.equal(active.length,17);
   for(const name of active){
     const html=file(name+'/index.html');
     assert.match(html,new RegExp('data-rip-page="'+name+'"'),name);
@@ -69,7 +69,7 @@ test('project switcher reads canonical registry and scopes its optional studio s
   assert.match(script,/window\.RIPStudio/);
   assert.doesNotMatch(script,/const catalog=\[/,'navigation does not duplicate project data');
   for(const slug of active)assert.ok(registry.includes("p:'./"+slug+"/'"),slug+' indexed');
-  for(const slug of ['vct-scout','tideborne','tide2'])
+  for(const slug of ['vct-scout','tideborne','tide2','9-11-timeline','one-million'])
     assert.match(registry,new RegExp("p:'\\./"+slug+"/'[^}]*a:true"),slug+' stays archived');
 });
 

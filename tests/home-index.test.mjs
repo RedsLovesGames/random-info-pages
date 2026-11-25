@@ -140,7 +140,7 @@ test('human-facing project labels are clear, unique, and backwards searchable', 
 
 test('VCT and Tideborne are archived, remain available, and are excluded from the active project index', () => {
   const archived=projects.filter(p=>p.a);
-  assert.deepEqual(Array.from(archived,p=>p.p).sort(),['./tide2/','./tideborne/','./vct-scout/'].sort());
+  assert.deepEqual(Array.from(archived,p=>p.p).sort(),['./tide2/','./tideborne/','./vct-scout/','./9-11-timeline/','./one-million/'].sort());
   assert.equal(projects.filter(p=>!p.a).length,projects.length-archived.length);
   assert.match(html,/const activeProjects=projects\.filter\(p=>!p\.a\)/);
   assert.match(html,/const shown=currentFilter==='all'\?activeProjects:activeProjects\.filter/);
@@ -148,7 +148,7 @@ test('VCT and Tideborne are archived, remain available, and are excluded from th
   assert.match(html,/p\.a\?' · Archived'/);
   assert.match(html,/href="\.\/archive\/"/);
   const archive=readFileSync(new URL('../archive/index.html',import.meta.url),'utf8');
-  for(const slug of ['vct-scout','tideborne','tide2']){
+  for(const slug of ['vct-scout','tideborne','tide2','9-11-timeline','one-million']){
     assert.ok(archive.includes('href="../'+slug+'/"'),slug+' linked from archive');
     assert.ok(existsSync(new URL('../'+slug+'/index.html',import.meta.url)));
   }

@@ -128,5 +128,5 @@ test('Archived projects and classic homepage are never redesign targets',()=>{
    assert.ok(!html.includes('planner-ui.js'),name);
  }
  assert.ok(!read('classic.html').includes('wayfinder.js'));
- assert.match(read('archive/index.html'),/Three preserved projects/);
+ assert.match(read('archive/index.html'),/Five preserved projects/);
 });

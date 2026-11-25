@@ -72,21 +72,21 @@ test('Emperor Director workflow is clear about preview simulations and preserves
   assert.doesNotThrow(()=>new Script(inline[1]),'existing inline app still parses');
 });
 
-test('all 19 projects in current index have received at least one bespoke interaction pass',()=>{
+test('all 17 projects in current index have received at least one bespoke interaction pass',()=>{
  const home=read('index.html');
  assert.match(home,/const projects=window\.RIP_PROJECTS;/);
  const registry=read('design-system/projects.js');
  const block=registry.match(/const projects=\[[\s\S]*?\];/)?.[0]||'';
- const archived=['vct-scout','tideborne','tide2'];
- const activeSlugs=['belief-atlas','9-11-timeline','fiction-workspace','algorithm-arena',
-   'cryptography-museum','music-microscope','one-million','infrastructure-atlas','political-grid',
+ const archived=['vct-scout','tideborne','tide2','9-11-timeline','one-million'];
+ const activeSlugs=['belief-atlas','fiction-workspace','algorithm-arena',
+   'cryptography-museum','music-microscope','infrastructure-atlas','political-grid',
    'tools','wheel','whenwemeet','school-schedule','friends','stock-fights','oldasspolitic',
    'heatmap','wanuiv2','nerdcore-prompts'];
- assert.equal(activeSlugs.length,19);
+ assert.equal(activeSlugs.length,17);
  for(const slug of activeSlugs)assert.ok(block.includes("p:'./"+slug+"/'"),slug+' retained in active registry');
  for(const slug of archived){
   const archivedPage=read(slug+'/index.html');
   for(const [dir,asset] of apps)assert.ok(!archivedPage.includes(asset+'.js'),slug+' excluded from '+dir+' changes');
  }
- assert.equal((block.match(/a:true/g)||[]).length,3);
+ assert.equal((block.match(/a:true/g)||[]).length,5);
 });
